@@ -2282,6 +2282,31 @@
     ]
   },
   {
+    "key": "vs w/{partner} vs {opps}",
+    "en": "Tag (w/{partner}) vs {opps}",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "growthLog matchエントリのdetailTpl(App.finalizeShowのタッグ戦。management.jsの「タッグ({partner}) vs {opps}」とはJA文が別だが同じ情報を表す)。P7-28。app.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "vs {name}",
+    "en": "vs {name}",
+    "files": [
+      "management.js",
+      "app.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "growthLog matchエントリのdetailTpl(シングル戦)。P7-28。management.js/app.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
     "key": "wear蓄積 ×0.50",
     "en": "Wear buildup ×0.50",
     "files": [
@@ -3156,6 +3181,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "{label}で長期欠場",
+    "en": "Out long-term with {label}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "careerHistory[].detail(Engine.career.generateBackstoryの疑似経歴の怪我フレーバー)の表示点用テンプレ(_wmCareerInjuryDetail・P7-28)。{label}はBACKSTORY_INJURY_LABELSの値を_wmDictLabelで引き直したもの。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "{label}により引退",
+    "en": "Retired due to {label}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "careerHistory[].detail(injury_retirement)の表示点用テンプレ(_wmCareerInjuryDetail・P7-28)。{label}はinjuryLabel(type,dict)で引き直した値。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "{label}に強いコーチ",
     "en": "A coach strong in {label}",
     "files": [
@@ -3184,6 +3233,18 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "{label}（{n}週離脱）",
+    "en": "{label} ({n}-week absence)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "careerHistory[].detail(中傷/重傷の実怪我)の表示点用テンプレ(_wmCareerInjuryDetail・P7-28)。{label}はinjuryLabel(type,dict)で引き直した値。management.jsは走査対象外につき手追加"
   },
   {
     "key": "{leader}ではなく別の幹部を重用した。{faction}の中に、新たな対立軸がくすぶっている。",
@@ -5825,6 +5886,18 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "{stat}が限界に到達",
+    "en": "{stat} reached its limit",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "growthLog milestoneエントリのdetailTpl(ステータス上限到達・P7-28)。{stat}はSTAT_JA由来のUIラベル値なので表示点で先にt()を通してから差し込む(§14-2と同趣旨)。app.jsは走査対象外につき手追加"
   },
   {
     "key": "{stat}は頼むまでもなく、{coach}コーチが元から専門にしている領域だ",
@@ -14655,6 +14728,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "タッグ({partner}) vs {opps}",
+    "en": "Tag ({partner}) vs {opps}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "growthLog(成長ログ)matchエントリのdetailTpl(P7-28・§14-3の追加フィールド方式)。detail自体は生JAでセーブへ永続、表示点(ui-render.js成長経過タブ)がWM_I18N.t(entry.detailTpl, entry.detailVars)で組み直す。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
     "key": "タッグや日々の交わりの中で育ちます。深い絆は成長を後押しし、土壇場の踏ん張りに効きます。",
     "en": "It grows through tag teams and everyday contact. A deep bond speeds growth and holds up when it matters most.",
     "files": [
@@ -19582,6 +19667,18 @@
     "source": [
       "COACH_ABILITY_CATALOG.スター製造.desc"
     ]
+  },
+  {
+    "key": "人気{n}到達",
+    "en": "Popularity {n} reached",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "growthLog milestoneエントリのdetailTpl(P7-28)。既存キー「人気 {n} 到達」(スペース有)と同義で訳文を揃えた。app.jsは走査対象外につき手追加"
   },
   {
     "key": "人気{pop}・集客{draw}",
@@ -30196,6 +30293,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "敵地遠征 vs {name}",
+    "en": "Away trip vs {name}",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "growthLog matchエントリのdetailTpl(敵地遠征/App._finalizeAwayChallengeShow)。P7-28。app.jsは走査対象外につき手追加"
+  },
+  {
     "key": "敵対度を一気に解消。両リーダーも社長の仲裁を好意的に受け止める、静かな終結",
     "en": "Clears the hostility at a stroke. Both leaders take the mediation well — a quiet ending",
     "files": [
@@ -38215,6 +38324,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "総合力{n}到達",
+    "en": "Overall {n} reached",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "growthLog milestoneエントリのdetailTpl(P7-28)。既存キー「総合力 {n} 到達」(スペース有・ui-common.js成長ポップアップ用)とは別のJA原文だが同じ意味なので訳文は揃えた。app.jsは走査対象外につき手追加"
+  },
+  {
     "key": "総支出",
     "en": "Total Spending",
     "files": [
@@ -38507,6 +38628,18 @@
     ]
   },
   {
+    "key": "肩の負傷",
+    "en": "a shoulder injury",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "BACKSTORY_INJURY_LABELS(data.js)。P7-28。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "肩記事",
     "en": "Sidebar",
     "files": [
@@ -38622,6 +38755,30 @@
       "battle-engine-main.js:MOVE_GUIDE_OVERRIDES[2].guide",
       "tag-battle-main.js:MOVE_GUIDE_OVERRIDES[2].guide"
     ]
+  },
+  {
+    "key": "腰の負傷",
+    "en": "a lower-back injury",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "BACKSTORY_INJURY_LABELS(data.js)。P7-28。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "膝の負傷",
+    "en": "a knee injury",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "BACKSTORY_INJURY_LABELS(data.js)。Engine.career.generateBackstoryの疑似経歴専用の怪我フレーバー語(P7-28)。management.jsは走査対象外につき手追加"
   },
   {
     "key": "自",
@@ -41019,6 +41176,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "足首の負傷",
+    "en": "an ankle injury",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "BACKSTORY_INJURY_LABELS(data.js)。P7-28。management.jsは走査対象外につき手追加"
   },
   {
     "key": "距離ができた",
@@ -43871,6 +44040,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "首の負傷",
+    "en": "a neck injury",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "BACKSTORY_INJURY_LABELS(data.js)。P7-28。management.jsは走査対象外につき手追加"
   },
   {
     "key": "首位として後続を突き放しにかかる時期",

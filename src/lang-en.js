@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4502件、訳文あり4502件)
+//  生成元: i18n/ui-ledger.json (総キー4517件、訳文あり4517件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -232,6 +232,8 @@
     "dictatorTag 付与": "grant dictatorTag",
     "pt で頂点": "pts to the summit",
     "trust低下 ×0.90": "Trust decline ×0.90",
+    "vs w/{partner} vs {opps}": "Tag (w/{partner}) vs {opps}",
+    "vs {name}": "vs {name}",
     "wear蓄積 ×0.50": "Wear buildup ×0.50",
     "{age}年前 ({season}年目)": "Years ago: {age} (Year {season})",
     "{age}歳": "Age {age}",
@@ -317,9 +319,12 @@
     "{label} 第{a}週、年間第{b}週": "{label} Week {a}, Week {b} of the year",
     "{label} 開催週": "{label} show week",
     "{label}(第{n}回)": "{label} (#{n})",
+    "{label}で長期欠場": "Out long-term with {label}",
+    "{label}により引退": "Retired due to {label}",
     "{label}に強いコーチ": "A coach strong in {label}",
     "{label}の対立": "{label} conflict",
     "{label}の段階": "the {label} stage",
+    "{label}（{n}週離脱）": "{label} ({n}-week absence)",
     "{leader}ではなく別の幹部を重用した。{faction}の中に、新たな対立軸がくすぶっている。": "You leaned on another lieutenant instead of {leader}. A new fault line is smoldering inside {faction}.",
     "{leader}と給与改定を約束した。{faction}のメンバーへ+10%、来週から実支給に反映される。": "You promised {leader} a pay revision. Members of {faction} get +10%, effective in next week's payroll.",
     "{leader}に直接は触れず、コーチを介して練習量を整えた。": "Rather than approach {leader} directly, you had the coaches adjust the training load.",
@@ -577,6 +582,7 @@
     "{sign}{v}万": "{sign}¥{v:man}",
     "{sign}{v}万/週": "{sign}¥{v:man}/week",
     "{src}・残{w}週": "{src} · weeks left: {w}",
+    "{stat}が限界に到達": "{stat} reached its limit",
     "{stat}は頼むまでもなく、{coach}コーチが元から専門にしている領域だ": "No need to even ask for {stat} — it's already {coach}'s specialty",
     "{stat}は頼むまでもなく、このコーチが元から専門にしている領域だ": "No need to even ask for {stat} — it's already this coach's specialty",
     "{stat}を重点に指導中": "Focusing her coaching on {stat}",
@@ -1412,6 +1418,7 @@
     "タイムアップ — 決着つかず": "Time limit — no decision",
     "タイムラインに記録された抗争イベントはまだありません": "No feud events have been recorded on the timeline yet",
     "タッグ": "Tag",
+    "タッグ({partner}) vs {opps}": "Tag ({partner}) vs {opps}",
     "タッグや日々の交わりの中で育ちます。深い絆は成長を後押しし、土壇場の踏ん張りに効きます。": "It grows through tag teams and everyday contact. A deep bond speeds growth and holds up when it matters most.",
     "タッグマッチ": "Tag Match",
     "タッグマッチデータの受信を待機中…": "Waiting for tag match data...",
@@ -1866,6 +1873,7 @@
     "人気 {pop}": "Popularity {pop}",
     "人気20到達でスポンサー収入が発生": "Sponsor income begins once popularity reaches 20",
     "人気rawGain ×1.2": "Popularity raw gain ×1.2",
+    "人気{n}到達": "Popularity {n} reached",
     "人気{pop}・集客{draw}": "Popularity {pop} · Draw {draw}",
     "人気が上がり、本人も機会を喜ぶが、体調を消耗する": "Popularity rises and she's glad for the opportunity, but it wears down her condition.",
     "人気が即座にアップします": "Popularity goes up immediately",
@@ -2867,6 +2875,7 @@
     "敗退派閥": "Eliminated faction",
     "敬": "Respect",
     "数字は推定値。本当の姿は、リングの上でしか分からない。": "The numbers are estimates. The truth only shows up in the ring.",
+    "敵地遠征 vs {name}": "Away trip vs {name}",
     "敵対度を一気に解消。両リーダーも社長の仲裁を好意的に受け止める、静かな終結": "Clears the hostility at a stroke. Both leaders take the mediation well — a quiet ending",
     "断る": "Decline",
     "断れば、あちらの因縁は消えずに残る": "Turn it down and their grudge stays right where it is",
@@ -3623,6 +3632,7 @@
     "総収入": "Total Income",
     "総合": "OVR",
     "総合力 {n} 到達": "Overall {n} reached",
+    "総合力{n}到達": "Overall {n} reached",
     "総支出": "Total Spending",
     "締め": "Close",
     "編成する": "Set the Lineup",
@@ -3650,6 +3660,7 @@
     "縮小": "Zoom out",
     "考えない日はない。絶対に、越えなきゃいけない壁": "Not a day goes by that I don't think about her. She's the wall I have to get past.",
     "職人気質": "Artisan",
+    "肩の負傷": "a shoulder injury",
     "肩記事": "Sidebar",
     "育成": "Development",
     "育成の途上で、来季以降の積み上げを待つ段階": "Mid-development, waiting on next season and beyond to build up",
@@ -3660,6 +3671,8 @@
     "能力レーダーチャート": "Ability radar chart",
     "脚の振りや踏み込みを使い、相手の上半身や足元を狙う打撃。": "A strike that uses the swing of the leg and a step in to target the upper body or the legs.",
     "腕や頭部を直接ぶつけ、相手の動きと姿勢を止める打撃。": "A strike that drives an arm or the head straight in to stop her movement and her posture.",
+    "腰の負傷": "a lower-back injury",
+    "膝の負傷": "a knee injury",
     "自": "OWN",
     "自動": "Auto",
     "自動・交代中固定": "Auto · locked while tagging",
@@ -3886,6 +3899,7 @@
     "超一流の証": "The Mark of the Very Best",
     "超逸材": "Elite Prospect",
     "超逸材発見": "Elite Prospect Found",
+    "足首の負傷": "an ankle injury",
     "距離ができた": "Some distance has grown",
     "距離を保つ": "Keep Your Distance",
     "跳躍や落下の勢いに体重を乗せ、一気に大きな衝撃を与える。": "Puts full body weight behind the leap and the fall to land one large impact.",
@@ -4151,6 +4165,7 @@
     "顔ぶれの変化": "Changes in the Lineup",
     "顔も見たくない。同じ空気を吸いたくない": "I don't want to see her face. I don't want to share the air.",
     "飛び技": "Aerial",
+    "首の負傷": "a neck injury",
     "首位として後続を突き放しにかかる時期": "First place, and pulling further ahead of the pack",
     "首位の喉元に手をかけている": "Reaching for the leader's throat",
     "首位の座が揺らぎ始めている": "The top spot is starting to wobble",

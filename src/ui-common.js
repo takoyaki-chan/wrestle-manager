@@ -4595,10 +4595,14 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const _relS = Engine.career.relSeason(h.season, _histJoinS);
           const seasonStr = h.season ? WM_I18N.t('キャリア{n}年目', { n: _relS }) : '';
           const weekStr   = h.week   ? ` ${WM_I18N.t('{n}週', { n: h.week })}` : '';
+          // i18n P7-28: detail は怪我名を埋め込んだ完成文のことがある(型はinjury/injury_retirement)。
+          // 表示は必ず _wmCareerInjuryDetail を通す(それ以外のtypeは非対象・従来どおり非ラップ)
+          const _hDetail = (h.type === 'injury' || h.type === 'injury_retirement')
+            ? _wmCareerInjuryDetail(WM_I18N.t, h.detail) : h.detail;
           html += `<div style="padding:6px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;border-left:2px solid ${typeColor}33;padding-left:10px;line-height:1.5">
             <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:70px;font-family:'Courier New',monospace">${seasonStr}${weekStr}</span>
             <span style="flex-shrink:0">${typeIcon}</span>
-            <span style="color:var(--text)">${h.detail}</span>
+            <span style="color:var(--text)">${_hDetail}</span>
           </div>`;
         });
         html += `</div>`;

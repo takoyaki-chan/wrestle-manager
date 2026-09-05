@@ -4420,7 +4420,9 @@ const Engine = {
       }
 
       // §C-3-3 怪我歴
-      const injuryPool = ['膝の負傷', '肩の負傷', '腰の負傷', '首の負傷', '足首の負傷'];
+      // i18n P7-28: この配列はdata.jsのBACKSTORY_INJURY_LABELSへ移設(_wmCareerInjuryDetailの
+      // 逆引きから同じ語彙を参照するため、単一のトップレベル定数に統一)。値は不変
+      const injuryPool = BACKSTORY_INJURY_LABELS;
       for (let s = 1; s <= careerSeasons; s++) {
         if (Engine.rng.float(rng) < 0.08) {
           const injType = injuryPool[Engine.rng.int(rng, 0, injuryPool.length - 1)];
@@ -5176,7 +5178,9 @@ const Engine = {
       const _totalDef = _titleStats.totalDefenses;
 
       // 年代記で意味のある特性のみ保持
-      const kept = ['華', 'ファンサービス', '人望', 'ムードメーカー', '熱血', '名勝負製造機', 'ガラスのハート'];
+      // i18n P7-28掃除: '熱血'/'ガラスのハート' は TRAIT_DEFS に存在しない旧特性名(死参照。
+      // どの選手のtraitsにも入り得ないため削除しても挙動不変)。docs/i18n-coverage-report-v0.1.md B分類
+      const kept = ['華', 'ファンサービス', '人望', 'ムードメーカー', '名勝負製造機'];
       const traits = (fighter.traits || []).filter(t => kept.indexOf(t) >= 0);
 
       const entry = {
@@ -6532,9 +6536,9 @@ const Engine = {
       if (traits.includes('華') || traits.includes('ファンサービス')) charPool.push({ t: PT.trait.hana, v: cv });
       if (traits.includes('人望')) charPool.push({ t: PT.trait.jinbo, v: cv });
       if (traits.includes('ムードメーカー')) charPool.push({ t: PT.trait.moodMaker, v: cv });
-      if (traits.includes('熱血')) charPool.push({ t: PT.trait.nekketsu, v: cv });
+      // i18n P7-28掃除: '熱血'/'ガラスのハート' は TRAIT_DEFS に存在しない旧特性名(死参照)。
+      // traitsは常に上の`kept`(実在特性のみ)由来のため常にfalseの到達不能分岐だった。削除で挙動不変
       if (traits.includes('名勝負製造機')) charPool.push({ t: PT.trait.classicMaker, v: cv });
-      if (traits.includes('ガラスのハート')) charPool.push({ t: PT.trait.glassHeart, v: cv });
       if (popTier === 'star') {
         charPool.push({ t: PT.pop.star, v: cv });
       } else if (popTier === 'high' && !traits.includes('華')) {
@@ -7214,10 +7218,14 @@ const Engine = {
 
       // Convert careerHistory events (injuries etc.)
       for (const ev of careerHist) {
+        // i18n P7-28: 'injury'/'injury_retirement' の detail は怪我名を埋め込んだ完成文
+        // なので _wmCareerInjuryDetail で言語別に引き直す。他type(生成経歴の title_win等)
+        // は本バッチの対象外(§38-9の「怪我名」に限定)のため従来どおり非ラップ
+        const isInjuryEv = ev.type === 'injury' || ev.type === 'injury_retirement';
         milestones.push({
           season: rel(ev.season || 1), week: ev.week || 0,
           type: ev.type === 'injury_retirement' ? 'injury' : (ev.type || 'note'),
-          text: ev.detail || ev.type,
+          text: isInjuryEv ? _wmCareerInjuryDetail(dict, ev.detail) : (ev.detail || ev.type),
           detail: ev.type === 'injury_retirement' ? _t(T.injuryRetire) : undefined
         });
       }
@@ -15180,7 +15188,10 @@ const Engine = {
               if (gain > 0) { nc[stat] += gain; nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain; _mD[stat] = gain; }
             });
             if (nc.growthLog && !nc.isRental) {
-              const _me = { season: s.season, week: s.week, type: 'match', detail: `タッグ(${partnerName}) vs ${oppNames}`, result: _mRes };
+              // i18n P7-28: 完成文detailは不変(セーブ値不変)。表示点が言語別に組み直せるよう
+              // 充填前テンプレ+充填値を追加フィールドで併記する(§14-3と同型)
+              const _me = { season: s.season, week: s.week, type: 'match', detail: `タッグ(${partnerName}) vs ${oppNames}`, result: _mRes,
+                detailTpl: 'タッグ({partner}) vs {opps}', detailVars: { partner: partnerName, opps: oppNames } };
               if (Object.keys(_mD).length > 0) _me.deltas = _mD;
               nc.growthLog = [...nc.growthLog, _me];
             }
@@ -15246,7 +15257,9 @@ const Engine = {
             }
           });
           if (nc.growthLog && !nc.isRental) {
-            const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes };
+            // i18n P7-28: §14-3と同型の追加フィールド(detail自体はセーブ値不変)
+            const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes,
+              detailTpl: 'vs {name}', detailVars: { name: _mOpp } };
             if (Object.keys(_mD).length > 0) _me.deltas = _mD;
             nc.growthLog = [...nc.growthLog, _me];
           }
@@ -19921,10 +19934,13 @@ Engine.mvpRace = {
   /** 特性 + 年齢 を自然な日本語句に整える（「○○を抱える○歳」/「○○の○歳」など） */
   _traitPhrase(traits, age, dict) {
     if (!Array.isArray(traits) || traits.length === 0) return '';
-    const order = ['早熟', '晩成', '反骨心', '不屈', '鉄人', '天才肌', '心技体', '影の支配者',
+    // i18n P7-28掃除: '天才肌'/'心技体'/'影の支配者'/'ガラスの心臓'/'燃えやすい' は TRAIT_DEFS に
+    // 存在しない旧特性名(死参照)。traitsは実在の fighter.traits のみを持つため常にfalseの
+    // 到達不能項目だった。削除で挙動不変(docs/i18n-coverage-report-v0.1.md B分類)
+    const order = ['早熟', '晩成', '反骨心', '不屈', '鉄人',
                    'リーダー気質', 'ムードメーカー', '忠誠心', '人望', '威圧感', '野心', '破天荒',
                    '努力家', '闘志', '負けず嫌い', '頑丈さ', '華', '番狂わせ体質', '適応力',
-                   '引き出し上手', 'ヒール適性', 'ファンサービス', 'ガラスの心臓', 'ガラスの身体', '燃えやすい'];
+                   '引き出し上手', 'ヒール適性', 'ファンサービス', 'ガラスの身体'];
     let pick = null;
     for (const t of order) if (traits.includes(t)) { pick = t; break; }
     if (!pick) pick = traits[0];
@@ -30672,6 +30688,30 @@ function _wmDictLabel(dict, jaLabel) {
 // _wmResolvePreformattedIndustryData と Engine.chronicle._beltLabel の両方から使う。
 function _wmTitleName(dict, orgName) {
   return _wmFillWithDict(dict, '{orgName}王座', { orgName });
+}
+
+// i18n Stage B P7-28: careerHistory[].detail(怪我名を含む完成文)を表示点で言語別に
+// 引き直す。保存値は3種類の定型文のいずれかで、内部キーではなくJA表示ラベル/フレーバー語が
+// 埋め込み済み(push側=Engineはdictを持たないため。§8の「生キー+render時点再構築」が使えない
+// のは、生キー自体を後から追加できない=旧セーブとの互換を保つ必要があるため)。
+// 正規表現でラベル部分を抜き出し、逆引き表(data.js INJURY_LABEL_REVERSE/BACKSTORY_INJURY_LABELS)
+// で復元してから injuryLabel/_wmDictLabel で引き直す。抜き出せない(=未知の文型・想定外の値)
+// 場合はfail-open(保存値のまま)。dict未指定時は各ヘルパーがJA原文を返すため1バイト不変。
+function _wmCareerInjuryDetail(dict, detail) {
+  if (!detail || typeof detail !== 'string') return detail;
+  let m = detail.match(/^(.+)（(\d+)週離脱）$/);
+  if (m && INJURY_LABEL_REVERSE[m[1]]) {
+    return _wmFillWithDict(dict, '{label}（{n}週離脱）', { label: injuryLabel(INJURY_LABEL_REVERSE[m[1]], dict), n: m[2] });
+  }
+  m = detail.match(/^(.+)により引退$/);
+  if (m && INJURY_LABEL_REVERSE[m[1]]) {
+    return _wmFillWithDict(dict, '{label}により引退', { label: injuryLabel(INJURY_LABEL_REVERSE[m[1]], dict) });
+  }
+  m = detail.match(/^(.+)で長期欠場$/);
+  if (m && BACKSTORY_INJURY_LABELS.includes(m[1])) {
+    return _wmFillWithDict(dict, '{label}で長期欠場', { label: _wmDictLabel(dict, m[1]) });
+  }
+  return detail;
 }
 
 // ── i18n Stage B P6-16: 4団体勝ち残り対抗戦の結果ニュース(specs §8 生キー+render時点再構築) ──

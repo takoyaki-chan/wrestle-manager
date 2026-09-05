@@ -3265,7 +3265,9 @@ const Storage = {
               peakPopularitySeason
             },
             traits: (h.traits || []).filter(t =>
-              ['華','ファンサービス','人望','ムードメーカー','熱血','名勝負製造機','ガラスのハート'].includes(t)
+              // i18n P7-28掃除: '熱血'/'ガラスのハート' は TRAIT_DEFS に存在しない旧特性名(死参照。
+              // 削除で挙動不変。management.js:5181の同型kept配列と対)
+              ['華','ファンサービス','人望','ムードメーカー','名勝負製造機'].includes(t)
             ),
             retiredSeason: end
           };
@@ -3304,7 +3306,9 @@ const Storage = {
               peakPopularitySeason
             },
             traits: (f.traits || []).filter(t =>
-              ['華','ファンサービス','人望','ムードメーカー','熱血','名勝負製造機','ガラスのハート'].includes(t)
+              // i18n P7-28掃除: '熱血'/'ガラスのハート' は TRAIT_DEFS に存在しない旧特性名(死参照。
+              // 削除で挙動不変。management.js:5181の同型kept配列と対)
+              ['華','ファンサービス','人望','ムードメーカー','名勝負製造機'].includes(t)
             ),
             retiredSeason: end
           };
@@ -8712,7 +8716,8 @@ const App = {
           const partnerId = isTeamA ? (charId === m.teamA.fighter1 ? m.teamA.fighter2 : m.teamA.fighter1) : (charId === m.teamB.fighter1 ? m.teamB.fighter2 : m.teamB.fighter1);
           const partnerName = (roster.find(c => c.id === partnerId) || {}).name || '?';
           const oppNames = oppIds.map(id => (roster.find(c => c.id === id) || {}).name || '?').join('&');
-          return { charId, won: winTeamIds.includes(charId), oppOvr, oppLabel: `w/${partnerName} vs ${oppNames}` };
+          return { charId, won: winTeamIds.includes(charId), oppOvr, oppLabel: `w/${partnerName} vs ${oppNames}`,
+            tagPartner: partnerName, tagOpps: oppNames };
         });
       } else {
         growthEntries = [
@@ -8720,7 +8725,7 @@ const App = {
           { charId: r.right.id, won: r.winner === 'right', oppOvr: null, oppLabel: null },
         ];
       }
-      growthEntries.forEach(({ charId, won, oppOvr: preOppOvr, oppLabel }) => {
+      growthEntries.forEach(({ charId, won, oppOvr: preOppOvr, oppLabel, tagPartner, tagOpps }) => {
         const fighter = roster.find(c => c.id === charId);
         if (!fighter || fighter.isIntrusion) return;
         let oppOvr;
@@ -8773,7 +8778,11 @@ const App = {
             }
           });
           if (nc.growthLog && !nc.isRental) {
+            // i18n P7-28: §14-3と同型の追加フィールド(detail自体はセーブ値不変)。
+            // タッグはoppLabel(w/{partner} vs {opps})経由なのでtagPartner/tagOppsから組む
             const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes };
+            if (oppLabel) { _me.detailTpl = 'vs w/{partner} vs {opps}'; _me.detailVars = { partner: tagPartner, opps: tagOpps }; }
+            else { _me.detailTpl = 'vs {name}'; _me.detailVars = { name: _mOpp }; }
             if (Object.keys(_mD).length > 0) _me.deltas = _mD;
             nc.growthLog = [...nc.growthLog, _me];
           }
@@ -10603,8 +10612,10 @@ const App = {
             seasonGrowth: { ...(fighter.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 }), [stat]: (fighter.seasonGrowth?.[stat] || 0) + actualGain },
           };
           if (actualGain > 0 && fighter.growthLog && !fighter.isRental) {
+            // i18n P7-28: §14-3と同型の追加フィールド(detail自体はセーブ値不変)
             fighter.growthLog = [...fighter.growthLog, {
               season: G.season, week: G.week, type: 'match', detail: `敵地遠征 vs ${entry.opponent.name}`,
+              detailTpl: '敵地遠征 vs {name}', detailVars: { name: entry.opponent.name },
               opponent: entry.opponent.name, result: r.winner === 'draw' ? 'draw' : entry.won ? 'win' : 'lose', deltas: { [stat]: actualGain },
             }];
           }
@@ -11888,16 +11899,27 @@ const App = {
       if (msF) {
         const msLine = pickDialogueLine(MILESTONE_LINES[pendingMilestone.linePool], msF);
         const STAT_JA = { pw: 'パワー', sp: 'スピード', te: 'テクニック', st: 'スタミナ', mn: 'メンタル' };
-        let msLabel;
-        if (pendingMilestone.type === 'ovr') msLabel = `総合力${pendingMilestone.value}到達`;
-        else if (pendingMilestone.type === 'pop') msLabel = `人気${pendingMilestone.value}到達`;
-        else msLabel = `${STAT_JA[pendingMilestone.stat] || pendingMilestone.stat}が限界に到達`;
+        let msLabel, msDetailTpl, msDetailVars;
+        if (pendingMilestone.type === 'ovr') {
+          msLabel = `総合力${pendingMilestone.value}到達`;
+          msDetailTpl = '総合力{n}到達'; msDetailVars = { n: pendingMilestone.value };
+        } else if (pendingMilestone.type === 'pop') {
+          msLabel = `人気${pendingMilestone.value}到達`;
+          msDetailTpl = '人気{n}到達'; msDetailVars = { n: pendingMilestone.value };
+        } else {
+          const _statJa = STAT_JA[pendingMilestone.stat] || pendingMilestone.stat;
+          msLabel = `${_statJa}が限界に到達`;
+          msDetailTpl = '{stat}が限界に到達'; msDetailVars = { stat: _statJa };
+        }
         // growthLogにマイルストーン記録
+        // i18n P7-28: §14-3と同型の追加フィールド(detail自体はセーブ値不変)。{stat}はSTAT_JA由来の
+        // UIラベル値なので、表示点で他のt()呼び出しと同型に先に辞書を引き直す(§14-2と同趣旨)
         const msRoster = G.roster.map(c => {
           if (c.id !== msF.id) return c;
           return { ...c, growthLog: [...(c.growthLog || []), {
             season: G.season, week: G.week,
             type: 'milestone', detail: msLabel,
+            detailTpl: msDetailTpl, detailVars: msDetailVars,
           }] };
         });
         G = { ...G, roster: msRoster };

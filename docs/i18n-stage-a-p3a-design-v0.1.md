@@ -57,7 +57,8 @@
 - ✅根治: 抽出器detectCellFromPathがdocId名の語尾(_seal_quiet等)を性格キーとして誤検出(P5-2hで発見・8行は手修正済み)。**2026-09-04、軸判定を「兄弟キー集合が丸ごとarchetype/personality語彙に一致するノードのみを軸とみなす」方式(`classifyAxisKey`+`resolveCell`)へ再設計して根治**。実データ全288トップレベルテーブルの全ノードを機械分類し、修正が影響する差分が台帳16,544キー中まさにP5-2hの手修正8行のみ(他の意図しない変化ゼロ)であることを確認済み(詳細はworklog)
 - CAREの同一原文4件がセル違い共有(P5-2f引退2組と同族・JA書き分け裁定待ち)
 - **`SNAPSHOT_TEXTS.breakthrough.scene` 1行が死蔵(P7-2で発見・P6-17で記録)** — `Engine.snapshot._collectCandidates` がブレイクスルーを常に `type:'embedded'` で積むため `voice` しか読まれず、`scene` 行に到達する経路が無い。訳出は済んでいる。**復活(=sceneを読む経路を作る)or 削除の裁定待ち**(既存の死プール群と同じ扱い)
-- **`RIVAL_ORGS.desc` 3文が死コード(P7-1で発見・P6-17で記録)** — ランキング画面の団体一言紹介文。変数 `deck` へ代入されるだけで一度も描画されない(P6-13の`_buildAceCopy`/`_buildLeadSentences`刷新で旧経路が置き換えられ、変数だけが取り残されたと推定)。台帳化・翻訳とも未実施。**`deck` 変数ごと削除する or 活かして訳出する の裁定待ち**
+- **✅解決(P7-28)** — **`RIVAL_ORGS.desc` 3文が死コード(P7-1で発見・P6-17で記録)** — ランキング画面の団体一言紹介文。変数 `deck` へ代入されるだけで一度も描画されない(P6-13の`_buildAceCopy`/`_buildLeadSentences`刷新で旧経路が置き換えられ、変数だけが取り残されたと推定)。→ `deck` 変数(ui-render.js ランキング画面)を削除。`RIVAL_ORGS.desc` 自体は新聞の団体比較号(P7-11でテンプレ化済み)で現役利用中のためデータ側は不触。JA出力不変
+- **`ns.log`(ドラフト交渉ログ)がどこにも描画されない(P7-28で発見)** — `Engine.draftNegotiation.stepRound`(draft-negotiation.js:468/492)が `R{n}: プレイヤー降り ({bid}万)` 等をpushし、ui-common.js:6739の`draftPlayerAction`(降りるアクション)も直接 `ns.log.push(...)` する。しかし `G._draftNegotiation.negState.log` を読む箇所が src/test に1つも無い(交渉画面 `_renderDraftNegotiation` は `.round`/`.currentBid`/`.winner` 等のみ参照)。台帳化・翻訳とも未実施。**削除はしない**(消費点ゼロと確認済みだが、将来ログパネルとして描画する可能性もあるため)。**描画するなら要配線 の裁定待ち**
 - **選択イベントS2/S6/E4型が生成経路なしで死蔵(P5-2gで発見・Keisuke裁定待ち)** — generateChoiceEventが3型を返さず、セリフ104行(訳済み)とUI側のtypeLabelが未使用。復活or削除の裁定が要る
 - JA原文の「状況に噛み合わない汎用フィラー」30本(P5-2gで発見) — seductive×emotional「……っ……」同型22本(うち8本は社長の問いへの返事の形)+polite×shy同型8本。日本語側の書き直し候補
 - app.js:13128の直書きフォールバック'…精一杯やります'が台帳外(現状不発・発火すればENでJAのまま)

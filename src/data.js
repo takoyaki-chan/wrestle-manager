@@ -3895,6 +3895,20 @@ function injuryLabelShort(type, dict) {
   return (typeof dict === 'function') ? dict(label) : label;
 }
 
+// i18n Stage B P7-28: careerHistory[].detail は「injuryLabel(type)の結果(内部キーではなく
+// JA表示ラベル)を埋め込んだ完成文」がそのままセーブへ永続する(management.jsのEngineは
+// WM_I18Nを直接呼べないため、push時点でdict無しのinjuryLabelを通した値しか持てない)。
+// 表示点でラベル部分を逆引きしてtypeを復元し、injuryLabel(type, dict)へ通し直すための
+// 逆引き表(ラベル→内部キー)。値は全て相異なるため一意に引ける。
+const INJURY_LABEL_REVERSE = {};
+Object.keys(INJURY_LABEL).forEach((k) => { INJURY_LABEL_REVERSE[INJURY_LABEL[k]] = k; });
+
+// Engine.career.generateBackstory(management.js)専用の怪我フレーバー語。実在の怪我システム
+// (INJURY_LABEL/INJURY_TABLE)とは別語彙で、NPCの疑似経歴(careerHistory)にのみ使う
+// 「長期離脱の理由」の見た目上の名前。表示点(_wmCareerInjuryDetail)からも参照するため
+// data.js側に1本だけ置く(generateBackstoryのローカル配列はこの定数を使う)。
+const BACKSTORY_INJURY_LABELS = ['膝の負傷', '肩の負傷', '腰の負傷', '首の負傷', '足首の負傷'];
+
 // i18n Stage A P3a: シーズン総括見出し(金銘板)の表示ラベル。
 // キーはEngine.seasonReview._decideHeadline(management.js)が返すロジックキーと同一
 // (戴冠/世代交代/飛躍/雌伏/地固め/試練/船出)。JA時はキーと同値だが、Stage Bで
