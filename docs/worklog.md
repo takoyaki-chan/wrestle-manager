@@ -1,5 +1,14 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-05 チップ(別セッション)結果の回収 — 7ブランチを仕分けて3件取り込み・3件廃棄・1件記録のみ
+
+- **経緯**: Keisuke が別セッションで起動したチップ7本(`claude/<name>` ブランチ)は、Keisuke 側では確認も報告もしない前提(同日指示)。Fable が diff を見て仕分けた。
+- **取り込み**: `determined-mclaren`(27697b43 マージ)= 旧セーブに焼かれた特性名の文字化け(U+FFFD)をロード時にマスタ/TRAIT_DEFS と突合して一意なら修復する `Engine.saveDoctor._normTraits` + `test/trait-mojibake-repair-test.js`(npm test 263)/ `exciting-cannon` の `test/chronicle-narrative-parts-i18n-test.js`(P7-27 の再発防止テストのみ採用、修正本体は P7-27 と同一)/ `elastic-rubin` の加入モーダル見出し `fighter.name` の pn() 1行(b345a82d。年齢・契約金の行は main で配線済みだった)。
+- **廃棄(main で解決済みの重複)**: `great-pasteur`(裸「万」3件=既に配線済み)/ `cranky-mccarthy`(新聞4面の pn()=P7-35 と同一)/ `sharp-bartik`(旧特性名の到達不能分岐=P7-28 が10件で包含)。ブランチは削除、worktree フォルダはセッション側のロックで消せず残置(無害)。
+- **記録のみ**: `charming-murdock`(09-04 の EN 走破 D3「condition」追跡の worklog 記事)を union マージ。
+- **検証**: ja-golden 完全一致 / npm test 263 / auto-sim 20季 ALL CLEAR(指紋 e96444c1)/ trait-mojibake-repair-test PASS。
+- **走破 digest について**: P7-28 マージ後の ja 走破が 333手→再実行 327手で毎回 digest が変わる。同時にエージェント5本分(16プロセス)の走破が並行しており既知の並行 flake の型。**単独確認は第3波の完了後に1本回す**(基準 1052faa82eaf7991 の据え置き/取り直しはその結果で決める)。
+
 ## 🌐 英語対応 P7-39 — 旧セーブの新聞4面(年間MVPレース)をENのときだけ現行プールで再生成(Keisuke裁定B-3=③、2026-09-05)
 
 ### 1. 背景
