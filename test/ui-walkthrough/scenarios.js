@@ -211,6 +211,82 @@ const chronicleStop = (index, required) => ({
   ...(required === false ? { required: false } : {}),
 });
 
+// ── R13(P7-34): 新聞4面(年間MVPレース)の画面ツアー ──
+// 4面はナビ巡回にも自然走破にも出てこない「自由閲覧画面(新聞)のさらに奥」——1面の
+// 目次「MVPレース詳細 ▶」/MVP小窓「詳細 ▶」のどちらかを踏まないと出ない一覧・
+// カードUIで、`_npFeatureOn` のような外側ゲートも無いため通常のnav巡回では素通りする。
+// P7-23(`_npMvpI18n`の自己検証型fail-open)は実UIで一度も検査されていなかった
+// (docs/worklog.md P7-23エントリの発見事項)ため、tourで強制到達させる。
+//
+// 1停車目(新聞を開く)の probe で `_npMvpI18n` を計測用ラッパーへ差し替える
+// (window.__mvpFallback に理由付きで記録)。差し替えても分岐ロジックは完全に同じなので
+// 表示内容には影響しない(=JA出力は不変)。2停車目(4面を開く)で実際にラップされた
+// 関数が呼ばれ、フォールバック有無が記録される。
+const MVP_INSTRUMENT_PROBE = `(() => {
+  if (window.__mvpFallback) return { alreadyPatched: true };
+  window.__mvpFallback = [];
+  const orig = window._npMvpI18n;
+  if (typeof orig !== 'function') return { patched: false, reason: '_npMvpI18n が見つからない' };
+  window._npMvpI18n = function(saved, regen) {
+    if (!saved || typeof saved !== 'string') return saved || '';
+    if (typeof Engine === 'undefined' || !Engine.mvpRace) {
+      window.__mvpFallback.push({ reason: 'no-engine', saved: saved.slice(0, 40) });
+      return saved;
+    }
+    try {
+      const bare = regen();
+      if (bare !== saved) {
+        window.__mvpFallback.push({ reason: 'regen-mismatch', saved: saved.slice(0, 40) });
+        return saved;
+      }
+      const out = regen(window.WM_I18N.t);
+      if (typeof out !== 'string' || !out) {
+        window.__mvpFallback.push({ reason: 'empty-dict-result', saved: saved.slice(0, 40) });
+        return saved;
+      }
+      return out;
+    } catch (e) {
+      window.__mvpFallback.push({ reason: 'exception:' + String(e), saved: saved.slice(0, 40) });
+      return saved;
+    }
+  };
+  return { patched: true };
+})()`;
+
+// `#newspaperContent` の中身だけを読み出すprobe(CHRONICLE_PROBEの `.chron-wrap` 限定と同じ
+// 思想 — 1面時点の残存要素やナビchromeを巻き込まない)。4面到達後にだけ使う
+const MVPRACE_PROBE = `(() => {
+  const root = document.getElementById('newspaperContent');
+  if (!root) return { present: false };
+  const norm = el => (el.textContent || '').replace(/\\s+/g, ' ').trim();
+  const q = sel => Array.from(root.querySelectorAll(sel)).map(norm).filter(Boolean);
+  const jaPattern = /[\\u3040-\\u30FF\\u3400-\\u9FFF\\uF900-\\uFAFF]/;
+  const visible = el => {
+    const style = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    return style.display !== 'none' && style.visibility !== 'hidden'
+      && Number(style.opacity) !== 0 && rect.width > 0 && rect.height > 0;
+  };
+  const jaLeaves = Array.from(root.querySelectorAll('*'))
+    .filter(el => el.children.length === 0 && visible(el) && jaPattern.test(el.textContent || ''))
+    .map(el => ({
+      selector: el.id ? ('#' + el.id) : (el.tagName.toLowerCase() + '.' + String(el.className || '').trim().split(/\\s+/).slice(0, 2).join('.')),
+      text: norm(el).slice(0, 60),
+    }));
+  return {
+    present: !!root.querySelector('.np-mvprace-list'),
+    headline: q('.np-page-headline')[0] || '',
+    lead: q('.np-page-lead')[0] || '',
+    kuroda: q('.np-kuroda-text')[0] || '',
+    rank1Narrative: q('.np-mvprace-narrative')[0] || '',
+    minorNarratives: q('.np-mvprace-minor-narrative'),
+    listFlavors: q('.np-mvprace-list-flavor'),
+    listRowCount: root.querySelectorAll('.np-mvprace-list-row--rich').length,
+    rank1Name: q('.np-mvprace-name')[0] || '',
+    jaLeaves,
+  };
+})()`;
+
 module.exports = {
   chronicle: {
     description: '年代記/序章の点火: 十数季進めたセーブ(序章=進行中+確定章6本)から、実UIでデータベース→年代記タブ→序章/各章/再構築を巡回し、章題・副題・ハイライト・章末・エース/同期カード・外敵・通算タイルの表示を検査する(ENでは日本語残り0をゲートにする)',
@@ -317,6 +393,88 @@ module.exports = {
       if (probe.prologueHighlights < 2) fails.push(`序章ハイライトが${probe.prologueHighlights}件(実UIの発火が起きていない)`);
       if (probe.prologueParted !== probe.prologueHighlights) {
         fails.push(`textParts を持たない序章ハイライトがある (${probe.prologueParted}/${probe.prologueHighlights})`);
+      }
+      return fails;
+    },
+  },
+
+  'newspaper-mvprace': {
+    description: '新聞4面(年間MVPレース)の点火: S1W3の平常セーブから実UIで新聞→1面の「MVPレース詳細 ▶」→4面へ到達し、見出し/リード/黒田寸評/TOP3寸評/4位以下一覧の表示と、_npMvpI18n(P7-23)の再生成一致(フォールバック0)・EN時のJA露出ゼロを検査する',
+    fixture: {
+      seed: 42,
+      // mvpRace は「通常週確定の毎週末」に再集計される(week1終了時点で初めて埋まる)ので、
+      // 週の頭で止めるfixtureはW2以降でないと空になる。4位以下の一覧行(rankings.length>3)も
+      // 検査したいので、参加者数が安定するW3まで進める(engineer不要 — 通常進行で足りる)
+      until: G => G.season === 1 && G.week === 3 && !G.offSeason,
+      engineer: null,
+      assert: G => {
+        const fails = [];
+        const rankings = (G.mvpRace && G.mvpRace.rankings) || [];
+        if (rankings.length < 4) fails.push(`mvpRace.rankings が${rankings.length}件(4件以上必要 — 4位以下の一覧行を検査するため)`);
+        if (!G.weeklyNewspaper || G.weeklyNewspaper.layout !== 'v3') fails.push('weeklyNewspaper.layout が v3 でない(旧レイアウトは4面リンクを持たない)');
+        return fails;
+      },
+    },
+    // 材料はfixture停止時点で既に揃っている(週を跨ぐ必要が無い)ので歩数はほぼ使わない —
+    // untilを「状態が読めた最初の一手」に置き、画面ツアーへ即座に進む
+    walk: { seasons: 1, maxSteps: 5 },
+    until: s => !!(s.state),
+    ignition: [
+      // 4面固有のマーカーではない(新聞は自然nav巡回でも開くため)。中身の不発検出は
+      // tourAssert が担う — chronicleと同じ役割分担
+      { name: 'newspaper-screen', required: true, match: s => s.activeScreen === 'screen-newspaper' },
+    ],
+    tour: {
+      steps: [
+        {
+          label: '新聞を開く',
+          selector: `.nav-btn[onclick^="showScreen('newspaper'"]`,
+          expectScreen: 'screen-newspaper',
+          probe: MVP_INSTRUMENT_PROBE,
+        },
+        {
+          label: '4面 MVPレース詳細',
+          selector: `[onclick*="setNewspaperSubPage(4)"]`,
+          expectScreen: 'screen-newspaper',
+          probe: MVPRACE_PROBE,
+        },
+      ],
+    },
+    tourAssert: (probes, lang) => {
+      const fails = [];
+      const instrument = probes['新聞を開く'];
+      if (!instrument || instrument.probeError) fails.push(`計測フックの設置に失敗: ${instrument && instrument.probeError}`);
+      else if (instrument.patched === false) fails.push(`_npMvpI18n の計測フックを仕込めなかった: ${instrument.reason}`);
+      const p = probes['4面 MVPレース詳細'];
+      if (!p || p.probeError) { fails.push(`4面: probe失敗 ${p && p.probeError}`); return fails; }
+      if (!p.present) { fails.push('4面: .np-mvprace-list が描画されていない(不発)'); return fails; }
+      if (!p.headline) fails.push('4面: 見出し(.np-page-headline)が空');
+      if (!p.lead) fails.push('4面: リード(.np-page-lead)が空');
+      if (!p.kuroda) fails.push('4面: 黒田寸評(.np-kuroda-text)が空');
+      if (!p.rank1Name) fails.push('4面: 1位選手名(.np-mvprace-name)が空');
+      if (!p.rank1Narrative) fails.push('4面: 1位の寸評(.np-mvprace-narrative)が空');
+      if (!p.minorNarratives || p.minorNarratives.length < 2) {
+        fails.push(`4面: 2・3位の寸評(.np-mvprace-minor-narrative)が${p.minorNarratives ? p.minorNarratives.length : 0}件(2件必要)`);
+      }
+      if (!p.listRowCount || p.listRowCount < 1) fails.push('4位以下の一覧行(.np-mvprace-list-row--rich)が1件も無い');
+      if (lang === 'en' && p.jaLeaves && p.jaLeaves.length > 0) {
+        const head = p.jaLeaves.slice(0, 10).map(x => `${x.selector}:"${x.text}"`).join(' / ');
+        fails.push(`4面: ENなのに日本語が${p.jaLeaves.length}件残っている — ${head}`);
+      }
+      return fails;
+    },
+    // window.__mvpFallback は MVP_INSTRUMENT_PROBE が仕込んだ計測器。フォールバックは
+    // 「保存値≠再生成」(§18-1)の発生件数 — 新品fixtureでは0が期待(タスク仕様どおり)
+    finalProbe: `(() => ({
+      mvpFallback: (typeof window !== 'undefined' && window.__mvpFallback) ? window.__mvpFallback : null,
+    }))()`,
+    finalAssert: probe => {
+      const fails = [];
+      if (!probe || probe.mvpFallback == null) {
+        fails.push('計測器(window.__mvpFallback)が見つからない — MVP_INSTRUMENT_PROBEが刺さっていない');
+      } else if (probe.mvpFallback.length > 0) {
+        const head = probe.mvpFallback.slice(0, 5).map(x => `${x.reason}:"${x.saved}"`).join(' / ');
+        fails.push(`_npMvpI18n のフォールバックが${probe.mvpFallback.length}件発生(新品fixtureでは0が期待) — ${head}`);
       }
       return fails;
     },

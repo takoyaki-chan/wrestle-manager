@@ -80,6 +80,8 @@ npm run test:ui:ignite -- --scenario tenchosen
 npm run test:ui:ignite -- --scenario gameover
 npm run test:ui:ignite -- --scenario chronicle
 npm run test:ui:ignite -- --scenario chronicle --lang en   # ENモードでも点火できる
+npm run test:ui:ignite -- --scenario newspaper-mvprace
+npm run test:ui:ignite -- --scenario newspaper-mvprace --lang en
 npm run test:ui:ignite -- --scenario tenchosen --regen   # fixtureを作り直す
 ```
 
@@ -111,6 +113,10 @@ npm run test:ui:ignite -- --scenario chronicle --lang en
 `chronicle` シナリオは **S18・序章=進行中・確定章3本**のセーブから、序章(記者の見立て/ハイライト/書きかけの章末)・各章(章題/副題/エース/同期/外敵/通算タイル/章末)・「年代記を再構築」ボタンを一巡します。**年代記まわりのコード(`Engine.chronicle` / `Engine.prologue` / `_renderPrologueBlock` / `_renderDbChronicle`)を触ったら JA と `--lang en` の2本**を回してください。
 
 **(解消済み・P7-27)** `chronicle --lang en` はかつて `IGNITION_MISFIRE` でした。原因は `Engine.chronicle._buildPeerNarrativeParts`(`src/management.js`)が `styleJa`(`AXIS_LABELS` = `打撃`/`組技`/`関節技`/`喧嘩`/`万能`)を **buildChapters 側(dict無し=JA固定)で先に辞書解決してしまい**、`narrativeParts.opening` パーツに `L` マーカーを付けずに保存していたこと。表示時(`ui-render.js` の `_chronicleNarrative` → `narrativeText(…, WM_I18N.t)`)は `L` が無い値を再解決しないため、キャッシュに焼き込まれたJAの軸ラベルがENテンプレへそのまま素通りしていた。修正で `styleJa`/`org`(既定ラベルにフォールバックした場合のみ)を生JAのまま保持し `openingPart.L` に載せ、表示時に再解決するようにした(`_generateClosingParts` の `axis`/`org` と同じ流儀)。JA完成文は1バイト不変(`node test/ja-golden.js` 一致)。
+
+`newspaper-mvprace`(2026-09-05 P7-34で追加)は新聞4面(年間MVPレース)の点火です。4面は `_npFeatureOn` のようなゲートも無いのにナビ巡回にも自然走破にも出てこない画面で(1面の目次「MVPレース詳細 ▶」/MVP小窓「詳細 ▶」のどちらかを踏まないと開かない)、`tour`は「新聞を開く」→「4面へ進む」の2停車点だけの短いものです。1停車目の `probe` で `window._npMvpI18n`(P7-23が実装した「JAで再生成→保存値とバイト一致したときだけEN版を出す」自己検証フォールバック、§18-1)を計測用ラッパーに差し替え(分岐ロジックは変えないのでJA出力への影響はゼロ)、2停車目で実際に評価された `_npMvpI18n` 呼び出しがフォールバックした件数と理由を `window.__mvpFallback` に集めます。`tourAssert` は見出し/リード/黒田寸評/TOP3寸評/4位以下一覧の非空と(ENのみ)`#newspaperContent` 内のJA露出0を検査し、`finalAssert` がフォールバック件数(新品fixtureでは0が期待)を検査します。
+
+**現状(2026-09-05時点): JA PASS / EN FAIL(既知の未修正バグ)**。`--lang en` で実行すると `#newspaperContent` 内に18件のJA露出が出ます — 内訳は `_npMvpRaceRank1Card`/`_npMvpRaceMinorCard`/`_npMvpRaceListRow`(いずれも `src/ui-render.js`)が選手名(`entry.fighterName`)・団体名(`entry.orgName`)を表示する箇所で、この2ファイル内の他の全箇所(`WM_I18N.pn(name)` / `WM_I18N.pn(orgName)`)と違って `WM_I18N.pn()` を通していないこと、および黒田コラムの署名(`WM_I18N.t('— 編集長 {name}', { name: '黒田 貫一郎' })`)が名前をハードコードで埋め込んでいて `pn()` を通していないことの2種類です。`window.__mvpFallback` は毎回 `[]`(0件)で、P7-23が担当した見出し/リード/寸評/黒田コメントの再生成方式そのものは正常に機能しています(=EN失敗はP7-23の範囲ではなく、それ以前から存在した固有名詞の未配線)。このignite追加のスコープは検証ハーネスの新設であり `src/` の修正は別タスクへ切り出しました(フォローアップをspawn_task経由でチケット化済み)。修正後はこのシナリオが自動的にEN PASSへ切り替わります。
 
 検出器だけを既知バグ入りサンドボックスで確認するには次を実行します。
 
