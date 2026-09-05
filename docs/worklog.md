@@ -1,5 +1,129 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-25 — 台帳未収載の中小プール5件(キャリア年表/殿堂ハイライト/成長ログ/ドラフト交渉/季総括)(2026-09-05)
+
+`docs/i18n-coverage-report-v0.1.md`(P7-20の全数棚卸し)のA表のうち、並行バッチ(P7-21 CUTIN_LINES / P7-23 mvpRace / P7-24 ヘルプ)が担当する3件を除く**残り全件**を配線・英訳した。着手前に worktree を main 先端(8f379e61、P7-18/P7-19 まで)へ fast-forward 済み。
+
+### 0. 対象と、開けてみて分かったこと
+
+| # | プール | 場所 | 結果 |
+|---|---|---|---|
+| 4 | キャリア年表(`Engine.milestone.get`) | management.js:6975-7196 | ✅ 86キー |
+| 5 | 殿堂入りキャリアハイライト(`Engine.awards.buildCareerHighlights`) | management.js:21021-21139 | ✅ 22キー |
+| 6 | 成長ログの行動ラベル | management.js tickWeek 3箇所 | ✅ 14キー |
+| 7 | ドラフト交渉フレーバー(`NARRATION`/`getHeatInfo`/UI2文) | draft-negotiation.js | ✅ 47キー |
+| 9 | 季総括の退団者note+仮文 | management.js:21790-22080 | ✅ 14キー |
+| 8 | 絆/因縁レベルラベル(`BOND_LABELS`/`RIVALRY_LABELS`) | relationships.js:14-28 | **⚠ A分類は誤り。配線せず** |
+
+**#8はレポートの誤分類だった。** `BOND_LABELS`/`RIVALRY_LABELS` の消費点は `Engine.relationships.inspect()` と `.stats()` の2つだけで、**その2関数の呼び出しが `src/`・`test/` に1箇所も無い**(定義位置も relationships.js の「デバッグ用ヘルパー」節)。相関図の絆/因縁バーは別系統のラベル(`_RM_TIP_*`・`hostileLabel` 等)を使っている。加えて `宿命のライバル` は GLIMPSE_B のイベントラベルとして ui-ledger に既訳("A fated nemesis")があり、帯域ラベルとして `t()` に通すと文脈違いの訳が出る(specs §15-3)。**B分類(表示されない)へ訂正**し、レポート側にも根拠付きで追記した。
+
+### 1. 配線 — 同じ「記録テキスト」でも永続の有無で解が3通りに割れる
+
+| プール | 完成文の行き先 | 採った方式 |
+|---|---|---|
+| キャリア年表 | **焼かれない**(表示のたびに`careerRecord.history`から組み直す) | `Engine.milestone.get(G, id, dict)` の**dict-opts**だけ(specs §22-1と同族)。表示点は ui-common.js の選手ポップアップ1箇所 |
+| 殿堂ハイライト | **焼かれる**(`G.allHallOfFame[].careerHighlights[].text`) | 保存点(`_buildHofEntry`・app.jsのマイグレーション)は**dictを渡さない**=セーブ値不変。表示点(`showHofDetail`)が**JAで再生成→保存値と行数+text 1バイト照合→一致したときだけ dict 版**(specs §18-1 の殿堂語り文と同型) |
+| 成長ログのラベル | **焼かれる**が値がそのまま辞書キー | data.js `GROWTH_LOG_LABELS` へ移設し、表示点(ui-render.js 成長経過タブ)で**値を`t()`で1回引く**(specs §17-2 の異名と同型)。`練習（{detail}）`は外側テンプレを訳した上で `{detail}` も引き直す |
+| ドラフト交渉ナレーション | **焼かれる**+選出が消費済み乱数依存で再生成不可 | **追加フィールド** `narrationTpl`/`narrationVars`(specs §14-3/§16-1と同型)。`pickNarrationParts()` を新設し `pickNarration()` はその `.text` を返す薄いラッパに(呼び出し契約不変)。UI側が直に置く2文(単独指名確認/見送り)も tpl を併記して表示点を一本道にした |
+| 季総括の仮文 | 焼かれない | 既存の `_line`(=dict)へ通すだけ。`_getDepartures(state, dict)` に dict を足した |
+
+**文プールはすべて data.js のトップレベル表へ移設**(specs §10-2「関数の中の配列は抽出器から永久に見えない」の解消): `CAREER_MILESTONE_TEMPLATES` / `HOF_HIGHLIGHT_TEMPLATES` / `GROWTH_LOG_LABELS` / `SEASON_REVIEW_FALLBACK_TEMPLATES`。連結様式は `ARTICLE_COMPOSE_TEMPLATES.dotJoin`(`{a}・{b}`)を追加(既存 `CHRONICLE_NARRATIVE_TEMPLATES.listDot` と同一キーなので台帳では1行に畳まれる)。
+
+### 2. 断片連結を「分岐ごとの完全文」へ展開した(構造規約3)
+
+`${orgPrefix}${viaJp}入団` のような連結は ENで語順が壊れるので、組み合わせを全部完全文に開いた。
+
+- 入団: 団体名の有無 × 経路4種 = **8本**
+- ドーム大会: タイトル/メイン × 勝利/敗北/出場 × 相手の有無 = **12本**
+- 対抗戦: 勝敗 × 相手名の有無 = **4本**
+- ジュニアTN: 結果6種を完全文で **6本**、春タッグ: 順位5種 **5本**
+- レンタル加入: 期数の有無 **2本**
+
+### 3. 「フォールバック語を`{org}`に差し込む」と英語で語が重複する(今回の主な発見)
+
+`{org} 獲得`(org=`ev.orgName || '団体王座'`)を `Won the {org} title` と訳すと、フォールバック時に **"Won the Promotion Championship title"**。`{org}{n}度防衛達成`(org=`'王座'`→"Title")に至っては **"Title title — defense No. {n}"** になる。
+
+→ **語が枠の名詞と衝突するフォールバックは、`_wmDictLabel` で値を差し込まず「分岐ごとの完全文」にする**(`titleWinNoOrg: '団体王座 獲得'` → "Won the promotion title" / `titleDefenseNoOrg: '王座{n}度防衛達成'` → "Title defense No. {n}")。JAの充填結果は1バイト同一。
+値として自然に収まる枠(`Moved to {org}` / `Released by {org}` など)は従来どおり `_wmDictLabel` を使う。
+
+### 4. 既訳 `他団体` = "Other promotions" を "Another promotion" へ訂正
+
+ui-ledger の13件の消費点を全数追ったところ、**すべてが `団体名 || t('他団体')` 形の「名前が取れないときの1団体」フォールバック**で、複数形が正しい箇所は1つも無かった(ui-common.js 11件・ui-render.js 2件)。specs §15-6-3(`該当選手`)と同じ手順で `en` を訂正した(キー分割は不要)。P7-25の新規訳文だけでなく既存13箇所の表示も同時に良くなる。
+
+### 5. 抽出器の入口を2つ増やした
+
+- `test/i18n-extract-templates.js`: `TARGET_TABLES` へ3表を追加。加えて **`DRAFT_NEGOTIATION_PROPS = ['NARRATION']`** を新設し、`extractAppObjectLiteral` の isolated eval(`MANAGEMENT_FLAVOR_PROPS` と同じ作法)で `Engine.draftNegotiation.NARRATION` 40本を切り出す。**draft-negotiation.js は `loadAsGlobal` に Engine 定義(management.js)を要するのでファイル読み込みは使えない**
+- `test/i18n-extract-ui.js`: `DATA_TABLES` へ `GROWTH_LOG_LABELS`、`JS_TABLES` へ `draft-negotiation.js` の `DRAFT_HEAT_LABELS` / `DRAFT_UI_NARRATION`。JS_TABLESは観戦iframe専用の仕組みではなく「トップレベル`const`をソースから切り出して孤立評価する」汎用モードなので、Engine依存のあるファイルでもそのまま使える
+
+### 6. 英訳(177キー)
+
+台帳: template-ledger 3,143→**3,303**(未訳0)/ ui-ledger 4,258→**4,275**(未訳0)/ dialogue-ledger 16,674 不触。
+
+代表対訳:
+
+| JA | EN |
+|---|---|
+| `{org} にドラフト入団` | `Drafted by {org}` |
+| `{name} を破ってチャンピオンに` | `Beat {name} for the belt` |
+| `{n}度防衛の末に陥落` | `Fell at the end of a {n}-defense reign`(規則24のハイフン限定用法) |
+| `{from}から {to} へレンタル加入（{n}期）` | `On a {n}-season loan from {from} to {to}` |
+| `引退（{age}歳）` | `Retired at {age}` |
+| `対抗戦 vs {org} 勝利（{name} 戦）` | `Interpromotional win over {org} (vs {name})` |
+| `ジュニアトーナメント 準決勝敗退` | `Junior Tournament — Out in the semi-finals`(既訳の badge 表記に揃えた) |
+| `{org}王座 {n}度目の戴冠` | `{org} Championship: reign No. {n}` |
+| `{award} 受賞` | `Won {award}`(賞名は `_wmDictLabel` で値として引く) |
+| `対抗戦通算{n}勝` | `Interpromotional wins: {n}`(既存の "Defenses: {n}" 様式に合わせ規則23を回避) |
+| `プロモ活動（キャンペーン最大効果）` | `Promo work (campaign at full effect)` |
+| `{ORG}、資金力を背景にじわじわ圧をかける` | `{ORG} leans on its money and turns the screw` |
+| `{ORG}、静かに席を立った。その背中に敗北の影はない` | `{ORG} rises quietly from the table. Nothing in that exit reads as defeat` |
+| `{n}年の現役に幕` | `Closed out a {n}-year career` |
+| `上位{above}との差は{gap}点。来季も、着実に積み上げたい。` | `{above} sits {gap} ahead. Another season of steady building, then.` |
+
+`ジュニアトーナメント 優勝` は ui-ledger(表彰カードのバッジ)に "Junior Tournament — Winner" の既訳があり `test/i18n-ledger-consistency-test.js` が食い違いを検出したので、**JT系6本すべてを badge 表記(`Junior Tournament — X`)へ揃えて**衝突を解消した。
+
+### 7. JA同一性の証明(5,418行・不一致0)
+
+`git archive HEAD` で**凍結コピーを丸ごと別ディレクトリへ展開**し、同一のダンプスクリプトを新旧両方の `src/` へ流して出力をバイト比較した(凍結コピーの取り違えが起きない)。
+
+- `Engine.milestone.get`: 全24 event種別 × 分岐フィールドの直積 = **3,311行**
+- `Engine.awards.buildCareerHighlights`: 全実績種別を単独/合成の両方で
+- `pickNarration` 6型 × 4団体 × rng 12本 / `getHeatInfo` 全帯域 / `GROWTH_LOG_LABELS` の値集合
+- `_getDepartures`(retiredFighters / archive / 年数不明の3経路)/ `_decideHeadline` 全枝(1,008通り)
+- 合計 **5,418行・diff 0**
+
+EN側は実物の `src/i18n.js` + 生成辞書3本を読み込んで `setLang('en')` し、同じ全分岐(4,374行)を再走 → **合成テストデータの団体名/選手名を除いた日本語残り0・i18n-miss 0**。
+
+### 8. 検証
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`(data.js / management.js / draft-negotiation.js / ui-common.js / ui-render.js / 抽出器2本) | ✅ 全OK |
+| `node test/ja-golden.js`(`--update`不使用) | ✅ **完全一致**(lines=11307・hash `dd2e536bc18a4433…`) |
+| build-dict 3本 | ✅ ui **4,275** / template **3,303** / dialogue 16,674 — **すべて未訳0**(規則23/25・黒田禁止語・PH集合一致も違反0) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー16件・すべて訳文一致 |
+| `npm test` | ✅ **261/261 PASS** |
+| `node test/i18n-ratchet.js --update` | 28,050→**28,057**(+7)。data.js +136 / management.js −115 / ui-render.js −6 / ui-common.js −9 / draft-negotiation.js +1。**増加分は§2の「分岐の完全文化」**(移設だけなら差引ゼロにならない族) |
+| `node test/auto-sim.js 20 42` | ✅ **ALL CLEAR**(violations 0 / errors 0 / 台帳検査3種違反0)。semantic fingerprint **`640b2591`** = **凍結コピー(HEAD)を同条件で回した実測値と同一** |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0 |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・419手・**i18n-miss 0**・Issues 0・JA露出57(log41/week11/shachoshitsu3/title1/show1)= **HEAD実測57と同値** |
+
+**EN走破のdigestは元々非決定的**(凍結コピーを2回走らせて `1373a572…` → `bfea1fc6…`)なので、EN側はPASS/Issues/i18n-miss/JA露出で見る。JA走破のdigestだけが安定した不変条件。
+
+### 9. Keisukeに確認してほしい画面・操作
+
+1. **選手ポップアップ →「記録」タブ** — キャリア年表の各行(入団/王座獲得・陥落・防衛/移籍/引退/受賞/PPV/JT/ドーム/挑戦状/春タッグ)と、左列の「キャリアN年目」+「特記事項なし」、週表示(`{n}週`)。JAが従来と1文字も変わっていないこと
+2. **選手ポップアップ →「成長経過」タブ** — `練習（バランス）`/`練習（パワー重点）`/`プロモ活動（キャンペーン2週目）`/`自動休養`/`追い込み`/`ボイコット` と行末の `🔥絶好調` バッジ
+3. **データベース → 殿堂入り → 選手カードを開く** — 「━━ キャリアハイライト ━━」の各行。**旧セーブ(P7-25より前に殿堂入りした選手)でもJAが崩れていないこと**(保存値と1バイト照合して一致したときだけ組み直す設計)
+4. **オフシーズン → ドラフト交渉(セリ)画面** — 各団体カード下の粘り度ラベル(余裕/まだ余裕あり/熱が入っている/そろそろ限界/もはや意地)とラウンドごとのナレーション文、単独指名時の「競合なし — 単独指名です。契約しますか？」と「見送る」後の「見送りました」
+5. **オフシーズン → シーズン総括画面** — 「§III 顔ぶれの変化」の退団者行の注記(`N年の現役に幕` / `引退`)
+6. **(EN)** 上記1〜5を言語をEnglishに切り替えて。特に殿堂ハイライトと年表は行が長くなるのでレイアウト溢れの有無
+
+### 10. P7-25で新たに見つかった穴(未着手・次バッチ候補)
+
+1. **成長ログの`match`行と`milestone`行はまだ生JA** — `vs {name}` / `タッグ({partner}) vs {opps}` / `敵地遠征 vs {name}`(management.js・app.js)と `総合力{n}到達` / `人気{n}到達` / `{stat}が限界に到達`(app.js:11890)。名前や数値を埋めた完成文が growthLog へ永続するので specs §14-3 の追加フィールド方式が要る(棚卸しレポートのC分類)
+2. **キャリア年表の「経歴(怪我・重大事項)」欄の`detail`** — `careerHistory[].detail`(怪我名)はデータ側の値で、年表と怪我欄の両方に生JAで出る
+3. **`ns.log`(交渉ログ `R{n}: プレイヤー降り ({bid}万)`)は現状どこにも描画されない** — 描画するなら要配線
+
 ## 🌐 英語対応 P7-22 — `npm run test:ui:ignite -- --scenario tenchosen --lang en` がドライバ停止する件を根治(2026-09-05・worktree agent-a7dbef864645e5ab8)
 
 P7-19が発見した「天頂戦igniteのEN初実行が、天頂戦とは無関係な画面でドライバ停止する」件の調査・修正。開始前にworktreeブランチをmain先端(`da2d1ed5`。P7-19=da2d1ed5までmain入り)へfast-forward。

@@ -60,6 +60,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "3団体を退けての獲得。この選手にかけた執念が勝った",
+    "en": "Signed with three promotions beaten off. The persistence on this one paid",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "3対3団体戦は {score}。仕掛けた{requesterName}も、迎え撃った{ourOrg}も、リング上で言葉を交わすことなく分かれた。",
     "en": "{score} in the 3-on-3. {requesterName}, who started it, and {ourOrg}, who met it, walked away without a word to each other.",
     "files": [
@@ -1030,6 +1040,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "FA入団",
+    "en": "Signed as a free agent",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "HP残り僅か{hp}での辛勝だった。",
     "en": "{hp} HP left at the finish. A narrow win.",
     "files": [
@@ -1161,6 +1181,37 @@
     "hasProperNoun": false
   },
   {
+    "key": "PPV GRAND FINAL 優勝",
+    "en": "Won the PPV GRAND FINAL",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES",
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "PPV GRAND FINAL 出場",
+    "en": "Appeared at the PPV GRAND FINAL",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "PPV GRAND FINAL 準優勝",
+    "en": "Runner-up at the PPV GRAND FINAL",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "PPV {tone} — {winnerOrg}{winner}が{loserOrg}{loser}を撃破（試合評価{mq}）",
     "en": "PPV {tone} — {winnerOrg} {winner} beats {loserOrg} {loser} (rated {mq})",
     "files": [
@@ -1288,6 +1339,216 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、ここで引いたら育成計画が崩れる",
+    "en": "{ORG} cannot back off now without wrecking its development plan",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、ここで撤退。王者にも見切り時はある",
+    "en": "{ORG} pulls out. Even the establishment knows when to stop",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、ここは引くしかなかった。拳を握りしめている",
+    "en": "{ORG} had no choice but to fold. The fists are clenched",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、これ以上は無理と判断。潔い引き際",
+    "en": "{ORG} decides that is far enough. A clean exit",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、まさかの執念",
+    "en": "{ORG} digs in, against all expectation",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、ヒートアップ",
+    "en": "{ORG} is heating up",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、予算の限界。悔しさを滲ませて離脱",
+    "en": "{ORG} hits the budget ceiling and leaves the table sore",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、余裕の表情を崩さない",
+    "en": "{ORG} has not lost its composure",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、勝負に出た",
+    "en": "{ORG} makes its move",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、地方の意地を見せる",
+    "en": "{ORG} shows the pride of the regional circuit",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、小さな団体の大きな賭け",
+    "en": "{ORG}, a small promotion making a big bet",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、引く気配なし",
+    "en": "{ORG} shows no sign of backing off",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、深追いせず撤退。堅実経営の信条を貫く",
+    "en": "{ORG} pulls out rather than chase, true to its careful books",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、無念の撤退",
+    "en": "{ORG} withdraws, and regrets it",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、王者の貫禄で粘る",
+    "en": "{ORG} holds on with the poise of the establishment",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、現実的な判断で離脱",
+    "en": "{ORG} makes the practical call and withdraws",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、若い情熱で食い下がる",
+    "en": "{ORG} hangs in on young nerve",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、苦渋の判断で離脱。次の獲物を見据えるか",
+    "en": "{ORG} withdraws, and it hurts. Eyes on the next target, perhaps",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、資金力を背景にじわじわ圧をかける",
+    "en": "{ORG} leans on its money and turns the screw",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、身の丈を超えた挑戦",
+    "en": "{ORG} reaches past its own means",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{ORG}、静かに席を立った。その背中に敗北の影はない",
+    "en": "{ORG} rises quietly from the table. Nothing in that exit reads as defeat",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -1620,6 +1881,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{award} 受賞",
+    "en": "Won {award}",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{axis}が{org}の代名詞として定着した時期だった。",
     "en": "This was when {axis} settled in as the byword for {org}.",
     "files": [
@@ -1717,11 +1988,12 @@
     "key": "{a}・{b}",
     "en": "{a}, {b}",
     "files": [
+      "ARTICLE_COMPOSE_TEMPLATES",
       "CHRONICLE_NARRATIVE_TEMPLATES",
       "NEWS_AI_ORG_TEXTS",
       "NEWS_CONTENDER_TEXTS"
     ],
-    "count": 3,
+    "count": 4,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -2680,6 +2952,56 @@
     "en": "{name} has left {fromOrg} for {toOrg}, the promotion her old one has history with. If she meets her old side in a coming interpromotional match, that is the one everybody will watch.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{from} から {to} へ移籍",
+    "en": "Moved from {from} to {to}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{from}から {to} へレンタル加入",
+    "en": "On loan from {from} to {to}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{from}から {to} へレンタル加入（{n}期）",
+    "en": "On a {n}-season loan from {from} to {to}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{hero}がチームを牽引した。",
+    "en": "{hero} carried the roster.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{hero}が年間MVPに輝いた。",
+    "en": "{hero} took MVP for the year.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4026,6 +4348,66 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name} に勝利",
+    "en": "Beat {name}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name} に敗れて敗退",
+    "en": "Knocked out by {name}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name} に敗れる",
+    "en": "Lost to {name}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name} に敗れ陥落",
+    "en": "Dethroned by {name}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name} の挑戦を退ける",
+    "en": "Turned back {name}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name} を破ってチャンピオンに",
+    "en": "Beat {name} for the belt",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}——うちのエースが最も意識している存在だ。次に当たるときは因縁を含んだカードになる",
     "en": "{name} — the one your ace is most conscious of. Next time they meet, the match carries history with it.",
     "files": [
@@ -4926,6 +5308,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}とのタッグで参戦",
+    "en": "Entered teaming with {name}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}とのタッグで決勝進出",
+    "en": "Reached the final teaming with {name}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}とのタッグで頂点に立つ",
+    "en": "Took it teaming with {name}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}との直接対決データがある。過去の戦績を見れば、一筋縄ではいかない相手だと分かるはずだ",
     "en": "There is head-to-head data with {name}. Look at the past results and it is clear she is not a straightforward opponent.",
     "files": [
@@ -5536,10 +5948,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "{n}年の現役に幕",
+    "en": "Closed out a {n}-year career",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{n}度戴冠",
     "en": "reigns: {n}",
     "files": [
       "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n}度防衛の末に陥落",
+    "en": "Fell at the end of a {n}-defense reign",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6076,6 +6508,76 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org} にFA入団",
+    "en": "Signed with {org} as a free agent",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org} にスカウト入団",
+    "en": "Scouted and signed by {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org} にドラフト入団",
+    "en": "Drafted by {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org} に入団",
+    "en": "Joined {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org} 獲得",
+    "en": "Won the {org} title",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org} 陥落",
+    "en": "Lost the {org} title",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}{n}度防衛達成",
+    "en": "{org} title — defense No. {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}——新王者{name}が誕生",
     "en": "{org} — {name} the new champion",
     "files": [
@@ -6150,6 +6652,16 @@
     "en": "{names} have left {org}, {count} in all. Where the promotion goes from here is an open question.",
     "files": [
       "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}からの挑戦状を辞退",
+    "en": "Turned down a challenge from {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6966,6 +7478,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}への挑戦状 勝利",
+    "en": "Challenge to {org}: won",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}への挑戦状 敗北",
+    "en": "Challenge to {org}: lost",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}へ移籍",
+    "en": "Moved to {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}を中心とした対外戦で{wins}勝{losses}敗",
     "en": "{wins}-{losses} in interpromotional matches, mostly against {org}",
     "files": [
@@ -6976,10 +7518,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}を契約満了で退団",
+    "en": "Left {org} at the end of her contract",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}を支えた{name}がリングを去った。{detail}。その不在を、団体がどう埋めていくかが次の課題となる。",
     "en": "{name}, who held {org} up, has left the ring: {detail}. How the promotion fills the absence is the next problem.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}を突然退団",
+    "en": "Walked out on {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}を解雇",
+    "en": "Released by {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -7150,6 +7722,46 @@
     "en": "{org}: {winFaction} over {loseFaction}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}王座 {n}度目の戴冠",
+    "en": "{org} Championship: reign No. {n}",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}王座 {n}度防衛",
+    "en": "{org} Championship — defenses: {n}",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}王座 初戴冠",
+    "en": "{org} Championship: first reign",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}王座 陥落（{n}度防衛の末に）",
+    "en": "Lost the {org} Championship (after a {n}-defense reign)",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -15643,6 +16255,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "キャリア{n}年目 終了",
+    "en": "End of career year {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "キャリアの差は明確。ただ、若さの爆発力は計算外のことを起こす",
     "en": "The gap in career is plain. Youth has a burst in it that no calculation accounts for, though.",
     "files": [
@@ -15843,6 +16465,77 @@
     "hasProperNoun": false
   },
   {
+    "key": "ジュニアトーナメント 優勝",
+    "en": "Junior Tournament — Winner",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES",
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメント 出場",
+    "en": "Junior Tournament — Entered",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメント 出場（1回戦敗退）",
+    "en": "Junior Tournament — Out in round 1",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメント 準々決勝敗退",
+    "en": "Junior Tournament — Out in the quarter-finals",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメント 準優勝",
+    "en": "Junior Tournament — Runner-up",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメント 準決勝敗退",
+    "en": "Junior Tournament — Out in the semi-finals",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメントを制した。",
+    "en": "Took the Junior Tournament.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ジュニアトーナメントを制したその日、彼女の名前が{orgName}に刻まれた。",
     "en": "The day she took the Junior Tournament, her name was written into {orgName}.",
     "files": [
@@ -15867,6 +16560,16 @@
     "en": "a Junior Tournament win",
     "files": [
       "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スカウト入団",
+    "en": "Scouted and signed",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -16363,6 +17066,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "チャンピオンに！",
+    "en": "Became champion",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "チャンピオンのまま退いた女がいた。{orgName}は今もその名を讃える。",
     "en": "There was a woman who stepped away while still champion. {orgName} still honors the name.",
     "files": [
@@ -16493,6 +17206,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ドラフト入団",
+    "en": "Drafted",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ドラフト総括——注目は{headName}",
     "en": "Draft wrap — {headName} the one to watch",
     "files": [
@@ -16501,6 +17224,166 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "ドーム公演 タイトルマッチ 出場",
+    "en": "Worked a title match at the Dome show",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム公演 タイトルマッチ 勝利",
+    "en": "Won a title match at the Dome show",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム公演 メインイベント 出場",
+    "en": "Worked the main event at the Dome show",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム公演 メインイベント 勝利",
+    "en": "Won the main event at the Dome show",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 タイトルマッチ 出場",
+    "en": "Worked a title match at the Dome",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 タイトルマッチ 出場（vs {name}）",
+    "en": "Worked a title match at the Dome (vs {name})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 タイトルマッチ 勝利",
+    "en": "Won a title match at the Dome",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 タイトルマッチ 勝利（vs {name}）",
+    "en": "Won a title match at the Dome (vs {name})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 タイトルマッチ 敗北",
+    "en": "Lost a title match at the Dome",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 タイトルマッチ 敗北（vs {name}）",
+    "en": "Lost a title match at the Dome (vs {name})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 メインイベント 出場",
+    "en": "Worked the main event at the Dome",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 メインイベント 出場（vs {name}）",
+    "en": "Worked the main event at the Dome (vs {name})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 メインイベント 勝利",
+    "en": "Won the main event at the Dome",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 メインイベント 勝利（vs {name}）",
+    "en": "Won the main event at the Dome (vs {name})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 メインイベント 敗北",
+    "en": "Lost the main event at the Dome",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム大会 メインイベント 敗北（vs {name}）",
+    "en": "Lost the main event at the Dome (vs {name})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
   },
   {
     "key": "ハニートラップでオヤジ狩りをしていたギャル。手段を選ばないダーティなブロウラー。",
@@ -16753,6 +17636,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "フリーエージェントへ",
+    "en": "Became a free agent",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "フレッシュな顔合わせ。伸びしろが大きい分、予想外の展開もあり得る",
     "en": "A fresh pairing. With that much room to grow in both of them, something unforeseen is entirely possible.",
     "files": [
@@ -16857,6 +17750,16 @@
     "en": "{count} Best Match awards",
     "files": [
       "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ベストマッチ賞（試合評価 {mq}）",
+    "en": "Best Match Award (rated {mq})",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -17163,6 +18066,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "リング外での発信が団体を支えた。",
+    "en": "Her work away from the ring carried the promotion.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "リーダー不在となっていた{org}の「{factionName}」が、{newLeaderName}を新たな中心に据えて再出発する。{oldLeaderName}の色が濃かった集団だけに、率い方はおのずと変わるだろう。頭が替われば、控室の力学は必ず動く。",
     "en": "{factionName} of {org}, which had been without a leader, starts again with {newLeaderName} at its center. The group carried a lot of {oldLeaderName}'s color, so the way it gets led will change of itself. Change the head and the balance in the locker room always moves.",
     "files": [
@@ -17227,6 +18140,26 @@
     "en": "He has watched several thousand matches from inside the ring as a referee, and it shows in how he reads one. He is good at finding what a wrestler does well and proposing a way to build a match around it. He never works a match himself, but the accuracy of his technical advice is beyond question. He keeps himself small, and his words carry.",
     "files": [
       "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "レンタル期間満了で {org} へ帰団",
+    "en": "Loan over, back with {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ロスター調整等により契約解除",
+    "en": "Contract ended in a roster move",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -17443,6 +18376,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "一騎打ちを制した",
+    "en": "Won the head-to-head",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "万年2位の匂いがするんだよなあ…",
     "en": "Getting a real permanent-second-place smell off this one...",
     "files": [
@@ -17570,6 +18513,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "上位{above}との差は{gap}点。来季も、着実に積み上げたい。",
+    "en": "{above} sits {gap} ahead. Another season of steady building, then.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -18183,6 +19136,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "交渉は佳境を迎えている",
+    "en": "The negotiation is reaching its point",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "交渉卓に緊張が走る",
+    "en": "A tension runs through the table",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "交渉成立で加入",
+    "en": "Joined once terms were agreed",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "京都",
     "en": "Kyoto",
     "files": [
@@ -18453,6 +19436,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "他に名乗りを上げる者はなかった。交渉成立",
+    "en": "No one else put a hand up. The deal is done",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "他の試合見ても物足りなく感じるくらい{playerName}が別格",
     "en": "{playerName} is so far ahead that other matches feel thin by comparison",
     "files": [
@@ -18470,6 +19463,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "他団体に持っていかれた。次の機会を待とう",
+    "en": "Another promotion took her. Wait for the next chance",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -19093,6 +20096,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "元団体",
+    "en": "her former promotion",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "元大相撲力士のパワー系最高峰。実戦で通用する力を最短で身につけさせる。",
     "en": "A former sumo wrestler and the peak of power coaching. He builds usable strength by the shortest route.",
     "files": [
@@ -19233,6 +20246,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "入団",
+    "en": "Joined a promotion",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "入居2年目ながら高い実力を示す若手の実力者。鋭い打撃を得意とする早熟型。若さに似合わぬ冷静な試合運びと確かな打撃技術で、短期間でトップクラスの実力を身につけた。早熟型ゆえに伸びしろが懸念されるが、現時点の実力は侮れない。",
     "en": "Two years in the complex and already showing real ability. An early bloomer whose strength is sharp striking. She works a match with a composure beyond her years and her striking is sound, and it took her very little time to reach the top group. Blooming early raises questions about how much further she goes; what she has now is not to be taken lightly.",
     "files": [
@@ -19293,6 +20316,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "全団体が手を引いた。この選手はフリー市場へ",
+    "en": "Every promotion pulled out. She goes to the open market",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "全国女子プロレス最強王者決定戦「天頂戦」、開催年を迎える",
     "en": "Tenchosen year arrives — the national decider",
     "files": [
@@ -19317,6 +20350,46 @@
     "en": "Tenchosen, the decider for the strongest champion in the country's women's pro wrestling, opens in week 48. The special invitations went to: {invites}. The competition for the remaining promotion slots is now in earnest. {championWatch}{preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "全国統一王座 奪取",
+    "en": "Took the Unified National Championship",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "全国統一王座 戴冠",
+    "en": "Crowned Unified National Champion",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "全国統一王座 戴冠(第{n}代)",
+    "en": "Crowned Unified National Champion (No. {n})",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "全国統一王座 防衛{n}度",
+    "en": "Unified National Championship — defenses: {n}",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -19360,6 +20433,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全盛期 OVR {n}",
+    "en": "Peak Overall: {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -19700,6 +20783,36 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "前年{prevRank}位から{rank}位に後退した。",
+    "en": "Slipped from {prevRank} to {rank} in the standings.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "前年{prevRank}位から{rank}位に浮上した。",
+    "en": "Climbed from {prevRank} to {rank} in the standings.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "前年に続き{rank}位で今季を終えた。",
+    "en": "Finished at {rank} again this season.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -20108,6 +21221,16 @@
     "en": "Taiwan",
     "files": [
       "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "各団体の代表が表情を引き締める",
+    "en": "Every promotion's representative sets their face",
+    "files": [
+      "draft-negotiation.js:NARRATION"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -20664,6 +21787,26 @@
     "hasProperNoun": true
   },
   {
+    "key": "団体王座 獲得",
+    "en": "Won the promotion title",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "団体王座 陥落",
+    "en": "Lost the promotion title",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "団体王座の設立が認定された。",
     "en": "The Promotion Championship was sanctioned.",
     "files": [
@@ -21184,6 +22327,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "契約成立。静かに迎え入れる",
+    "en": "Contract signed. A quiet welcome",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "奥山川プロレス部の副キャプテン。友人を元気づけるため始めた部活で競技の楽しさに目覚めた。関節技を中心とした技巧派で、晩成型として将来の成長が最も期待される選手の一人。控えめな性格だが、いざ試合になると粘り強さを発揮する。",
     "en": "Vice-captain of the Okuyamagawa wrestling club. She joined to cheer a friend up and found she enjoyed the sport. A technician built around joint holds, and a late bloomer with as much growth ahead of her as anyone in the club. Reserved out of the ring; stubborn once a match starts.",
     "files": [
@@ -21534,6 +22687,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "対抗戦 vs {org} 勝利",
+    "en": "Interpromotional win over {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦 vs {org} 勝利（{name} 戦）",
+    "en": "Interpromotional win over {org} (vs {name})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦 vs {org} 敗北",
+    "en": "Interpromotional loss to {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦 vs {org} 敗北（{name} 戦）",
+    "en": "Interpromotional loss to {org} (vs {name})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "対抗戦{warWins}勝——団体の旗を背負うとき、彼女は別人になった。",
     "en": "Interpromotional wins: {warWins} — with the promotion flag on her back she became someone else.",
     "files": [
@@ -21561,6 +22754,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦通算{n}勝",
+    "en": "Interpromotional wins: {n}",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -21824,6 +23027,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "年齢による引退",
+    "en": "Retired on age",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "年齢の言い訳ができない、純粋な力比べ。だからこそ負けた側のダメージは深い",
     "en": "No excuse available about age; a plain test of strength. Which is why the damage runs deep on the losing side.",
     "files": [
@@ -21874,6 +23087,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "度重なる怪我により",
+    "en": "After repeated injuries",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "廃校寸前の元砥石川高校出身。バランス重視の堅実なファイトで確かな実力を見せる。母校の廃校を経験した苦い思い出をバネに、早くから自立心を鍛えてきた。安定感のある試合運びと粘り強さで、どんな相手にも一定以上の戦いができる信頼のおける選手。",
     "en": "Out of the former Toishigawa High School, which closed. She fights a balanced, dependable match and the ability is real. Losing her school left a bitter memory she used, and she learned to stand on her own early. Steady in how she works a match, and stubborn with it: whoever she faces, she gives a decent account.",
     "files": [
@@ -21904,6 +23127,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "引き抜きで加入",
+    "en": "Joined after a poaching raid",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "引退 {name}({age}歳)",
     "en": "Retirement: {name} (age {age})",
     "files": [
@@ -21924,6 +23157,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "引退を撤回し {org} に復帰",
+    "en": "Reversed her retirement and returned to {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "引退を表明していた。その最後の一勝だった。",
     "en": "She had already announced her retirement. This was the last win of her career.",
     "files": [
@@ -21931,6 +23174,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "引退（{age}歳）",
+    "en": "Retired at {age}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -22054,6 +23307,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "強制引き抜きで加入",
+    "en": "Joined after a forced poaching raid",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "強敵との対戦が多く敗戦続きの印象だが、大河内を破った実績を持つ名勝負製造機。ピアノの腕前はプロ級。どんな相手とも噛み合う天性の試合センスを持ち、彼女の試合は常に見応えがある。繊細な感性と華やかな存在感で、勝敗に関わらずファンの心を掴む稀有な存在。",
     "en": "She draws hard opponents, so the record reads like a losing one, but she has beaten Okochi and she turns out classics. Her piano is at professional level. She has a natural sense for matches that lets her work with anyone, and her bouts are always worth watching. Fine instincts and a bright presence: she holds a crowd whether she wins or loses, and few can do that.",
     "files": [
@@ -22158,6 +23421,16 @@
     "en": "A tanned gyaru who looks as lively as she is. Bright and energetic, and a tough striker whose weapon is how much she can take.",
     "files": [
       "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "怪我による引退",
+    "en": "Retired through injury",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -22608,6 +23881,16 @@
     "en": "It was {winnerOrg} that grabbed the shot. The wrestler they sent out carrying the promotion's name answered with the best result available.",
     "files": [
       "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "挑戦状を{org}に拒絶される",
+    "en": "Challenge turned down by {org}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -23344,6 +24627,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "旗揚げ初年度、{rank}位でシーズンを終えた。",
+    "en": "In its opening season the promotion closed out at {rank}.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "旗揚げ戦。最初の興行が開かれ、団体は始動した。",
     "en": "The inaugural show. The first card was run, and the promotion was under way.",
     "files": [
@@ -23431,6 +24724,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "春のタッグリーグを制した。",
+    "en": "Took the Spring Tag League.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": true
   },
   {
@@ -24134,6 +25437,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "来季も、この団体の物語は続く。",
+    "en": "The promotion's story carries on into next season.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "来季も同じ記事書かれるに100万",
     "en": "Betting a million they write the same article next season",
     "files": [
@@ -24404,6 +25717,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "業界の頂点として、来季も走り続ける。",
+    "en": "On top of the business, and still running next season.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "業界の頂点に君臨する絶対王者",
     "en": "Undisputed rulers at the top of the business",
     "files": [
@@ -24571,6 +25894,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "次の一手が勝敗を分ける",
+    "en": "The next move decides it",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -24844,6 +26177,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "残念…他団体の執念が上回った",
+    "en": "A shame... the other side wanted her more",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "残留組の時代",
     "en": "The Age of Those Who Stayed",
     "files": [
@@ -25001,6 +26344,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決勝で {name} に敗れる",
+    "en": "Lost to {name} in the final",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決勝で {name} を破る",
+    "en": "Beat {name} in the final",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -25354,6 +26717,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "激しい交渉を勝ち抜いた",
+    "en": "Came through a hard negotiation",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "激戦の末、獲得に成功！",
+    "en": "Signed her after a hard fight!",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "激闘の末に{winnerName}！ 試合評価{mq}の熱戦",
     "en": "{winnerName} at the end of a hard one! Rated {mq}",
     "files": [
@@ -25644,6 +27027,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座{n}度防衛達成",
+    "en": "Title defense No. {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座がなくても、彼女がいるカードには力があった。",
     "en": "Belt or no belt, a card with her on it had weight.",
     "files": [
@@ -25734,6 +27127,16 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": true
+  },
+  {
+    "key": "王座を{n}度守った。",
+    "en": "Held the belt through a {n}-defense run.",
+    "files": [
+      "SEASON_REVIEW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   },
   {
     "key": "王座を守ることの難しさを、彼女は体で知っていた。",
@@ -26237,6 +27640,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "相手の本気度が一枚上手だった。縁がなかったと割り切るしかない",
+    "en": "They were simply more serious about her. Nothing to do but let it go",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "看板選手の引退は、一つの時代の終わりを意味する。穴を埋められる逸材はいるのか",
     "en": "The retirement of a marquee name means the end of an era. Is there anyone on hand who can fill that hole?",
     "files": [
@@ -26607,6 +28020,76 @@
     "hasProperNoun": true
   },
   {
+    "key": "第{n}回 春のタッグリーグ 3位",
+    "en": "3rd in Spring Tag League {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "第{n}回 春のタッグリーグ 4位",
+    "en": "4th in Spring Tag League {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "第{n}回 春のタッグリーグ 優勝",
+    "en": "Won Spring Tag League {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "第{n}回 春のタッグリーグ 出場",
+    "en": "Entered Spring Tag League {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "第{n}回 春のタッグリーグ 準優勝",
+    "en": "Runner-up in Spring Tag League {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "第{n}回 春のタッグリーグ優勝",
+    "en": "Won Spring Tag League {n}",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "第{n}回 春のタッグリーグ優勝（{name}と）",
+    "en": "Won Spring Tag League {n} (with {name})",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "第{season}シーズンの第48週に「天頂戦」が開催される。特別招待2名と団体枠14名の計16名が出場し、1回戦から決勝まで15試合を行う。{championWatch}{preview}",
     "en": "Tenchosen runs in week 48 of season {season}. Two special invitations and 14 promotion slots make up a field of 16, and 15 matches are run from the first round to the final. {championWatch}{preview}",
     "files": [
@@ -26771,6 +28254,16 @@
     "en": "A third-year at Kasuda Gakuen High School. Her specialty is the sudden submission that takes an opening. She watches coolly and finds the weakness.",
     "files": [
       "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "粘り強い交渉が実を結んだ",
+    "en": "Patience at the table paid off",
+    "files": [
+      "draft-negotiation.js:NARRATION"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -27627,6 +29120,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "複数団体との争奪戦を勝ち抜いた！",
+    "en": "Won a scramble against several promotions!",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "複数項目で後手。課題が多い。",
     "en": "Behind on several counts.",
     "files": [
@@ -28236,6 +29739,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "誰も最後まで残らなかった。フリーエージェントとして再出発",
+    "en": "No one stayed to the end. She starts again as a free agent",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -28979,6 +30492,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "重傷により現役続行不可",
+    "en": "A serious injury ended her career",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "金字塔！{orgName}、対抗戦通算{milestone}達成",
     "en": "A landmark for {orgName}! Interpromotional: {milestone}",
     "files": [
@@ -28986,6 +30509,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "金額が上がるごとに空気が重くなる",
+    "en": "The air gets heavier with every raise",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -29329,6 +30862,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "静かな駆け引きが続く",
+    "en": "The quiet maneuvering goes on",
+    "files": [
+      "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "静かに続く、ライバル関係の典型",
     "en": "A quiet continuing, the typical rivalry",
     "files": [
@@ -29383,6 +30926,26 @@
     "en": "Those Who Looked Up at the Summit",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "頂上決戦 勝利",
+    "en": "Won the Summit Match",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "頂上決戦 敗北",
+    "en": "Lost the Summit Match",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -29639,6 +31202,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "🌟 新人王 受賞",
+    "en": "🌟 Won Rookie of the Year",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "🌡️ {name}のコンディションが優れない",
     "en": "🌡️ {name} is not in good condition",
     "files": [
@@ -29756,6 +31329,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎬 ベストマッチ賞（試合評価 {mq}）",
+    "en": "🎬 Won Best Match (rated {mq})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -30006,6 +31589,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👑 MVP 受賞",
+    "en": "👑 Won MVP",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -30926,6 +32519,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 メディア功労賞 受賞",
+    "en": "📺 Won the Media Merit Award",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {

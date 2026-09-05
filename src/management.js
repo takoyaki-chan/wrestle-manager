@@ -6950,8 +6950,13 @@ const Engine = {
      * Get milestones for a fighter by ID.
      * Searches roster, retiredFighters, freeAgents.
      * Returns array of {season, week, type, text, detail?} sorted by season→week.
+     *
+     * i18n Stage B P7-25: 第3引数 dict は任意の「辞書参照関数」(既定=省略でJA原文のまま。
+     * 既存呼び出し元は無改修で不変)。文面は data.js の CAREER_MILESTONE_TEMPLATES へ移設し、
+     * **PH置換前に** _wmFillWithDict でテンプレを訳す。戻り値はGへ焼かれず表示のたびに
+     * careerRecord.history から組み直されるため、追加フィールドも自己検証も要らない。
      */
-    get(G, fighterId) {
+    get(G, fighterId, dict) {
       const fighter = (G.roster || []).find(c => c.id === fighterId)
         || (G.retiredFighters || []).find(c => c.id === fighterId)
         || (G.freeAgents || []).find(c => c.id === fighterId)
@@ -6969,197 +6974,219 @@ const Engine = {
       const history = Engine.career.filterPostJoin(historyAll, joinS);
       const careerHist = Engine.career.filterPostJoin(careerHistAll, joinS);
 
+      // ── i18n P7-25: テンプレ表 + 辞書ヘルパー ──
+      // `_t` はテンプレを**PH置換前に**辞書へ通す(_wmFillWithDictの契約)。
+      // `_lbl` は「値そのものが成形済みJAラベル」なフォールバック団体名向け(§14-2)。
+      // 既訳が ui-ledger にある語(王座/他団体/所属団体/プレイヤー団体/相手団体/
+      // 特記事項なし)は data.js の表へ入れず、ここにJA原文を1本だけ置く(§15-3)。
+      const T = CAREER_MILESTONE_TEMPLATES;
+      const _t = (tpl, params) => _wmFillWithDict(dict, tpl, params);
+      const _lbl = (ja) => _wmDictLabel(dict, ja);
+      // 注記2本の中黒連結。空なら undefined(従来の `join('・') || undefined` と同値)
+      const _dotJoin = (parts) => {
+        const xs = parts.filter(Boolean);
+        if (xs.length === 0) return undefined;
+        return xs.reduce((a, b) => _t(ARTICLE_COMPOSE_TEMPLATES.dotJoin, { a, b }));
+      };
+
       // Convert careerRecord.history events to milestones
       for (const ev of history) {
         switch (ev.type) {
           case 'debut': {
-            const viaJp = ev.via === 'draft' ? 'ドラフト' : ev.via === 'fa' ? 'FA' : ev.via === 'scout' ? 'スカウト' : ev.via === 'freeagent' ? 'FA' : '';
-            const orgPrefix = ev.orgName ? `${ev.orgName} に` : '';
+            const dOrg = ev.orgName || '';
+            const dVia = (ev.via === 'fa' || ev.via === 'freeagent') ? 'fa' : ev.via;
+            const dTpl = dOrg
+              ? (dVia === 'draft' ? T.debutOrgDraft : dVia === 'fa' ? T.debutOrgFa : dVia === 'scout' ? T.debutOrgScout : T.debutOrgPlain)
+              : (dVia === 'draft' ? T.debutDraft : dVia === 'fa' ? T.debutFa : dVia === 'scout' ? T.debutScout : T.debutPlain);
             milestones.push({ season: rel(ev.season || 1), week: ev.week || 1, type: 'debut',
-              text: `${orgPrefix}${viaJp}入団` });
+              text: dOrg ? _t(dTpl, { org: dOrg }) : _t(dTpl) });
             break;
           }
           case 'titleWin': {
-            const twName = ev.orgName || '団体王座';
-            const twDetail = ev.defeatedName ? `${ev.defeatedName} を破ってチャンピオンに` : 'チャンピオンに！';
+            const twDetail = ev.defeatedName ? _t(T.titleWinBeat, { name: ev.defeatedName }) : _t(T.titleWinPlain);
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'title_win',
-              text: `${twName} 獲得`, detail: twDetail });
+              text: ev.orgName ? _t(T.titleWin, { org: ev.orgName }) : _t(T.titleWinNoOrg), detail: twDetail });
             break;
           }
           case 'titleLoss': {
-            const tlName = ev.orgName || '団体王座';
-            const tlBy = ev.dethronedByName ? `${ev.dethronedByName} に敗れ陥落` : null;
-            const tlDef = ev.defenses ? `${ev.defenses}度防衛の末に陥落` : null;
-            const tlDetail = [tlBy, tlDef].filter(Boolean).join('・') || undefined;
+            const tlBy = ev.dethronedByName ? _t(T.titleLossBy, { name: ev.dethronedByName }) : null;
+            const tlDef = ev.defenses ? _t(T.titleLossDefenses, { n: ev.defenses }) : null;
+            const tlDetail = _dotJoin([tlBy, tlDef]);
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'title_loss',
-              text: `${tlName} 陥落`, detail: tlDetail });
+              text: ev.orgName ? _t(T.titleLoss, { org: ev.orgName }) : _t(T.titleLossNoOrg), detail: tlDetail });
             break;
           }
           case 'titleDefense': {
             const cnt = ev.count || 1;
-            const tdName = ev.orgName || '王座';
             // 3, 5, 7, 10, 15, 20, 25... (Phase C: 細分化)
             if (cnt === 3 || cnt === 5 || cnt === 7 || (cnt >= 10 && cnt % 5 === 0)) {
-              const tdDetail = ev.lastChallengerName ? `${ev.lastChallengerName} の挑戦を退ける` : undefined;
+              const tdDetail = ev.lastChallengerName ? _t(T.titleDefenseDetail, { name: ev.lastChallengerName }) : undefined;
               milestones.push({ season: rel(ev.season), week: ev.week, type: 'title_defense',
-                text: `${tdName}${cnt}度防衛達成`, detail: tdDetail });
+                text: ev.orgName ? _t(T.titleDefense, { org: ev.orgName, n: cnt }) : _t(T.titleDefenseNoOrg, { n: cnt }),
+                detail: tdDetail });
             }
             break;
           }
           case 'transfer': {
             // 'player' は内部リテラルなのでプレイヤー団体名に解決
-            const _resolveOrg = (o) => (o === 'player' ? (G.orgName || 'プレイヤー団体') : (o || '他団体'));
+            const _resolveOrg = (o) => (o === 'player' ? (G.orgName || _lbl('プレイヤー団体')) : (o || _lbl('他団体')));
             const tfFrom = _resolveOrg(ev.fromOrg);
             const tfTo = _resolveOrg(ev.toOrg);
             let tfDetail;
-            if (ev.via === 'poach') tfDetail = '引き抜きで加入';
-            else if (ev.via === 'poach_forced') tfDetail = '強制引き抜きで加入';
-            else if (ev.via === 'negotiate') tfDetail = '交渉成立で加入';
+            if (ev.via === 'poach') tfDetail = _t(T.transferPoach);
+            else if (ev.via === 'poach_forced') tfDetail = _t(T.transferPoachForced);
+            else if (ev.via === 'negotiate') tfDetail = _t(T.transferNegotiate);
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'transfer',
-              text: `${tfFrom} から ${tfTo} へ移籍`, detail: tfDetail });
+              text: _t(T.transfer, { from: tfFrom, to: tfTo }), detail: tfDetail });
             break;
           }
           case 'release': {
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'release',
-              text: `${ev.fromOrg || '所属団体'}を解雇`, detail: 'ロスター調整等により契約解除' });
+              text: _t(T.release, { org: ev.fromOrg || _lbl('所属団体') }), detail: _t(T.releaseDetail) });
             break;
           }
           case 'contractEnd': {
             const ceDest = ev.destinationType === 'rival'
-              ? `${ev.destinationOrg || '他団体'}へ移籍`
-              : 'フリーエージェントへ';
+              ? _t(T.departToOrg, { org: ev.destinationOrg || _lbl('他団体') })
+              : _t(T.departToFa);
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'contract_end',
-              text: `${ev.fromOrg || '所属団体'}を契約満了で退団`, detail: ceDest });
+              text: _t(T.contractEnd, { org: ev.fromOrg || _lbl('所属団体') }), detail: ceDest });
             break;
           }
           case 'suddenDeparture': {
             const sdDest = ev.destinationType === 'rival'
-              ? `${ev.destinationOrg || '他団体'}へ移籍`
-              : 'フリーエージェントへ';
+              ? _t(T.departToOrg, { org: ev.destinationOrg || _lbl('他団体') })
+              : _t(T.departToFa);
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'sudden_dep',
-              text: `${ev.fromOrg || '所属団体'}を突然退団`, detail: sdDest });
+              text: _t(T.suddenDeparture, { org: ev.fromOrg || _lbl('所属団体') }), detail: sdDest });
             break;
           }
           case 'retireRetracted': {
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'retire_retracted',
-              text: `引退を撤回し ${ev.orgName || '所属団体'} に復帰` });
+              text: _t(T.retireRetracted, { org: ev.orgName || _lbl('所属団体') }) });
             break;
           }
           case 'rentalIn': {
-            const seasonsLabel = ev.seasons ? `（${ev.seasons}期）` : '';
+            const riFrom = ev.fromOrg || _lbl('他団体');
+            const riTo = ev.toOrg || _lbl('所属団体');
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'rental_in',
-              text: `${ev.fromOrg || '他団体'}から ${ev.toOrg || '所属団体'} へレンタル加入${seasonsLabel}` });
+              text: ev.seasons
+                ? _t(T.rentalInSeasons, { from: riFrom, to: riTo, n: ev.seasons })
+                : _t(T.rentalIn, { from: riFrom, to: riTo }) });
             break;
           }
           case 'rentalOut': {
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'rental_out',
-              text: `レンタル期間満了で ${ev.toOrg || '元団体'} へ帰団` });
+              text: _t(T.rentalOut, { org: ev.toOrg || _lbl(T.labels.formerOrg) }) });
             break;
           }
           case 'retire':
             milestones.push({ season: rel(ev.season), week: ev.week || 48, type: 'retire',
-              text: `引退（${ev.age || '?'}歳）`,
-              detail: ev.reason === 'injury_wear' ? '度重なる怪我により' : ev.reason === 'injury_career_ending' ? '重傷により現役続行不可' : ev.reason === 'age' ? '年齢による引退' : undefined });
+              text: _t(T.retire, { age: ev.age || '?' }),
+              detail: ev.reason === 'injury_wear' ? _t(T.retireInjuryWear) : ev.reason === 'injury_career_ending' ? _t(T.retireInjuryCareerEnding) : ev.reason === 'age' ? _t(T.retireAge) : undefined });
             break;
           case 'summit':
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'summit',
-              text: `頂上決戦 ${ev.won ? '勝利' : '敗北'}` });
+              text: _t(ev.won ? T.summitWin : T.summitLose) });
             break;
           case 'war': {
-            const warOrg = ev.opponentOrg || '他団体';
-            const warOpp = ev.opponentName ? `（${ev.opponentName} 戦）` : '';
+            const warOrg = ev.opponentOrg || _lbl('他団体');
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'war',
-              text: `対抗戦 vs ${warOrg} ${ev.won ? '勝利' : '敗北'}${warOpp}` });
+              text: ev.opponentName
+                ? _t(ev.won ? T.warWinVs : T.warLoseVs, { org: warOrg, name: ev.opponentName })
+                : _t(ev.won ? T.warWin : T.warLose, { org: warOrg }) });
             break;
           }
           case 'peakOVR':
             milestones.push({ season: rel(ev.season), week: ev.week || 0, type: 'peak',
-              text: `全盛期 OVR ${ev.ovr}` });
+              text: _t(T.peak, { n: ev.ovr }) });
             break;
           case 'awardRookie':
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'award_rookie',
-              text: '🌟 新人王 受賞' });
+              text: _t(T.awardRookie) });
             break;
           case 'awardMVP':
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'award_mvp',
-              text: '👑 MVP 受賞' });
+              text: _t(T.awardMvp) });
             break;
           case 'awardMedia':
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'award_media',
-              text: '📺 メディア功労賞 受賞' });
+              text: _t(T.awardMedia) });
             break;
           case 'awardBestMatch':
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'award_bestmatch',
-              text: `🎬 ベストマッチ賞（試合評価 ${ev.mq || '?'}）` });
+              text: _t(T.awardBestMatch, { mq: ev.mq || '?' }) });
             break;
           case 'ppvMainEvent': {
             // Phase D: サミット(優勝/準優勝)+非サミット(出場で誰に勝った/負けた)を表示
             if (ev.isSummit) {
               const ppvDetail = ev.opponentName
-                ? (ev.won ? `決勝で ${ev.opponentName} を破る` : `決勝で ${ev.opponentName} に敗れる`)
+                ? _t(ev.won ? T.finalBeat : T.finalLost, { name: ev.opponentName })
                 : undefined;
               milestones.push({ season: rel(ev.season), week: ev.week, type: 'ppv_main',
-                text: `PPV GRAND FINAL ${ev.won ? '優勝' : '準優勝'}`, detail: ppvDetail });
+                text: _t(ev.won ? T.ppvSummitWin : T.ppvSummitLose), detail: ppvDetail });
             } else {
               const ppvNsDetail = ev.opponentName
-                ? (ev.won ? `${ev.opponentName} に勝利` : `${ev.opponentName} に敗れる`)
+                ? _t(ev.won ? T.ppvEntryDetailWin : T.ppvEntryDetailLose, { name: ev.opponentName })
                 : undefined;
               milestones.push({ season: rel(ev.season), week: ev.week, type: 'ppv_main',
-                text: `PPV GRAND FINAL 出場`, detail: ppvNsDetail });
+                text: _t(T.ppvEntry), detail: ppvNsDetail });
             }
             break;
           }
           case 'juniorTournament': {
-            const jtMap = { champion: '優勝', runnerUp: '準優勝', semiFinal: '準決勝敗退', quarterFinal: '準々決勝敗退', firstRound: '出場（1回戦敗退）' };
-            const jtLabel = jtMap[ev.result] || '出場';
+            const jtMap = { champion: T.jtChampion, runnerUp: T.jtRunnerUp, semiFinal: T.jtSemiFinal, quarterFinal: T.jtQuarterFinal, firstRound: T.jtFirstRound };
+            const jtTpl = jtMap[ev.result] || T.jtEntry;
             let jtDetail;
             if ((ev.result === 'champion' || ev.result === 'runnerUp') && ev.finalOpponentName) {
-              jtDetail = ev.result === 'champion' ? `決勝で ${ev.finalOpponentName} を破る` : `決勝で ${ev.finalOpponentName} に敗れる`;
+              jtDetail = _t(ev.result === 'champion' ? T.finalBeat : T.finalLost, { name: ev.finalOpponentName });
             } else if ((ev.result === 'semiFinal' || ev.result === 'quarterFinal' || ev.result === 'firstRound') && ev.eliminatedByName) {
-              jtDetail = `${ev.eliminatedByName} に敗れて敗退`;
+              jtDetail = _t(T.jtDetailEliminated, { name: ev.eliminatedByName });
             }
             milestones.push({ season: rel(ev.season), week: ev.week || 24, type: 'jt_round',
-              text: `ジュニアトーナメント ${jtLabel}`, detail: jtDetail });
+              text: _t(jtTpl), detail: jtDetail });
             break;
           }
           case 'domeMain': {
-            const dmType = ev.matchType === 'title' ? 'タイトルマッチ' : 'メインイベント';
-            const dmRes = ev.result === 'win' ? '勝利' : (ev.result === 'lose' ? '敗北' : '出場');
-            const dmOpp = ev.opponentName ? `（vs ${ev.opponentName}）` : '';
+            const dmTitle = ev.matchType === 'title';
+            const dmKey = ev.result === 'win' ? 'Win' : (ev.result === 'lose' ? 'Lose' : 'Entry');
+            const dmBase = (dmTitle ? 'domeTitle' : 'domeMain') + dmKey;
             milestones.push({ season: rel(ev.season), week: ev.week || 48, type: 'dome_main',
-              text: `ドーム大会 ${dmType} ${dmRes}${dmOpp}` });
+              text: ev.opponentName
+                ? _t(T[dmBase + 'Vs'], { name: ev.opponentName })
+                : _t(T[dmBase]) });
             break;
           }
           case 'b3Challenge': {
-            const b3Org = ev.opponentOrgName || '他団体';
+            const b3Org = ev.opponentOrgName || _lbl('他団体');
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'b3_event',
-              text: `${b3Org}への挑戦状 ${ev.won ? '勝利' : '敗北'}` });
+              text: _t(ev.won ? T.b3Win : T.b3Lose, { org: b3Org }) });
             break;
           }
           case 'b3Decline': {
-            const b3DOrg = ev.orgName || '他団体';
+            const b3DOrg = ev.orgName || _lbl('他団体');
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'b3_event',
-              text: `${b3DOrg}からの挑戦状を辞退` });
+              text: _t(T.b3Decline, { org: b3DOrg }) });
             break;
           }
           case 'b3Rejected': {
-            const b3ROrg = ev.rejectedByOrg === 'player' ? '相手団体' : (ev.rejectedByOrg || '相手団体');
+            const b3ROrg = ev.rejectedByOrg === 'player' ? _lbl('相手団体') : (ev.rejectedByOrg || _lbl('相手団体'));
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'b3_event',
-              text: `挑戦状を${b3ROrg}に拒絶される` });
+              text: _t(T.b3Rejected, { org: b3ROrg }) });
             break;
           }
           case 'springTagLeague': {
-            const stMap = { champion: '優勝', runnerUp: '準優勝', third: '3位', fourth: '4位' };
-            const stLabel = stMap[ev.result] || '出場';
+            const stMap = { champion: T.springTagChampion, runnerUp: T.springTagRunnerUp, third: T.springTagThird, fourth: T.springTagFourth };
+            const stTpl = stMap[ev.result] || T.springTagEntry;
             const stPartner = Engine.career.resolveFighterName(G, ev.partnerId);
             let stDetail;
             if (stPartner) {
-              stDetail = ev.result === 'champion' ? `${stPartner}とのタッグで頂点に立つ`
-                : ev.result === 'runnerUp' ? `${stPartner}とのタッグで決勝進出`
-                : `${stPartner}とのタッグで参戦`;
+              stDetail = _t(ev.result === 'champion' ? T.springTagDetailChampion
+                : ev.result === 'runnerUp' ? T.springTagDetailRunnerUp
+                : T.springTagDetailEntry, { name: stPartner });
             }
             milestones.push({ season: rel(ev.season), week: ev.week || 24, type: 'spring_tag',
-              text: `第${ev.season}回 春のタッグリーグ ${stLabel}`, detail: stDetail });
+              text: _t(stTpl, { n: ev.season }), detail: stDetail });
             break;
           }
           case 'breakthrough':
@@ -7177,7 +7204,7 @@ const Engine = {
           season: rel(ev.season || 1), week: ev.week || 0,
           type: ev.type === 'injury_retirement' ? 'injury' : (ev.type || 'note'),
           text: ev.detail || ev.type,
-          detail: ev.type === 'injury_retirement' ? '怪我による引退' : undefined
+          detail: ev.type === 'injury_retirement' ? _t(T.injuryRetire) : undefined
         });
       }
 
@@ -7189,7 +7216,7 @@ const Engine = {
         if (seasonEvents.length === 0) {
           // Add a placeholder for seasons with no notable events
           milestones.push({ season: s, week: 48, type: 'season_end',
-            text: `キャリア${s}年目 終了`, detail: '特記事項なし' });
+            text: _t(T.seasonEnd, { n: s }), detail: _lbl('特記事項なし') });
         }
       }
 
@@ -12851,7 +12878,7 @@ const Engine = {
           nc.intensiveWeeksTotal = (nc.intensiveWeeksTotal || 0) + 1;
           nc._weekAction = 'intensive';
           nc.intensive = false;
-          { const _d = {}; if (actualGrowth > 0) _d[growStat] = actualGrowth; nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'practice', detail: '追い込み', deltas: _d }]; }
+          { const _d = {}; if (actualGrowth > 0) _d[growStat] = actualGrowth; nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'practice', detail: GROWTH_LOG_LABELS.intensive, deltas: _d }]; }
           return nc;
         }
 
@@ -12881,7 +12908,7 @@ const Engine = {
             nc._weekAction = 'practice';
             nc.intensiveWeeks = 0;
             delete nc._boycottZeroGrowth;
-            nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'rest', detail: 'ボイコット' }];
+            nc.growthLog = [..._gl, { season: G.season, week: G.week, type: 'rest', detail: GROWTH_LOG_LABELS.boycott }];
             return nc;
           }
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
@@ -12957,13 +12984,16 @@ const Engine = {
         {
           const _gld = {};
           ['pw','sp','te','st','mn'].forEach(s => { const d = Math.round(((nc[s]||0) - (c[s]||0)) * 10) / 10; if (d > 0) _gld[s] = d; });
+          // i18n P7-25: ラベルは data.js の GROWTH_LOG_LABELS(§10-2の「関数内の表」解消)。
+          // 保存値は従来どおり生JAのままで、訳は表示点(ui-render.js)が値として1回引く
           let _glt, _gldt;
-          if (action === 'practice') { _glt = 'practice'; _gldt = ({balance:'バランス',pw:'パワー重点',sp:'スピード重点',te:'テクニック重点',st:'スタミナ重点'})[nc.schedule] || 'バランス'; }
-          else if (action === 'promo') { _glt = 'practice'; _gldt = (nc._promoStreak || 0) >= 3 ? 'プロモ活動（キャンペーン最大効果）' : (nc._promoStreak || 0) === 2 ? 'プロモ活動（キャンペーン2週目）' : 'プロモ活動'; }
-          else { _glt = 'rest'; _gldt = autoRested ? '自動休養' : '休養'; }
+          const _GL = GROWTH_LOG_LABELS;
+          if (action === 'practice') { _glt = 'practice'; _gldt = _GL.schedule[nc.schedule] || _GL.schedule.balance; }
+          else if (action === 'promo') { _glt = 'practice'; _gldt = (nc._promoStreak || 0) >= 3 ? _GL.promo3 : (nc._promoStreak || 0) === 2 ? _GL.promo2 : _GL.promo; }
+          else { _glt = 'rest'; _gldt = autoRested ? _GL.autoRest : _GL.rest; }
           const _gle = { season: G.season, week: G.week, type: _glt, detail: _gldt };
           if (Object.keys(_gld).length > 0) _gle.deltas = _gld;
-          if (nc.hotStreak) _gle.eventTag = '🔥絶好調';
+          if (nc.hotStreak) _gle.eventTag = _GL.hotStreak;
           nc.growthLog = [..._gl, _gle];
         }
         return nc;
@@ -21017,13 +21047,21 @@ Engine.awards = {
   /** v2.0 HOF拡張: careerRecord.history → 固有名詞テキストの実績リスト
    * 転生前（NPC事前史）は別人扱いで除外。joinSeason 以降のみ。
    * @param {object} state - 任意。渡すと springTagLeague のパートナー名解決に使う
+   * @param {function} dict - 任意(i18n Stage B P7-25)。「辞書参照関数」。省略時はJA原文の
+   *   まま = 保存値(G.allHallOfFame[].careerHighlights[].text)は不変(D-P6-4)。
+   *   表示点(ui-render.js showHofDetail)だけが dict 付きで**再生成**し、保存値と
+   *   1バイト照合してから差し替える(§18-1 の語り文と同じ自己検証型fail-open)。
    */
-  buildCareerHighlights(rec, orgName, state) {
+  buildCareerHighlights(rec, orgName, state, dict) {
     const histAll = (rec && rec.history) || [];
     // 判定は calcHofPoints と同じ経路（Engine.career.joinSeason）を通す。
     const joinS = Engine.career.joinSeason({ careerRecord: { history: histAll } });
     const history = Engine.career.filterPostJoin(histAll, joinS);
     const highlights = [];
+    const H = HOF_HIGHLIGHT_TEMPLATES;
+    const _t = (tpl, params) => _wmFillWithDict(dict, tpl, params);
+    // 賞名は ui-ledger に既訳がある1語ラベル。`{award} 受賞` の値として引き直す(§14-2)
+    const _award = (ja) => _t(H.award, { award: _wmDictLabel(dict, ja) });
     let reignCount = 0;
     history.forEach(ev => {
       switch (ev.type) {
@@ -21031,28 +21069,30 @@ Engine.awards = {
           reignCount++;
           highlights.push({
             type: 'titleWin', season: ev.season,
-            text: `${ev.orgName || orgName}王座 ${reignCount === 1 ? '初戴冠' : reignCount + '度目の戴冠'}`
+            text: reignCount === 1
+              ? _t(H.titleWinFirst, { org: ev.orgName || orgName })
+              : _t(H.titleWinRepeat, { org: ev.orgName || orgName, n: reignCount })
           });
           break;
         case 'titleDefense':
           if ((ev.count || 0) >= 3) {
             highlights.push({
               type: 'titleDefense', season: ev.season,
-              text: `${ev.orgName || orgName}王座 ${ev.count}度防衛`
+              text: _t(H.titleDefense, { org: ev.orgName || orgName, n: ev.count })
             });
           }
           break;
         case 'titleLoss':
           highlights.push({
             type: 'titleLoss', season: ev.season,
-            text: `${ev.orgName || orgName}王座 陥落（${ev.defenses || 0}度防衛の末に）`
+            text: _t(H.titleLoss, { org: ev.orgName || orgName, n: ev.defenses || 0 })
           });
           break;
         case 'juniorTournament':
           if (ev.result === 'champion') {
             highlights.push({
               type: 'juniorTournament', season: ev.season,
-              text: 'ジュニアトーナメント 優勝'
+              text: _t(H.juniorTournament)
             });
           }
           break;
@@ -21060,26 +21100,28 @@ Engine.awards = {
           if (ev.result === 'champion' || ev.result === 'win') {
             highlights.push({
               type: 'ppvMainEvent', season: ev.season,
-              text: 'PPV GRAND FINAL 優勝'
+              text: _t(H.ppvMainEvent)
             });
           }
           break;
         case 'awardRookie':
-          highlights.push({ type: 'awardRookie', season: ev.season, text: '新人王 受賞' });
+          highlights.push({ type: 'awardRookie', season: ev.season, text: _award('新人王') });
           break;
         case 'awardMVP':
-          highlights.push({ type: 'awardMVP', season: ev.season, text: 'MVP 受賞' });
+          highlights.push({ type: 'awardMVP', season: ev.season, text: _award('MVP') });
           break;
         case 'awardMedia':
-          highlights.push({ type: 'awardMedia', season: ev.season, text: 'メディア功労賞 受賞' });
+          highlights.push({ type: 'awardMedia', season: ev.season, text: _award('メディア功労賞') });
           break;
         case 'awardBestMatch':
-          highlights.push({ type: 'awardBestMatch', season: ev.season, text: `ベストマッチ賞（試合評価 ${ev.mq || '?'}）` });
+          highlights.push({ type: 'awardBestMatch', season: ev.season, text: _t(H.awardBestMatch, { mq: ev.mq || '?' }) });
           break;
         case 'domeMain':
           highlights.push({
             type: 'domeMain', season: ev.season,
-            text: `ドーム公演 ${ev.matchType === 'title' ? 'タイトルマッチ' : 'メインイベント'} ${ev.result === 'win' ? '勝利' : '出場'}`
+            text: _t(ev.matchType === 'title'
+              ? (ev.result === 'win' ? H.domeTitleWin : H.domeTitleEntry)
+              : (ev.result === 'win' ? H.domeMainWin : H.domeMainEntry))
           });
           break;
         case 'springTagLeague':
@@ -21087,7 +21129,9 @@ Engine.awards = {
             const partnerName = Engine.career.resolveFighterName(state, ev.partnerId);
             highlights.push({
               type: 'springTagLeague', season: ev.season,
-              text: partnerName ? `第${ev.season}回 春のタッグリーグ優勝（${partnerName}と）` : `第${ev.season}回 春のタッグリーグ優勝`
+              text: partnerName
+                ? _t(H.springTagWithPartner, { n: ev.season, name: partnerName })
+                : _t(H.springTag, { n: ev.season })
             });
           }
           break;
@@ -21099,7 +21143,7 @@ Engine.awards = {
       const lastWarWin = warWinsAll[warWinsAll.length - 1];
       highlights.push({
         type: 'war', season: lastWarWin.season,
-        text: `対抗戦通算${warWinsAll.length}勝`
+        text: _t(H.war, { n: warWinsAll.length })
       });
     }
     // calcHofPoints と同じ post-join history / 共通ヘルパーから生成する。
@@ -21118,17 +21162,17 @@ Engine.awards = {
       const generation = generationOf(ev);
       highlights.push({
         type: 'unifiedTitle', season: ev.season,
-        text: `全国統一王座 戴冠${generation ? `(第${generation}代)` : ''}`,
+        text: generation ? _t(H.unifiedCrownGeneration, { n: generation }) : _t(H.unifiedCrown),
       });
     });
     unifiedStats.captured.forEach(ev => {
-      highlights.push({ type: 'unifiedTitle', season: ev.season, text: '全国統一王座 奪取' });
+      highlights.push({ type: 'unifiedTitle', season: ev.season, text: _t(H.unifiedCapture) });
     });
     if (unifiedStats.defenses.length > 0) {
       const lastDefense = unifiedStats.defenses[unifiedStats.defenses.length - 1];
       highlights.push({
         type: 'unifiedTitle', season: lastDefense.season,
-        text: `全国統一王座 防衛${unifiedStats.defenses.length}度`,
+        text: _t(H.unifiedDefense, { n: unifiedStats.defenses.length }),
       });
     }
     highlights.sort((a, b) => a.season - b.season);
@@ -21741,10 +21785,15 @@ Engine.seasonReview = {
    * それが空でも復元できるよう retiredSeasons(永続) + chronicle.fighterArchive(永続) の
    * フォールバックを必ず用意する。
    */
-  _getDepartures(state) {
+  _getDepartures(state, dict) {
     const season = state.season;
     const out = [];
     const seen = new Set();
+    // i18n P7-25: `{n}年の現役に幕` は SEASON_REVIEW_FALLBACK_TEMPLATES へ移設。
+    // `引退` は ui-ledger に既訳があるので表へは入れず値として引く(§15-3)
+    const _note = (years) => (years != null
+      ? _wmFillWithDict(dict, SEASON_REVIEW_FALLBACK_TEMPLATES.departureYears, { n: years })
+      : _wmDictLabel(dict, '引退'));
     (state.retiredFighters || []).forEach(f => {
       const hist = (f.careerRecord && f.careerRecord.history) || [];
       const retireEv = hist.find(e => e.type === 'retire' && e.season === season);
@@ -21752,7 +21801,7 @@ Engine.seasonReview = {
         seen.add(f.id);
         const years = Engine.seasonReview._careerYears(f, season);
         out.push({ id: f.id, name: f.name, age: f.age != null ? f.age : null,
-          note: years != null ? `${years}年の現役に幕` : '引退' });
+          note: _note(years) });
       }
     });
     const retiredSeasons = state.retiredSeasons || {};
@@ -21767,7 +21816,7 @@ Engine.seasonReview = {
       const years = (a.careerSeasonsEnd != null && a.careerSeasonsStart != null)
         ? Math.max(1, a.careerSeasonsEnd - a.careerSeasonsStart + 1) : null;
       out.push({ id, name: a.name, age: a.age != null ? a.age : null,
-        note: years != null ? `${years}年の現役に幕` : '引退' });
+        note: _note(years) });
     });
     return out;
   },
@@ -21826,6 +21875,10 @@ Engine.seasonReview = {
       return dict(line, p);
     };
     const _lines = (typeof SEASON_REVIEW_LINES !== 'undefined') ? SEASON_REVIEW_LINES : null;
+    // i18n P7-25: プールが引けなかったときの仮文(§10-2の関数内直書きを表へ移設)。
+    // SEASON_REVIEW_LINES の全プールが非空なので現状は到達しないが、防御的な枝は
+    // 残したまま台帳へ載せて訳す(specs §22-6 の裁定)
+    const _fb = SEASON_REVIEW_FALLBACK_TEMPLATES;
     const _nseed = ((G.season || 1) * 7919) | 0; // シーズンごとに固定・rngは消費しない(build純関数のため)
 
     // ── 最終順位＋前年比 ──
@@ -21862,7 +21915,7 @@ Engine.seasonReview = {
         champRecord = {
           tag: _line('王者'), id: champ.id, name: champ.name,
           meta: _line('団体王座 / V{n}', { n: defenses }),
-          narr: champNarr || `王座を${defenses}度守った。`,
+          narr: champNarr || _line(_fb.champ, { n: defenses }),
         };
       }
     }
@@ -21877,7 +21930,7 @@ Engine.seasonReview = {
       records.push({
         tag: _line('JT優勝・新人王'), id: j.id, name: j.name,
         meta: j.age != null ? _line('{age}歳 / OVR {ovr}', { age: j.age, ovr: j.ovr }) : _line('OVR {ovr}', { ovr: j.ovr }),
-        narr: (_lines && _line(_pickLine(_lines.records.jt, _nseed + 21))) || 'ジュニアトーナメントを制した。',
+        narr: (_lines && _line(_pickLine(_lines.records.jt, _nseed + 21))) || _line(_fb.jt),
       });
     }
     if (awards && awards.mediaAward && awards.mediaAward.isPlayerOrg) {
@@ -21885,7 +21938,7 @@ Engine.seasonReview = {
       records.push({
         tag: _line('メディア功労'), id: m.id, name: m.name,
         meta: _line('{age}歳', { age: m.age != null ? m.age : '?' }),
-        narr: (_lines && _line(_pickLine(_lines.records.media, _nseed + 31))) || 'リング外での発信が団体を支えた。',
+        narr: (_lines && _line(_pickLine(_lines.records.media, _nseed + 31))) || _line(_fb.media),
       });
     }
     // 春のタッグリーグ優勝（自団体該当分のみ）。spring-tag-league-spec-v0.1 §12.4
@@ -21904,7 +21957,7 @@ Engine.seasonReview = {
         records.push({
           tag: _line('春タッグ優勝'), id: f1.id, name: f1.name,
           meta: f2 ? _line('{name}と組んで', { name: f2.name }) : '',
-          narr: (_lines && _line(_pickLine(_lines.records.springTag, _nseed + 41))) || '春のタッグリーグを制した。',
+          narr: (_lines && _line(_pickLine(_lines.records.springTag, _nseed + 41))) || _line(_fb.springTag),
         });
       }
     }
@@ -21925,7 +21978,7 @@ Engine.seasonReview = {
     };
 
     // ── §III 顔ぶれの変化 ──
-    const departures = Engine.seasonReview._getDepartures(G);
+    const departures = Engine.seasonReview._getDepartures(G, dict);
     const joinThreshold = processed ? 1 : 0; // applySeasonEnd実行後はcareerSeasonsが+1されている
     const joins = (G.roster || [])
       .filter(f => !f.isRental && (f.careerSeasons || 0) === joinThreshold)
@@ -21980,11 +22033,11 @@ Engine.seasonReview = {
       } else {
         // フォールバック(仮文)
         if (prevRank != null) {
-          if (rank < prevRank) lead = `前年${prevRank}位から${rank}位に浮上した。`;
-          else if (rank > prevRank) lead = `前年${prevRank}位から${rank}位に後退した。`;
-          else lead = `前年に続き${rank}位で今季を終えた。`;
+          if (rank < prevRank) lead = _line(_fb.leadRankUp, { rank, prevRank });
+          else if (rank > prevRank) lead = _line(_fb.leadRankDown, { rank, prevRank });
+          else lead = _line(_fb.leadRankSame, { rank });
         } else {
-          lead = `旗揚げ初年度、${rank}位でシーズンを終えた。`;
+          lead = _line(_fb.leadFirstSeason, { rank });
         }
       }
       if (hero) {
@@ -21992,8 +22045,8 @@ Engine.seasonReview = {
         const heroLine = _lines ? _pickLine(_lines.leadHero[heroKey], _nseed >> 2) : '';
         // i18n Stage B P5-2o: リード文とヒーロー文は別々の辞書キー。日本語は句点で直結
         // (従来と1バイト同一)、英語はピリオドの後にスペースを入れて継ぐ。
-        lead = _joinLead(lead, heroLine ? _line(heroLine, { hero: hero.name })
-          : (hero.role === 'MOST VALUABLE' ? `${hero.name}が年間MVPに輝いた。` : `${hero.name}がチームを牽引した。`));
+        lead = _joinLead(lead, _line(heroLine || (hero.role === 'MOST VALUABLE' ? _fb.heroMvp : _fb.heroAce),
+          { hero: hero.name }));
       }
     }
 
@@ -22005,14 +22058,13 @@ Engine.seasonReview = {
       const CHASE_CLOSE_THRESHOLD = 40; // 🔧 射程圏閾値
       const closeKey = gap <= CHASE_CLOSE_THRESHOLD ? 'chase_close' : 'chase_far';
       const closingLine = _lines ? _pickLine(_lines.closing[closeKey], _nseed >> 4) : '';
-      closing = closingLine ? _line(closingLine, { above: aboveMe.name, gap })
-        : `上位${aboveMe.name}との差は${gap}点。来季も、着実に積み上げたい。`;
+      closing = _line(closingLine || _fb.closingChase, { above: aboveMe.name, gap });
     } else if (meIdx === 0) {
       const closingLine = _lines ? _line(_pickLine(_lines.closing.top, _nseed >> 4)) : '';
-      closing = closingLine || '業界の頂点として、来季も走り続ける。';
+      closing = closingLine || _line(_fb.closingTop);
     } else {
       const closingLine = _lines ? _line(_pickLine(_lines.closing.fallback, _nseed >> 4)) : '';
-      closing = closingLine || '来季も、この団体の物語は続く。';
+      closing = closingLine || _line(_fb.closingFallback);
     }
 
     return {

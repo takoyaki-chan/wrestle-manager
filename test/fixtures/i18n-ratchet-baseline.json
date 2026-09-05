@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-09-05T04:29:53.153Z",
+  "generatedAt": "2026-09-05T05:13:46.278Z",
   "files": {
     "data.js": {
-      "jaCount": 17322,
-      "jaChars": 311212
+      "jaCount": 17458,
+      "jaChars": 312372
     },
     "kuroda-text.js": {
       "jaCount": 900,
       "jaChars": 31355
     },
-    "management.js": {
-      "jaCount": 1786,
-      "jaChars": 16068
-    },
     "tenchosen-final-lines.js": {
       "jaCount": 666,
       "jaChars": 15434
+    },
+    "management.js": {
+      "jaCount": 1671,
+      "jaChars": 15285
     },
     "victory-lines.js": {
       "jaCount": 760,
@@ -26,8 +26,8 @@
       "jaChars": 9816
     },
     "ui-common.js": {
-      "jaCount": 1330,
-      "jaChars": 9390
+      "jaCount": 1327,
+      "jaChars": 9352
     },
     "ui-render.js": {
       "jaCount": 993,
@@ -86,8 +86,8 @@
       "jaChars": 647
     },
     "draft-negotiation.js": {
-      "jaCount": 53,
-      "jaChars": 597
+      "jaCount": 54,
+      "jaChars": 617
     },
     "relationships.js": {
       "jaCount": 46,

@@ -1733,3 +1733,114 @@ data.jsの+2は`NEWS_STAMP_SUFFIX_TEXTS`の新規2値。`node test/i18n-ratchet.
 - championWatch再構築(EN、announce系): `There is talk that Anju Matsukawa, the previous champion, could win it again after four years.`
 - championWatch再構築(EN、field系): `Anju Matsukawa, the previous champion, has also made the field, and hopes for a repeat are rising.`
 - 旧セーブ(生キー無し)をENで開いた場合: 焼かれたJA完成文がそのまま出る(fail-open。次にpushされた号からはEN再構築が効く)
+
+## 38. Stage B P7-25 — 台帳未収載の中小プール5件(キャリア年表/殿堂ハイライト/成長ログ/ドラフト交渉/季総括)の配線と英訳(2026-09-05追加)
+
+`docs/i18n-coverage-report-v0.1.md` のA表 #4/#5/#6/#7/#9 を解決した。訳出**177キー**
+(template-ledger 3,143→**3,303**・未訳0 / ui-ledger 4,258→**4,275**・未訳0 /
+dialogue-ledger 16,674 は不触)。**#8(絆/因縁レベルラベル)は消費点ゼロと判明したため配線せずB分類へ訂正**(38-5)。
+
+### 38-1. 同じ「管理画面の記録テキスト」でも、永続の有無で解き方が3通りに割れる
+
+5プールはどれも「Engineが組み立てた完成文をUIが素通しで出す」型だが、**その完成文がGへ焼かれるか**で解が変わる。
+
+| プール | 完成文の行き先 | 配線 |
+|---|---|---|
+| キャリア年表(`Engine.milestone.get`) | **焼かれない**(表示のたびに`careerRecord.history`から組み直す) | `get(G, id, dict)` の**dict-opts**だけ(§22-1と同じ族) |
+| 殿堂ハイライト(`Engine.awards.buildCareerHighlights`) | **焼かれる**(`G.allHallOfFame[].careerHighlights[].text`) | 保存は従来どおりdict無し。表示点で**JA再生成→保存値と1バイト照合→一致時だけdict版**(§18-1の語り文と同型) |
+| 成長ログのラベル(`growthLog[].detail`/`.eventTag`) | **焼かれる**が、値が**そのまま辞書キー**になる1語ラベル | 表示点で値を`t()`で1回引く(§17-2の異名と同型) |
+| ドラフト交渉ナレーション(`negState.narration`) | **焼かれる**+選出が消費済み乱数依存で再生成不可 | **追加フィールド**`narrationTpl`/`narrationVars`(§14-3/§16-1と同型) |
+| 季総括の仮文(`Engine.seasonReview.build`) | 焼かれない | 既存の`_line`(=dict)へ通すだけ |
+
+### 38-2. 「フォールバック語を`{org}`へ差し込む」と英語で語が重複する
+
+`{org} 獲得`(org=`ev.orgName || '団体王座'`)を `Won the {org} title` と訳すと、
+フォールバック時に **"Won the Promotion Championship title"** になる。`{org}{n}度防衛達成`
+(org=`'王座'`→"Title")はさらに悪く **"Title title — defense No. {n}"** になる。
+
+- **`_wmDictLabel`でフォールバック語を差し込むのは、その語が「値」として自然に収まる枠だけにする**
+  (`他団体`→"Another promotion"を`Moved to {org}`へ入れるのは成立する)
+- 語が**枠の名詞と衝突する**枠では、**フォールバック側を分岐ごとの完全文テンプレにする**
+  (`titleWinNoOrg: '団体王座 獲得'` → "Won the promotion title")。JAの充填結果は1バイト同一なので
+  構造規約3の「分岐ごとの完全文」をそのまま適用できる
+
+### 38-3. 既訳が「文脈違い」なのか「全消費点で誤り」なのかを`count`で見分ける
+
+`他団体` の既訳は **"Other promotions"**(複数形)だったが、ui-ledgerの13件の消費点を全数追ったところ
+**すべてが `団体名 || t('他団体')` 形の「名前が取れないときの1団体を指すフォールバック」**で、
+複数形が正しい箇所は1つも無かった。§15-6-3(`該当選手`)と同じ手順で `en` を **"Another promotion"**
+へ訂正した(キー分割は不要)。**「文脈違い」を見つけたら、まず全消費点を数えてから直す**。
+
+### 38-4. 分岐の完全文化はラチェットを増やす — その分は理由として書く
+
+`${orgPrefix}${viaJp}入団` のような断片連結を構造規約3どおり完全文へ展開すると、
+**JA文字列の本数はむしろ増える**(入団8本 / ドーム大会12本 / 対抗戦4本 …)。
+P7-25 は data.js +136 / management.js −115 / ui-render.js −6 / ui-common.js −9 /
+draft-negotiation.js +1 の **総計 +7**。移設(差引ゼロ)ではないので、
+`--update` 時は「どの分岐を何本に展開したか」を worklog に残すこと。
+
+### 38-5. 「A分類」も鵜呑みにしない — 消費点を自分で数える
+
+`BOND_LABELS`/`RIVALRY_LABELS`(relationships.js:14-28)は棚卸しレポートで
+「相関図の絆/因縁バーが参照」とA分類されていたが、実際の消費点は
+`Engine.relationships.inspect()` / `.stats()` の2つだけで、**その2関数の呼び出しが
+`src/`・`test/` に1つも無い**(定義位置も「デバッグ用ヘルパー」節)。相関図のバーは別系統の
+ラベルを使っている。**B分類(表示されない)へ訂正し、配線しない。**
+加えて `宿命のライバル` は GLIMPSE_B のイベントラベルとして ui-ledger に既訳
+("A fated nemesis")があり、帯域ラベルとして`t()`へ通すと文脈違いの訳が出る(§15-3)。
+
+### 38-6. 抽出器の入口を2つ増やした
+
+- **`test/i18n-extract-templates.js`**: `TARGET_TABLES` に `CAREER_MILESTONE_TEMPLATES` /
+  `HOF_HIGHLIGHT_TEMPLATES` / `SEASON_REVIEW_FALLBACK_TEMPLATES` を追加。加えて
+  `DRAFT_NEGOTIATION_PROPS = ['NARRATION']` を新設し、`extractAppObjectLiteral` の
+  **isolated eval**(`MANAGEMENT_FLAVOR_PROPS` と同じ作法)で `src/draft-negotiation.js` の
+  `Engine.draftNegotiation.NARRATION` 40本を切り出す。**同ファイルの loadAsGlobal は
+  Engine定義(management.js)を要するので使えない**
+- **`test/i18n-extract-ui.js`**: `DATA_TABLES` に `GROWTH_LOG_LABELS`(data.js)、
+  `JS_TABLES` に `draft-negotiation.js` の `DRAFT_HEAT_LABELS` / `DRAFT_UI_NARRATION` を追加。
+  JS_TABLESは観戦iframe専用の仕組みではなく「トップレベル`const`をソースから切り出して
+  孤立評価する」汎用モードなので、Engine依存のあるファイルでもそのまま使える
+
+### 38-7. JA同一性の証明(5,418行・不一致0)
+
+`git archive HEAD` で**凍結コピーを丸ごと別ディレクトリへ展開**し、同一のダンプスクリプトを
+新旧両方の `src/` に対して実行して出力をバイト比較した(凍結コピーの取り違えが起きない)。
+
+- `Engine.milestone.get`: 全24 event種別 × 分岐フィールドの直積 **3,311行**
+- `Engine.awards.buildCareerHighlights`: 全実績種別を単独/合成の両方で
+- `Engine.draftNegotiation.pickNarration` 6型 × 4団体 × rng 12本 / `getHeatInfo` 全帯域
+- `Engine.seasonReview._getDepartures` / `_decideHeadline` 全枝(1,008通り)
+- `GROWTH_LOG_LABELS` の値集合(旧実装の直書き値と突合)
+- 合計 **5,418行・diff 0**。`node test/ja-golden.js` も基準hash `dd2e536b…` と完全一致
+- `node test/auto-sim.js 20 42` の semantic fingerprint は **HEADの実測値と同じ `640b2591`**
+  (追加フィールド `narrationTpl`/`narrationVars` は `G._draftNegotiation` にしか載らず、
+  auto-simは交渉UIを踏まないため指紋に現れない)
+
+### 38-8. 検証
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`(data.js / management.js / draft-negotiation.js / ui-common.js / ui-render.js / 抽出器2本) | ✅ 全OK |
+| `node test/ja-golden.js`(`--update`不使用) | ✅ **完全一致**(lines=11307・hash `dd2e536b…`) |
+| build-dict 3本 | ✅ ui **4,275**・template **3,303**・dialogue 16,674 — いずれも**未訳0** |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー16件・すべて訳文一致 |
+| `npm test` | ✅ **261/261 PASS** |
+| `node test/i18n-ratchet.js --update` | 総数 28,050→**28,057**(+7)。内訳は38-4 |
+| `node test/auto-sim.js 20 42` | ✅ **ALL CLEAR**・fingerprint `640b2591`(HEAD実測と同一)・台帳検査3種違反0 |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0 |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・419手・**i18n-miss 0**・Issues 0・JA露出57(HEAD実測57と同値) |
+| VM検証(実物の i18n.js + lang-en*.js を読み込み `setLang('en')`) | ✅ 4,374行を全分岐再走。**合成テストデータの団体名/選手名を除いた日本語残り0・i18n-miss 0** |
+
+**EN走破のdigestは元々非決定的**(HEADで2回走らせて `1373a572…` → `bfea1fc6…`)。
+JA走破のdigestだけが安定した不変条件なので、EN側はPASS/Issues/i18n-miss/JA露出で見る。
+
+### 38-9. P7-25で新たに見つかった穴(未着手)
+
+1. **成長ログの`match`行と`milestone`行はまだ生JA** — `vs {name}` / `タッグ({partner}) vs {opps}` /
+   `敵地遠征 vs {name}`(management.js・app.js)と `総合力{n}到達` / `人気{n}到達` /
+   `{stat}が限界に到達`(app.js:11890)。どれも**名前や数値を埋めた完成文がgrowthLogへ永続**するので、
+   §14-3の追加フィールド方式が要る(棚卸しレポートのC分類)
+2. **キャリア年表の「経歴(怪我・重大事項)」欄の`detail`** — `careerHistory[].detail`(怪我名)は
+   データ側の値で、年表・怪我欄の両方に生JAで出る。injuryLabel と同じ層の解決が要る
+3. **`ns.log`(交渉ログ `R{n}: プレイヤー降り ({bid}万)`)は現状どこにも描画されない** — 描画するなら要配線
