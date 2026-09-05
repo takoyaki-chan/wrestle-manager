@@ -1,5 +1,89 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-18 — 数値+単位語の裸残りsweep(ui-render.js/ui-common.js)(2026-09-05)
+
+P7-15/P7-17で裸の「万」は潰したが、`<span class="count">${n}</span>名`(ui-common.js:6434)や`${fighter.age || '?'}歳`(ui-common.js:1567)のように**数値の直後に日本語の単位語をJSテンプレートリテラルで直結**している箇所が残っていた。t()を通らないため`[i18n-miss]`にも出ず、走破のJA露出にも要素単位でしか出ない(数値と同居しているため見落とされやすい)。
+
+### 0. 開始前
+
+main先端(9515702b)へfast-forward。UI 4,243/テンプレ3,059/セリフ16,674・未訳0、規則23検査exit1化済みの状態から着手。
+
+### 1. 走査
+
+`src/ui-render.js`/`ui-common.js`/`app.js`/`factions.js`/`battle-engine-main.js`/`tag-battle-main.js`の6ファイルを対象に、`${…}`の直後(空白/閉じspan越し/開きspan越しを含む)に歳|名|人|週|年|戦|勝|敗|位|回|度|件|分|秒|試合|連勝|連敗|期|季|点|pt|万が続く箇所をripgrepの2段階正規表現(`\$\{[^{}]{0,100}\}`→単純ケース、`\$\{[^{}]{0,100}\}(<[^>]{0,60}>){0,3}`→span越しケース)で機械走査し、既存の広域探索(`\}(unit)`)との差分で見落としがないか相互検証した(全差分を目視確認し、t()キー内リテラル`'{n}週'`型の誤検知であることを確認)。
+
+| ファイル | 走査ヒット数(実質: t()未経由の裸接続) | 内訳 |
+|---|---:|---|
+| ui-render.js | 32 | 歳1/万2/週2/度2/回4/勝1/敗1/名4/pt3/位1/週(第/年/duration)複数 |
+| ui-common.js | 42 | 歳3/万2/週2/期2/年3/勝1/敗1/名7/人1/試合5/回3/pt1(除外) |
+| app.js | 13 | 人11/勝1/敗1(**全件対象外**) |
+| factions.js | 4 | 週1/万3(**全件対象外**) |
+| battle-engine-main.js | 0 | — |
+| tag-battle-main.js | 0 | — |
+
+### 2. 対象外と判定した箇所(修正しなかった理由)
+
+機械的に「裸残り」として検出されたが、以下は**既存の別機構で正しく処理済み**、または**プレイヤーに表示されない**ため、今回は修正していない(誤って触ると壊れる/意味がない箇所):
+
+- **app.js `_NEWSPAPER_ARTICLES`(13箇所すべて)**: `kurodaText(fn, d, WM_I18N.t)`(kuroda-text.js)がアロー関数の`fn.toString()`を正規表現でテンプレ化し`{attendanceToLocaleString}人`のようなプレースホルダへ自動変換した上でtemplate-ledgerを引く(P7-8で確立済みの仕組み)。ソース上は裸に見えるが**既に完全に英訳されている**(該当キーがtemplate-ledger.jsonに存在することを確認)
+- **factions.js:2469 `wmDiag(...)`**: `window.WM_DIAG`時のみconsole.warnするデバッグ専用ログ、非表示
+- **factions.js:3434/3462/3484 `impactSummary[].delta`**: `showFactionEventResult`の実装コメントに明記「impactSummaryは受け取るが画面表示しない(数値はナレーション側で吸収する方針)」——実際に未使用のデータ
+- **ui-common.js:6733 `ns.log.push(...)`**: レンダラ側に消費箇所が無い内部ログ配列
+- **ui-common.js:6683/6697/6710 `stories[].headline`**: ドラフト結果ニュースの見出し全体が生JAの完全文(management.js「新聞composer」領域と地続き。P7-16で作業中のため今回は触らない)
+- **ui-render.js:5768 `_scoutComment()`**: スカウト評価コメント3種が完全に未i18n化の生JA長文(`STYLE_FLAIR`辞書とネストした複合文)。数値部分だけt()化すると残り全部が生JAのまま混在し逆に読みにくくなるため、フルセンテンスi18n(別バッチ)待ちとして見送り
+- **ui-render.js:12830/12840 `_dfcChronicle()`**: 派閥抗争クロニクルの地の文が完全に未i18n化(上と同種)。同様の理由で見送り
+- **ui-render.js:7280 `_npTurnsToTime()`**: 「○分○秒」はJA固有の数値組立でdict訳不能なため、既にコード内コメントで明記の上`WM_I18N.lang==='en'`分岐でmm:ss表記へ切替済み(P7-7b)。触らず
+- **ui-render.js:9295 `_sanitizePts()`**: 既存(management.js生成の)キャッシュ済み小数pt表記を整数化する正規表現ユーティリティ。任意文字列内の`N pt`パターンを対象にする性質上、単一ラベルとしてt()化できない
+- **ui-render.js:12034/12036 `_chronicleCompetitiveValueHtml()`旧フォールバック**: コード内コメントに明記の「valueを持たない旧セーブだけ、従来の逆方向パーサへfail-open(JA表示のみ)」——P6-18で意図的にJA固定とされた経路
+- **`pt`が独自の`<span class="unit">`/`<span class="lbl">`で囲われている7箇所**(ui-render.js:4468/4477/4577/9407/9540、ui-common.js:19143 等): 「pt」はJA本文中でも英字表記のまま使われる単位(他の完全一致例`合計{n}pt`と同じ)で、この形は数値直後に開きタグを挟んだ**専用スタイル用span**であり日本語残留ではない。t()化してもJA/EN表示は1バイトも変わらないため対象外(規則の厳密解釈: `${…}の直後(空白/閉じspan越し)`に該当しないケース)
+
+### 3. 置換方式
+
+既存の`{n}単位`系テンプレキー(P7-6/P7-10で整備済み)を**最優先で再利用**し、無いものだけ新規キーを起票。マークアップが数値を包む場合(`<span class="count">${n}</span>名`等)は、タグごとプレースホルダの値に入れる方式(`WM_I18N.t('{n}名', { n: `<span class="count">${n}</span>` })`)でJA側のDOM構造を保った。
+
+**再利用した既存キー(15種類、変更なし)**: `{age}歳`→"Age {age}" / `{v}万`→"¥{v:man}" / `{v}万/週`→"¥{v:man}/week" / `{n}週`→"Weeks: {n}" / `{w}週`→"Weeks: {w}" / `第{w}週`→"Week {w}" / `{n}名`→"Wrestlers: {n}" / `{n}人`→"Wrestlers: {n}" / `{n}位`→"#{n}" / `{n}試合`→"Matches: {n}" / `全{n}試合`→"Matches in all: {n}" / `第{n}試合`→"Match {n}" / `{n}期`→"Seasons: {n}" / `{wins}勝`→"wins: {wins}" / `{losses}敗`→"Losses: {losses}"
+
+**新規キー(15件、i18n/ui-ledger.json追加→node test/i18n-build-dict.jsで生成)**:
+
+| キー(JA原文) | EN訳 | 用途 |
+|---|---|---|
+| `{n}pt` | `{n}pt` | ランキング/派閥序列ポイントの裸残り(ui-render.js 4箇所) |
+| `{n}回` | `{n}` | ラベル直後の回数(規則23回避=単位落とし。殿堂/年間実績カード、7箇所) |
+| `{n}度` | `{n}` | 同上、防衛回数版(統一王座記録表、3箇所) |
+| `度防衛` | `Defenses` | 数値と別spanに分離された「度防衛」ラベル単体(記録帯) |
+| `{dy}年{dw}週` | `{dy}y {dw}w` | 在位期間の複合表記(年+週) |
+| `{dy}年` | `{dy}y` | 在位期間(年のみ) |
+| `{dw}週` | `{dw}w` | 在位期間(週のみ、既存`{n}週`/`{w}週`と意味的に重複するがコンパクト統計カード向けに専用) |
+| `{n}年間` | `{n}` | 引退選手モーダルの「現役期間◯年間」(ラベル前置のため単位落とし) |
+| `{n}<span style="font-size:14px">年間</span>` | `{n}` | 同上、数値と別spanのケース |
+| `全{n}試合 — メインは頂上決戦` | `Matches in all: {n} — the main event is a summit match` | PPV速報テロップの煽り文一体化(規則23回避でコロン化) |
+| `第{n}試合 {result}` | `Match {n}: {result}` | PPV速報テロップの結果一文(勝者名+勝利/決着つかず) |
+| `第{n}回 JT` | `JT No. {n}` | JT大会結果画面のシーズンラベル |
+| `第{n}回 天頂戦` | `Tenchosen No. {n}` | 天頂戦バナー(既存の`第{n}回天頂戦`はスペース無しの別キー) |
+| `{n}試合分持ち越し` | `Matches carried over: {n}` | 天頂戦フォーカスカードの持ち越し注記 |
+| `団体立ち上げから{n}年。<br>ついに{org}が業界の頂点に立った。` | `A {n}-year journey since the promotion's founding.<br>At last, {org} has reached the top of the business.` | 業界制覇スライドの本文一体化 |
+
+いずれも黒田英文体§3-4の規則23(プレースホルダ直後の可算名詞複数形禁止)・規則25(プレースホルダ直前の不定冠詞禁止)に抵触しないよう設計(`build-dict`の機械検査でexit0を確認)。
+
+### 4. 検証
+
+- `node --check` 全触りファイル(ui-render.js/ui-common.js/lang-en.js) OK
+- `node test/i18n-build-dict.js`: 台帳総キー数4,258(既存4,243+新規15)・訳文あり4,258・未訳0・規則23/24/25違反0
+- `node test/i18n-ledger-consistency-test.js`: ok(2台帳以上に存在するキー=15件、すべて訳文一致)
+- `node test/ja-golden.js`: OK 基準と完全一致(lines=11233, hash=6b3d05c8daa3d93f62c7e2fcb3b21e7d6ffebc6dc1c4951919a229a2d4b8c1b3)——**JA出力1バイト不変**
+- `node test/i18n-ratchet.js`: OK 直書き日本語文字列の増加なし
+- `npm test`: 261本 全PASS
+- `npm run test:ui:walkthrough`: PASS、Actions: 328 digest=`1052faa82eaf7991`(指示書記載の期待値と完全一致。訳文修正1件の反映後に再走しても同digestを再確認)
+- `npm run test:ui:walkthrough:en`: PASS、Actions: 419 digest=`ae3f036b2efc97c5`、i18n-miss: 0 occurrences / 0 unique keys
+
+### 5. JA露出のbefore→after(--ja-exposure-log)
+
+指示書どおり`node test/ui-walkthrough/run.js --lang en --ja-exposure-log`でEN走破時のJA露出一覧を採取し、修正前(該当4ファイルを`git stash`で退避)/修正後で比較した。**結果は130件→130件(unit語を含む26件→26件)で変化なし**——理由は、この1季ランダム走破が実際に訪れた画面がtitleScreen/screen-shachoshitsu/screen-week/screen-log/screen-showの5画面のみで、今回の修正箇所(データベース→殿堂/統一王座記録、派閥カード、PPV速報テロップ、統一王座返還式、業界制覇スライド、レンタル確認、コーチ給与欄)はいずれも**1季走破では到達しないレア/条件付き画面**(派閥形成・PPV・天頂戦・引退殿堂等)だったため。残る26件は全て(a)`management.js`生成のgameLogレガシー行(週次収支ログ等、対象外ファイル)、(b)`名勝負製造機`特性の1文字アイコン`名`(誤検知・実際は英字"Match Maker"アイコン絵文字)、(c)`management.js:18002`の`${negResult.negotiations.length}名`(§6参照)であり、今回のsweep対象6ファイルからの残留は0件。到達確認は個々のt()呼び出しをダミー値付きで実行するランタイム検証(15新規+15再利用キー全件、`WM_I18N.setLang('en')`環境で実行し期待どおりの英訳が返ることを確認)で代替した。
+
+### 6. 対象外ファイルの棚卸し(報告のみ・修正なし)
+
+`management.js`(P7-16作業中のため不可侵)にも同型の裸単位語が多数残存することを副次的に確認した(`${c.age}歳`/`${...}度`/`${...}勝${...}敗`/`management.js:18002 ${negResult.negotiations.length}名`等、ui-render.js/ui-common.jsで既に潰したのと同種のパターン)。P7-16完了後の次バッチで同様のsweepが必要。
+
 ## 🌐 英語対応 P7-15 — 走破ドライバのEN文言依存を`data-walk-role`役割属性で根治(+「万」単独span1件)(2026-09-04〜09-05)
 
 前セッション(worktree `agent-a7d3b43f689fe1060`)が実装を書いた状態でセッション終了し、未コミット差分が残っていた。今回は引き継ぎ判定→適用→検証→仕上げを行った。開始前にworktreeをmain先端(`084cd401`。P7-11/P7-14マージ済み)へfast-forward。

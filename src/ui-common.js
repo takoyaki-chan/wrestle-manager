@@ -1564,7 +1564,7 @@ function showRosterOverflowSigningModal(pending) {
     <div style="background:rgba(255,255,255,0.5);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:10px 14px;margin:10px auto 12px;max-width:460px;text-align:center">
       <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-bottom:4px">${sourceLabel}</div>
       <div style="font-size:16px;font-weight:700;color:var(--cream-text-main);margin-bottom:4px">${fighter.name || WM_I18N.t('選手')}</div>
-      <div style="font-size:12px;color:var(--cream-text-sub)">OVR ${Engine.util.ov(fighter || {})} ・ ${fighter.age || '?'}歳 ・ ${WM_I18N.t('契約金')} ${pending.cost || 0}万</div>
+      <div style="font-size:12px;color:var(--cream-text-sub)">OVR ${Engine.util.ov(fighter || {})} ・ ${WM_I18N.t('{age}歳', { age: fighter.age || '?' })} ・ ${WM_I18N.t('契約金')} ${WM_I18N.t('{v}万', { v: pending.cost || 0 })}</div>
     </div>`;
 
   let candidatesHtml = '';
@@ -1577,7 +1577,7 @@ function showRosterOverflowSigningModal(pending) {
       candidatesHtml += `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;border-radius:4px;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15)">
         <div>
           <div style="font-size:13px;font-weight:700;color:var(--cream-text-main)">${WM_I18N.pn(c.name)}</div>
-          <div style="font-size:11px;color:var(--cream-text-sub)">OVR ${ov(c)} ・ ${c.age || '?'}歳</div>
+          <div style="font-size:11px;color:var(--cream-text-sub)">OVR ${ov(c)} ・ ${WM_I18N.t('{age}歳', { age: c.age || '?' })}</div>
         </div>
         <button class="mdl-a-continue-btn" style="padding:6px 12px;font-size:11px;letter-spacing:2px;background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)" onclick="confirmRosterOverflowSigning(${c.id})">${WM_I18N.t('解雇して契約')}</button>
       </div>`;
@@ -2437,7 +2437,7 @@ function _renderRetirementPopup() {
   // 型の見出しには「引退」の語が入らないので、**副題で必ず引退だと分かるようにする**
   const sub = fk ? WM_I18N.t('現 役 引 退 ・ FAREWELL')
     : (isInjury ? `FAREWELL ・ INJURY` : `FAREWELL ・ ${careerYears} YEARS`);
-  const meta = `${WM_I18N.t('年齢')} ${f.age || '—'} ・ ${WM_I18N.t('現役期間')} ${careerYears}年間`;
+  const meta = `${WM_I18N.t('年齢')} ${f.age || '—'} ・ ${WM_I18N.t('現役期間')} ${WM_I18N.t('{n}年間', { n: careerYears })}`;
 
   // 引退選手のキャリアハイライトをB型ステージ下に挟む
   // 型ごとの地の文。セリフではないので白い吹き出しには入れない(ベースライン §3)
@@ -2459,9 +2459,9 @@ function _renderRetirementPopup() {
   const statsRow = `
     <div class="mdl-b-stats-row">
       <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">${WM_I18N.t('戦績')}</div>
-        <div class="mdl-b-stat-value small" style="font-size:16px">${wins}勝 ${losses}敗</div></div>
+        <div class="mdl-b-stat-value small" style="font-size:16px">${WM_I18N.t('{wins}勝', { wins })} ${WM_I18N.t('{losses}敗', { losses })}</div></div>
       <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">${WM_I18N.t('現役期間')}</div>
-        <div class="mdl-b-stat-value">${careerYears}<span style="font-size:14px">年間</span></div></div>
+        <div class="mdl-b-stat-value">${WM_I18N.t('{n}<span style="font-size:14px">年間</span>', { n: careerYears })}</div></div>
       <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">${WM_I18N.t('自己最高OVR')}</div>
         <div class="mdl-b-stat-value">${f.peakOVR || (typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : '—')}</div></div>
     </div>`;
@@ -4512,9 +4512,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
               return `<div style="margin-top:6px;font-size:12px;color:var(--gold)">🏆 ${WM_I18N.t('元{org}王者', { org: WM_I18N.pn(t.orgName) })}（${body}）</div>`;
             }).join('');
           })()}
-          ${summary.juniorTournamentWins > 0 || summary.ppvMainEventWins > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px">${summary.juniorTournamentWins > 0 ? `<span style="color:#e67e22">🏅 ${WM_I18N.t('JT優勝')} <strong>${summary.juniorTournamentWins}</strong>回</span>` : ''}${summary.ppvMainEventWins > 0 ? `<span style="color:#9b59b6">🏅 ${WM_I18N.t('PPV優勝')} <strong>${summary.ppvMainEventWins}</strong>回</span>` : ''}</div>` : ''}
+          ${summary.juniorTournamentWins > 0 || summary.ppvMainEventWins > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px">${summary.juniorTournamentWins > 0 ? `<span style="color:#e67e22">🏅 ${WM_I18N.t('JT優勝')} ${WM_I18N.t('{n}回', { n: `<strong>${summary.juniorTournamentWins}</strong>` })}</span>` : ''}${summary.ppvMainEventWins > 0 ? `<span style="color:#9b59b6">🏅 ${WM_I18N.t('PPV優勝')} ${WM_I18N.t('{n}回', { n: `<strong>${summary.ppvMainEventWins}</strong>` })}</span>` : ''}</div>` : ''}
           ${(() => { const _hAll = ((c.careerRecord || {}).history || []); const _js = Engine.career.joinSeason(c); const warEvts = Engine.career.filterPostJoin(_hAll, _js).filter(e => e.type === 'war'); const wW = warEvts.filter(e => e.won).length; const wL = warEvts.length - wW; return warEvts.length > 0 ? `<div style="margin-top:4px;font-size:12px"><span style="color:#2c3e50">🏴 ${WM_I18N.t('対抗戦')} <strong style="color:#2ecc71">${WM_I18N.t('{wins}勝', { wins: wW })}</strong> <strong style="color:#e74c3c">${WM_I18N.t('{losses}敗', { losses: wL })}</strong></span></div>` : ''; })()}
-          ${(() => { const _hAll = (c.careerRecord || {}).history || []; const _js = Engine.career.joinSeason(c); const hist = Engine.career.filterPostJoin(_hAll, _js); const mvp = hist.filter(e => e.type === 'awardMVP').length; const rookie = hist.some(e => e.type === 'awardRookie'); const bm = hist.filter(e => e.type === 'awardBestMatch').length; const media = hist.filter(e => e.type === 'awardMedia').length; const parts = []; if (mvp) parts.push(`<span style="color:#f1c40f">👑 MVP <strong>${mvp}</strong>回</span>`); if (rookie) parts.push(`<span style="color:#f1c40f">🌟 ${WM_I18N.t('新人王')}</span>`); if (bm) parts.push(`<span style="color:#e67e22">🎬 ${WM_I18N.t('ベストマッチ')} <strong>${bm}</strong>回</span>`); if (media) parts.push(`<span style="color:#3498db">📺 ${WM_I18N.t('メディア功労賞')} <strong>${media}</strong>回</span>`); return parts.length > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px;flex-wrap:wrap">${parts.join('')}</div>` : ''; })()}
+          ${(() => { const _hAll = (c.careerRecord || {}).history || []; const _js = Engine.career.joinSeason(c); const hist = Engine.career.filterPostJoin(_hAll, _js); const mvp = hist.filter(e => e.type === 'awardMVP').length; const rookie = hist.some(e => e.type === 'awardRookie'); const bm = hist.filter(e => e.type === 'awardBestMatch').length; const media = hist.filter(e => e.type === 'awardMedia').length; const parts = []; if (mvp) parts.push(`<span style="color:#f1c40f">👑 MVP ${WM_I18N.t('{n}回', { n: `<strong>${mvp}</strong>` })}</span>`); if (rookie) parts.push(`<span style="color:#f1c40f">🌟 ${WM_I18N.t('新人王')}</span>`); if (bm) parts.push(`<span style="color:#e67e22">🎬 ${WM_I18N.t('ベストマッチ')} ${WM_I18N.t('{n}回', { n: `<strong>${bm}</strong>` })}</span>`); if (media) parts.push(`<span style="color:#3498db">📺 ${WM_I18N.t('メディア功労賞')} ${WM_I18N.t('{n}回', { n: `<strong>${media}</strong>` })}</span>`); return parts.length > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px;flex-wrap:wrap">${parts.join('')}</div>` : ''; })()}
         </div>`;
       }
 
@@ -4592,7 +4592,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const typeIcon  = h.type === 'injury_retirement' ? '🏁' : '🩹';
           const _relS = Engine.career.relSeason(h.season, _histJoinS);
           const seasonStr = h.season ? WM_I18N.t('キャリア{n}年目', { n: _relS }) : '';
-          const weekStr   = h.week   ? ` ${h.week}週` : '';
+          const weekStr   = h.week   ? ` ${WM_I18N.t('{n}週', { n: h.week })}` : '';
           html += `<div style="padding:6px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;border-left:2px solid ${typeColor}33;padding-left:10px;line-height:1.5">
             <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:70px;font-family:'Courier New',monospace">${seasonStr}${weekStr}</span>
             <span style="flex-shrink:0">${typeIcon}</span>
@@ -6360,7 +6360,7 @@ function _buildDraftGetPage(state, acquiredRecords) {
       <div class="b1-hero-body">
         <div class="b1-hero-tier">${WM_I18N.t('超逸材')}</div>
         <div class="b1-hero-name">${WM_I18N.pn(f.name)}</div>
-        <div class="b1-hero-meta">${f.age}歳 ・ ${STYLE_JP_FULL[f.style] || f.style} ・ ${ROLE_SHORT[f.role] || f.role}</div>
+        <div class="b1-hero-meta">${WM_I18N.t('{age}歳', { age: f.age })} ・ ${STYLE_JP_FULL[f.style] || f.style} ・ ${ROLE_SHORT[f.role] || f.role}</div>
         <div class="b1-hero-ovr">OVR <span class="v">${ovr}</span></div>
         <div class="b1-hero-stats">
           ${statRow('PWR', f.pw || 0)}
@@ -6394,7 +6394,7 @@ function _buildDraftGetPage(state, acquiredRecords) {
       </div>
       <div class="b1-portrait">
         ${portrait}
-        <div class="b1-age">${f.age}歳</div>
+        <div class="b1-age">${WM_I18N.t('{age}歳', { age: f.age })}</div>
       </div>
       <div class="b1-name">${WM_I18N.pn(f.name)}</div>
       <div class="b1-ovr">OVR <span class="v">${ovr}</span></div>
@@ -6431,7 +6431,7 @@ function _buildDraftGetPage(state, acquiredRecords) {
       <div class="b1-head">
         <div class="kick">DRAFT COMPLETE</div>
         <div class="title">${WM_I18N.t('獲得選手')}</div>
-        <div class="sub">${WM_I18N.t('新戦力')}<span class="count">${acquired.length}</span>名 ・ ${WM_I18N.t('契約金合計')} <span class="total-cost">${totalCost.toLocaleString()}</span> ${WM_I18N.t('万')}</div>
+        <div class="sub">${WM_I18N.t('新戦力')}${WM_I18N.t('{n}名', { n: `<span class="count">${acquired.length}</span>` })} ・ ${WM_I18N.t('契約金合計')} <span class="total-cost">${totalCost.toLocaleString()}</span> ${WM_I18N.t('万')}</div>
       </div>
       ${cardsHtml}
       <div class="b1-totals">
@@ -7785,7 +7785,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       html: _chrome('LIVE') + `<div class="ptv-cardlist">
         <div class="ptv-h-row">TONIGHT'S CARD</div>
         ${order.map(rowFor).join('')}
-      </div>` + _hint + _telop(WM_I18N.t('カード'), `全${totalMatches}試合 — メインは頂上決戦`,
+      </div>` + _hint + _telop(WM_I18N.t('カード'), WM_I18N.t('全{n}試合 — メインは頂上決戦', { n: totalMatches }),
         watchCount <= 1 ? '画面の向こうは、まだ遠い世界だ。' : 'うちの名前は…今年もここにない。'),
     });
   }
@@ -7813,7 +7813,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         </div>
         <div class="ptv-commentary"><div class="ptv-who">${WM_I18N.t('実況')}</div>${_quoteLine(_liveLine(r))}</div>
         <div class="ptv-dots">${dots}</div>
-      </div>` + _hint + _telop(WM_I18N.t('速報'), `第${pos + 1}試合 ${winF ? escHtml(WM_I18N.pn(winF.name)) + ' 勝利' : '決着つかず'}`,
+      </div>` + _hint + _telop(WM_I18N.t('速報'), WM_I18N.t('第{n}試合 {result}', { n: pos + 1, result: winF ? WM_I18N.t('{name} 勝利', { name: escHtml(WM_I18N.pn(winF.name)) }) : WM_I18N.t('決着つかず') }),
         pos < underIdxs.length - 1 ? '画面の前で、次を見届ける。' : '次はいよいよ、メインイベント。'),
     });
   });
@@ -7987,7 +7987,7 @@ function requestRental(fighterId, fromSource, fromOrgId) {
       </div>
     </div>
     <div><b>${WM_I18N.t('供給元')}:</b> ${srcLabel}</div>
-    <div><b>${WM_I18N.t('期間')}:</b> ${seasons}期（${seasons * 12}週）</div>
+    <div><b>${WM_I18N.t('期間')}:</b> ${WM_I18N.t('{n}期', { n: seasons })}（${WM_I18N.t('{n}週', { n: seasons * 12 })}）</div>
     <div><b>${WM_I18N.t('費用')}:</b> <span style="color:#f39c12;font-weight:700">${WM_I18N.t('{v}万', { v: fee })}</span>${WM_I18N.t('（前払い一括）')}</div>
     <div style="margin-top:6px;font-size:12px;color:var(--text-sub)">${WM_I18N.t('残り資金')}: ${WM_I18N.t('{v}万', { v: Math.round(G.funds) })} → ${WM_I18N.t('{v}万', { v: Math.round(G.funds - parseInt(fee)) })}</div>
   </div>`;
@@ -8008,7 +8008,7 @@ function _executeRental(fighterId, fromSource, fromOrgId, seasons) {
         ? WM_I18N.t('{org}から', { org: RIVAL_ORGS.find(o => o.id === fromOrgId)?.name || '' })
         : WM_I18N.t('フリーエージェントとして');
       showEventPopup({ type:'fighter', id:fighter.id, name:fighter.name, tone:'positive',
-        speech: quote, detail:`${srcLabel}${WM_I18N.t('レンタル加入！')}（${seasons}期 / ${seasons * 12}週）` });
+        speech: quote, detail:`${srcLabel}${WM_I18N.t('レンタル加入！')}（${WM_I18N.t('{n}期', { n: seasons })} / ${WM_I18N.t('{n}週', { n: seasons * 12 })}）` });
     }
   } else {
     if (fromSource === 'rival') {
@@ -11895,7 +11895,7 @@ function showFactionF02IgniteModal(payload, state, onContinue) {
           <div class="fevt-leader-org">LEADER</div>
           <div class="fevt-ign-fbadge fac-a"><span class="dot"></span>${escHtml(factionAName)}</div>
           <div class="fevt-ign-members">
-            <span class="cnt">${memberCountA}名</span>
+            <span class="cnt">${WM_I18N.t('{n}名', { n: memberCountA })}</span>
             ${memberChips(memberIdsA)}
           </div>
         </div>
@@ -11919,7 +11919,7 @@ function showFactionF02IgniteModal(payload, state, onContinue) {
           <div class="fevt-leader-org">LEADER</div>
           <div class="fevt-ign-fbadge fac-b"><span class="dot"></span>${escHtml(factionBName)}</div>
           <div class="fevt-ign-members">
-            <span class="cnt">${memberCountB}名</span>
+            <span class="cnt">${WM_I18N.t('{n}名', { n: memberCountB })}</span>
             ${memberChips(memberIdsB)}
           </div>
         </div>
@@ -12776,7 +12776,7 @@ function showUnifiedTitleReturnCeremony(payload, state, onDone) {
       <div class="unified-speech-slot"><div class="unified-speech"><span>${escHtml(line || '……')}</span></div></div>
       ${imgUrl ? `<img class="unified-return-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(WM_I18N.pn(fighter.name) || '')}">` : `<div class="unified-return-fallback">${escHtml((WM_I18N.pn(fighter.name) || '?').charAt(0))}</div>`}
       <div class="unified-return-name">${escHtml(WM_I18N.pn(fighter.name) || '???')} <span>${escHtml(cfg.orgName || '')}</span></div>
-      <div class="unified-return-record">在位 <b>${escHtml(cfg.heldYears || 1)}年</b> ・ 防衛 <b>${escHtml(cfg.defenses || 0)}度</b><br>${escHtml(holderText)}</div>
+      <div class="unified-return-record">在位 <b>${WM_I18N.t('{dy}年', { dy: escHtml(cfg.heldYears || 1) })}</b> ・ 防衛 <b>${WM_I18N.t('{n}度', { n: escHtml(cfg.defenses || 0) })}</b><br>${escHtml(holderText)}</div>
       <div class="unified-return-next">${WM_I18N.t('ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる')}</div>
       <button class="unified-return-close" type="button">${WM_I18N.t('返還式を終える')}</button>
     </div>
@@ -13566,7 +13566,7 @@ function showSpecialEventTravel(eventKey, state, party, onDone) {
     ? VENUES[cfg.venueIndex].name : WM_I18N.t('会場');
   const members = (Array.isArray(party) ? party : []).filter(Boolean)
     .map(f => ({ id: f.id, name: f.name }));
-  const countLabel = ['', WM_I18N.t('一人'), WM_I18N.t('二人'), WM_I18N.t('三人'), WM_I18N.t('四人')][members.length] || `${members.length}人`;
+  const countLabel = ['', WM_I18N.t('一人'), WM_I18N.t('二人'), WM_I18N.t('三人'), WM_I18N.t('四人')][members.length] || WM_I18N.t('{n}人', { n: members.length });
   showTravelScene({
     heading: WM_I18N.t('— 会 場 入 り —'),
     from: {
@@ -16148,7 +16148,7 @@ function showEndingCeremony(data, onDone) {
       <div style="font-family:'Noto Serif JP',serif;font-size:22px;font-weight:900;letter-spacing:6px;color:var(--gold);
         text-shadow:0 0 30px rgba(212,168,67,0.4);margin-bottom:12px">${WM_I18N.t('業 界 制 覇')}</div>
       <div style="font-size:14px;color:var(--text-sub);line-height:2.0;margin-top:8px">
-        団体立ち上げから${data.season}年。<br>ついに${_quoteVal(data.orgName)}が業界の頂点に立った。
+        ${WM_I18N.t('団体立ち上げから{n}年。<br>ついに{org}が業界の頂点に立った。', { n: data.season, org: _quoteVal(data.orgName) })}
       </div>
     </div>`
   });
@@ -18586,8 +18586,8 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   const metaLeft = `${match.left._orgName || ''}`.trim() || '—';
   const metaRight = `${match.right._orgName || ''}`.trim() || '—';
   const winnerLabel = `🏆 ${escHtml(WM_I18N.pn(winner.name))} WIN`;
-  const seasonLabel = `第${G.season}回 JT`;
-  const matchNoLabel = isFinal ? '決勝' : `${escHtml(roundLabel)} 第${mi + 1}試合`;
+  const seasonLabel = WM_I18N.t('第{n}回 JT', { n: G.season });
+  const matchNoLabel = isFinal ? '決勝' : `${escHtml(roundLabel)} ${WM_I18N.t('第{n}試合', { n: mi + 1 })}`;
 
   // クライムライン画面と地続きに見せるため、同じヘッダー(エンブレム+金二重罫)を先頭に置く
   let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--ev-summer);--jtc-color-rgb:var(--ev-summer-rgb)">${_jtHeader()}</div>`;
@@ -18596,7 +18596,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   html += `<div class="pb-banner">
     <div class="pb-live is-jt">🥇 JUNIOR TOURNAMENT</div>
     <div class="pb-banner-title is-jt">${escHtml(roundLabel)}</div>
-    <div class="pb-banner-sub">${escHtml(seasonLabel)}<span class="dot">·</span>第${matchPos}試合 / 全${totalMatchesInTournament}試合<span class="dot">·</span>${escHtml(matchNoLabel)}</div>
+    <div class="pb-banner-sub">${escHtml(seasonLabel)}<span class="dot">·</span>${WM_I18N.t('第{n}試合', { n: matchPos })} / ${WM_I18N.t('全{n}試合', { n: totalMatchesInTournament })}<span class="dot">·</span>${escHtml(matchNoLabel)}</div>
   </div>`;
 
   // Scoreboard: Round / Match / MQ / Finish
@@ -20453,7 +20453,7 @@ function _tcFocusCard(match, roundName, ri, mi) {
   const upperR = typeof getUpperUrl === 'function' ? getUpperUrl(f2.id) : '';
   const pctL = Math.max(1, Math.min(100, Math.round(match.carryLeftPct != null ? match.carryLeftPct : 100)));
   const pctR = Math.max(1, Math.min(100, Math.round(match.carryRightPct != null ? match.carryRightPct : 100)));
-  const carryNote = ri > 0 ? `<br>(${ri}試合分持ち越し)` : '';
+  const carryNote = ri > 0 ? `<br>(${WM_I18N.t('{n}試合分持ち越し', { n: ri })})` : '';
   // 決勝だけは専用の1往復を出す(因縁セリフより優先。因縁の事実はモチーフ側で文脈に使う)。
   // 決勝以外・組み立てに失敗したときは、従来どおり因縁のときだけ口を開く。
   const finalPre = (isFinal && typeof _tcFinalPreBubbleHtml === 'function')
@@ -20625,7 +20625,7 @@ function renderTenchosenMatchResult(ri, mi) {
   const rightCls = lWin ? 'is-loser' : 'is-winner';
   const metaLeft = `${match.left._orgName || ''}`.trim() || '—';
   const metaRight = `${match.right._orgName || ''}`.trim() || '—';
-  const matchNoLabel = isFinal ? '決勝' : `${_tcRoundLabel(round.name)} 第${mi + 1}試合`;
+  const matchNoLabel = isFinal ? '決勝' : `${_tcRoundLabel(round.name)} ${WM_I18N.t('第{n}試合', { n: mi + 1 })}`;
 
   let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--gold);--jtc-color-rgb:var(--gold-rgb)">${_tcHeader()}</div>`;
   html += `<div class="pb-container">`;
@@ -20633,7 +20633,7 @@ function renderTenchosenMatchResult(ri, mi) {
   html += `<div class="pb-banner">
     <div class="pb-live is-jt">👑 TENCHOSEN</div>
     <div class="pb-banner-title is-jt">${escHtml(roundLabel)}</div>
-    <div class="pb-banner-sub">第${_tcEditionNo()}回 天頂戦<span class="dot">·</span>第${matchPos}試合 / 全${totalMatches}試合<span class="dot">·</span>${escHtml(matchNoLabel)}</div>
+    <div class="pb-banner-sub">${WM_I18N.t('第{n}回 天頂戦', { n: _tcEditionNo() })}<span class="dot">·</span>${WM_I18N.t('第{n}試合', { n: matchPos })} / ${WM_I18N.t('全{n}試合', { n: totalMatches })}<span class="dot">·</span>${escHtml(matchNoLabel)}</div>
   </div>`;
 
   html += `<div class="pb-score-strip" style="grid-template-columns:1fr 1fr 1fr 1.2fr">

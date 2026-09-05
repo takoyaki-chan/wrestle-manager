@@ -1043,7 +1043,7 @@ function renderWeekScreen() {
         G.rankings.forEach((r, i) => {
           const isPlayer = r.orgId === 'player';
           html += `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;${isPlayer ? 'color:var(--gold);font-weight:700' : 'color:var(--text-sub)'}">
-            <span>${WM_I18N.t('{n}位', { n: i + 1 })} ${WM_I18N.pn(r.name)}</span><span>${Math.round(r.rating)}pt</span>
+            <span>${WM_I18N.t('{n}位', { n: i + 1 })} ${WM_I18N.pn(r.name)}</span><span>${WM_I18N.t('{n}pt', { n: Math.round(r.rating) })}</span>
           </div>`;
         });
         html += '</div>';
@@ -6578,7 +6578,7 @@ function renderCoach() {
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
           <div style="margin-top:6px;font-size:12px;color:#6a6050">
-            ${WM_I18N.t('給与:')} <b style="color:#4a4035">${c.salary}万/週</b> ｜ ${WM_I18N.t('担当: {n}/{max}名', { n: assigned.length, max: COACH_MAX_ASSIGN })}
+            ${WM_I18N.t('給与:')} <b style="color:#4a4035">${WM_I18N.t('{v}万/週', { v: c.salary })}</b> ｜ ${WM_I18N.t('担当: {n}/{max}名', { n: assigned.length, max: COACH_MAX_ASSIGN })}
           </div>`;
       if (assignedChars.length > 0) {
         html += `<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">`;
@@ -6620,7 +6620,7 @@ function renderCoach() {
             ${coachEffectHtml(c)}
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
-          <div style="margin-top:5px;font-size:12px;color:#6a6050">${WM_I18N.t('雇用費:')} <b style="color:#4a4035">${fee}${WM_I18N.t('万')}</b> ｜ ${WM_I18N.t('給与:')} <b style="color:#4a4035">${c.salary}万/週</b> ｜ ${WM_I18N.t('決裁枠:')} <b style="color:#c00000">⚡${hireDpCost}</b></div>
+          <div style="margin-top:5px;font-size:12px;color:#6a6050">${WM_I18N.t('雇用費:')} <b style="color:#4a4035">${fee}${WM_I18N.t('万')}</b> ｜ ${WM_I18N.t('給与:')} <b style="color:#4a4035">${WM_I18N.t('{v}万/週', { v: c.salary })}</b> ｜ ${WM_I18N.t('決裁枠:')} <b style="color:#c00000">⚡${hireDpCost}</b></div>
         </div>
         <button class="btn btn-sm" style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71"
           onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${btnLabel}</button>
@@ -10021,7 +10021,7 @@ function _renderDbRecordStrip(record, label, isTag) {
     ? `<div class="db-record-strip-match"><span class="db-record-faces">${faces}</span><span>${escHtml(names.slice(0, Math.ceil(names.length / 2)).join('・'))}</span><span class="db-record-vs">VS</span><span>${escHtml(names.slice(Math.ceil(names.length / 2)).join('・'))}</span></div>`
     : '';
   const stage = updated ? (Engine.mq.STAGE_LABELS[record.stage] || WM_I18N.t('興行')) : '';
-  const when = updated ? `<div class="db-record-strip-when">${label} ─ S${record.season}・第${record.week}週 ─ ${escHtml(stage)}</div>` : '';
+  const when = updated ? `<div class="db-record-strip-when">${label} ─ S${record.season}・${WM_I18N.t('第{w}週', { w: record.week })} ─ ${escHtml(stage)}</div>` : '';
   const isNew = updated && record.season === G.season && record.week === G.week;
   const value = Math.round(Number(record && record.value) || (isTag ? 94 : 90));
   return `<div class="db-record-strip${isTag ? ' tag' : ''}">
@@ -10182,8 +10182,12 @@ function _recordBookUnifiedDuration(weeks) {
   const total = Math.max(0, Number(weeks) || 0);
   const years = Math.floor(total / 48);
   const rest = total % 48;
-  if (years > 0) return `${years}年${rest > 0 ? `${rest}週` : ''}`;
-  return `${total}週`;
+  if (years > 0) {
+    return rest > 0
+      ? WM_I18N.t('{dy}年{dw}週', { dy: years, dw: rest })
+      : WM_I18N.t('{dy}年', { dy: years });
+  }
+  return WM_I18N.t('{dw}週', { dw: total });
 }
 
 function _renderDbUnifiedTitleRecords(sources) {
@@ -10200,13 +10204,13 @@ function _renderDbUnifiedTitleRecords(sources) {
     <div class="db-record-strip-detail"><strong>${escHtml(holderName(reign))}</strong><br><span>${WM_I18N.t('第{n}代', { n: reign.generation })} / ${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</span></div>
   </div>` : '';
   const rows = reigns.map(reign => {
-    const period = `S${reign.startSeason} 第${reign.startWeek}週〜${reign.active ? WM_I18N.t('現在') : `S${reign.endSeason} 第${reign.endWeek}週`}`;
+    const period = `S${reign.startSeason} ${WM_I18N.t('第{w}週', { w: reign.startWeek })}〜${reign.active ? WM_I18N.t('現在') : `S${reign.endSeason} ${WM_I18N.t('第{w}週', { w: reign.endWeek })}`}`;
     return `<tr${reign.source ? _recordBookOpen(reign.source.fighter) : ''}>
       <td class="num">${WM_I18N.t('第{n}代', { n: reign.generation })}</td>
       <td>${escHtml(holderName(reign))}</td>
       <td>${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</td>
       <td>${period}</td>
-      <td class="num">${reign.defenses}度</td>
+      <td class="num">${WM_I18N.t('{n}度', { n: reign.defenses })}</td>
       <td>${reign.endReason}</td>
     </tr>`;
   }).join('');
@@ -10214,7 +10218,7 @@ function _renderDbUnifiedTitleRecords(sources) {
   return `<section class="db-record-hall db-record-unified-hall">
     <div class="db-record-cere-head"><span>━━</span><h3>${WM_I18N.t('🌐 全国統一王座')}</h3><span>━━</span></div>
     ${reigns.length > 0 ? `<div class="db-record-strips">
-      ${recordCard(WM_I18N.t('最多防衛'), defenseLeader, `${defenseLeader.defenses}度`)}
+      ${recordCard(WM_I18N.t('最多防衛'), defenseLeader, WM_I18N.t('{n}度', { n: defenseLeader.defenses }))}
       ${recordCard(WM_I18N.t('最長在位'), longest, _recordBookUnifiedDuration(longest.durationWeeks))}
     </div>
     <div class="db-table-scroll"><table class="db-table"><thead><tr><th>${WM_I18N.t('世代')}</th><th>${WM_I18N.t('王者')}</th><th>${WM_I18N.t('団体')}</th><th>${WM_I18N.t('在位期間')}</th><th>${WM_I18N.t('防衛')}</th><th>${WM_I18N.t('終わり方')}</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
@@ -10249,7 +10253,7 @@ function _renderDbRecordBook() {
     const name = _recordBookName(leader.source);
     html += `<section class="db-record-defense-band"${_recordBookOpen(leader.source.fighter)}>
       <div class="db-record-defense-portrait"><span>👑</span>${_recordBookUpper(leader.source, 'is-defense')}</div>
-      <div class="db-record-defense-info"><div>${WM_I18N.t('最多連続防衛')}</div><p><strong>${leader.defenses}</strong><span>度防衛</span></p><h3>${escHtml(name)}</h3><small>${escHtml(leader.titleName)} ─ ${leader.period}${leader.active ? WM_I18N.t(' ─ 継続中') : ''}</small></div>
+      <div class="db-record-defense-info"><div>${WM_I18N.t('最多連続防衛')}</div><p><strong>${leader.defenses}</strong><span>${WM_I18N.t('度防衛')}</span></p><h3>${escHtml(name)}</h3><small>${escHtml(leader.titleName)} ─ ${leader.period}${leader.active ? WM_I18N.t(' ─ 継続中') : ''}</small></div>
     </section>`;
   }
   return html + `</div>`;
@@ -10444,11 +10448,11 @@ function showHofDetail(idx) {
   // 通算実績
   const statsHtml = `<div class="db-hof-detail-section" style="text-align:center">${WM_I18N.t('━━ 通算実績 ━━')}</div>
     <div class="db-hof-stats-grid" style="max-width:280px;margin:0 auto">
-      <div>${WM_I18N.t('王座獲得')} <strong>${h.titleReigns || 0}</strong>回</div>
-      <div>${WM_I18N.t('通算防衛')} <strong>${h.totalDefenses || 0}</strong>回</div>
-      ${h.juniorTournamentWins ? `<div>${WM_I18N.t('JT優勝')} <strong>${h.juniorTournamentWins}</strong>回</div>` : '<div></div>'}
-      ${h.ppvMainEventWins ? `<div>PPV${WM_I18N.t('優勝')} <strong>${h.ppvMainEventWins}</strong>回</div>` : '<div></div>'}
-      ${_warW + _warL > 0 ? `<div style="grid-column:1/-1;margin-top:4px">🏴 ${WM_I18N.t('対抗戦')} <strong style="color:#2ecc71">${_warW}勝</strong> <strong style="color:#e74c3c">${_warL}敗</strong></div>` : ''}
+      <div>${WM_I18N.t('王座獲得')} ${WM_I18N.t('{n}回', { n: `<strong>${h.titleReigns || 0}</strong>` })}</div>
+      <div>${WM_I18N.t('通算防衛')} ${WM_I18N.t('{n}回', { n: `<strong>${h.totalDefenses || 0}</strong>` })}</div>
+      ${h.juniorTournamentWins ? `<div>${WM_I18N.t('JT優勝')} ${WM_I18N.t('{n}回', { n: `<strong>${h.juniorTournamentWins}</strong>` })}</div>` : '<div></div>'}
+      ${h.ppvMainEventWins ? `<div>PPV${WM_I18N.t('優勝')} ${WM_I18N.t('{n}回', { n: `<strong>${h.ppvMainEventWins}</strong>` })}</div>` : '<div></div>'}
+      ${_warW + _warL > 0 ? `<div style="grid-column:1/-1;margin-top:4px">🏴 ${WM_I18N.t('対抗戦')} ${WM_I18N.t('{wins}勝', { wins: `<strong style="color:#2ecc71">${_warW}</strong>` })} ${WM_I18N.t('{losses}敗', { losses: `<strong style="color:#e74c3c">${_warL}</strong>` })}</div>` : ''}
     </div>`;
 
   // §4 引退時OVR
@@ -12892,8 +12896,8 @@ function _dfcRenderCard(faction, state, opts = {}) {
   const heroMeta = `
     <div class="meta">
       ${isLeftSide
-        ? `<div class="name-row"><span class="count">${faction.memberIds.length}名</span><span class="name">${WM_I18N.pn(faction.name)}</span></div>`
-        : `<div class="name-row"><span class="name">${WM_I18N.pn(faction.name)}</span><span class="count">${faction.memberIds.length}名</span></div>`}
+        ? `<div class="name-row"><span class="count">${WM_I18N.t('{n}名', { n: faction.memberIds.length })}</span><span class="name">${WM_I18N.pn(faction.name)}</span></div>`
+        : `<div class="name-row"><span class="name">${WM_I18N.pn(faction.name)}</span><span class="count">${WM_I18N.t('{n}名', { n: faction.memberIds.length })}</span></div>`}
       <div class="leader-name">${isLeftSide
         ? `${WM_I18N.pn(leader.name)}<span class="role-mark">CAP</span>`
         : `<span class="role-mark">CAP</span>${WM_I18N.pn(leader.name)}`}</div>
@@ -12947,7 +12951,7 @@ function _dfcRenderCard(faction, state, opts = {}) {
     const tiles = rankFile.slice(0, maxTiles);
     const overflow = rankFile.length - tiles.length;
     html += `<div class="dfc-rankfile">`;
-    html += `<div class="dfc-rankfile-head"><span>RANK & FILE</span><span class="count">${rankFile.length}名</span></div>`;
+    html += `<div class="dfc-rankfile-head"><span>RANK & FILE</span><span class="count">${WM_I18N.t('{n}名', { n: rankFile.length })}</span></div>`;
     html += `<div class="dfc-rankfile-tiles">`;
     tiles.forEach(c => {
       const ovr = Engine.util.ov(c);
@@ -12970,7 +12974,7 @@ function _dfcRenderCard(faction, state, opts = {}) {
   stats.push(`<div class="dfc-stat-row"><span class="lbl">${WM_I18N.t('設立')}</span><span class="val">${created}</span></div>`);
   if (opts.inFeud) {
     // 抗争中: 勝率/直対戦績の算出は h2h からの集計が重いので、Phase B-2 では平均OVR/設立に留め将来拡張
-    stats.push(`<div class="dfc-stat-row"><span class="lbl">${WM_I18N.t('構成')}</span><span class="val">${faction.memberIds.length}名</span></div>`);
+    stats.push(`<div class="dfc-stat-row"><span class="lbl">${WM_I18N.t('構成')}</span><span class="val">${WM_I18N.t('{n}名', { n: faction.memberIds.length })}</span></div>`);
     const momCls = (faction.momentum || 0) >= 30 ? 'pos' : ((faction.momentum || 0) <= -30 ? 'warn' : '');
     stats.push(`<div class="dfc-stat-row"><span class="lbl">${WM_I18N.t('勢い')}</span><span class="val ${momCls}">${momentumLabel}</span></div>`);
   }
@@ -13021,11 +13025,11 @@ function _dfcRenderCard(faction, state, opts = {}) {
     html += `<div class="dfc-internal-rank">`;
     html += `<div class="dfc-ir-row">`;
     html += `<span class="dfc-ir-label">${WM_I18N.t('序列')}</span>`;
-    html += `<span class="dfc-ir-leader">👑 ${WM_I18N.pn(leader.name)} <small>${leaderPt}pt</small></span>`;
+    html += `<span class="dfc-ir-leader">👑 ${WM_I18N.pn(leader.name)} <small>${WM_I18N.t('{n}pt', { n: leaderPt })}</small></span>`;
     if (top) {
       const challengerCls = challengerActive ? ' active' : '';
       html += `<span class="dfc-ir-arrow${challengerCls}">${arrow}</span>`;
-      html += `<span class="dfc-ir-challenger${challengerCls}">${WM_I18N.pn(top.name)} <small>${top.pt}pt</small></span>`;
+      html += `<span class="dfc-ir-challenger${challengerCls}">${WM_I18N.pn(top.name)} <small>${WM_I18N.t('{n}pt', { n: top.pt })}</small></span>`;
     }
     if (enthronedLabel) {
       html += `<span class="dfc-ir-tenure">${enthronedLabel}</span>`;
@@ -15001,7 +15005,7 @@ function _buildOrgColumnSvgContent(svg, W, H, leftOffset) {
     const areaCX = leftOffset + drawW * areaPos.cx;
     const areaCY = HEADER_H + (H - HEADER_H) * areaPos.cy;
     const n = org.roster.length;
-    const rankEmoji = RANK_EMOJIS[org.rank - 1] || `${org.rank}位`;
+    const rankEmoji = RANK_EMOJIS[org.rank - 1] || WM_I18N.t('{n}位', { n: org.rank });
     // 勢力比例の背景円（弱い団体は小さく、強い団体は大きく）
     const strengthNorm = orgStrengths[ci] / maxStrength; // 0~1
     const bgR = baseAreaR * (0.5 + strengthNorm * 0.7); // 50%~120%
