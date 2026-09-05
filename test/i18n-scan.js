@@ -78,6 +78,169 @@ function scanHTML(src) {
   return out;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// JSON詳細モード(P7-20で追加。docs/i18n-coverage-report-v0.1.md の元データ用)
+//
+// 上のscanJS/chunkScan/scanHTMLと**全く同じトークナイザロジック**を、
+// 文字列1本ごとに「どのファイルの何行目か」「t()の第1引数/テンプレートリテラル/
+// オブジェクト値/その他、のどれっぽいか(ヒューリスティック)」を添えて返す版。
+// 既存のscanJS/chunkScan/scanHTML/scanDir/analyze/printReportは一切変更していない
+// (デフォルト出力=`node test/i18n-scan.js`は不変)。JSON詳細出力は
+// `node test/i18n-scan.js --json` でのみ有効になる別経路。
+// ══════════════════════════════════════════════════════════════════════
+
+// scanJSと同じ走査だが、文字列の開始位置の「行番号(chunk内0-based+startLineOffset)」と
+// 直前80文字(コンテキスト推定用)を記録する。分岐・処理順序はscanJSと同一に保つこと。
+function scanJSPos(src, startLine) {
+  const strings = [];
+  let i = 0; const n = src.length; let line = startLine;
+  function bump(from, to) { for (let k = from; k < to; k++) if (src[k] === '\n') line++; }
+  while (i < n) {
+    const c = src[i]; const c2 = src.substr(i, 2);
+    if (c2 === '//') { let j = src.indexOf('\n', i); if (j === -1) j = n; bump(i, j); i = j; }
+    else if (c2 === '/*') { let j = src.indexOf('*/', i + 2); if (j === -1) j = n; else j += 2; bump(i, j); i = j; }
+    else if (c === "'" || c === '"') {
+      const q = c; let j = i + 1; let buf = ''; const sLine = line; const startIdx = i;
+      while (j < n) { if (src[j] === '\\') { buf += src[j+1]||''; if (src[j+1] === '\n') line++; j += 2; continue; } if (src[j] === q || src[j] === '\n') break; buf += src[j]; j++; }
+      strings.push({ value: buf, line: sLine + 1, kind: 'string', before: src.slice(Math.max(0, startIdx - 80), startIdx).replace(/\s+/g, ' ').trim() });
+      i = j + 1;
+    } else if (c === '`') {
+      let j = i + 1; let buf = ''; const sLine = line; const startIdx = i;
+      while (j < n) {
+        if (src[j] === '\\') { buf += src[j+1]||''; if (src[j+1] === '\n') line++; j += 2; continue; }
+        if (src[j] === '`') break;
+        if (src[j] === '\n') line++;
+        if (src.substr(j, 2) === '${') {
+          let depth = 1; j += 2;
+          while (j < n && depth > 0) {
+            if (src[j] === '\n') line++;
+            if (src[j] === '{') depth++;
+            else if (src[j] === '}') depth--;
+            else if (src[j] === "'" || src[j] === '"' || src[j] === '`') {
+              const qq = src[j]; j++;
+              while (j < n && src[j] !== qq) { if (src[j] === '\\') j++; if (src[j] === '\n') line++; j++; }
+            }
+            j++;
+          }
+          buf += ' '; continue;
+        }
+        buf += src[j]; j++;
+      }
+      strings.push({ value: buf, line: sLine + 1, kind: 'template', before: src.slice(Math.max(0, startIdx - 80), startIdx).replace(/\s+/g, ' ').trim() });
+      i = j + 1;
+    } else { if (c === '\n') line++; i++; }
+  }
+  return strings;
+}
+
+// chunkScanと同じ境界規則で分割してからscanJSPosを適用する。lineOffsetは
+// HTML内<script>本文など、srcが元ファイルの先頭でない場合に足す絶対行数(0-based)。
+function chunkScanPos(src, lineOffset) {
+  lineOffset = lineOffset || 0;
+  const lines = src.split('\n');
+  const bounds = [0];
+  for (let li = 1; li < lines.length; li++) {
+    if (/^(?:const|let|var|function|class|window\.|if\s*\(|\/\/|\})/.test(lines[li])) bounds.push(li);
+  }
+  bounds.push(lines.length);
+  const all = [];
+  for (let bi = 0; bi < bounds.length - 1; bi++) {
+    const chunk = lines.slice(bounds[bi], bounds[bi + 1]).join('\n');
+    all.push(...scanJSPos(chunk, bounds[bi] + lineOffset));
+  }
+  return all;
+}
+
+// タグ・コメント・style本文を「改行だけ残して他は空白に置換」する
+// (行番号・行内オフセットを崩さずにマスクするため)。
+function blankPreserveNewlines(m) { return m.replace(/[^\n]/g, ' '); }
+
+// scanHTMLと同じ対象(script本文はJSとして・タグ除去後の残りをmarkupとして)を
+// 行番号付きで返す。
+function scanHTMLPos(src) {
+  const results = [];
+  let html = src.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, (m, body, offset) => {
+    const bodyStart = offset + m.indexOf(body);
+    const startLine = (src.slice(0, bodyStart).match(/\n/g) || []).length;
+    for (const s of chunkScanPos(body, startLine)) results.push(s);
+    return blankPreserveNewlines(m);
+  });
+  html = html.replace(/<!--[\s\S]*?-->/g, m => blankPreserveNewlines(m));
+  html = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, m => blankPreserveNewlines(m));
+  html = html.replace(/<[^>]+>/g, m => blankPreserveNewlines(m));
+  const lines = html.split('\n');
+  for (let li = 0; li < lines.length; li++) {
+    const t = lines[li].trim();
+    if (t && JA.test(t)) results.push({ value: t, line: li + 1, kind: 'markup', before: '' });
+  }
+  return results;
+}
+
+// 直前コンテキスト文字列(scanJSPosのbefore)から大まかな消費文脈タグを付ける。
+// 完全な構文解析ではないため、あくまでA/B/C分類の一次フィルタ(最後は目視)。
+function classifyContext(before, kind) {
+  if (kind === 'markup') return 'html-markup';
+  const b = before.replace(/\s+/g, '');
+  if (/(?:^|[^A-Za-z0-9_$.])(?:WM_I18N\.)?t\($/.test(b) || /\.t\($/.test(b)) return 't-call';
+  if (kind === 'template') return 'template-literal';
+  if (/:$/.test(b)) return 'object-value';
+  if (/[\[,]$/.test(b)) return 'array-or-arg';
+  if (/[=(]$/.test(b)) return 'assign-or-call';
+  return 'other';
+}
+
+// data.js用: 各行がどのトップレベルconstテーブルに属するかの索引を作る
+// (既存scanDirのdata.jsセクション分割ロジックと同じ正規表現)。
+function buildTableIndex(src) {
+  const lines = src.split('\n');
+  const secs = [];
+  for (let li = 0; li < lines.length; li++) {
+    const m = lines[li].match(/^(?:const|let|var)\s+([A-Za-z0-9_$]+)\s*=/);
+    if (m) secs.push({ name: m[1], start: li });
+  }
+  secs.push({ name: null, start: lines.length });
+  return function tableAt(line0) { // line0: 0-based
+    for (let si = 0; si < secs.length - 1; si++) {
+      if (line0 >= secs[si].start && line0 < secs[si + 1].start) return secs[si].name;
+    }
+    return null;
+  };
+}
+
+// scanDirと同じファイル一覧に対し、JA文字列1本ごとの明細を返す。
+// 戻り値はフラット配列: { file, line, kind, table, context, before, value }
+function scanDirDetailed(srcDir) {
+  const files = fs.readdirSync(srcDir).filter(f => /\.(js|html)$/.test(f) && !EXCLUDED_FILES.has(f));
+  const out = [];
+  for (const f of files) {
+    const full = path.join(srcDir, f);
+    const src = fs.readFileSync(full, 'utf8');
+    let entries;
+    let tableAt = null;
+    if (f.endsWith('.html')) {
+      entries = scanHTMLPos(src);
+    } else if (f === 'data.js') {
+      tableAt = buildTableIndex(src);
+      entries = chunkScanPos(src, 0);
+    } else {
+      entries = chunkScanPos(src, 0);
+    }
+    for (const e of entries) {
+      if (!JA.test(e.value)) continue;
+      out.push({
+        file: f,
+        line: e.line,
+        kind: e.kind,
+        table: tableAt ? tableAt(e.line - 1) : null,
+        context: classifyContext(e.before || '', e.kind),
+        before: e.before || '',
+        value: e.value,
+      });
+    }
+  }
+  return out;
+}
+
 // data.js セクション → カテゴリ
 function dataSectionCategory(name) {
   if (/PROFILES/.test(name)) return 'プロフィール';
@@ -184,10 +347,19 @@ function printReport(srcDir) {
   }
 }
 
-module.exports = { scanDir };
+module.exports = { scanDir, scanDirDetailed };
 
 // CLIとして直接実行された場合だけ従来どおりレポートを標準出力に書く
 // (require() されたときは何も出力しない)。
+// `--json`を付けると、代わりにscanDirDetailed()の明細をJSONでstdoutへ書く
+// (P7-20で追加。既存の引数なし実行の出力は変えていない)。
 if (require.main === module) {
-  printReport(process.argv[2] || 'src');
+  const args = process.argv.slice(2);
+  const jsonMode = args.includes('--json');
+  const dir = args.find(a => !a.startsWith('--')) || 'src';
+  if (jsonMode) {
+    process.stdout.write(JSON.stringify(scanDirDetailed(dir)));
+  } else {
+    printReport(dir);
+  }
 }
