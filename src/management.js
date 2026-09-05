@@ -6392,7 +6392,13 @@ const Engine = {
       const role = peer._role || (peer._isIdol ? 'idol' : 'strength');
       const stage = peer._stage || 'prime';
       const styleAxis = Engine.chronicle._styleAxis(peer.style);
-      const styleJa = _wmDictLabel(dict, Engine.chronicle.AXIS_LABELS[styleAxis] || '独自');
+      // P7-27: この値は openingPart.v へ入り buildChapters が narrativeParts として
+      // **G へ永続化**する(specs §14-3)。ここで dict を通して確定してしまうと、保存後に
+      // 表示言語が変わっても再翻訳できずJAのまま固まる(_buildQuoteContext の同名ローカルは
+      // 逆に render 時点で毎回呼ばれるのでdict確定でよい・両者は別物)。**JAの生値のまま**保持し、
+      // 値を使うパーツ側に `L: ['styleJa']` を付けて表示時に _wmDictLabel で引き直す
+      // (_generateClosingParts の axis と同じ流儀)。
+      const styleJa = Engine.chronicle.AXIS_LABELS[styleAxis] || '独自';
       const allHist = ((peer.careerRecord || {}).history || []);
       const joinS = Engine.career.joinSeason(peer);
       const histPost = Engine.career.filterPostJoin(allHist, joinS);
@@ -6475,10 +6481,14 @@ const Engine = {
 
       // ── A. opening (stage / role 別、ID 抽選で 1 つ選択)
       const OPENINGS = PT.opening;
-      const openVars = {
-        surname, debutSeason, peakPop, peakOVR, styleJa,
-        org: Engine.chronicle._orgLabel(state, dict)
-      };
+      // org も同じ理由(このパーツはキャッシュされる)で、実団体名が取れないときの既定ラベル
+      // 「団体」は生JAのまま持たせ、org 自体を L マーカーへ載せる(_generateClosingParts と同型)。
+      // 実団体名が取れているときは素の値のまま渡し、名前辞書(pn)の自動変換に任せる。
+      // dict を渡さず呼ぶことで `_orgLabel` 内の既存リテラル(「団体」)をそのまま再利用する
+      // (ここへ新規リテラルを書くと i18n-ratchet の生JA文字列カウントが増えてしまう)。
+      const orgName = state && state.orgName;
+      const org = Engine.chronicle._orgLabel(state);
+      const openVars = { surname, debutSeason, peakPop, peakOVR, styleJa, org };
       let openingPool;
       if (stage === 'rising' && debutInChapter) openingPool = OPENINGS.rising_debut_in_chapter;
       else if (stage === 'rising') openingPool = OPENINGS.rising;
@@ -6487,7 +6497,11 @@ const Engine = {
       else if (ovrTier === 'top') openingPool = OPENINGS.prime_top;
       else if (ovrTier === 'high') openingPool = OPENINGS.prime_high;
       else openingPool = OPENINGS.prime_mid;
-      const openingPart = { t: openingPool[pickSalt(0xCE01, openingPool.length)], v: openVars };
+      const openingPart = {
+        t: openingPool[pickSalt(0xCE01, openingPool.length)],
+        v: openVars,
+        L: orgName ? ['styleJa'] : ['styleJa', 'org']
+      };
 
       // ── B. 戦績フレーズ (cap 2)
       const AC = PT.ach;

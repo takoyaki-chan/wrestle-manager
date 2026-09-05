@@ -1,5 +1,88 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-27 — `npm run test:ui:ignite -- --scenario chronicle --lang en` のFAIL(叙述文の軸ラベルがENでJAのまま)を根治(2026-09-05・worktree agent-a5e26c79f6e079cb5)
+
+P7-22が切り出した既知未解決FAILの調査・修正。開始前にworktreeブランチをmain先端(`04725a26`。P7-22=8479e60まで含む)へfast-forward。
+
+### 1. 再現と特定
+
+`npm run test:ui:ignite -- --scenario chronicle --lang en` を実行すると `IGNITION_MISFIRE` で失敗し、`screen-database` に生JAが3件露出した:
+
+```
+div.chron-gen-narrative | "Yuri Niimi carried the middle of the card with her 万能 game. "
+div.chron-gen-narrative | "Ayu Sawanobori carried the middle of the card with her 組技 ga"
+div.chron-gen-narrative | "Reika Kimura carried the middle of the card with her 組技 game"
+```
+
+英文中に軸ラベル(`万能`=All-round、`組技`=Grappling)だけがJAのまま挟まっている。文面は `data.js` の `CHRONICLE_NARRATIVE_TEMPLATES.peer.opening.prime_mid` (`'{surname}は{styleJa}で中盤戦線を担った。'` → lang-en-templates.js に既訳あり)と一致し、`{styleJa}` へ差し込む**値**だけが未翻訳と判明。
+
+生成元は `Engine.chronicle._buildPeerNarrativeParts`(`src/management.js`)。同名の値を使うもう一つの系統 `Engine.chronicle._buildQuoteContext`(「記者の目」= `buildAceQuote`/`buildDualAceQuote`)は `ui-render.js` の `_chronicleAceQuote` から**毎回 `WM_I18N.t` を渡して呼ばれる**(セーブに残らない即時生成)ため無関係。問題は `_buildPeerNarrativeParts` 側 — こちらは `buildChapters`(`state.season` 変化時に `forceRebuild:true` で再構築)が **dict を渡さずに**呼び、結果を `narrativeParts` として `G.chronicle.chaptersCache` へ**永続化**する(specs §14-3)。
+
+修正前のコード:
+
+```js
+const styleJa = _wmDictLabel(dict, Engine.chronicle.AXIS_LABELS[styleAxis] || '独自');
+// …
+const openVars = { surname, debutSeason, peakPop, peakOVR, styleJa, org: Engine.chronicle._orgLabel(state, dict) };
+const openingPart = { t: openingPool[...], v: openVars }; // L マーカーなし
+```
+
+`buildChapters` 側で `dict` が常に `undefined` なので `_wmDictLabel(undefined, '万能')` は**その場でJAのまま確定**し、`openingPart.v.styleJa` に生JAが焼き込まれる。表示時(`ui-render.js` の `_chronicleNarrative` → `Engine.chronicle.narrativeText(entry.narrativeParts, WM_I18N.t)`)は `_narrativePartText` が `part.L` に載っている値**だけ**を `_wmDictLabel` で引き直す設計(specs §14-2)だが、この `openingPart` には `L` が無かったため、キャッシュ済みの生JAがそのままENテンプレの `{styleJa}` へ素通りしていた。
+
+### 2. 修正
+
+`_buildPeerNarrativeParts` 内の `styleJa`/`org` を**生JAのまま**保持し、`openingPart.L` で表示時に再解決する形へ変更(`_generateClosingParts` が `axis`/`org` に対して既にやっている流儀と同型)。
+
+```js
+const styleJa = Engine.chronicle.AXIS_LABELS[styleAxis] || '独自'; // L マーカーで表示時に解決
+// …
+const orgName = state && state.orgName;
+const org = Engine.chronicle._orgLabel(state); // dict省略=既存の「団体」フォールバックリテラルをそのまま再利用(新規リテラルを増やさない)
+const openVars = { surname, debutSeason, peakPop, peakOVR, styleJa, org };
+const openingPart = {
+  t: openingPool[pickSalt(0xCE01, openingPool.length)],
+  v: openVars,
+  L: orgName ? ['styleJa'] : ['styleJa', 'org']
+};
+```
+
+`org` を素の `_orgLabel(state, dict)` 呼び出しのままにせず `orgName` を先に取り出したのは、実団体名(既にpn()の自動変換対象)と「団体」フォールバック(1語ラベル・L対象)を区別するため。`_orgLabel(state)`(dict省略)を使うことで、フォールバック文字列 `'団体'` を**新規リテラルとして書き足さずに** `_orgLabel` 内の既存リテラルを再利用した(1回目の実装では独自に `org = orgName || '団体'` と書いてしまい、`test/i18n-ratchet.js` が生JA文字列+1を検出したため書き直した)。
+
+### 3. 同型調査(他の1語ラベル素通し)
+
+`AXIS_LABELS`/`_wmDictLabel` の呼び出し箇所を`Engine.chronicle`区画で全数確認(5箇所)。バグは`_buildPeerNarrativeParts`の1箇所のみ:
+- `_buildQuoteContext`内の3箇所(styleJa/successorStyle/axJa) — 表示時に毎回dict付きで呼ばれるため無関係
+- `_generateClosingParts`の1箇所(axis) — 元からL マーカー付きで正しく実装済み
+- `_buildAceNarrativeParts`は`AXIS_LABELS`を使わない(ベルト名のみ・Bマーカーで既に正しい)
+
+`役割`(role/stage)はテンプレ**プール選択**にのみ使われ値としては差し込まれないため対象外。`ベルト名`は全箇所で`B`マーカー(`_beltLabel`)が既に付いている。`data.js`の`DRAFT_PLAYER_RESULT_PARTS`(ドラフト新人評)にも`{styleJa}`の同型パターンがあるが、`Engine.chronicle`ではなくドラフト/新聞側の管轄(並行タスクP7-25の担当領域)のため本タスクでは触っていない。
+
+### 4. 検証
+
+- `node --check src/management.js` OK
+- `node test/ja-golden.js` — 基準と完全一致(`dd2e536b…`、11307行)
+- `node test/i18n-build-template-dict.js` / `i18n-build-dict.js` / `i18n-build-names.js` / `i18n-build-dialogue-dict.js` — 全台帳 未訳(fail-open)=0(副生成物の`src/lang-en*.js`は内容差分なし=改行コード差のみだったため`git checkout --`で復元・コミット対象外)
+- `node test/i18n-ratchet.js` — 増加なし(初稿は`org`に新規リテラルを足して+1を検出→`_orgLabel(state)`呼び出しへ書き直して解消)
+- `npm test` — 261/261 PASS
+- `node test/auto-sim.js 20 42` — ALL CLEAR、violations 0、台帳検査(給与連続性/更改の約束/資金恒等式)違反0。**Semantic fingerprintは`640b2591`→`e96444c1`へ変化**(修正前後で比較済み)。原因を特定: `chaptersCache`の`narrativeParts`は`season`変化のたびに`forceRebuild:true`で完全再構築される派生キャッシュであり、そこへ新規追加した`openingPart.L`キーがJSON構造に反映されたことによるもの(JAの完成文=`narrative`フィールド自体は`ja-golden`で1バイト不変を確認済み)。ゲームプレイに影響する数値・判定は一切変えていない
+- `npm run test:ui:walkthrough`(JA) — PASS、`Actions: 328 digest=1052faa82eaf7991`(既存基準と完全一致・不変)
+- `npm run test:ui:ignite -- --scenario chronicle`(JA) — PASS、Issues 0
+- `npm run test:ui:ignite -- --scenario chronicle --lang en` — **PASS**(修正前はIGNITION_MISFIRE)、`screen-database`のJA露出0
+- `npm run test:ui:ignite -- --scenario tenchosen`(JA/EN) — 両方PASS(退行なし)
+- `npm run test:ui:ignite -- --scenario gameover`(JA/EN) — 両方PASS(退行なし)
+
+### 5. 変更ファイル
+
+- `src/management.js` — `Engine.chronicle._buildPeerNarrativeParts`のstyleJa/org解決タイミングをL マーカー方式へ変更(2箇所)
+- `test/ui-walkthrough/README.md` — 「既知の未解決FAIL」節を解消済みの記述へ更新
+- `docs/game-system-roadmap.md` — 「🌐 英語対応」行のP7-22残課題欄を更新+P7-27完了セグメントを追記
+- `docs/worklog.md` — 本エントリ
+
+### 6. 未実施・確認事項
+
+- specs/ 更新は不要と判断(既存specs/i18n-runtime-spec-v1.0.md §14-2/§14-3のLマーカー規約どおりの実装であり、新規仕様の追加ではない)
+- 実機確認: 年代記画面(データベース→年代記タブ→各章)を英語表示に切り替えて、選手の叙述文中に日本語の軸ラベル(All-round/Grappling/Striking/Submission/Brawling系の文脈)が残っていないことを目視確認してほしい
+
 ## 🌐 英語対応 P7-22 — `npm run test:ui:ignite -- --scenario tenchosen --lang en` がドライバ停止する件を根治(2026-09-05・worktree agent-a7dbef864645e5ab8)
 
 P7-19が発見した「天頂戦igniteのEN初実行が、天頂戦とは無関係な画面でドライバ停止する」件の調査・修正。開始前にworktreeブランチをmain先端(`da2d1ed5`。P7-19=da2d1ed5までmain入り)へfast-forward。
