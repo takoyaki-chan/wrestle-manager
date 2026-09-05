@@ -13,6 +13,7 @@ const TIMEOUT_MS = 120000;
 const TESTS = [
   // Startup, save/load, and the common weekly loop.
   'app-startup-scope-test.js',
+  'post-show-milestone-timing-test.js',
   'calendar-week-regression-test.js',
   'week-advance-contract-test.js',
   'week-advance-single-step-test.js',

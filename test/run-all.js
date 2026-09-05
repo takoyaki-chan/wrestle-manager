@@ -103,6 +103,7 @@ const QUICK = new Set([
   'newspaper-generic-photo-test.js',
   'newspaper-news-value-test.js',
   'opening-scene-ui-test.js',
+  'post-show-milestone-timing-test.js',
   'org-trust-visibility-guard-test.js',
   'ppv-lines-test.js',
   'ppv-org-name-resolution-test.js',
