@@ -201,6 +201,19 @@ const DATA_TABLES = [
       table.forEach((s, i) => { if (s) onEntry(s, `DOJO_SHOUTS[${i}]`); });
     },
   },
+  {
+    name: 'GROWTH_LOG_LABELS',
+    // P7-25: 成長経過タブの行動ラベル。management.js tickWeek の関数内直書き
+    // (§10-2型)を data.js のトップレベル表へ移設したもの。値は growthLog[].detail /
+    // .eventTag として**生JAのままGへ永続**し、消費点(ui-render.js の
+    // `renderRosterDetail`)が値として t() を1回引く(動的キーなので t() の静的
+    // 第1引数を見る extractJsCalls には載らない)。
+    extract(table, onEntry) {
+      Object.keys(table.schedule || {}).forEach((k) => onEntry(table.schedule[k], `GROWTH_LOG_LABELS.schedule.${k}`));
+      ['promo', 'promo2', 'promo3', 'rest', 'autoRest', 'intensive', 'boycott', 'hotStreak']
+        .forEach((k) => { if (table[k]) onEntry(table[k], `GROWTH_LOG_LABELS.${k}`); });
+    },
+  },
 ];
 
 // ── JS_TABLES モード (Stage B P7-9) ────────────────────────────────────────
@@ -276,6 +289,25 @@ const JS_TABLES = [
     name: 'PIN_INTRO_TEXTS',
     extract(table, onEntry) {
       Object.keys(table).forEach((k) => (table[k] || []).forEach((s, i) => { if (s) onEntry(s, `PIN_INTRO_TEXTS.${k}[${i}]`); }));
+    },
+  },
+  // P7-25: ドラフト交渉(セリ)画面。観戦iframeと同じ「動的キーなので t() の静的
+  // 第1引数を見る extractJsCalls には載らない」層で、draft-negotiation.js は
+  // loadAsGlobal に Engine 定義(management.js)を要するためJS_TABLESで切り出す。
+  {
+    file: 'draft-negotiation.js',
+    name: 'DRAFT_HEAT_LABELS',
+    // consumer: ui-render.js(交渉カードの粘り度ラベル。`WM_I18N.t(heat.labelJp)`)
+    extract(table, onEntry) {
+      Object.keys(table).forEach((k) => { if (table[k]) onEntry(table[k], `DRAFT_HEAT_LABELS.${k}`); });
+    },
+  },
+  {
+    file: 'draft-negotiation.js',
+    name: 'DRAFT_UI_NARRATION',
+    // consumer: ui-render.js のナレーション枠(ui-common.js が negState へ置く2文)
+    extract(table, onEntry) {
+      Object.keys(table).forEach((k) => { if (table[k]) onEntry(table[k], `DRAFT_UI_NARRATION.${k}`); });
     },
   },
 ];

@@ -18601,6 +18601,9 @@ const NEWSPAPER_SHOW_FALLBACK_TEMPLATES = {
 //                    末尾に "." を打つ、という差を吸収するので**区切りそのものを2キーに**する。
 //                    可変本数(リード3本 / 周辺コンテキスト1〜2本)なので join と同じく
 //                    2スロットの畳み込みで使い、最後に sentenceEnd で締める
+//   dotJoin        : (P7-25で追加)キャリア年表の注記2本を中黒でつなぐ様式。
+//                    `{a}・{b}` は CHRONICLE_NARRATIVE_TEMPLATES.listDot と同一キーなので
+//                    template-ledger では1行に畳まれる(同一台帳内の重複は §15-3 の対象外)
 const ARTICLE_COMPOSE_TEMPLATES = {
   join: '{a}{b}',
   champChangeJoin: '{lead}{profile}{reign}{closing}',
@@ -18610,6 +18613,234 @@ const ARTICLE_COMPOSE_TEMPLATES = {
   coachProfileMeta: '{age}歳 ｜ {gender}性 ｜ {origin}出身',
   sentenceJoin: '{a}。{b}',
   sentenceEnd: '{s}。',
+  dotJoin: '{a}・{b}',
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  i18n Stage B P7-25: キャリア年表(選手ポップアップ「記録」タブ)の文面プール
+//  ──────────────────────────────────────────────────────────────────────────
+//  移設元は management.js `Engine.milestone.get()` の**関数本体に直書きされた**
+//  JSテンプレートリテラル(§10-2「関数の中のリテラルはどの抽出器からも見えない」型)。
+//  消費点は ui-common.js の選手ポップアップ1箇所だけで、値はGへ焼かれず**表示のたびに
+//  careerRecord.history から組み直される**ため、追加フィールドも表示時再生成の
+//  自己検証も要らない(§22-1と同じ族)。`Engine.milestone.get(G, id, dict)` の
+//  第3引数へ `WM_I18N.t` を糸通しし、Engine側は `_wmFillWithDict` でPH置換前に訳す。
+//
+//  ■ 分岐は完全文で持つ(構造規約3)。`${orgPrefix}${viaJp}入団` のような断片連結は
+//    ENで語順が壊れるため、団体名の有無×加入経路4種を8本の完全文に展開してある。
+//  ■ 団体名・選手名は `{org}`/`{name}` のパラメータ値として渡し、名前辞書(pn)の
+//    自動変換(D-P6-2)に乗せる。**取れなかったときのフォールバック**(`王座`/`他団体`/
+//    `所属団体`/`プレイヤー団体`/`相手団体`)は ui-ledger/template-ledger に既訳が
+//    あるので本表へは入れず、management.js 側にJA原文を1本だけ置いて `_wmDictLabel`
+//    で値として引く(§15-3の二重登録回避)。既訳が無い `元団体` だけ本表の labels に置く。
+// ══════════════════════════════════════════════════════════════════════════════
+const CAREER_MILESTONE_TEMPLATES = {
+  // debut: 団体名の有無 × 加入経路(ドラフト/FA/スカウト/不明)
+  debutOrgDraft: '{org} にドラフト入団',
+  debutOrgFa: '{org} にFA入団',
+  debutOrgScout: '{org} にスカウト入団',
+  debutOrgPlain: '{org} に入団',
+  debutDraft: 'ドラフト入団',
+  debutFa: 'FA入団',
+  debutScout: 'スカウト入団',
+  debutPlain: '入団',
+  // 王座(団体名が取れない枝は「{org}へフォールバック語を差し込む」のではなく
+  //   分岐ごとの完全文で持つ — ENで "Title title" のような重複語になるため)
+  titleWin: '{org} 獲得',
+  titleWinNoOrg: '団体王座 獲得',
+  titleWinBeat: '{name} を破ってチャンピオンに',
+  titleWinPlain: 'チャンピオンに！',
+  titleLoss: '{org} 陥落',
+  titleLossNoOrg: '団体王座 陥落',
+  titleLossBy: '{name} に敗れ陥落',
+  titleLossDefenses: '{n}度防衛の末に陥落',
+  titleDefense: '{org}{n}度防衛達成',
+  titleDefenseNoOrg: '王座{n}度防衛達成',
+  titleDefenseDetail: '{name} の挑戦を退ける',
+  // 移籍・退団
+  transfer: '{from} から {to} へ移籍',
+  transferPoach: '引き抜きで加入',
+  transferPoachForced: '強制引き抜きで加入',
+  transferNegotiate: '交渉成立で加入',
+  release: '{org}を解雇',
+  releaseDetail: 'ロスター調整等により契約解除',
+  contractEnd: '{org}を契約満了で退団',
+  suddenDeparture: '{org}を突然退団',
+  departToOrg: '{org}へ移籍',
+  departToFa: 'フリーエージェントへ',
+  retireRetracted: '引退を撤回し {org} に復帰',
+  rentalInSeasons: '{from}から {to} へレンタル加入（{n}期）',
+  rentalIn: '{from}から {to} へレンタル加入',
+  rentalOut: 'レンタル期間満了で {org} へ帰団',
+  // 引退
+  retire: '引退（{age}歳）',
+  retireInjuryWear: '度重なる怪我により',
+  retireInjuryCareerEnding: '重傷により現役続行不可',
+  retireAge: '年齢による引退',
+  injuryRetire: '怪我による引退',
+  // 大舞台
+  summitWin: '頂上決戦 勝利',
+  summitLose: '頂上決戦 敗北',
+  warWin: '対抗戦 vs {org} 勝利',
+  warLose: '対抗戦 vs {org} 敗北',
+  warWinVs: '対抗戦 vs {org} 勝利（{name} 戦）',
+  warLoseVs: '対抗戦 vs {org} 敗北（{name} 戦）',
+  peak: '全盛期 OVR {n}',
+  // 受賞(絵文字込みで年表の1行を成す)
+  awardRookie: '🌟 新人王 受賞',
+  awardMvp: '👑 MVP 受賞',
+  awardMedia: '📺 メディア功労賞 受賞',
+  awardBestMatch: '🎬 ベストマッチ賞（試合評価 {mq}）',
+  // PPV
+  ppvSummitWin: 'PPV GRAND FINAL 優勝',
+  ppvSummitLose: 'PPV GRAND FINAL 準優勝',
+  ppvEntry: 'PPV GRAND FINAL 出場',
+  ppvEntryDetailWin: '{name} に勝利',
+  ppvEntryDetailLose: '{name} に敗れる',
+  // 決勝の結果注記(PPV GRAND FINAL とジュニアトーナメントで共用)
+  finalBeat: '決勝で {name} を破る',
+  finalLost: '決勝で {name} に敗れる',
+  // ジュニアトーナメント(結果ラベルは単独では訳が定まらないので完全文で持つ)
+  jtChampion: 'ジュニアトーナメント 優勝',
+  jtRunnerUp: 'ジュニアトーナメント 準優勝',
+  jtSemiFinal: 'ジュニアトーナメント 準決勝敗退',
+  jtQuarterFinal: 'ジュニアトーナメント 準々決勝敗退',
+  jtFirstRound: 'ジュニアトーナメント 出場（1回戦敗退）',
+  jtEntry: 'ジュニアトーナメント 出場',
+  jtDetailEliminated: '{name} に敗れて敗退',
+  // ドーム大会(タイトル/メイン × 勝利/敗北/出場 × 相手の有無)
+  domeTitleWin: 'ドーム大会 タイトルマッチ 勝利',
+  domeTitleLose: 'ドーム大会 タイトルマッチ 敗北',
+  domeTitleEntry: 'ドーム大会 タイトルマッチ 出場',
+  domeMainWin: 'ドーム大会 メインイベント 勝利',
+  domeMainLose: 'ドーム大会 メインイベント 敗北',
+  domeMainEntry: 'ドーム大会 メインイベント 出場',
+  domeTitleWinVs: 'ドーム大会 タイトルマッチ 勝利（vs {name}）',
+  domeTitleLoseVs: 'ドーム大会 タイトルマッチ 敗北（vs {name}）',
+  domeTitleEntryVs: 'ドーム大会 タイトルマッチ 出場（vs {name}）',
+  domeMainWinVs: 'ドーム大会 メインイベント 勝利（vs {name}）',
+  domeMainLoseVs: 'ドーム大会 メインイベント 敗北（vs {name}）',
+  domeMainEntryVs: 'ドーム大会 メインイベント 出場（vs {name}）',
+  // 挑戦状(B3)
+  b3Win: '{org}への挑戦状 勝利',
+  b3Lose: '{org}への挑戦状 敗北',
+  b3Decline: '{org}からの挑戦状を辞退',
+  b3Rejected: '挑戦状を{org}に拒絶される',
+  // 春のタッグリーグ
+  springTagChampion: '第{n}回 春のタッグリーグ 優勝',
+  springTagRunnerUp: '第{n}回 春のタッグリーグ 準優勝',
+  springTagThird: '第{n}回 春のタッグリーグ 3位',
+  springTagFourth: '第{n}回 春のタッグリーグ 4位',
+  springTagEntry: '第{n}回 春のタッグリーグ 出場',
+  springTagDetailChampion: '{name}とのタッグで頂点に立つ',
+  springTagDetailRunnerUp: '{name}とのタッグで決勝進出',
+  springTagDetailEntry: '{name}とのタッグで参戦',
+  // シーズン区切り(text は非表示。detail だけが「キャリアN年目」列の下に出る)
+  seasonEnd: 'キャリア{n}年目 終了',
+  // 既訳の無いフォールバック団体ラベル(既訳のあるものは management.js 側に置く・§15-3)
+  labels: {
+    formerOrg: '元団体',
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  i18n Stage B P7-25: 殿堂入り「キャリアハイライト」の文面プール
+//  ──────────────────────────────────────────────────────────────────────────
+//  移設元は management.js `Engine.awards.buildCareerHighlights()` の関数本体
+//  (§10-2型)。CAREER_MILESTONE_TEMPLATES と同じ層だが、**完成文が
+//  `G.allHallOfFame[].careerHighlights[].text` へ永続する**点が違うため、
+//  表示点(ui-render.js `showHofDetail`)は §18-1 の語り文と同じ
+//  「JAで再生成 → 保存値と1バイト照合 → 一致したときだけdict版を出す」で解く。
+//
+//  ■ `MVP 受賞` は CHRONICLE_NARRATIVE_TEMPLATES に既訳("an MVP award" = 列挙の中の
+//    名詞句)があり、ハイライト行の見出しとしては文脈が違う。**`{award} 受賞` の
+//    1テンプレへ畳み、賞名は値として `_wmDictLabel` で引く**(§14-2)ことで
+//    キーの衝突を避ける(JAの充填結果は従来と1バイト同一)。賞名3種
+//    (`新人王`/`MVP`/`メディア功労賞`)はいずれも ui-ledger に既訳がある。
+//  ■ `{org}王座 ...` の `{org}` は名前辞書のパラメータ値自動変換に乗る。
+// ══════════════════════════════════════════════════════════════════════════════
+const HOF_HIGHLIGHT_TEMPLATES = {
+  titleWinFirst: '{org}王座 初戴冠',
+  titleWinRepeat: '{org}王座 {n}度目の戴冠',
+  titleDefense: '{org}王座 {n}度防衛',
+  titleLoss: '{org}王座 陥落（{n}度防衛の末に）',
+  juniorTournament: 'ジュニアトーナメント 優勝',
+  ppvMainEvent: 'PPV GRAND FINAL 優勝',
+  springTag: '第{n}回 春のタッグリーグ優勝',
+  springTagWithPartner: '第{n}回 春のタッグリーグ優勝（{name}と）',
+  award: '{award} 受賞',
+  awardBestMatch: 'ベストマッチ賞（試合評価 {mq}）',
+  domeTitleWin: 'ドーム公演 タイトルマッチ 勝利',
+  domeTitleEntry: 'ドーム公演 タイトルマッチ 出場',
+  domeMainWin: 'ドーム公演 メインイベント 勝利',
+  domeMainEntry: 'ドーム公演 メインイベント 出場',
+  war: '対抗戦通算{n}勝',
+  unifiedCrown: '全国統一王座 戴冠',
+  unifiedCrownGeneration: '全国統一王座 戴冠(第{n}代)',
+  unifiedCapture: '全国統一王座 奪取',
+  unifiedDefense: '全国統一王座 防衛{n}度',
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  i18n Stage B P7-25: 成長ログ(選手ポップアップ「成長経過」タブ)の行動ラベル
+//  ──────────────────────────────────────────────────────────────────────────
+//  移設元は management.js tickWeek の関数本体に直書きされたオブジェクトリテラル
+//  (§10-2型)。値は `growthLog[].detail` / `.eventTag` として**Gへ永続する**が、
+//  永続値は従来どおり生JAのままにし、表示点(ui-render.js `renderRosterDetail`)で
+//  `WM_I18N.t()` を値として1回引く(§17-2 の異名と同型)。
+//  `バランス` / `休養` は ui-ledger に既訳(Balanced / Rest)があるため、本表の値が
+//  そのまま辞書キーとして解決される(同じ画面・同じ意味なので訳を分ける必要が無い)。
+// ══════════════════════════════════════════════════════════════════════════════
+const GROWTH_LOG_LABELS = {
+  // schedule → 練習の重点(外側のテンプレは `練習（{detail}）`)
+  schedule: {
+    balance: 'バランス',
+    pw: 'パワー重点',
+    sp: 'スピード重点',
+    te: 'テクニック重点',
+    st: 'スタミナ重点',
+  },
+  // プロモ活動(連続キャンペーンの段階で文言が変わる)
+  promo: 'プロモ活動',
+  promo2: 'プロモ活動（キャンペーン2週目）',
+  promo3: 'プロモ活動（キャンペーン最大効果）',
+  // 休養・その他の行動
+  rest: '休養',
+  autoRest: '自動休養',
+  intensive: '追い込み',
+  boycott: 'ボイコット',
+  // eventTag(行末の緑色バッジ)
+  hotStreak: '🔥絶好調',
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  i18n Stage B P7-25: シーズン総括(オフシーズン・レポート)の直書き文
+//  ──────────────────────────────────────────────────────────────────────────
+//  `Engine.seasonReview.build()` は SEASON_REVIEW_LINES を `_line`(=dict)経由で
+//  読む配線が済んでいるが、**プールが引けなかったときの `|| '仮文'` フォールバックと
+//  退団者の note だけが関数本体の直書きJA**として残っていた(§10-2型)。
+//
+//  ■ `departure*` は**実際に出る**(§III 顔ぶれの変化の退団者行)。
+//  ■ 残りは SEASON_REVIEW_LINES の全プールが非空なので現状**到達不能**だが、
+//    §22-6 の裁定どおり枝は防御的に残したまま台帳へ載せて訳す。
+//  ■ `引退` は ui-ledger に既訳("Retirement")があるので本表へは入れず、
+//    management.js 側にJA原文を1本だけ置いて値として引く(§15-3)。
+// ══════════════════════════════════════════════════════════════════════════════
+const SEASON_REVIEW_FALLBACK_TEMPLATES = {
+  departureYears: '{n}年の現役に幕',
+  champ: '王座を{n}度守った。',
+  jt: 'ジュニアトーナメントを制した。',
+  media: 'リング外での発信が団体を支えた。',
+  springTag: '春のタッグリーグを制した。',
+  leadRankUp: '前年{prevRank}位から{rank}位に浮上した。',
+  leadRankDown: '前年{prevRank}位から{rank}位に後退した。',
+  leadRankSame: '前年に続き{rank}位で今季を終えた。',
+  leadFirstSeason: '旗揚げ初年度、{rank}位でシーズンを終えた。',
+  heroMvp: '{hero}が年間MVPに輝いた。',
+  heroAce: '{hero}がチームを牽引した。',
+  closingChase: '上位{above}との差は{gap}点。来季も、着実に積み上げたい。',
+  closingTop: '業界の頂点として、来季も走り続ける。',
+  closingFallback: '来季も、この団体の物語は続く。',
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -32242,6 +32473,9 @@ if (typeof module !== 'undefined' && module.exports) {
     commonMoves, styleMoves, STYLE_TAG_MOVES,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, LONG_TERM_INJURY, INJURY_DEBUFF_TABLE,
     TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, ARTICLE_COMPOSE_TEMPLATES,
+    // i18n Stage B P7-25
+    CAREER_MILESTONE_TEMPLATES, HOF_HIGHLIGHT_TEMPLATES, GROWTH_LOG_LABELS,
+    SEASON_REVIEW_FALLBACK_TEMPLATES,
     PPV_SUMMIT_STORY_TEMPLATES, NEWS_FALLBACK_TEMPLATES, AUTUMN_WAR_NEWS_PARTS,
     NEWS_CONTENDER_TEXTS, NEWS_JUNIOR_TOURNAMENT_TEXTS, NEWS_AI_ORG_TEXTS, NEWS_STAMP_SUFFIX_TEXTS,
     CHRONICLE_QUOTE_CLAUSES, CHRONICLE_QUOTE_TEMPLATES_V2, CHRONICLE_QUOTE_TEMPLATES_V1,

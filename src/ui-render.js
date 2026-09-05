@@ -2202,10 +2202,13 @@ function _renderRosterDetailPanel(c, hired) {
       const resLabel = entry.result === 'win' ? WM_I18N.t('勝利') : entry.result === 'lose' ? WM_I18N.t('敗北') : WM_I18N.t('引分');
       eventText = `🏆 ${entry.detail} — <b style="color:${resColor}">${resLabel}</b>`;
     } else if (entry.type === 'practice') {
-      eventText = WM_I18N.t('練習（{detail}）', { detail: entry.detail });
-      if (entry.eventTag) eventText += ` <span style="color:#1a8a4a">${entry.eventTag}</span>`;
+      // i18n P7-25: 外側のテンプレはt()を通っていたが、差し込む {detail} は
+      // growthLog へ**生JAで永続**した行動ラベル(GROWTH_LOG_LABELS)なので、
+      // 値としてもう一度辞書を引く(§14-2 _wmDictLabel と同趣旨のUI側版)。
+      eventText = WM_I18N.t('練習（{detail}）', { detail: WM_I18N.t(entry.detail) });
+      if (entry.eventTag) eventText += ` <span style="color:#1a8a4a">${WM_I18N.t(entry.eventTag)}</span>`;
     } else if (entry.type === 'rest') {
-      eventText = entry.detail;
+      eventText = WM_I18N.t(entry.detail);
     } else if (entry.type === 'injury') {
       // detail は内部キー('中傷'等)のことがある。表示は必ず injuryLabel を通す
       eventText = `🏥 ${WM_I18N.t('療養（{detail}）', { detail: injuryLabel(entry.detail, WM_I18N.t) || entry.detail })}`;
@@ -6089,7 +6092,7 @@ function _renderDraftNegotiation() {
       <div class="dn-card-heat-section">
         <div class="dn-card-heat-title">${WM_I18N.t('粘り度')}</div>
         <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-${isDropped ? 'dropped' : heat.cls}" style="width:${isDropped ? 0 : heat.pct}%"></div></div>
-        <div class="dn-card-heat-label dn-heat-${isDropped ? 'dropped' : heat.cls}">${isDropped ? WM_I18N.t('R{n}で離脱', { n: interest._droppedAtRound || '?' }) : !isParticipating ? WM_I18N.t('不参加') : heat.labelJp}</div>
+        <div class="dn-card-heat-label dn-heat-${isDropped ? 'dropped' : heat.cls}">${isDropped ? WM_I18N.t('R{n}で離脱', { n: interest._droppedAtRound || '?' }) : !isParticipating ? WM_I18N.t('不参加') : WM_I18N.t(heat.labelJp)}</div>
       </div>
     </div>`;
   }
@@ -6114,8 +6117,13 @@ function _renderDraftNegotiation() {
   html += `</div></div>`; // end cards
 
   // ── Narration ──
+  // i18n P7-25: `ns.narration` は {ORG} を埋め終えたJAの完成文で辞書キーと一致しない。
+  // 選出は消費済みの乱数に依存して表示時に選び直せないため、Engine側が併記した
+  // 追加フィールド(narrationTpl/narrationVars)から組み直す(specs §14-3/§16-1と同型)。
+  // tpl を持たない旧セーブは保存値をそのまま出す(fail-open。t()に通さない)。
   if (ns.narration) {
-    html += `<div class="dn-narration">${ns.narration}</div>`;
+    const narHtml = ns.narrationTpl ? WM_I18N.t(ns.narrationTpl, ns.narrationVars || undefined) : ns.narration;
+    html += `<div class="dn-narration">${narHtml}</div>`;
   }
 
   // ── Actions / Observation / Results ──
@@ -10419,9 +10427,22 @@ function showHofDetail(idx) {
     : '';
 
   // §6 キャリアハイライト年表
+  // i18n P7-25: 保存値 `h.careerHighlights[].text` は**連結し終えた生JAの完成文**として
+  // Gへ永続しているため、辞書キーとは一致せず t() では訳せない。語り文(§18-1)と同じ
+  // 自己検証型fail-openで解く:
+  //   1. まず dict 無し(JA)で再生成し、保存値と行数・text が1バイト一致するか確かめる
+  //      = 素材(careerRecord)が揃っていて、テンプレも保存当時と同一である証拠
+  //   2. 一致したときだけ、現在の言語の dict(WM_I18N.t)で作り直した配列を出す
+  //   3. 一致しない(旧セーブで素材が欠けている / テンプレが変わった)なら保存値を優先
+  // JAモードでは 2 の結果が 1 と同一(t()はja素通し+PH置換のみ)なので表示は1バイト不変。
   let highlights = h.careerHighlights || [];
-  if (highlights.length === 0 && h.careerRecord && h.careerRecord.history) {
-    highlights = Engine.awards.buildCareerHighlights(h.careerRecord, orgName, G);
+  if (h.careerRecord && h.careerRecord.history) {
+    const hlJa = Engine.awards.buildCareerHighlights(h.careerRecord, orgName, G);
+    const matches = highlights.length === 0
+      || (hlJa.length === highlights.length && hlJa.every((x, i) => x.text === highlights[i].text));
+    if (matches) {
+      highlights = Engine.awards.buildCareerHighlights(h.careerRecord, orgName, G, WM_I18N.t);
+    }
   }
   let highlightsHtml = '';
   if (highlights.length > 0) {

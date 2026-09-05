@@ -43,6 +43,29 @@ const DRAFT_MARK_MUL_SENS = {
   osae:   3.00,   // △
 };
 
+// ── i18n Stage B P7-25: §7.3 ヒートゲージのJAラベル ──
+// getHeatInfo() の return へ直書きしていると、どの抽出器からも見えない(specs §10-2)。
+// トップレベルの表に置いて test/i18n-extract-ui.js の JS_TABLES から走査する。
+// 消費点は ui-render.js のドラフト交渉カード1箇所で、そこで値として t() を1回引く。
+// `余裕` は同じ画面の凡例(`WM_I18N.t('余裕')`)と同一キー = ui-ledger に既訳がある。
+const DRAFT_HEAT_LABELS = {
+  COMPOSED:  '余裕',
+  STEADY:    'まだ余裕あり',
+  HEATED:    '熱が入っている',
+  STRAINED:  'そろそろ限界',
+  DESPERATE: 'もはや意地',
+};
+
+// ── i18n Stage B P7-25: UI側が negState.narration へ直に置く2文 ──
+// ui-common.js の交渉フロー(単独指名の確認・見送り)が組む文。ナレーション枠は
+// 表示点で `t(narrationTpl, narrationVars)` を引く一本道にしてあるので、
+// UI側の文もテンプレとして同じ枠に載せる。抽出器(JS_TABLES)から見えるよう
+// **ナレーション本体と同じファイルのトップレベル表**に置く。
+const DRAFT_UI_NARRATION = {
+  soloConfirm: '競合なし — 単独指名です。契約しますか？',
+  passed: '見送りました',
+};
+
 // ────────────────────── §5 定数 ──────────────────────
 
 // §5.2 ティア別参加率テーブル (クリア前)
@@ -315,13 +338,14 @@ Engine.draftNegotiation = {
 
   // ── §7.3 ヒートゲージ ──
   getHeatInfo(currentBid, obsessionScore) {
-    if (!obsessionScore || obsessionScore <= 0) return { label: 'COMPOSED', labelJp: '余裕', cls: 'composed', pct: 10 };
+    const L = DRAFT_HEAT_LABELS;
+    if (!obsessionScore || obsessionScore <= 0) return { label: 'COMPOSED', labelJp: L.COMPOSED, cls: 'composed', pct: 10 };
     const ratio = currentBid / obsessionScore;
-    if (ratio < 0.7)  return { label: 'COMPOSED',  labelJp: '余裕',           cls: 'composed',  pct: Math.round(ratio / 0.7 * 40) };
-    if (ratio < 1.0)  return { label: 'STEADY',    labelJp: 'まだ余裕あり',   cls: 'steady',    pct: 40 + Math.round((ratio - 0.7) / 0.3 * 20) };
-    if (ratio < 1.5)  return { label: 'HEATED',    labelJp: '熱が入っている', cls: 'heated',    pct: 60 + Math.round((ratio - 1.0) / 0.5 * 18) };
-    if (ratio < 2.5)  return { label: 'STRAINED',  labelJp: 'そろそろ限界',   cls: 'strained',  pct: 78 + Math.round((ratio - 1.5) / 1.0 * 15) };
-    return              { label: 'DESPERATE', labelJp: 'もはや意地',     cls: 'desperate', pct: Math.min(100, 93 + Math.round((ratio - 2.5) * 3)) };
+    if (ratio < 0.7)  return { label: 'COMPOSED',  labelJp: L.COMPOSED,  cls: 'composed',  pct: Math.round(ratio / 0.7 * 40) };
+    if (ratio < 1.0)  return { label: 'STEADY',    labelJp: L.STEADY,    cls: 'steady',    pct: 40 + Math.round((ratio - 0.7) / 0.3 * 20) };
+    if (ratio < 1.5)  return { label: 'HEATED',    labelJp: L.HEATED,    cls: 'heated',    pct: 60 + Math.round((ratio - 1.0) / 0.5 * 18) };
+    if (ratio < 2.5)  return { label: 'STRAINED',  labelJp: L.STRAINED,  cls: 'strained',  pct: 78 + Math.round((ratio - 1.5) / 1.0 * 15) };
+    return              { label: 'DESPERATE', labelJp: L.DESPERATE, cls: 'desperate', pct: Math.min(100, 93 + Math.round((ratio - 2.5) * 3)) };
   },
 
   // ── §7.4 ナレーション ──
@@ -395,7 +419,15 @@ Engine.draftNegotiation = {
     ],
   },
 
-  pickNarration(type, context, rng) {
+  /**
+   * i18n Stage B P7-25: 選んだテンプレ({ORG}置換**前**の原文)と充填値を素材のまま返す。
+   * 選出は消費済みの乱数ストリームに依存するので「表示時に選び直す」が使えない
+   * (specs §14-3 / §16-1 と同じ族)。完成文は従来どおりJAのまま `ns.narration` へ
+   * 残し、`ns.narrationTpl` / `ns.narrationVars` を**追加フィールド**として併記して、
+   * 表示点(ui-render.js)が `t(tpl, vars)` で組み直す。
+   * @returns {{text:string, tpl:string, vars:(object|null)}}
+   */
+  pickNarrationParts(type, context, rng) {
     const pool = type === 'fighting' ? Engine.draftNegotiation.NARRATION.fighting[context.orgId] || []
       : type === 'dropped' ? Engine.draftNegotiation.NARRATION.dropped[context.orgId] || []
       : type === 'playerWin' ? (context.defeatedCount === 0 ? Engine.draftNegotiation.NARRATION.playerWin.solo
@@ -404,20 +436,28 @@ Engine.draftNegotiation = {
       : type === 'playerLost' ? Engine.draftNegotiation.NARRATION.playerLost
       : type === 'flowThrough' ? Engine.draftNegotiation.NARRATION.flowThrough
       : Engine.draftNegotiation.NARRATION.roundStart;
-    if (!pool || pool.length === 0) return '';
-    let text = pool[Engine.rng.int(rng, 0, pool.length - 1)];
+    if (!pool || pool.length === 0) return { text: '', tpl: '', vars: null };
+    const tpl = pool[Engine.rng.int(rng, 0, pool.length - 1)];
     // {ORG} プレースホルダを実際の団体名に置換
-    if (text.includes('{ORG}') && context.orgId) {
+    let vars = null;
+    if (tpl.includes('{ORG}') && context.orgId) {
       const org = (typeof RIVAL_ORGS !== 'undefined') ? RIVAL_ORGS.find(o => o.id === context.orgId) : null;
-      text = text.replace(/\{ORG\}/g, org ? org.name : context.orgId);
+      vars = { ORG: org ? org.name : context.orgId };
     }
-    return text;
+    return { text: vars ? tpl.replace(/\{ORG\}/g, vars.ORG) : tpl, tpl, vars };
+  },
+
+  /** 従来の呼び出し契約(JAの完成文を返す)を保つ薄いラッパ */
+  pickNarration(type, context, rng) {
+    return Engine.draftNegotiation.pickNarrationParts(type, context, rng).text;
   },
 
   // ── 1ラウンドだけ進める（UI用） ──
   // negState: { currentBid, interests, playerIn, round, log, finished, winner, assessedValue, narration, droppedThisRound }
   stepRound(negState, playerAction, state, rng) {
-    const ns = { ...negState, droppedThisRound: [], narration: '' };
+    // i18n P7-25: narration の追加フィールド(tpl/vars)も毎ラウンド初期化する
+    // (前ラウンドの値が残ると、narration を空にしたラウンドで古い文が復活する)
+    const ns = { ...negState, droppedThisRound: [], narration: '', narrationTpl: '', narrationVars: null };
     const assessedValue = ns.assessedValue;
     const leagueElevated = state.leagueElevated || false;
     ns.round++;
@@ -455,8 +495,15 @@ Engine.draftNegotiation = {
 
     // ナレーション生成
     const narRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, ns.round, 0xAA));
+    // i18n P7-25: 完成文(JA)と素材(tpl/vars)を必ずセットで置く
+    const _setNar = (type, context) => {
+      const p = Engine.draftNegotiation.pickNarrationParts(type, context, narRng);
+      ns.narration = p.text;
+      ns.narrationTpl = p.tpl;
+      ns.narrationVars = p.vars;
+    };
     if (ns.droppedThisRound.length > 0) {
-      ns.narration = Engine.draftNegotiation.pickNarration('dropped', { orgId: ns.droppedThisRound[0] }, narRng);
+      _setNar('dropped', { orgId: ns.droppedThisRound[0] });
     } else {
       const stillFighting = ns.interests.filter(i => i.participating && !i.dropped);
       if (stillFighting.length > 0) {
@@ -465,9 +512,9 @@ Engine.draftNegotiation = {
           const rb = ns.currentBid / (b.obsessionScore || 1);
           return ra > rb ? a : b;
         });
-        ns.narration = Engine.draftNegotiation.pickNarration('fighting', { orgId: hottest.orgId }, narRng);
+        _setNar('fighting', { orgId: hottest.orgId });
       } else {
-        ns.narration = Engine.draftNegotiation.pickNarration('roundStart', {}, narRng);
+        _setNar('roundStart', {});
       }
     }
 
@@ -480,13 +527,13 @@ Engine.draftNegotiation = {
       if (ns.playerIn) {
         ns.winner = 'player';
         const defeatedCount = ns.interests.filter(i => i.participating).length;
-        ns.narration = Engine.draftNegotiation.pickNarration('playerWin', { defeatedCount }, narRng);
+        _setNar('playerWin', { defeatedCount });
       } else if (stillActive.length === 1) {
         ns.winner = stillActive[0].orgId;
-        ns.narration = Engine.draftNegotiation.pickNarration('playerLost', {}, narRng);
+        _setNar('playerLost', {});
       } else {
         ns.winner = null;
-        ns.narration = Engine.draftNegotiation.pickNarration('flowThrough', {}, narRng);
+        _setNar('flowThrough', {});
       }
       ns.finalBid = ns.currentBid;
       return ns;
@@ -495,7 +542,7 @@ Engine.draftNegotiation = {
       ns.finished = true;
       ns.winner = null;
       ns.finalBid = 0;
-      ns.narration = Engine.draftNegotiation.pickNarration('flowThrough', {}, narRng);
+      _setNar('flowThrough', {});
       return ns;
     }
 

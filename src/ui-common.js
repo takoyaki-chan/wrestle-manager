@@ -4482,7 +4482,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       const winRate = totalMatches > 0 ? Math.round(wins / totalMatches * 100) : 0;
 
       // ── Build career display from milestones ──
-      const milestones = Engine.milestone.get(G, c.id);
+      // i18n P7-25: 年表の文面は Engine 側で CAREER_MILESTONE_TEMPLATES から組む。
+      // Gへ焼かれず表示のたびに組み直されるので、dictを糸通しするだけでよい(§22-1)。
+      const milestones = Engine.milestone.get(G, c.id, WM_I18N.t);
       const pOrgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
       const winRateFmt = totalMatches > 0 ? (wins / totalMatches).toFixed(3).slice(1) : '.000';
 
@@ -4562,7 +4564,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
               const typeStyle = Engine.milestone._typeStyle(m.type);
               const detailInline = m.detail ? `<span style="color:var(--text-dim)"> / ${m.detail}</span>` : '';
               html += `<div style="display:grid;grid-template-columns:42px 14px minmax(0,1fr);align-items:start;column-gap:6px;padding:2px 0;font-size:12px;line-height:1.35">
-                <span style="color:var(--text-dim);font-size:10px;text-align:right;padding-top:2px">${m.week ? `${m.week}\u9031` : '---'}</span>
+                <span style="color:var(--text-dim);font-size:10px;text-align:right;padding-top:2px">${m.week ? WM_I18N.t('{n}\u9031', { n: m.week }) : '---'}</span>
                 <span style="color:${typeStyle.color};padding-top:1px">${typeStyle.icon}</span>
                 <span style="color:var(--text)">${m.text}${detailInline}</span>
               </div>`;
@@ -6276,7 +6278,11 @@ function startDraftNegotiation() {
     negState.finished = true;
     negState.winner = 'player';
     negState.finalBid = negState.assessedValue;
-    negState.narration = '競合なし — 単独指名です。契約しますか？';
+    // i18n P7-25: narration は表示点で `t(narrationTpl, narrationVars)` を引くので、
+    // UI側で直に置く文も必ず tpl を併記する(Engine側の追加フィールド方式と同じ形)
+    negState.narration = DRAFT_UI_NARRATION.soloConfirm;
+    negState.narrationTpl = DRAFT_UI_NARRATION.soloConfirm;
+    negState.narrationVars = null;
     negState._isSoloConfirm = true;
   }
 
@@ -6808,7 +6814,8 @@ function draftSoloConfirm(accept) {
     draftNextCandidate();
   } else {
     // 見送り → winner=null に変更して次へ
-    const ns = { ...dn.negState, winner: null, finalBid: 0, narration: '見送りました' };
+    const ns = { ...dn.negState, winner: null, finalBid: 0,
+      narration: DRAFT_UI_NARRATION.passed, narrationTpl: DRAFT_UI_NARRATION.passed, narrationVars: null };
     G = { ...G, _draftNegotiation: { ...dn, negState: ns } };
     draftNextCandidate();
   }
@@ -6992,7 +6999,9 @@ function draftNextCandidate() {
     nextNegState.finished = true;
     nextNegState.winner = 'player';
     nextNegState.finalBid = nextNegState.assessedValue;
-    nextNegState.narration = '競合なし — 単独指名です。契約しますか？';
+    nextNegState.narration = DRAFT_UI_NARRATION.soloConfirm;
+    nextNegState.narrationTpl = DRAFT_UI_NARRATION.soloConfirm;
+    nextNegState.narrationVars = null;
     nextNegState._isSoloConfirm = true;
   }
 

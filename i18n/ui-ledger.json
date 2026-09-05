@@ -4968,7 +4968,7 @@
       "factions.js",
       "ui-common.js"
     ],
-    "count": 4,
+    "count": 5,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -10333,6 +10333,19 @@
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
+    "key": "そろそろ限界",
+    "en": "Nearing the limit",
+    "files": [
+      "draft-negotiation.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "draft-negotiation.js:DRAFT_HEAT_LABELS.STRAINED"
+    ]
+  },
+  {
     "key": "たぁっ!",
     "en": "Tah!",
     "files": [
@@ -10953,6 +10966,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "まだ余裕あり",
+    "en": "Still comfortable",
+    "files": [
+      "draft-negotiation.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "draft-negotiation.js:DRAFT_HEAT_LABELS.STEADY"
+    ]
+  },
+  {
     "key": "まだ出来事は刻まれていない。",
     "en": "Nothing has been written down yet.",
     "files": [
@@ -11063,6 +11089,19 @@
     "source": [
       "battle-engine-main.js:PIN_INTRO_TEXTS.tko[0]",
       "tag-battle-main.js:PIN_INTRO_TEXTS.tko[0]"
+    ]
+  },
+  {
+    "key": "もはや意地",
+    "en": "Pure stubbornness",
+    "files": [
+      "draft-negotiation.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "draft-negotiation.js:DRAFT_HEAT_LABELS.DESPERATE"
     ]
   },
   {
@@ -12851,6 +12890,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "スタミナ重点",
+    "en": "Stamina focus",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.schedule.st"
+    ]
+  },
+  {
     "key": "スタミナ：HPの総量に影響",
     "en": "Stamina: affects total HP",
     "files": [
@@ -12976,6 +13028,19 @@
     "count": 7,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "スピード重点",
+    "en": "Speed focus",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.schedule.sp"
+    ]
   },
   {
     "key": "スピード：回避率に影響",
@@ -13674,6 +13739,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "テクニック重点",
+    "en": "Technique focus",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.schedule.te"
+    ]
+  },
+  {
     "key": "テクニック：命中率に影響",
     "en": "Technique: affects accuracy",
     "files": [
@@ -13976,12 +14054,16 @@
     "key": "バランス",
     "en": "Balanced",
     "files": [
+      "data.js",
       "ui-common.js",
       "ui-render.js"
     ],
-    "count": 4,
+    "count": 5,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.schedule.balance"
+    ]
   },
   {
     "key": "バランスより、エース候補を1人。団体の顔が育てば興行が回り始めます。",
@@ -14023,6 +14105,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "パワー重点",
+    "en": "Power focus",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.schedule.pw"
+    ]
   },
   {
     "key": "パワー：技の威力に影響",
@@ -14595,6 +14690,45 @@
     "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
   },
   {
+    "key": "プロモ活動",
+    "en": "Promo work",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.promo"
+    ]
+  },
+  {
+    "key": "プロモ活動（キャンペーン2週目）",
+    "en": "Promo work (campaign week 2)",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.promo2"
+    ]
+  },
+  {
+    "key": "プロモ活動（キャンペーン最大効果）",
+    "en": "Promo work (campaign at full effect)",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.promo3"
+    ]
+  },
+  {
     "key": "プロレス会場のリング",
     "en": "A wrestling ring in an arena",
     "files": [
@@ -14744,6 +14878,19 @@
     "hasProperNoun": false,
     "source": [
       "COACH_ABILITY_CATALOG.才能開花.desc"
+    ]
+  },
+  {
+    "key": "ボイコット",
+    "en": "Boycott",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.boycott"
     ]
   },
   {
@@ -18800,7 +18947,7 @@
   },
   {
     "key": "他団体",
-    "en": "Other promotions",
+    "en": "Another promotion",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -19142,12 +19289,16 @@
     "key": "休養",
     "en": "Rest",
     "files": [
+      "data.js",
       "ui-common.js",
       "ui-render.js"
     ],
-    "count": 5,
+    "count": 6,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.rest"
+    ]
   },
   {
     "key": "休養中",
@@ -19442,11 +19593,15 @@
     "key": "余裕",
     "en": "Composed",
     "files": [
+      "draft-negotiation.js",
       "ui-render.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "source": [
+      "draft-negotiation.js:DRAFT_HEAT_LABELS.COMPOSED"
+    ]
   },
   {
     "key": "使いどころ",
@@ -32897,6 +33052,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "熱が入っている",
+    "en": "Fired up",
+    "files": [
+      "draft-negotiation.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "draft-negotiation.js:DRAFT_HEAT_LABELS.HEATED"
+    ]
+  },
+  {
     "key": "熱が入る",
     "en": "Fired up",
     "files": [
@@ -34887,6 +35055,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "競合なし — 単独指名です。契約しますか？",
+    "en": "No competition — an uncontested pick. Sign her?",
+    "files": [
+      "draft-negotiation.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "draft-negotiation.js:DRAFT_UI_NARRATION.soloConfirm"
+    ]
+  },
+  {
     "key": "競合上乗せ (×{mult}):",
     "en": "Competition premium (×{mult}):",
     "files": [
@@ -36597,6 +36778,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "自動休養",
+    "en": "Automatic rest",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.autoRest"
+    ]
+  },
+  {
     "key": "自動再生",
     "en": "Autoplay",
     "files": [
@@ -37347,6 +37541,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "見送りました",
+    "en": "Passed on her",
+    "files": [
+      "draft-negotiation.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "draft-negotiation.js:DRAFT_UI_NARRATION.passed"
+    ]
   },
   {
     "key": "見送る",
@@ -39100,6 +39307,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "追い込み",
+    "en": "Hard push",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.intensive"
+    ]
   },
   {
     "key": "追加費用",
@@ -44242,6 +44462,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "🔥絶好調",
+    "en": "🔥On fire",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GROWTH_LOG_LABELS.hotStreak"
+    ]
   },
   {
     "key": "🔥🔥 チケットが飛ぶように売れている！",

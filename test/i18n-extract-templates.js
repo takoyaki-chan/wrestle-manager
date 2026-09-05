@@ -222,6 +222,20 @@ const TARGET_TABLES = [
   // ui-ledgerの2キーとは別のキー(`{stamp} 定期興行`/`{stamp} 挑戦状`)としてスタンプ専用の
   // 訳を持たせる(specs §35-7-2 → §37)。
   'NEWS_STAMP_SUFFIX_TEXTS',
+  // P7-25で追加(docs/i18n-coverage-report-v0.1.md A表 #4/#5/#9)。いずれも
+  // management.js の関数本体に直書きされていた地の文プール(§10-2型)の移設先。
+  //   CAREER_MILESTONE_TEMPLATES       — キャリア年表(Engine.milestone.get)の行文面。
+  //                                      分岐は完全文で持つ(構造規約3)ので、団体名の
+  //                                      有無×加入経路のような組み合わせは展開してある
+  //   HOF_HIGHLIGHT_TEMPLATES          — 殿堂入り「キャリアハイライト」(buildCareerHighlights)。
+  //                                      完成文がGへ永続するので表示点は §18-1 の自己検証型再生成
+  //   SEASON_REVIEW_FALLBACK_TEMPLATES — シーズン総括の退団者noteとプール未取得時の仮文
+  // 既訳が ui-ledger にあるフォールバック語(王座/他団体/所属団体/プレイヤー団体/
+  // 相手団体/特記事項なし/引退/新人王/MVP/メディア功労賞)はここへ入れない —
+  // management.js にJA原文を1本だけ置いて `_wmDictLabel` で値として引く(§15-3)。
+  'CAREER_MILESTONE_TEMPLATES',
+  'HOF_HIGHLIGHT_TEMPLATES',
+  'SEASON_REVIEW_FALLBACK_TEMPLATES',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ
@@ -282,6 +296,13 @@ const APP_NEWSPAPER_PROPS = ['_NEWSPAPER_HEADLINES', '_NEWSPAPER_ARTICLES'];
 // management.js全体はEngine定義の巨大な単一オブジェクトリテラルで、loadAsGlobalすると
 // data.js等の読み込み順依存を抱えるため、対象の配列リテラルだけを切り出して評価する。
 const MANAGEMENT_FLAVOR_PROPS = ['MAGAZINE_HEADLINES', 'TV_HEADLINES'];
+
+// P7-25: src/draft-negotiation.js の Engine.draftNegotiation.NARRATION(セリ交渉の
+// 実況ナレーション 50本)。app.js/management.js の2件と同じ理由(トップレベルconstでは
+// ないので loadAsGlobal では取れない/ファイル全体の読み込みは Engine 定義順に依存する)
+// で isolated eval で取り出す。値は素の文字列リテラル({ORG}プレースホルダ入り)だけで、
+// 関数値もネストした波かっこも持たないため深さカウントで安全に切り出せる。
+const DRAFT_NEGOTIATION_PROPS = ['NARRATION'];
 
 const PLACEHOLDER_RE = /\{[A-Za-z_][A-Za-z0-9_]*\}/g;
 
@@ -503,6 +524,13 @@ function main() {
   MANAGEMENT_FLAVOR_PROPS.forEach((propName) => {
     const arr = extractArrayLiteralProp(mgmtSrc, propName);
     walkTable(`management.js:${propName}`, arr);
+  });
+
+  // ── 5. draft-negotiation.js の交渉ナレーションプール(P7-25、isolated eval) ──
+  const draftSrc = fs.readFileSync(path.join(SRC_DIR, 'draft-negotiation.js'), 'utf8');
+  DRAFT_NEGOTIATION_PROPS.forEach((propName) => {
+    const obj = extractAppObjectLiteral(draftSrc, propName);
+    walkTable(`draft-negotiation.js:${propName}`, obj);
   });
 
   const ledger = Array.from(ledgerMap.values())
