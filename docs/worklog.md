@@ -1,5 +1,11 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-06 P7-50 マージ(0dabd094)後の走破基準更新 — ja 336手 / 940bcd9d0515d8d0、EN 400手 / 1194c7dc671a90b4
+
+- 挑戦状 ignite `away-challenge` / `incoming-challenge` は JA/EN とも PASS(EN miss 0、`--regen` で fixture を作り直して確認)。
+- ja 走破の digest 変化(368手 / d14879bd… → 336手 / 940bcd9d…)は、P7-50 前後の src を入れ替えて同一条件で `--action-log` を突き合わせた結果、**手順21で分岐**: 従来は初興行を閉じたあと `doProcessWeek` → 週送り時に派閥イベントが出ていたが、P7-50 の「`closeShowResult` でも待機中の派閥イベント/申し入れを発火する」修正により**興行を閉じた直後に派閥イベント(D モーダル+選択)が出る**ようになった。以降は乱数消費のずれで経路全体が変わり、seed42 は S1W10 の対抗戦辞退分岐を踏まなくなった(辞退一幕は ignite `war-decline` が決定的に担保)。意図した修正の帰結なので基準を更新。
+- 以後の基準: **ja 336 / 940bcd9d0515d8d0、EN 400 / 1194c7dc671a90b4**(main 0dabd094、単独実行)。
+
 ## P7-50 — 挑戦状点火(away-challenge/incoming-challenge)がJA/ENとも点火マーカー不発になる回帰の原因特定と修正(2026-09-06)
 
 ### 症状
