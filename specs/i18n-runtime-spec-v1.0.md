@@ -2367,8 +2367,8 @@ DOMに入るが描画されないので同じく除外。
 
 ### 45-4. 範囲外で見つかった同型(未修正)
 
-- F08合同企画(`showFactionF08Modal`周辺)の`factionAName`/`factionBName`直読み・興行準備画面の「Main event recommendation from ○○派」バナー(ui-common.js、いずれも10箇所以上)
-- F02クラッシュ画面`_factionF02RenderClash`の`factionAName`/`factionBName`(showFactionF02Modalとは別スコープ)
+- **✅解決(P7-44)** — F08合同企画(`showFactionF08Modal`周辺)の`factionAName`/`factionBName`直読み・興行準備画面の「Main event recommendation from ○○派」バナー(ui-common.js、いずれも10箇所以上)
+- **✅解決(P7-44)** — F02クラッシュ画面`_factionF02RenderClash`の`factionAName`/`factionBName`(showFactionF02Modalとは別スコープ)
 - ignite fixtureの事前生成(`headless-sim.js`)がJAコンテキストで`tickWeek`を回すため、`weeklyNewspaper`の一部記事(王座交代・一部負傷記事の本文)が生成時点でJA文字列としてGへ焼かれ、後から言語を切り替えても遡及再生成されない。過去号アーカイブとしては妥当な設計の可能性があり、バグかどうかの切り分けを含め別枠
 
 ### 45-5. 検証
@@ -2386,11 +2386,34 @@ DOMに入るが描画されないので同じく除外。
 | `npm run test:ui:ignite -- --scenario newspaper-mvprace`(JA/EN) | ✅ 両方PASS・EN側のJA露出は16→12(退行なし、AI団体名3件が副次的に解消) |
 | `node test/ui-walkthrough/opening-scene-i18n-check.js` | ✅ **ALL CHECKS PASS**(JA 4幕が基準と完全一致 / EN 4幕に日本語0 / i18n-miss 0 / 段の一致3件) |
 
-## 46. Stage B P7-45 — 死蔵ヘルパー `_aceFlavorByPersona`(28本)の配線・英訳と `STYLE_META[*].desc` の削除(2026-09-06追加)
+## 46. Stage B P7-44 — §45-4の同型解消+GL-12(第三者の証言)i18n-missの根本原因特定(2026-09-06追加)
+
+§45-4が挙げた2件(F08合同企画周辺・F02クラッシュ画面`_factionF02RenderClash`)に着手し、EN走破のJA露出ログで実測しながら同型を洗い出した結果、最終的に**F08/F02/Common-7の14箇所**を`_factionDisplayName()`で修正した(内訳はdocs/worklog.md冒頭のP7-44エントリ§1の表を参照)。新しいパターンは増えていない。全箇所とも既存の`_factionDisplayName()`(§10)を「宣言直後/受け取り直後に一括変換」する形で適用しており、§45-3が挙げた「使用箇所ごとに包むと分岐追加のたびに同じ穴が再発する」教訓をここでも踏襲した。
+
+### 46-1. GL-12(第三者の証言)のi18n-miss — 「dict未渡し」ではなく「二重t()適用」だった
+
+P7-31発見5(§13-2型2/型5)は「`dict`を渡さない呼び出し元から来た完成文が表示点でt()に掛かる」という理解だったが、実際に`src/i18n.js`本体+EN辞書を素のvmで実読みし`Engine.glimpse.checkBLayer`を直接叩いて再現したところ、**management.jsの全実プレイ経路は`dict: WM_I18N.t`を正しく渡している**(2026-09-03修正済み)ことを確認した。ではなぜmissが出るのか——`checkBLayer`のdict分岐は「テンプレを先に辞書引き→変数展開」という正しいdict-optsパターンで**EN完成文**(例: "They say Yurika Kondo and Ayu Sawanobori did not once meet each other's eyes in the locker room.")を`dialogue`へ格納するが、表示点(`ui-render.js`の道場「休憩中の選手」`.dojo-rest-bubble`)がこの**完成済みの英文をもう一度`WM_I18N.t()`に掛けている**。`t()`のen分岐は辞書に完成文と一致するキーが存在するかを問わず毎回検索し、見つからなければ`logMiss()`を呼ぶ(`src/i18n.js`の`currentLang==='ja'`分岐はプレースホルダの有無に関わらず辞書を経由しないため、同じ二重適用がJAでは無症状になる非対称性がある)。**「dictを正しく渡していても発生する」という点で、既存のdict-opts系のバグカタログ(型2/型5)には無かった新しい観測**として記録する。
+
+正しい直し方は§14-3(`hypeTpl`/`hypeVars`)と同型の「生キー+材料」追加フィールド方式で、表示点を`g.dialogueTpl ? WM_I18N.t(g.dialogueTpl, g.dialogueVars) : WM_I18N.t(g.dialogue)`に切り替える。今回は`relationships.js`側(候補push・`glimpses`正規化の2箇所)に`dialogueTpl`/`dialogueVars`を追加する生成側の実装まで済ませたが、**表示点の1行(`ui-render.js`の道場シーン、1940〜2070付近)は別バッチ(P7-40/41)が同時編集中だったため触れていない**。次に道場シーンへ触るバッチが上記1行を配線すれば解消する見込み(再現ハーネスで実証済み・下記46-2参照)。
+
+### 46-2. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(app.js/ui-common.js/ui-render.js/factions.js/relationships.js) | ✅ |
+| `node test/ja-golden.js` | ✅ 完全一致(`3466a6ff…`不変) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 重複17件・訳文一致 |
+| `node test/i18n-ratchet.js` | ✅ 増加なし(31ファイル・27,933行) |
+| `npm test` | ✅ 265/265 |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR・指紋`96492883`不変 |
+| GL-12再現ハーネス(`src/i18n.js`本体+EN辞書を素のvmで実読みし`checkBLayer`を直接叩く) | 現状の表示相当(`WM_I18N.t(g.dialogue)`)は新規missを1件記録(バグ再現)。提案する表示相当(`WM_I18N.t(g.dialogueTpl, g.dialogueVars)`)は同一の表示文字列を追加missゼロで生成(修正方針の正しさを実証) |
+| JA UI走破 | ✅ PASS・336手・digest `b3b7a2c05a7e6016`(現行基準と一致) |
+| EN UI走破(`--ja-exposure-log`) | ✅ PASS・399手・digest `a21c9e961ea228ed`(修正前と操作列完全一致=ロジック不変)・i18n-miss 0・派閥名(「派」を含む文字列)のJA露出11→0 |
+## 47. Stage B P7-45 — 死蔵ヘルパー `_aceFlavorByPersona`(28本)の配線・英訳と `STYLE_META[*].desc` の削除(2026-09-06追加)
 
 §33-4(P7-14)と§44-5(P7-31)が「死骸」として報告し、Keisuke裁定 C-3=①「配線して出す」/ C-4同族「死骸なら削除」を受けた回。**新しい i18n パターンは増えていない**——§33(P7-14)の連結様式テンプレ(`_concatParts`/`_joinSentences`)と、§39/§40 で確立した「走査対象外プールは kept:true で手追加」をそのまま適用しただけである。記録する価値があるのは**死骸の2つの結末が対称ではない**という判断のほうにある。
 
-### 46-1. 死骸の処遇は「文が書かれているか」ではなく「その文がキャラを運ぶか」で分かれる
+### 47-1. 死骸の処遇は「文が書かれているか」ではなく「その文がキャラを運ぶか」で分かれる
 
 | 死骸 | 処遇 | 判断根拠 |
 |---|---|---|
@@ -2399,7 +2422,7 @@ DOMに入るが描画されないので同じく除外。
 
 つまり「呼ばれていない=消す」でも「書いてある=出す」でもない。**その文がキャラのドラマを運ぶか**を基準にした(CLAUDE.md 機能追加の判断基準1)。
 
-### 46-2. 配線先はエース欄の `<p>` ——リード文(団体)ではなく**個人**を語る欄
+### 47-2. 配線先はエース欄の `<p>` ——リード文(団体)ではなく**個人**を語る欄
 
 画面仕様(`docs/ui/03-screens/ranking.md` §3.2)は03団体プロフィールの講評を「団体説明 / エース欄 / 主力層欄」の3層に割り、**エース欄だけが個人を語る**と定めている。人物描写はここ以外に置き場がない。実装は `_buildAceCopy`(戦績)の戻り値へ `_concatParts([record, _joinSentences([flavor])])` で1文足す形にした:
 
@@ -2407,21 +2430,21 @@ DOMに入るが描画されないので同じく除外。
 - 断片は句点を持たないので、句点を打つのは `_joinSentences`、繋ぐのは `_concatParts`。**JAの句点を画面側に直書きしない**(§33の規約)。EN ではピリオド+半角スペースになる
 - `featured` が居ない団体(「看板を担う選手がまだ定まっていない。」)では足さない
 
-### 46-3. シードに選手idを混ぜる理由
+### 47-3. シードに選手idを混ぜる理由
 
 既存の `_orgSeed = (season*100) + strHash(orgId)` をそのまま使うと、**同じ団体はエースが交代しても同じ人物描写のまま**になる(団体しか見ていないシードなので当然)。`(_orgSeed >> 5) + featured.id` にして「誰がエースか」に追随させた。`>> 5` は `_buildAceCopy`(seed 直値)・`_buildLeadSentences`(`>> 3`/`>> 6`/`>> 9`)と引き当てがぶつからないようにするため。`Math.random()` は使わない——**同一シーズン中は固定**(週送りで文面だけがちらつかない)という性質が `_seedBase` から継がれるので、裁定C-2の「表示専用なら Math.random 可」に頼る必要がない。
 
-### 46-4. 台帳は「末尾追記」で足す(extract-ui を回さない)
+### 47-4. 台帳は「末尾追記」で足す(extract-ui を回さない)
 
 プール要素は `WM_I18N.t()` の**静的第1引数ではない**(`WM_I18N.t(_pickSeed(pool, seed))`)ので `test/i18n-extract-ui.js` には原理的に載らない。§39/§40と同じく `kept:true` + `note` で ui-ledger へ手追加する。
 
 **ただし `node test/i18n-extract-ui.js` は回さないこと**。過去バッチが末尾へ手追加した約130行が未ソートのまま残っており、再実行するとそれらがソートで一斉に動いて **1,472行の移動差分**が出る(並行タスクとのコンフリクト源。意味的な差は0で、実害はコンフリクトだけ)。今回は「HEADの並び + 末尾に28行」で書き、差分を **+336行 / −0行** に閉じた。台帳の並びを直すなら、それだけを目的にした単独コミットで行う。
 
-### 46-5. `personality` の `shy` にはプールが無い(仕様として据え置き)
+### 47-5. `personality` の `shy` にはプールが無い(仕様として据え置き)
 
 `persMap` は bold/quiet/easygoing/earnest/emotional/normal の6キーで、**`shy`(5名)が最初から無い**。`persMap[pers] || []` に吸われてアーキタイプ側のプールだけで引くので実害はない(`normal` 34名も同じ経路)。**JA原文を1文字も足さない**のが本タスクの前提なので、新規の `shy` 用文面は書いていない。増補するならセリフ委譲(Opus)の枠で、JA→EN を同時に起こす。
 
-### 46-6. 検証
+### 47-6. 検証
 
 | 検証 | 結果 |
 |---|---|
@@ -2435,7 +2458,7 @@ DOMに入るが描画されないので同じく除外。
 | EN UI走破 | ✅ PASS・399手・**i18n-miss 0** |
 | ランキング画面の実UI検査(Playwright `page.evaluate`) | ✅ JA/EN とも4カード全てのエース欄に人物描写1文あり・EN に日本語0・末尾が句点/ピリオド・`.rp-ace` の `scrollHeight===clientHeight`(はみ出し0) |
 
-### 46-7. 訳出した28本(記者の地の文。感嘆符なし・格言化なし・具体表現)
+### 47-7. 訳出した28本(記者の地の文。感嘆符なし・格言化なし・具体表現)
 
 | # | 分岐 | JA(原文・不変) | EN |
 |---|---|---|---|

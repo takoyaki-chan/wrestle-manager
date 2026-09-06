@@ -2119,7 +2119,7 @@ function _renderRosterDojoHeader() {
         // i18n Stage B P5-1: g.dialogue はrelationships.jsのGLIMPSE_A/B_LINES選択(pickDialogueLine)
         // で得た生JA行(relationships.jsは並行エージェントの領分のため選択ロジックには触れず、
         // ここ=表示直前でt()を通す)。
-        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">${_quoteLine(WM_I18N.t(g.dialogue) || WM_I18N.t(g.label) || '')}</div>`;
+        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">${_quoteLine((g.dialogueTpl ? WM_I18N.t(g.dialogueTpl, g.dialogueVars || {}) : WM_I18N.t(g.dialogue)) || WM_I18N.t(g.label) || '')}</div>`;
         html += `<div class="dojo-rest-avatar">${portraitImg(g.speakerId, 34)}</div>`;
         html += '</div>';
       });
@@ -3169,10 +3169,14 @@ function renderShowPrep() {
       const remaining = dir.remainingShows != null ? dir.remainingShows : 1;
       const total = dir.totalShows != null ? dir.totalShows : remaining;
       const periodLabel = total > 1 ? WM_I18N.t('（残り {n}/{total} 興行）', { n: remaining, total }) : '';
+      // i18n P7-44: fac.nameは「{surname}派」の生JA。t()の変数展開は値を訳さないため
+      // _factionDisplayName()で先に変換する(EN走破で興行準備画面の推薦バナーに
+      // 「Main event recommendation from 根岸派」のように生JA派閥名が露出。specs§45-4記録済み)。
+      const facDisp = _factionDisplayName(fac.name);
       html += `<div style="background:linear-gradient(135deg,${ok ? '#1d2e1a,#2a4422' : '#2e2a1a,#443a22'});border:1px solid ${ok ? '#7bc46c' : '#e0c98a'};border-radius:8px;padding:10px 14px;margin-bottom:14px">
-        <div style="font-size:13px;font-weight:700;color:${ok ? '#bff5b3' : '#f0d99a'};letter-spacing:1px;margin-bottom:4px">${WM_I18N.t('📣 {name} からのメイン推薦{period}', { name: fac.name, period: periodLabel })}</div>
+        <div style="font-size:13px;font-weight:700;color:${ok ? '#bff5b3' : '#f0d99a'};letter-spacing:1px;margin-bottom:4px">${WM_I18N.t('📣 {name} からのメイン推薦{period}', { name: facDisp, period: periodLabel })}</div>
         <div style="font-size:12px;color:#dcd6c0;line-height:1.55">
-          ${WM_I18N.t('メイン枠に <strong>{name}</strong> のメンバーを推す約束をしています。', { name: fac.name })}<br>
+          ${WM_I18N.t('メイン枠に <strong>{name}</strong> のメンバーを推す約束をしています。', { name: facDisp })}<br>
           <span style="color:#aaa;font-size:11px">${WM_I18N.t('候補: {names}', { names: memberNames || '—' })}</span><br>
           <span style="color:${ok ? '#9be08a' : '#e0a85a'};font-size:11px;margin-top:2px;display:inline-block">
             ${ok ? WM_I18N.t('✓ 現在のメインに該当メンバーが入っています') : WM_I18N.t('⚠ 現在のメインに該当メンバー無し（リーダーが不満を募らせます）')}
@@ -3201,8 +3205,11 @@ function renderShowPrep() {
         : bc1Placed
           ? WM_I18N.t('✓ 今週のカードに組まれています')
           : WM_I18N.t('カードのどこか(メイン/セミ/中盤)に組んでください');
+      // i18n P7-44: bc1.factionNameは「{surname}派」の生JA(G.bookedCommon1へ焼き込まれる保存値、
+      // D-P6-4)。F07推薦バナーと同じ関数内の同型バグなので合わせて修正(EN走破で本バナー見出しに
+      // 生JA派閥名が露出)。
       html += `<div class="panel" style="border:1px solid var(--gold);margin-bottom:14px">
-        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">${WM_I18N.t('⚔ {faction}内対決の予約', { faction: escHtml(bc1.factionName || '派閥') })}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">${WM_I18N.t('⚔ {faction}内対決の予約', { faction: escHtml(_factionDisplayName(bc1.factionName) || '派閥') })}</div>
         <div style="font-size:12px;color:var(--text-sub);line-height:1.6">
           ${WM_I18N.t('<strong>{a}</strong> × <strong>{b}</strong> — 枠は自由。カード編成のどこに置くかは社長次第', { a: escHtml(WM_I18N.pn(bc1A.name)), b: escHtml(WM_I18N.pn(bc1B.name)) })}<br>
           <span style="color:${bc1Placed ? 'var(--accent-positive)' : 'var(--text-sub)'}">${escHtml(bc1Status)}</span>

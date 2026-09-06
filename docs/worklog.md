@@ -1,5 +1,63 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-44 — F08/F02/Common-7の派閥名EN露出11箇所+GL-12 i18n-missの生成側修正(2026-09-06・worktree agent-af5085c74a53255df)
+
+P7-43(10a72efc)が「残: F08バナー・F02衝突画面の派閥名(同型・別箇所)」として書き残した宿題(specs/i18n-runtime-spec-v1.0.md §45-4)の解消と、GL-12(第三者の証言)のi18n-miss(P7-31発見5)の調査・対処。着手前にworktreeをmain先端(ab7bb554)へfast-forward。
+
+### 1. 派閥名の生読み棚卸し(表)
+
+`grep -n "factionAName\|factionBName\|\.factionName\b\|fac[AWL]?\.name\b"` で全箇所を洗い出し、`_factionDisplayName()`(「{surname}派」→「{Surname} Group」、JAは恒等)を通っていないものを分類した。指示された「F08バナー・F02衝突画面」の2箇所から着手し、EN走破のJA露出ログ(`--ja-exposure-log`)で実測しながら同型を洗い出した結果、最終的に11箇所になった。
+
+| # | 箇所 | 症状 | 対応 |
+|---|---|---|---|
+| 1 | `ui-common.js` `showFactionF08Modal`(F08対立ヒートアップ) | role表記「{faction}・LEADER」に生JA | `_factionDisplayName()`を通す |
+| 2 | `ui-common.js` `showFactionF08PreMatchModal` | role表記が`WM_I18N.pn()`(名前辞書引き。「{surname}派」形式には無効)を誤用 | `_factionDisplayName()`へ差し替え |
+| 3 | `factions.js` `getF08PreMatchData` | `narration`文の`{a}`/`{b}`変数展開に生JA | `_factionDisplayName()`を通してから渡す |
+| 4 | `ui-common.js` `showFactionF08AftermathModal` | `roleTag()`ヘルパーがWINNER/LOSERラベルに生JA | ヘルパー内で`_factionDisplayName()` |
+| 5 | `factions.js` `getF08AftermathData` | `narrationOpen`/`narrationClose`/返却`factionName`に生JA | 受け取り直後に一括変換(§45-3の教訓) |
+| 6 | `ui-render.js` `renderShowPrep`(F07 DEMAND_MAIN推薦バナー) | 「📣 {name} からのメイン推薦」に生JA(実測: "Main event recommendation from 根岸派") | `_factionDisplayName()`を通す |
+| 7 | `ui-render.js` `renderShowPrep`(Common-1派閥内対決予約バナー) | 「⚔ {faction}内対決の予約」に生JA(#6と同一関数内の同型・保存値`G.bookedCommon1.factionName`) | `_factionDisplayName()`を通す |
+| 8 | `ui-common.js` `_factionF02RenderClash`(F02②衝突画面act2) | role表記に生JA(`showFactionF02Modal`のact1は既にP7-43で対策済みだが、同ファイル内の別スコープ変数は未対策のまま残っていた) | `_factionDisplayName()`を通す |
+| 9 | `ui-common.js` `showFactionCommon7Modal`(派閥間合同企画) | coachLine/role/フォールバック文の3箇所に生JA(実測EN走破: "根岸派 and 小西派 have floated a joint project") | 宣言直後に一括変換 |
+| 10 | `factions.js` `applyCommon7Choice` | A/B/C全分岐のresultText/impactSummary.labelに生JA(実測EN走破: "Joint Project was booked. 根岸派 and 小西派 teamed up...") | 受け取り直後に一括変換 |
+| 11 | `app.js` F02_PEACE/F02_IGNITE/F02_ENDLESS(`showFactionEventResult`呼び出し) | `factionName`/`factionPair[].factionName`/`reporterText`に生JA | 呼び出し元で`_factionDisplayName()` |
+| 12 | `factions.js` `applyF02PeaceResult`/`applyF02IgniteResult`/`applyF02EndlessResult` | resultText/impactSummary.labelに生JA(#11の下流、popup本文そのもの) | 受け取り直後に一括変換 |
+| 13 | `factions.js` `applyF02ResolutionResult` | resultText/impactSummary.labelに生JA | 受け取り直後に一括変換 |
+| 14 | `ui-common.js` `showFactionF02ResolutionModal`(F02③決着画面) | 勝者/敗者フラグ・ledger見出し・敵対度ラベルの5箇所に生JA | 宣言直後に一括変換 |
+
+JA表示は`_factionDisplayName()`が「派」で終わらない/pn()未ヒットの文字列に対して恒等(fail-open)なので不変(ja-golden完全一致・EN走破の操作列digest不変で確認)。
+
+### 2. 範囲外で見つかった同型(未修正、参考)
+
+- `showFactionF06Modal`(F06和解の兆し)、`showFactionF02IgniteModal`/`PeaceModal`/`EndlessModal`(F02サブ画面のバッジ表示)、`showFactionF09OpeningModal`(F09対抗戦、`pn()`誤用)、`showFactionEventResult`の`opts.factionPair`/`opts.factionName`汎用経路(F04等が使用)。いずれもF08/F02/GL-12の範囲外のため今回は触れていない。次バッチの棚卸し対象。
+
+### 3. GL-12(第三者の証言)のi18n-miss — 生成側は直したが表示側は次バッチへ
+
+`relationships.js:5238`(`Engine.glimpse.checkBLayer`)は`dict`が渡っていれば「テンプレを先に辞書引き→変数展開」の正しい実装(2026-09-03修正)。しかし表示点`ui-render.js`(道場「休憩中の選手」`.dojo-rest-bubble`、`WM_I18N.t(g.dialogue)`)が**既に完成した英文をもう一度`t()`に掛けている**ため、辞書キーに一致せず`logMiss()`が発火する(`src/i18n.js`の`t()`は`currentLang==='en'`のときだけmissを記録するため、JAでは無症状)。
+
+これは「`dict`を渡さない呼び出し元がある」という従来の理解(P7-31発見5)よりも一段深い構造的な問題で、**dictを正しく渡していても(=management.jsの全実プレイ経路は渡している)発生する二重t()バグ**だと判明した。`src/i18n.js`本体+EN辞書を素のvmで実読みし`checkBLayer`を直接叩く再現ハーネスで実証済み(下記検証参照)。
+
+正しい直し方は§14-3と同型の「生キー+材料」追加フィールド方式: `dialogueTpl`(生テンプレ)・`dialogueVars`(`{nameA,nameB}`)を候補へ追加し、表示点を`g.dialogueTpl ? WM_I18N.t(g.dialogueTpl, g.dialogueVars) : WM_I18N.t(g.dialogue)`に切り替える(`dialogue`自体は保存互換のため不変)。
+
+**今回実装したのは生成側のみ**: `relationships.js`の`checkBLayer`(候補pushと`glimpses`正規化の2箇所)に`dialogueTpl`/`dialogueVars`を追加。表示側の配線(`ui-render.js`の`.dojo-rest-bubble`、1行)は**当バッチでは実装していない** — P7-40/41が同時に`ui-render.js`の道場シーン(1940〜2070付近)を編集中のため、指示に従い当該範囲へは触れない方針とした。したがって**GL-12のi18n-missはこのバッチ単独では解消していない**(次バッチで上記1行を配線すれば解消する見込み。根拠は再現ハーネスで実証済み)。次に`ui-render.js`の道場シーンへ触るバッチへ引き継ぐ。
+
+### 4. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(app.js/ui-common.js/ui-render.js/factions.js/relationships.js) | ✅ |
+| `node test/ja-golden.js` | ✅ 完全一致(`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`不変) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 重複17件・訳文一致 |
+| `node test/i18n-ratchet.js` | ✅ 増加なし(31ファイル・27,933行) |
+| `npm test` | ✅ 265/265 |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR・指紋`96492883`不変(F08/F02修正はrelationships.js/factions.jsに触れたが表示派生のみで数値ロジック不変) |
+| GL-12再現ハーネス(`src/i18n.js`本体+EN辞書を素のvmで実読みし`checkBLayer`を直接叩く) | 現状: `WM_I18N.t(g.dialogue)`が新規missを1件記録(バグ再現)。`dialogueTpl`+`dialogueVars`を`WM_I18N.t(tpl,vars)`で使う想定経路は同一の表示文字列を追加missゼロで生成(修正方針の正しさを実証) |
+| JA UI走破(`--lang ja`) | ✅ PASS・336手・digest `b3b7a2c05a7e6016`(基準と完全一致) |
+| EN UI走破(`--lang en --ja-exposure-log`) | ✅ PASS・399手・digest `a21c9e961ea228ed`(修正前の同条件走破と操作列が完全一致=ゲームロジック不変を確認)・**i18n-miss 0**・**派閥名(「派」を含む文字列)のJA露出 11→0** |
+
+### 5. 実機確認
+
+`docs/実機確認バックログ.md`「英語対応 P7-44」節(F08各画面・興行準備バナー2種・F02各画面・Common-7合同企画のEN表示、GL-12は次バッチ待ち)。
 ## 🌐 英語対応 P7-40/41 — 死蔵セリフ配線(引き継ぎ完走): 道場「熱量の本人セリフ」+ 対抗戦「辞退時の相手エース反応」(2026-09-06・worktree agent-a6a95ed4ed56e4ab1)
 
 Keisuke裁定(2026-09-05 A-1「`HEAT_STATE_SELF_LINES` 75本・`WAR_DECLINE_DIALOGUE` 58本は配線して出す」)の残り2件。前任エージェントがプロセス終了で中断した作業ツリー(未コミット差分8ファイル)を引き継ぎ、完走させた。

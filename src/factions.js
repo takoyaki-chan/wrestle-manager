@@ -1596,21 +1596,25 @@ Engine.factions = {
 
     wmDiag(`[WM Faction] F02 resolved: ${facW.name} (winner) vs ${facL.name} (loser)`);
 
+    // i18n P7-44: facW.name/facL.nameは「{surname}派」の生JA。impactSummary.label/resultTextの
+    // 全箇所を表示直前で_factionDisplayName()を通す(EN走破でF02③決着モーダルに生JA派閥名が露出)。
+    const facWName = this._factionDisplayName(facW.name);
+    const facLName = this._factionDisplayName(facL.name);
     const impactSummary = [
-      { label: WM_I18N.t('{name} 勢い', { name: facW.name }), delta: `+${mW}` },
-      { label: WM_I18N.t('{name} 勢い', { name: facL.name }), delta: `${mL}` },
+      { label: WM_I18N.t('{name} 勢い', { name: facWName }), delta: `+${mW}` },
+      { label: WM_I18N.t('{name} 勢い', { name: facLName }), delta: `${mL}` },
       { label: WM_I18N.t('勝者リーダー trust'), delta: `+${tW}` },
       { label: WM_I18N.t('敗者リーダー trust'), delta: `${tL}` },
-      { label: WM_I18N.t('{name} 求心力 (mem→leader bond)', { name: facW.name }), delta: `+${wBond}` },
-      { label: WM_I18N.t('{name} 求心力 (mem→leader bond)', { name: facL.name }), delta: `${lBond}` },
-      { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: facW.name, b: facL.name }), delta: WM_I18N.t('-40（両方向）') },
+      { label: WM_I18N.t('{name} 求心力 (mem→leader bond)', { name: facWName }), delta: `+${wBond}` },
+      { label: WM_I18N.t('{name} 求心力 (mem→leader bond)', { name: facLName }), delta: `${lBond}` },
+      { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: facWName, b: facLName }), delta: WM_I18N.t('-40（両方向）') },
     ];
     if (bottomMembers.length > 0) {
-      impactSummary.push({ label: WM_I18N.t('{name} 下位{n}名 trust', { name: facL.name, n: bottomMembers.length }), delta: WM_I18N.t('低下（離脱リスク）') });
+      impactSummary.push({ label: WM_I18N.t('{name} 下位{n}名 trust', { name: facLName, n: bottomMembers.length }), delta: WM_I18N.t('低下（離脱リスク）') });
     }
     return {
       state: s,
-      resultText: WM_I18N.t('「{a}」が「{b}」を下した。リング上で、ようやく決着がついた。', { a: facW.name, b: facL.name }),
+      resultText: WM_I18N.t('「{a}」が「{b}」を下した。リング上で、ようやく決着がついた。', { a: facWName, b: facLName }),
       impactSummary,
     };
   },
@@ -2468,9 +2472,12 @@ Engine.factions = {
 
     wmDiag(`[WM Faction] F02 endless triggered: ${factionAName} vs ${factionBName} (${payload.weeksContinued}週)`);
 
+    // i18n P7-44: factionAName/BNameは「{surname}派」の生JA。t()の変数展開は値を訳さないため
+    // 表示直前で_factionDisplayName()を通す(EN走破でF02④無限抗争モーダルのresultTextに
+    // 生JA派閥名が露出)。
     return {
       state: s,
-      resultText: WM_I18N.t('「{a}」と「{b}」の抗争は、もはや決着の気配すら見せない。終わらない戦いが、団体の空気を重くしていく。', { a: factionAName, b: factionBName }),
+      resultText: WM_I18N.t('「{a}」と「{b}」の抗争は、もはや決着の気配すら見せない。終わらない戦いが、団体の空気を重くしていく。', { a: this._factionDisplayName(factionAName), b: this._factionDisplayName(factionBName) }),
       impactSummary: [
         { label: WM_I18N.t('両派閥メンバー mentalCoeff'), delta: WM_I18N.t('-0.02（下限0.85）') },
         { label: WM_I18N.t('抗争継続'), delta: WM_I18N.t('{n}週', { n: payload.weeksContinued || 52 }) },
@@ -2555,11 +2562,15 @@ Engine.factions = {
 
     wmDiag(`[WM Faction] F02 ignite fired: ${factionAName} vs ${factionBName}`);
 
+    // i18n P7-44: factionAName/BNameは「{surname}派」の生JA。resultText/impactSummary.labelの
+    // 2箇所とも表示直前で_factionDisplayName()を通す(EN走破でF02①発火モーダルに生JA派閥名が露出)。
+    const factionADisp = this._factionDisplayName(factionAName);
+    const factionBDisp = this._factionDisplayName(factionBName);
     return {
       state: s,
-      resultText: WM_I18N.t('{a}と{b}の火種は、ついにリングで燃え上がる。', { a: factionAName, b: factionBName }),
+      resultText: WM_I18N.t('{a}と{b}の火種は、ついにリングで燃え上がる。', { a: factionADisp, b: factionBDisp }),
       impactSummary: [
-        { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: factionAName, b: factionBName }), delta: WM_I18N.t('+12（両方向）') },
+        { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: factionADisp, b: factionBDisp }), delta: WM_I18N.t('+12（両方向）') },
         { label: WM_I18N.t('抗争メイン'), delta: WM_I18N.t('実現') },
       ],
     };
@@ -2662,11 +2673,15 @@ Engine.factions = {
 
     wmDiag(`[WM Faction] F02 peace fired: ${factionAName} vs ${factionBName}`);
 
+    // i18n P7-44: factionAName/BNameは「{surname}派」の生JA。resultText/impactSummary.labelの
+    // 2箇所とも表示直前で_factionDisplayName()を通す(EN走破でF02②沈静化モーダルに生JA派閥名が露出)。
+    const factionADisp = this._factionDisplayName(factionAName);
+    const factionBDisp = this._factionDisplayName(factionBName);
     return {
       state: s,
-      resultText: WM_I18N.t('{a}と{b}の対立は、社長の仲裁によって沈静化した。まだ完全な和解ではないが、互いに矛を収める段階に入った。', { a: factionAName, b: factionBName }),
+      resultText: WM_I18N.t('{a}と{b}の対立は、社長の仲裁によって沈静化した。まだ完全な和解ではないが、互いに矛を収める段階に入った。', { a: factionADisp, b: factionBDisp }),
       impactSummary: [
-        { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: factionAName, b: factionBName }), delta: WM_I18N.t('-40（両方向）') },
+        { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: factionADisp, b: factionBDisp }), delta: WM_I18N.t('-40（両方向）') },
         { label: WM_I18N.t('両派閥 勢い'), delta: WM_I18N.t('0 リセット') },
         { label: WM_I18N.t('抗争状態'), delta: WM_I18N.t('解除') },
         ...(leaderAId != null && leaderBId != null
@@ -3608,7 +3623,12 @@ Engine.factions = {
   },
 
   applyCommon7Choice(state, payload, choiceId, rng) {
-    const { factionAId, factionBId, factionAName, factionBName, pairKey, planType } = payload;
+    const { factionAId, factionBId, factionAName: factionAName_, factionBName: factionBName_, pairKey, planType } = payload;
+    // i18n P7-44: payload.factionAName/BNameは「{surname}派」の生JA。resultText/impactSummary.label
+    // の全分岐(A/B/C)で表示直前に_factionDisplayName()を通す(EN走破で本モーダルの結果文に
+    // 生JA派閥名が露出。実測: 「Joint Project was booked. 根岸派 and 小西派 teamed up...」)。
+    const factionAName = this._factionDisplayName(factionAName_);
+    const factionBName = this._factionDisplayName(factionBName_);
     let s = state;
     const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
     const impactSummary = [];
@@ -4808,7 +4828,10 @@ Engine.factions = {
       hostilityBand: band,
       lineA: lineA,
       lineB: lineB,
-      narration: WM_I18N.t('{a}と{b}――その夜、両派閥のリーダーが直接拳を交える。', { a: facA.name, b: facB.name }),
+      // i18n P7-44: facA.name/facB.nameは「{surname}派」の生JA。t()の変数展開は値を訳さないため
+      // _factionDisplayName()で先に変換する(EN走破でF08直接対決モーダルの見出し文に生JA派閥名が
+      // 露出。specs§45-4記録済み)。
+      narration: WM_I18N.t('{a}と{b}――その夜、両派閥のリーダーが直接拳を交える。', { a: this._factionDisplayName(facA.name), b: this._factionDisplayName(facB.name) }),
     };
   },
 
@@ -4921,23 +4944,30 @@ Engine.factions = {
     const winnerLine = tableW ? this._getF08LineByBand(tableW, winner, winnerBand, rngW) : '';
     const loserLine  = tableL ? this._getF08LineByBand(tableL, loser, hpBand, rngL) : '';
 
+    // i18n P7-44: facW.name/facL.nameは「{surname}派」の生JA。t()の変数展開は値を訳さないため
+    // 受け取った直後に_factionDisplayName()で一括変換する(§45-3の教訓 — 使用箇所ごとに包むと
+    // 分岐追加のたびに同じ穴が再発する)。EN走破でF08決着モーダルの見出し文/ロールラベルに
+    // 生JA派閥名が露出していた(specs§45-4記録済み)。
+    const facWName = this._factionDisplayName(facW.name);
+    const facLName = this._factionDisplayName(facL.name);
+
     // 派閥状態に応じた結びナレーション
     const lMomentum = (facL.momentum != null) ? facL.momentum : 0;
     let narrationClose;
     if (lMomentum <= -40) {
-      narrationClose = WM_I18N.t('{name}は深い傷を負い、夜の闇に消えていった。再起できるかは、誰にも分からない。', { name: facL.name });
+      narrationClose = WM_I18N.t('{name}は深い傷を負い、夜の闇に消えていった。再起できるかは、誰にも分からない。', { name: facLName });
     } else if (lMomentum <= -10) {
-      narrationClose = WM_I18N.t('{name}の威信は揺らぎ、メンバーの足並みは乱れ始めている。', { name: facL.name });
+      narrationClose = WM_I18N.t('{name}の威信は揺らぎ、メンバーの足並みは乱れ始めている。', { name: facLName });
     } else {
-      narrationClose = WM_I18N.t('{name}は今夜の屈辱を抱えたまま、リングを去った。火種は、まだ消えない。', { name: facL.name });
+      narrationClose = WM_I18N.t('{name}は今夜の屈辱を抱えたまま、リングを去った。火種は、まだ消えない。', { name: facLName });
     }
 
     return {
-      winner: { id: winner.id, name: winner.name, factionName: facW.name, factionId: facW.id },
-      loser:  { id: loser.id,  name: loser.name,  factionName: facL.name, factionId: facL.id, hpBand },
+      winner: { id: winner.id, name: winner.name, factionName: facWName, factionId: facW.id },
+      loser:  { id: loser.id,  name: loser.name,  factionName: facLName, factionId: facL.id, hpBand },
       winnerLine: winnerLine,
       loserLine:  loserLine,
-      narrationOpen: WM_I18N.t('決着。{winner}が{loser}を下した――しかし、戦いは終わらない。', { winner: facW.name, loser: facL.name }),
+      narrationOpen: WM_I18N.t('決着。{winner}が{loser}を下した――しかし、戦いは終わらない。', { winner: facWName, loser: facLName }),
       narrationClose: narrationClose,
     };
   },
