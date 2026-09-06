@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-06T06:49:53.369Z",
+  "generatedAt": "2026-09-06T08:19:12.851Z",
   "files": {
     "data.js": {
-      "jaCount": 17730,
-      "jaChars": 316066
+      "jaCount": 17439,
+      "jaChars": 311475
     },
     "kuroda-text.js": {
       "jaCount": 900,

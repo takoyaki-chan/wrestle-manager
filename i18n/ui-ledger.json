@@ -8078,7 +8078,7 @@
   },
   {
     "key": "■ ブランド収入",
-    "en": "■ Brand Revenue",
+    "en": "■ Brand Income",
     "files": [
       "ui-render.js"
     ],
@@ -13765,7 +13765,7 @@
   },
   {
     "key": "グッズ収入（タレント活動）",
-    "en": "Merch Revenue (Talent Work)",
+    "en": "Merch Income (Talent Work)",
     "files": [
       "management.js"
     ],
@@ -13777,7 +13777,7 @@
   },
   {
     "key": "グッズ収入（プロモ連動）",
-    "en": "Merch Revenue (Promo Tie-in)",
+    "en": "Merch Income (Promo Tie-in)",
     "files": [
       "management.js"
     ],
@@ -13789,7 +13789,7 @@
   },
   {
     "key": "グッズ収入（興行ブースト）",
-    "en": "Merch Revenue (Show Boost)",
+    "en": "Merch Income (Show Boost)",
     "files": [
       "management.js"
     ],
@@ -13801,7 +13801,7 @@
   },
   {
     "key": "グッズ収入（週次）",
-    "en": "Merch Revenue (Weekly)",
+    "en": "Merch Income (Weekly)",
     "files": [
       "management.js"
     ],
@@ -17303,7 +17303,7 @@
   },
   {
     "key": "メディア収入（{label}）",
-    "en": "Media Revenue ({label})",
+    "en": "Media Income ({label})",
     "files": [
       "management.js"
     ],
@@ -17315,7 +17315,7 @@
   },
   {
     "key": "メディア収入（タレント活動）",
-    "en": "Media Revenue (Talent Work)",
+    "en": "Media Income (Talent Work)",
     "files": [
       "management.js"
     ],
@@ -17327,7 +17327,7 @@
   },
   {
     "key": "メディア収入（プロモ連動）",
-    "en": "Media Revenue (Promo Tie-in)",
+    "en": "Media Income (Promo Tie-in)",
     "files": [
       "management.js"
     ],
@@ -17339,7 +17339,7 @@
   },
   {
     "key": "メディア収入（ライバル抗争）",
-    "en": "Media Revenue (Rivalry Feud)",
+    "en": "Media Income (Rivalry Feud)",
     "files": [
       "management.js"
     ],
@@ -17351,7 +17351,7 @@
   },
   {
     "key": "メディア収入（期待カード）",
-    "en": "Media Revenue (Anticipated Card)",
+    "en": "Media Income (Anticipated Card)",
     "files": [
       "management.js"
     ],
@@ -17363,7 +17363,7 @@
   },
   {
     "key": "メディア収入（興行放映）",
-    "en": "Media Revenue (Show Broadcast)",
+    "en": "Media Income (Show Broadcast)",
     "files": [
       "management.js"
     ],
@@ -17375,7 +17375,7 @@
   },
   {
     "key": "メディア収入（週次）",
-    "en": "Media Revenue (Weekly)",
+    "en": "Media Income (Weekly)",
     "files": [
       "management.js"
     ],
@@ -46265,7 +46265,7 @@
     "kept": true
   },
   {
-    "key": "黒田 沙智子 編集記事",
+    "key": "黒田幸子 編集記事",
     "en": "Editorial by Sachiko Kuroda",
     "files": [
       "ui-common.js"
@@ -50429,5 +50429,29 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "i18n P7-52: management.jsのE6(引き抜き承知)選択肢hint。消費点(ui-common.js showChoiceEventModal)は既にWM_I18N.t(c.hint)を通しており配線は正しかったが、この文言だけ台帳未登録で未訳(fail-open)だった。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "業界紙報道: {name}、{orgName} と電撃契約",
+    "en": "From the trade press: {name} signs with {orgName} out of nowhere",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "P7-55 F-2: EMPRESS安全網の電撃契約通知ポップアップ(§6.4)。未定義のshowPopupで一度も発火していなかった死んだ分岐をshowEventPopupへ載せ替えて復活。文言はdraft_empress_reinforce_newsニュース記事(template-ledger)と同内容"
+  },
+  {
+    "key": "スカウト合戦の裏で進められていた極秘交渉が明らかに",
+    "en": "Talks had been running in secret behind the scouting war",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "P7-55 F-2: EMPRESS安全網の電撃契約通知ポップアップ(§6.4)。未定義のshowPopupで一度も発火していなかった死んだ分岐をshowEventPopupへ載せ替えて復活。文言はdraft_empress_reinforce_newsニュース記事(template-ledger)と同内容"
   }
 ]
