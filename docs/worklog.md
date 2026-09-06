@@ -1,5 +1,40 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## P7-50 — 挑戦状点火(away-challenge/incoming-challenge)がJA/ENとも点火マーカー不発になる回帰の原因特定と修正(2026-09-06)
+
+### 症状
+
+P7-47の既存igniteシナリオ回帰確認で発見された「`away-challenge`/`incoming-challenge`が点火マーカー(直訴/果たし状モーダル)に到達しない」を追跡。`git stash`でP7-47自身の差分を外しても同一結果=マージ由来の既存不具合と判定されていたが原因特定は範囲外にされていた。
+
+現main(bbc37464)でJA/ENとも再現確認: `npm run test:ui:ignite -- --scenario incoming-challenge`は`petition-modal`等のマーカー未観測でIGNITION_MISFIRE。実UIログを見ると、エンジン側の`G.challengeRequest.pendingThisWeek`自体は消えておらず、UI側が一度もモーダルを開いていないことが分かった。
+
+### bisectの経過(教訓込み)
+
+好調点=2026-08-14の`fb93ed16`(「点火カタログ第2バッチ」でaway/incoming-challenge=PASSを確立したコミット)、不調点=main(`bbc37464`、502コミット差)。
+
+**1周目は誤診だった**: `git bisect`で各コミットへdetached checkoutして`node test/ui-walkthrough/run.js --mode ignite --scenario incoming-challenge`を回したが、**fixture生成スクリプトは`test/ui-walkthrough/fixtures/generated/<scenario>-seed<seed>.json`が既に存在すると再生成をスキップする**(`--regen`か手動削除が必要)ことを見落とし、bisectの最初の1回だけ生成されたfixtureを以後8ステップぶん使い回してしまった。結果、`fb93ed16`の直後のコミットまで含め全ステップが同一digest(`938731a4d59d3138`)のFAILになり、「`fb93ed16`の**次の**コミットで壊れた」という誤った結論に着地しかけた。`fb93ed16`自体を`fixtures/generated/`を削除してから直接テストし直すと**真にPASS**(23操作・digest`e116e26357d53976`)することを確認して誤りに気付き、**`git bisect`の各ステップで必ず`rm -f test/ui-walkthrough/fixtures/generated/*.json`してから`--regen`付きで再走**する形でやり直した。
+
+| ステップ | コミット | 判定(incoming-gauntlet点火の有無で判定) |
+|---|---|---|
+| good | `fb93ed16`(2026-08-14) | PASS(23操作) |
+| … | (中間7点、すべて`rm`+`--regen`で再生成) | 「marker HIT」を good、「marker MISS」を bad として二分探索 |
+| bad(first bad) | `5450e3c0`(2026-09-02) | incoming-gauntlet MISS |
+
+**first bad = `5450e3c0`「fix: 怪我復帰スランプ判定の三項演算子書き損じを修正」**(`src/management.js`1行、P2監査の副産物・auto-sim 40季ALL CLEARで当時マージ済みの正当なバグ修正)。差分は`severity === '重傷' ? 'injury_severe_recovery' : '中傷' ? 'injury_moderate_recovery' : null`→`: severity === '中傷' ? ...`(旧コードは`'中傷'`という非空文字列リテラルが常にtruthyなため、重傷以外の**あらゆる**復帰(軽傷含む)が無条件で`injury_moderate_recovery`扱いになり、スランプ判定`checkSlump`が本来より多く呼ばれ乱数を余分に消費していた)。
+
+### 真因(このコミット自体のバグではない)
+
+`5450e3c0`は正しい修正だが、**軽傷復帰時のスランプ判定rng消費が減る**ことで、seed=42の週次イベント抽選(派閥システムは`isShowWeek`ガード無しで毎週無条件に走る)の当落が変わり、以後の全乱数依存トラジェクトリ(誰が負傷するか・どの派閥がいつ緊張状態に入るか等)が連鎖的にズレた。これが**既存の2つの構造的な穴**を初めて可視化させた:
+
+1. **`App.closeShowResult()`(興行クローズ)に派閥イベント/挑戦状直訴の消化コードが無かった**。`App.processWeek()`(非興行週の「週を処理」)側にだけ`_pendingFactionEvent`/`challengeRequest.pendingThisWeek`のディスパッチがあり、大型/選択イベント(B1〜B4・S/E)は`management.js`の`processManage`で`!Engine.util.isShowWeek(G.week)`ガードにより**非興行週限定で生成**される設計だが、派閥イベント(F01〜F08・Common系)と挑戦試合直訴(`challengeRequest.processWeekly`の抽選条件`_isSamplingWeek`は逆に**興行週限定**=`isEligibleHomeShow`)はガードが無く**興行週にも生成されうる**。生成された分は興行クローズ経路では無言のまま次の非興行週へ持ち越されるだけだった
+2. **`Engine.factions.pickWeeklyEvent`に「直訴が既に持ち越し中なら新規の派閥イベント抽選を控える」譲り合いが無かった**。app.js側の優先順位(大型>派閥>直訴)は同一週内の一方通行でしかなく、直訴が前週から持ち越し中でも**派閥イベント側は毎週新規に抽選され続ける**。複数派閥が同時に緊張状態にある(現実的な中盤〜終盤の状態)と、直訴が週替わりで毎回別の派閥イベントに負け続け、恒久的に週次モーダル枠へたどり着けなかった
+3. **`Engine.saveDoctor.repairProgressionState`のshowCard検査(`okId`)が自団体ロスターしか見ていなかった**。受理済みの敵地遠征/迎撃直訴は`Engine.relationships.reserveScheduledMatches`/`reserveScheduledSingleMatch`が相手団体(`aiOrgs`)のロスターIDを`left`/`right`に直接埋め込む(`_crMatchLocked`/`isCRMatch`)が、`okId`は自団体ロスターのみを正当とみなすため**showPrep再描画のたびに「不正参照」として0クリア→自己修復ログ**が鳴っていた(見た目はrenderShowPrepが直後に再予約するため復旧するが、UI走破ハーネスのD1_CONSOLE検出条件に引っかかる)
+
+### 修正(3ファイル・最小限)
+
+- **`src/factions.js`** `pickWeeklyEvent`に§1.9として追加: `challengeRequest.pendingThisWeek`が**前週以前に発行済み**(=既に一度負けている)なら、確率発動系(F08以降・Common系)の抽選をこの週は見送り、直訴に枠を譲る。物語上必須の即時発動100%系(F03/F05H/F02_ENDLESS/F02_PEACE)は対象外(据え置き)
+- **`src/app.js`** `closeShowResult`に、`processWeek`と同じ優先順位(派閥イベント→直訴)で`_pendingFactionEvent`/`challengeRequest.pendingThisWeek`を即時消化するブロックを追加。**両ディスパッチ(新設のcloseShowResult側・既存のprocessWeek側の両方)を「発火直前に`G.weekPhase === 'manage'`を再確認してから剥がす」形へ強化**——先にpending値をGから剥がしてからsetTimeoutで飛ばす旧来の書き方だと、天頂戦W48直後のオフシーズン移行のような「クローズ直後に別の専用シーケンスへ分岐する週」でタイマー発火時には既に別画面へ進んでおり、F02派閥ナレーション演出(`fevtF02NarOverlay`)がクリック不能なまま固まる新規D2_FREEZEを本タスク作業中に自己発見(`tenchosen` igniteで検出・下記検証参照)。着地未確認なら剥がさず何もしない(次の呼び出しが同じデータを拾って再挑戦するのでデータロスは無い)
+- **`src/management.js`** `repairProgressionState`のshowCard検査で`match._crMatchLocked || match.isCRMatch`のスロットは検査対象から除外(予約システム自身が組み立てを保証するため)
 ## 2026-09-06 P7-51 マージ(40fa2c56)+ F02 セレモニーの記者ストリップ二重 t() を修正 / chronicle ignite JA は main で PASS
 
 - P7-51 の発見「`_mdlAReporterStrip(state, opts.reporterText || '派閥について…')` が app.js 側で訳済みの `reporterText` をもう一度 `t()` に掛けて EN で i18n-miss 1件」を、既存の第3引数 `lineTranslated` に `!!opts.reporterText` を渡して修正(訳済み文は素通し、JA の既定文は従来どおり内部で `t()`)。JA 表示不変。
@@ -198,6 +233,26 @@ P7-47が新設したignite `opening-flow --lang en`が、旗揚げドラフト�
 
 | 項目 | 結果 |
 |---|---|
+| `node --check`(app.js/factions.js/management.js) | OK |
+| `node test/ja-golden.js` | OK: 完全一致(hash=`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`) |
+| `npm test` | 265/265 PASS |
+| `node test/auto-sim.js 20 42` | ALL CLEAR・violations 0・**指紋`96492883`(基準と完全一致)** |
+| `test:ui:ignite -- --scenario away-challenge`(JA/EN) | **PASS**(3/3マーカーHIT)。EN i18n-miss 0 |
+| `test:ui:ignite -- --scenario incoming-challenge`(JA/EN) | **PASS**(2/2マーカーHIT)。EN i18n-miss 0 |
+| `test:ui:ignite -- --scenario tenchosen`(JA) | **PASS**(修正の副作用で一度D2_FREEZE化→app.jsのweekPhase再確認ガードで根治、上記参照) |
+| `test:ui:ignite -- --scenario gameover`/`war-decline`/`chronicle`/`newspaper-mvprace`/`opening-flow`(JA) | 全PASS・Issues 0(退行なし) |
+| `test:ui:walkthrough`(JA、seed42) | PASS・Issues 0。336〜337手(実行毎に変動・**本タスク以前から既知の環境揺れ**——`git checkout`で無改訂mainへ戻して同条件で回しても368手/`d14879bdb516ac76`など毎回異なる値が出ることを確認済み。worklog内に327/328/336/337/367/368手の変遷記録が既に多数あり、並行プロセスの影響を受けるPlaywrightタイミング揺れとして既知)。直訴モーダルが実際に開くようになった分、経路自体は変化しうるが今回はIssues 0を維持 |
+| `test:ui:walkthrough:en`(seed42) | PASS・Issues 0・i18n-miss 0 |
+
+### 触ったファイル
+
+`src/app.js`(closeShowResult新設ブロック+processWeekの既存2ブロックをweekPhase再確認ガード化) / `src/factions.js`(pickWeeklyEvent §1.9) / `src/management.js`(repairProgressionStateのshowCard検査)
+
+### 残課題
+
+- 実機確認(バックログ追記済み): away-challenge/incoming-challengeの直訴・果たし状モーダルが自然発生で開くこと
+- `unified-player-turn`igniteは本タスク以前からの既知FAIL(設計書R4に記載の別件)で、範囲外のため未着手のまま
+- JA UI走破digestの環境揺れそのものの解消は本タスクの範囲外(既知の宿題として据え置き)
 | `node --check`(management.js/ui-render.js) | OK |
 | `node test/ja-golden.js` | OK: 完全一致(lines=7507, hash=`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`) |
 | `node test/i18n-build-dict.js` | 台帳総キー数=4726 訳文あり=4726 未訳(fail-open)=0 |

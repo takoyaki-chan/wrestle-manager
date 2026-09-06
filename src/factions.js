@@ -1673,6 +1673,20 @@ Engine.factions = {
       return { eventId: 'F02_PEACE', payload: peaceCheck.payload };
     }
 
+    // 1.9) P7-50: 挑戦試合直訴(challengeRequest.pendingThisWeek)が前週以前から持ち越されている
+    // 場合、確率発動系(F08以降・Common系)は今週の抽選を控えて直訴に週次モーダル枠を譲る。
+    // app.js側は「派閥イベントが立っていれば直訴は待つ」の一方通行しか無く(pendingThisWeek
+    // は自分自身の再抽選こそ止めるが、他派閥の新規イベント発生までは止めない)、多派閥が
+    // 同時に緊張状態だと毎週別の派閥イベントが代わる代わる立って直訴が恒久的に順番へ
+    // たどり着けないことがある(点火カタログ点火不発: away-challenge/incoming-challenge、
+    // 2026-09-06)。F03/F05H/F02_ENDLESS/F02_PEACEは物語上必須の即時発動100%のため対象外。
+    const crWaiting = state.challengeRequest && state.challengeRequest.pendingThisWeek;
+    if (crWaiting) {
+      const issuedAbs = Engine.util.absWeek(crWaiting.issuedSeason, crWaiting.issuedWeek);
+      const nowAbs = Engine.util.absWeek(state.season, state.week || 1);
+      if (issuedAbs < nowAbs) return { eventId: null };
+    }
+
     // 2) F08（対立ヒートアップ、確率 50%）
     const f08 = this.checkF08Conditions(state);
     if (f08.eligible && Engine.rng.float(rng) < cfg.eventProbability.F08) {

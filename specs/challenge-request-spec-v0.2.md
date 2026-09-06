@@ -73,3 +73,13 @@
 - 興行準備画面に持ち越しバナー「📨 挑戦試合は次の通常興行へ」(破棄ではないことを明示)。旧・B3参加者重複チェック(`hasAwayParticipantConflict`)によるゲートは本排他に置換
 - 保険: executeShow は今週遠征済みの選手をカードから除外してから興行を開始する
 - 不変条件: I-7 同一週にプレイヤー選手が遠征と自団体興行の両方で試合しない / I-8 後発予約は消滅せず繰り越される / I-9 8週失効ルール不変。テスト: `test/challenge-week-exclusivity-test.js`
+
+## 8. 週次モーダル枠の恒久ブロック根治(2026-09-06・P7-50)
+
+直訴の`pendingThisWeek`は「表示されるまで持ち越す」設計だが、**表示自体を保証する仕組みが2箇所欠けていた**(点火カタログのaway-challenge/incoming-challenge両方が恒久FAILする形で顕在化。真因はRNG連鎖で偶発的に露呈しただけで、条件が揃えば通常プレイでも起きうる構造的な穴だった):
+
+- **興行クローズ経路の消化漏れ**: `App.closeShowResult()`には`_pendingFactionEvent`/`challengeRequest.pendingThisWeek`を消化する分岐が無く、`App.processWeek()`(非興行週)側にしか存在しなかった。直訴の自然抽選条件(`_isSamplingWeek`)は興行週限定なのに、興行週の消化コードが直訴を見ていない非対称があった。→ `closeShowResult`にも`processWeek`と同じ優先順位(派閥イベント→直訴)の消化を追加
+- **派閥イベント側の一方通行**: `Engine.factions.pickWeeklyEvent`は「直訴が持ち越し中なら派閥側が優先される」設計意図(app.js側の優先順位)に対して、逆方向(直訴が持ち越し中なら派閥の新規抽選を控える)の譲り合いを持たなかった。複数派閥が同時に緊張状態だと、直訴が週替わりで別の派閥イベントに負け続け恒久停滞しうる。→ `pickWeeklyEvent`に「`pendingThisWeek`が前週以前に発行済みなら確率発動系(F08以降・Common系)の抽選を控える」ガードを追加(F03/F05H/F02_ENDLESS/F02_PEACEの即時発動100%系は対象外)
+- **付随修正**: `Engine.saveDoctor.repairProgressionState`のshowCard検査が自団体ロスターしか見ておらず、受理済み遠征/迎撃の固定枠(`_crMatchLocked`/`isCRMatch`、相手選手IDを直接埋め込む)を毎回「不正参照」として誤検知していた。ロック枠は検査対象から除外。
+
+上記いずれも表示タイミング/優先順位の修正であり、§2のエンジン数値(heat式・CD・クォータ・8週失効)は不変。詳細はworklog 2026-09-06(P7-50)参照。
