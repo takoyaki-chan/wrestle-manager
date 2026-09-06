@@ -1,5 +1,11 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-06 UI台帳の並び正規化(単独コミット)— 手追加約130行を抽出器の出現順へ
+
+- **経緯**: P7-45/46/49 が「`node test/i18n-extract-ui.js` を回すと、過去バッチが台帳末尾へ手追加した行が並び替わって1,000行超の差分が出る」ため抽出器を回さずに末尾追記で凌いでいた。並行タスクが無い今、抽出器を1回回して並びを正規化する。
+- **証明**: HEAD と作業ツリーの台帳をキー集合・訳文で突合し **差分0**(4,726キー、onlyHEAD 0 / onlyWork 0 / enDiff 0)。`src/lang-en.js` は同じ辞書の再生成(並びのみ)。未訳0。
+- 以後のバッチは `node test/i18n-extract-ui.js` を通常どおり回してよい(preserve-merge で既存訳は保持される)。
+
 ## 🌐 英語対応 P7-48 — 派閥名のEN露出「最後の族」F06/F09/showFactionEventResult汎用経路+業界ニュース全種を一括で塞ぐ(2026-09-06・worktree agent-afe140a8002234654)
 
 specs/i18n-runtime-spec-v1.0.md §45-4・§46が「範囲外」として残していたF06/F02サブ画面/F09/`showFactionEventResult`の`opts.factionPair`/`opts.factionName`汎用経路を解消した回。着手前にworktreeをmain先端(df5dee9f)へfast-forward。
