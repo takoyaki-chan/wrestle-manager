@@ -1,5 +1,75 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-51 — `npm run test:ui:ignite -- --scenario faction-ignite --lang en` の既存FAIL修正(ハーネス側不具合)(2026-09-06・worktree agent-aff8c07309679d1dd)
+
+### 背景
+
+P7-30がEN経路だけ派閥開戦(faction-ignite)に辿り着けない(点火マーカー未観測/`factionPendingIgnite`残留/hostility max=55/D5_WATCHDOG)と報告し、P7-48で原因調査を引き継いだ。着手前にworktreeをmain先端(e4b6d9b1)へfast-forward。
+
+### 止まっていた地点
+
+`--action-log`で確認したところ、`--lang en`は`startShowPrep()`直後から`_spOpenPicker`を120手上限までクリックし続けるだけで一切進行しなかった(`_spSelectFighter`は最初の1回しか呼ばれない)。
+
+原因は**ゲーム本体ではなく走破ドライバ側**。`test/ui-walkthrough/scenarios.js`の`_makeFactionIgniteBoost`が、リーダー対決の編成が完了したかどうかを「編成画面の選手名表示(`openL.text`/`openR.text`)にfixtureの生JA選手名(`leaderA.name`)が含まれているか」で判定していた:
+
+```js
+const leftDone = !!(openL && leaderA.name && openL.text.includes(leaderA.name));
+```
+
+`_spFighterInfo`(`src/ui-render.js`)の選手名表示は`WM_I18N.pn(f.name)`でレンダリングされる。JAでは`pn()`が素通しなので生JA名と一致し判定が成立するが、ENでは選手名が英語表記に変換されるため`openL.text`（英語名）と`leaderA.name`（fixtureの生JA名）が一致せず、`leftDone`が永久に`false`のまま——リーダーを選び終えていても「まだ完了していない」と誤判定し、`_spOpenPicker`（開くボタン）を再クリックし続けるだけのループに陥っていた。
+
+### 修正
+
+表示テキストの言語依存比較をやめ、選手IDで判定する方式に変更した。
+
+1. `src/ui-render.js` `_spFighterInfo`の選手名div(`.sp-fighter-name`)に`data-sp-fighter-id="${f.id}"`属性を追加(表示テキスト・可視内容は無変更、属性1つの追加のみ)。
+2. `test/ui-walkthrough/driver.js`の`listCandidates()`に、この属性を`spFighterId`として抽出するフィールドを追加。
+3. `test/ui-walkthrough/scenarios.js`の`_makeFactionIgniteBoost`を、`openL.text.includes(leaderA.name)`ではなく`String(openL.spFighterId) === String(leaderA.id)`で判定するよう変更(`nameOf`ヘルパー・`leaderA.name`/`leaderB.name`は不要になり削除)。
+
+**属性名を意図的に既存の`data-fighter-id`とは別名(`data-sp-fighter-id`)にした**。`data-fighter-id`はdriver.jsの`actionScore()`で「この選手を選ぶ」汎用ピッカー(スコア8250)として扱われる既存規約で、同じ名前を使うと一般走破(`test:ui:walkthrough`、boost無し)でもこのdiv(興行準備画面の「選手名をクリックしてスワップピッカーを開く」ボタン)が高スコアの候補として拾われてしまい、JA基準の走破digest(367手/`7b3faff2792abc0f`)が368手に変化する副作用が実際に発生した(最初`data-fighter-id`で実装し検出→別名`data-sp-fighter-id`に直して解消)。
+
+### 他シナリオへの同型パターン棚卸し
+
+`grep -n "\.name\b|names\.|includes(" test/ui-walkthrough/scenarios.js test/ui-walkthrough/driver.js`で「表示テキストと生JA名の比較」パターンを全走査。該当は`faction-ignite`の`_makeFactionIgniteBoost`のみで、他シナリオ(`away-challenge`/`incoming-challenge`含む)に同型バグは無し。`away-challenge`/`incoming-challenge`の既知FAILはP7-50が別原因(app.js側の週次モーダル枠の衝突)を調査・修正中で、本タスクとは無関係。
+
+### 副次的発見(スコープ外・未修正)
+
+EN走破が今回初めてF02開戦セレモニー(`fevtF02IOverlay`)まで到達したことで、新たに`i18n-miss`を1件検出した: `_mdlAReporterStrip(state, opts.reporterText || …)`(`src/ui-common.js:10751`)が`lineTranslated`引数を渡していないため、`opts.reporterText`(`src/app.js:13653`で既に`WM_I18N.t()`済みの完成EN文)が`_u3bSideHtml`内でもう一度`WM_I18N.t()`に通され、辞書キーと一致せず`i18n-miss`として記録される(表示自体は正しくEN文のまま出るため実害は軽微)。P6-5/P7-10等で同型の二重t()バグが繰り返し見つかっている箇所と同系統。本タスクのスコア外のため未修正・記録のみ(次にui-common.jsの派閥系レポーター表示へ触るバッチへ引き継ぎ)。
+
+### 作業中に発生したインシデント: gitスタッシュの共有による事故と復旧
+
+JA走破の回帰確認のため`git stash push -- src/ui-render.js test/ui-walkthrough/scenarios.js`で自分の差分を退避して素のmain状態を計測したところ、`git stash pop`で**別セッション(P7-50、別worktree)が積んだスタッシュ**(`src/app.js`/`src/factions.js`/`src/management.js`の変更)が誤って自分の作業ツリーに適用された。`refs/stash`は同一リポジトリの全worktreeで共有される単一スタックのため、ほぼ同時に双方が`git stash`を使うとLIFOの取り違えが起きる(worktreeが分かれていても防げない)。
+
+**復旧手順**: (1) 誤って適用されたapp.js/factions.js/management.jsの差分を`git diff`でパッチファイルへ退避・保存(データを失わないことを最優先)、(2) `git checkout --`でこの3ファイルを HEAD に戻し自分の作業ツリーから除去、(3) `git stash list`で自分の差分がまだ`stash@{0}`に残っていることを確認してから`git stash pop`で正しく復元。最終的に自分の差分(ui-render.js/scenarios.js)のみが作業ツリーに残ることを`git diff --stat`で確認した。**教訓: 複数worktreeが並行稼働する状況では`git stash`を使わない**(このタスクの残りの検証はstash無しで実施)。退避したP7-50の差分パッチは本worktreeのscratchpadに保存済み(このworktreeの外には出していない・P7-50側の作業には影響していないはずだが、P7-50セッション側で「スタッシュしたはずの変更が消えている」ような不整合が見つかった場合はこの経緯を共有すること)。
+
+### 検証結果
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`(ui-render.js/driver.js/scenarios.js) | OK |
+| `npm run test:ui:ignite -- --scenario faction-ignite`(JA) | PASS(Marker HIT: ignite-ceremony, Issues 0) |
+| `npm run test:ui:ignite -- --scenario faction-ignite --lang en` | **PASS**(修正前はFAIL。Marker HIT、Issues 0。i18n-miss 1件は上記「副次的発見」、失敗条件ではない) |
+| `npm run test:ui:ignite -- --scenario opening-flow`(JA) | PASS(退行なし) |
+| `npm run test:ui:ignite -- --scenario war-decline`(JA) | PASS(退行なし) |
+| `npm run test:ui:ignite -- --scenario tenchosen`(JA) | PASS(退行なし) |
+| `npm run test:ui:ignite -- --scenario gameover`(JA) | PASS(退行なし) |
+| `npm run test:ui:ignite -- --scenario newspaper-mvprace`(JA) | PASS(退行なし) |
+| `npm run test:ui:ignite -- --scenario chronicle`(JA) | FAIL(「確定章が2本(3本以上を期待)」)。**本タスクの差分と無関係**——`git stash`で差分を外した状態でも同一結果で再現するmain合流由来の既存不具合(未修正・別チケット行き) |
+| `node test/ja-golden.js` | OK: 完全一致(lines=7507, hash=`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`) |
+| `npm run test:ui:walkthrough`(JA) | **PASS・367手・digest=`7b3faff2792abc0f`(基準と完全一致・1バイトも変化なし)** |
+| `npm test` | 265/265 PASS |
+
+### ドキュメント更新
+
+- `test/ui-walkthrough/README.md`: 「`faction-ignite --lang en`は既知FAIL」の記述の直後に、P7-51での原因・修正・検証結果を追記。
+- `docs/game-system-roadmap.md`: 🌐英語対応の1行内、末尾にP7-51✅の要約を追記(既存1行を編集・行は増やさない)。
+
+### 確認してほしい画面・操作・表示
+
+本タスクはUI/演出を変更していない(ハーネスの選手ピッカーへの属性追加1つのみ)ため、実機での見た目の確認は不要。強いて言えば、興行準備画面でカードスロットの選手名をクリックしてピッカーを開く操作が従来どおり動くこと(属性追加のみで動作・onclickは無変更)。
+
+---
+
 ## 🌐 英語対応 P7-48 — 派閥名のEN露出「最後の族」F06/F09/showFactionEventResult汎用経路+業界ニュース全種を一括で塞ぐ(2026-09-06・worktree agent-afe140a8002234654)
 
 specs/i18n-runtime-spec-v1.0.md §45-4・§46が「範囲外」として残していたF06/F02サブ画面/F09/`showFactionEventResult`の`opts.factionPair`/`opts.factionName`汎用経路を解消した回。着手前にworktreeをmain先端(df5dee9f)へfast-forward。

@@ -239,6 +239,12 @@ async function listCandidates(page) {
         overlayRank: overlayVisible ? overlayZ * 100000 + overlayOrder : 0,
         primary: element.classList.contains('btn-gold') || element.classList.contains('primary')
           || element.classList.contains('mdl-a-continue-btn') || element.classList.contains('pb-close-btn'),
+        // P7-51: 興行準備の選手名(_spFighterInfo)専用の識別子。data-fighter-id(actionScore
+        // 8250の対象で「この選手を選ぶ」汎用ピッカーに使う既存規約)とは意図的に別名にして
+        // 一般走破のスコアリングへ波及させない(この要素は「スワップ用ピッカーを開く」だけの
+        // ボタンで、素の一般走破が押しに行くべき対象ではないため)。faction-igniteのboostが
+        // 表示名(EN化される)ではなくこのidでスロット充足を判定するために使う
+        spFighterId: element.getAttribute('data-sp-fighter-id') || '',
         tagName: element.tagName,
         text,
         // P7-15: 言語非依存の役割属性(data-walk-role)。ボタン生成側が付与していれば
