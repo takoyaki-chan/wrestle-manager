@@ -4931,7 +4931,10 @@ const Engine = {
     _buildQuoteContext(ace, chapter, state, dict) {
       const CL = CHRONICLE_QUOTE_CLAUSES;
       const clause = (tpl, params) => _wmFillWithDict(dict, tpl, params);
-      const surname = Engine.chronicle._getSurname(ace.name);
+      // P7-38: chapter.aces/peers(章キャッシュ)が「この章の登場人物」全体。
+      // 同姓が2人以上いればフルネームへ切り替える(_chapterSurname)。
+      const cast = [...(chapter.aces || []), ...(chapter.peers || [])];
+      const surname = Engine.chronicle._chapterSurname(ace, cast);
       const styleAxis = Engine.chronicle._styleAxis(ace.style);
       const styleJa = _wmDictLabel(dict, Engine.chronicle.AXIS_LABELS[styleAxis] || '独自');
       const org = Engine.chronicle._orgLabel(state, dict);
@@ -4965,7 +4968,7 @@ const Engine = {
           const r = (state.roster || []).find(c => c.id === otherId)
             || ((state.chronicle && state.chronicle.fighterArchive) || []).find(a => a.id === otherId)
             || (typeof ALL_CHARS !== 'undefined' && ALL_CHARS.find(c => c.id === otherId));
-          if (r) topRivalSurname = Engine.chronicle._getSurname(r);
+          if (r) topRivalSurname = Engine.chronicle._chapterSurname(r, cast);
         }
       });
       const topRivalClause = topRivalCount >= 2 && topRivalSurname
@@ -5009,7 +5012,7 @@ const Engine = {
       const peers = (chapter.peers || []).filter(p => p.role === 'rising' || p.stage === 'rising');
       if (peers.length > 0) {
         const top = peers.slice().sort((a, b) => (b.peakOVR || 0) - (a.peakOVR || 0))[0];
-        if (top) risingPeerSurname = Engine.chronicle._getSurname(top);
+        if (top) risingPeerSurname = Engine.chronicle._chapterSurname(top, cast);
       }
       const risingClause = risingPeerSurname
         ? clause(CL.rising, { peer: risingPeerSurname })
@@ -5021,7 +5024,8 @@ const Engine = {
       const allChapters = (state && state.chronicle && state.chronicle.chaptersCache && state.chronicle.chaptersCache.chapters) || [];
       const next = allChapters.find(c => c.number === (chapter.number || 0) + 1);
       if (next && next.aces && next.aces[0]) {
-        nextChapterTopSurname = Engine.chronicle._getSurname(next.aces[0]);
+        const nextCast = [...(next.aces || []), ...(next.peers || [])];
+        nextChapterTopSurname = Engine.chronicle._chapterSurname(next.aces[0], nextCast);
         const nAxis = next._topAxis;
         successorStyle = _wmDictLabel(dict, (Engine.chronicle.AXIS_LABELS && Engine.chronicle.AXIS_LABELS[nAxis]) || '次の流派');
       }
@@ -5109,7 +5113,8 @@ const Engine = {
       // 主役の context を a1 ベースで取り、{surname2} を追加
       const ctx = Engine.chronicle._buildQuoteContext(a1, chapter, state, dict);
       ctx.surname1 = ctx.surname;
-      ctx.surname2 = Engine.chronicle._getSurname(a2);
+      const cast = [...(chapter.aces || []), ...(chapter.peers || [])];
+      ctx.surname2 = Engine.chronicle._chapterSurname(a2, cast);
       const seedBase = (state && state.rngSeed) || 1;
       const aceIdNum = (typeof a1.id === 'number' ? a1.id : (Number(a1.id) || 0))
         + (typeof a2.id === 'number' ? a2.id : (Number(a2.id) || 0));
@@ -5163,15 +5168,45 @@ const Engine = {
       return Engine.chronicle._joinQuoteSections([A, B, C], dict);
     },
 
-    /** 苗字抽出 (日本語名は全角/半角スペース前) */
+    /** 苗字抽出。
+     *  P7-38: 章キャッシュの縮約ace/peerオブジェクト・fighterArchiveスナップショット・
+     *  _collectCandidatesの候補オブジェクトはいずれもフィールドを絞って複写するため
+     *  `.surname` を持たない(state.roster の生キャラだけが持つ)。この関数が文字列
+     *  (`.name` を先に取り出してから渡す呼び出し)や surname 無しオブジェクトを受けても
+     *  正しい姓を返せるよう、ALL_CHARS を名前で逆引きする。ALL_CHARS は全選手を尽くす
+     *  固定キャストなので(NPCの動的名前生成は無い)この逆引きだけで既存呼び出し元は
+     *  無改修でも直る。ALL_CHARS に無い名前(将来の非JA名など)は旧来の空白分割へ
+     *  fail-open(日本語氏名は空白を含まないため1語=フルネームのまま返る=旧バグと同じ
+     *  安全側の挙動)。 */
     _getSurname(arg) {
       if (!arg) return '名無し';
       if (typeof arg === 'object') {
         if (arg.surname) return arg.surname;
         return Engine.chronicle._getSurname(arg.name);
       }
-      const parts = String(arg).split(/[\s\u3000]+/);
-      return parts[0] || String(arg);
+      const key = String(arg);
+      const hit = (typeof ALL_CHARS !== 'undefined') && ALL_CHARS.find(c => c.name === key);
+      if (hit && hit.surname) return hit.surname;
+      const parts = key.split(/[\s\u3000]+/);
+      return parts[0] || key;
+    },
+
+    /** P7-38: 章内で同姓の選手が複数いる場合はフルネームへフォールバックする姓解決。
+     *  EN側(pnSurname/名前辞書のconvertNames経路)は個人名→英語姓の1:1写像で、
+     *  同姓衝突の判定を一切行わない(ALL_CHARS.surnameは現状127名で衝突ゼロと確認済み
+     *  ・node -e で全数チェック済み)。衝突が起きるとJAの地の文は「○○は」が章内の
+     *  どちらを指すか読者が判別できなくなるため、EN に無いこの判定をJA側の描画のために
+     *  独自に追加する(2026-09-05 Keisuke裁定B-2 item4: EN側ロジックが無ければ
+     *  「同章内に同姓が2人以上いればフルネーム」を追加)。
+     *  person: id/name を持つオブジェクト。cast: その章の登場人物配列(aces+peers)。 */
+    _chapterSurname(person, cast) {
+      // '名無し' 等のfallback文言は _getSurname 側の1箇所に任せ、ここでは複製しない
+      // (i18n-ratchetの生JA文字列カウントを不要に増やさないため)。
+      const surname = Engine.chronicle._getSurname(person);
+      if (!person || !Array.isArray(cast) || cast.length < 2) return surname;
+      const collide = cast.some(other => other && other.id !== person.id
+        && Engine.chronicle._getSurname(other) === surname);
+      return collide ? (person.name || surname) : surname;
     },
 
     /** デビュー年推定 (現役選手用) */
@@ -5876,7 +5911,7 @@ const Engine = {
       const addSingle = item => singles.push(item);
       chars.forEach(c => {
         const hist = (c.careerRecord || {}).history || [];
-        const charName = Engine.chronicle._getSurname(c.name);
+        const charName = Engine.chronicle._chapterSurname(c, chars);
         // 章開始前の同 beltId 在位最大防衛数（差し引き用）
         const priorMaxByBelt = new Map();
         hist.forEach(ev => {
@@ -6357,7 +6392,7 @@ const Engine = {
     /** 上の素材(叙述パーツ)だけを返す。buildChapters が narrativeParts として保存する。 */
     _buildAceNarrativeParts(ace, chapter, aces, peers, state, dict) {
       const A = CHRONICLE_NARRATIVE_TEMPLATES.ace;
-      const surname = Engine.chronicle._getSurname(ace.name);
+      const surname = Engine.chronicle._chapterSurname(ace, [...(aces || []), ...(peers || [])]);
       const allHist = ((ace.careerRecord || {}).history || []);
       const joinS = Engine.career.joinSeason(ace);
       const histPost = Engine.career.filterPostJoin(allHist, joinS);
@@ -6445,7 +6480,8 @@ const Engine = {
     /** 上の素材(叙述パーツ)だけを返す。buildChapters が narrativeParts として保存する。 */
     _buildPeerNarrativeParts(peer, chapter, aces, peers, state, dict) {
       const PT = CHRONICLE_NARRATIVE_TEMPLATES.peer;
-      const surname = Engine.chronicle._getSurname(peer);
+      const cast = [...(aces || []), ...(peers || [])];
+      const surname = Engine.chronicle._chapterSurname(peer, cast);
       const role = peer._role || (peer._isIdol ? 'idol' : 'strength');
       const stage = peer._stage || 'prime';
       const styleAxis = Engine.chronicle._styleAxis(peer.style);
@@ -6508,17 +6544,17 @@ const Engine = {
         if (inWin > topRivalCount) {
           topRivalCount = inWin;
           const r = resolveOther(otherId);
-          if (r) topRivalSurname = Engine.chronicle._getSurname(r);
+          if (r) topRivalSurname = Engine.chronicle._chapterSurname(r, cast);
         }
         if ((entry.bond || 0) > topBondVal) {
           topBondVal = entry.bond || 0;
           const r = resolveOther(otherId);
-          if (r) topBondSurname = Engine.chronicle._getSurname(r);
+          if (r) topBondSurname = Engine.chronicle._chapterSurname(r, cast);
         }
         if ((entry.rivalry || 0) > topRivVal) {
           topRivVal = entry.rivalry || 0;
           const r = resolveOther(otherId);
-          if (r) topRivSurnameByVal = Engine.chronicle._getSurname(r);
+          if (r) topRivSurnameByVal = Engine.chronicle._chapterSurname(r, cast);
         }
       });
 
@@ -6702,12 +6738,12 @@ const Engine = {
         return [{
           t: T.dual,
           v: {
-            surname1: Engine.chronicle._getSurname(aces[0].name),
-            surname2: Engine.chronicle._getSurname(aces[1].name)
+            surname1: Engine.chronicle._chapterSurname(aces[0], aces),
+            surname2: Engine.chronicle._chapterSurname(aces[1], aces)
           }
         }];
       }
-      return [{ t: T.single, v: { surname: Engine.chronicle._getSurname(aces[0].name) } }];
+      return [{ t: T.single, v: { surname: Engine.chronicle._getSurname(aces[0]) } }];
     },
 
     /** 章ステータス判定 (spec §4.5) */

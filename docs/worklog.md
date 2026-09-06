@@ -1,5 +1,73 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-38 — 年代記の叙述が選手をフルネームで呼んでいたJAバグを修正(姓呼びへ)(2026-09-06・worktree agent-a727648cb7d5e21e5)
+
+Keisuke裁定B-2=①(2026-09-05、`docs/i18n-keisuke-rulings-pending-v0.1.md`)。P7-10(2026-09-04)が発見・修正案未実装のまま残っていた `Engine.chronicle._getSurname` のバグを直した。着手前にworktreeをmain先端(2ca7b540、P7-36 ja-golden再焼き後)へfast-forward済み。
+
+### 原因
+
+`_getSurname(arg)` は「オブジェクトなら `.surname` を優先、文字列なら空白区切りの先頭」という設計だったが、日本語の氏名は空白を含まないため**文字列で呼ばれると常に氏名全体を返す**。実際の呼び出しには2系統あった(P7-10報告の分類どおり):
+
+1. `_getSurname(ace.name)` のように `.name` を先に取り出してから文字列で渡す箇所(`_buildQuoteContext`/`_buildAceNarrativeParts`/`_generateTitleParts`/`_buildHighlights`)。オブジェクトに `.surname` があってもこの経路では参照されない
+2. `_getSurname(top)`/`_getSurname(next.aces[0])` のようにオブジェクトで渡す箇所。ただし章キャッシュの縮約 ace/peer オブジェクト(`buildChapters` が保存する `aces:`/`peers:`)・`fighterArchive` スナップショット・`_collectCandidates` の候補オブジェクトは、いずれも `id/name/style/...` を個別に列挙して複写する実装で **`.surname` を複写していない**。`.surname` を実際に持つのは `state.roster` の生キャラクター(`ALL_CHARS` を素通しコピー)だけだった
+
+### 修正方針(供給源の決定)
+
+課題文の候補(a)「`ALL_CHARS[].surname` 等のマスタ項目が既にあるか」を確認したところ、**`ALL_CHARS` は127名全員が `.surname` を持ち、姓の重複はゼロ**だった(`node -e` で全数チェック)。P6-11整備の `i18n/names-ledger.json` から新規テーブルを生成する(候補b)必要はなく、`ALL_CHARS` をそのまま名前→姓の逆引き元として使えば足りると判断した。
+
+- `Engine.chronicle._getSurname(arg)`: オブジェクトなら `.surname` を優先、無ければ `.name` で再帰。文字列は `ALL_CHARS.find(c => c.name === key)` で逆引きして `.surname` を返す。`ALL_CHARS` に無い名前(将来の非JA名など)は旧来の空白分割へ fail-open(1語名ならフルネームのまま返る=旧バグと同じ安全側の挙動)
+- 章キャッシュ(`aces:`/`peers:`)・`fighterArchive`・候補オブジェクトのいずれにも **`.surname` フィールドを追加しなかった**(「名前から都度引く」方式を採用。課題文が挙げた二択のうち、キャッシュのスキーマ変更・既存セーブとの互換確認を避けられる後者を選んだ)。既存の呼び出し元(`_getSurname(x.name)`/`_getSurname(x)` どちらの形も)は無改修で正しい姓を返すようになる — ただし後述の同姓ガードのため主要な呼び出し元は `_chapterSurname` へ差し替えた
+
+### 同姓が章内に複数いる場合のガード(裁定item4)
+
+EN側の姓表示(`WM_I18N.t()` の `convertNames` 経路。`names` 辞書に `"阿武隈": "Abukuma"` のような**姓のみキー**が `addNames` でフルネームと並んで登録済み)を実際に調べたところ、**個人名(フルネームJA)→英語表記の1:1写像で、同姓衝突の判定を一切行わない**設計だった(`pnSurname()` も同様、`surnames` 辞書はフルネームJAキー)。「EN側ロジックが無ければ同章内に同姓2人以上でフルネームへ」という裁定に従い、新規ヘルパー `Engine.chronicle._chapterSurname(person, cast)` を追加した: `_getSurname(person)` で姓を求め、`cast`(その章の `aces`+`peers`)内に自分以外で同じ姓を持つ相手がいればフルネームへ切り替える。現在の127名に衝突は無いため実際には発火しないが、将来のキャラ追加に備えたガードとして常時有効にした。
+
+`_chapterSurname` を適用した箇所(章の登場人物を指すスロット全て。次章参照 `nextChapterTopSurname` だけは次章自身の `aces`+`peers` を cast として使う):
+
+`_buildQuoteContext` の `surname`/`topRivalSurname`/`risingPeerSurname`/`nextChapterTopSurname`、`buildDualAceQuote` の `ctx.surname2`、`_buildHighlights` の `charName`、`_buildAceNarrativeParts`/`_buildPeerNarrativeParts` の `surname`、`_buildPeerNarrativeParts` 内の `topRivalSurname`/`topBondSurname`/`topRivSurnameByVal`、`_generateTitleParts` の `surname1`/`surname2`(こちらは `aces` 配列自身をcastにする — peersを受け取らない関数のため)。
+
+ui-render.js の3箇所(`_buildAcePortrait` の頭文字フォールバック・同期一覧の頭文字・`_chronicleAceQuote` の防御的フォールバック)は `_getSurname(x.name)` のまま**無改修**。理由: 日本語氏名は姓が常にフルネームの先頭一致(空白なし連結)なので `フルネーム.charAt(0) === 姓.charAt(0)` が恒に成り立ち、`_getSurname` 単体の修正だけで頭文字は既に正しくなる(`_chapterSurname` の同姓フルネーム化があっても先頭1文字は変わらない)ため実質差分ゼロ。差分を最小に保つため意図的に触れていない。
+
+### 発見: EN側も実は同じバグでフルネーム表示だった(裁定文の前提の誤り)
+
+裁定文は「EN は `pnSurname()` で姓だけを出せるので JA=フルネーム/EN=姓の非対称」としていたが、実際に `i18n.js`+`lang-en-names.js`+`management.js` を素のvmで読み込んで `_generateTitleParts`→`narrativeText(parts, WM_I18N.t)` を通したところ、**修正前はEN側もフルネーム表示だった**:
+
+```
+修正前 EN: "The Toko Abukuma–Kanako Tomioka Generation"
+修正後 EN: "The Abukuma–Tomioka Generation"
+修正前 JA: "阿武隈塔子・富岡加奈子世代"
+修正後 JA: "阿武隈・富岡世代"
+```
+
+理由: 章タイトル/叙述文の `{surname}` パラメータは `narrativeParts`(章キャッシュに永続化)として保存され、**表示時に現在の言語の dict で組み直す**設計(P6-16/P6-17)。`{surname}` の値そのものが常にフルネームだった(バグ)ため、EN側の `WM_I18N.t()` の `convertNames` 経路が `names['阿武隈塔子']`(フルネームキー)にヒットして "Toko Abukuma" を返していた。`names` 辞書には姓のみキーも元から登録済みだったので、`_getSurname` を直しただけでJA・ENが同時に正しい姓表示になった(`pnSurname()` を個別に配線する必要は無かった)。**EN側も本タスクで初めて正しくなった非破壊的な副次改善**であり、裁定文が想定した「EN は不変」ではなかったことをここに記録する。
+
+### 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check src/management.js` | OK |
+| `npm test` | ✅ 265/265 green |
+| `node test/i18n-ratchet.js` | 初回+1(`_chapterSurname` に `'名無し'` フォールバックを複製したため)。`_getSurname` 側の分岐に一本化して解消 → **最終的に増減なし(27,933不変、`--update`不使用)** |
+| `node test/ja-golden.js` | ✅ 完全一致・**変化なし**(hash=`3466a6ff…`不変)。**発見**: `ja-golden` は週刊新聞/決着文/興行イベント文/引退セリフ/デバッグログのみを採取対象とし(スクリプト冒頭コメントで明記)、**年代記(Engine.chronicle)は元々対象外**。したがって「年代記の姓化だけの差分」をja-goldenで証明することはできない — 下記の独立ハーネスで代替証明した |
+| **年代記diffの機械証明(独立ハーネス)** | 修正前の `management.js`(`git show HEAD:src/management.js`、本タスク着手前のmainコミット時点)と修正後のファイルをそれぞれ素のvmへ読み込み、同一の合成state(ALL_CHARS先頭8名を戴冠履歴つきロスターにした9章分)で `Engine.chronicle.buildChapters` を実行し、`title`/`narrative`/`highlights` の全文字列フィールドを突合。**75件が文字列差分、うち75件全てが「フルネーム→姓の文字列置換のみで完全に再現できる」ことを機械的に確認(不明な差分=0件)**。代表5行:<br>①`阿武隈塔子・富岡加奈子世代`→`阿武隈・富岡世代`<br>②`阿武隈塔子はS1デビュー、S3にOVR90でピーク到達。この章ではテスト王座を戴冠。`→`阿武隈はS1デビュー、…`<br>③`富岡加奈子はS1デビュー、S4にOVR89でピーク到達。`→`富岡はS1デビュー、…`<br>④`<strong>阿武隈塔子</strong> テスト王座 戴冠`→`<strong>阿武隈</strong> テスト王座 戴冠`<br>⑤`<strong>澤出みずき</strong> テスト王座 戴冠`→`<strong>澤出</strong> テスト王座 戴冠` |
+| `node test/chronicle-narrative-parts-i18n-test.js` | ✅ OK(120 peer parts checked) |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(violations 0 / errors 0、台帳検査3種違反0)。`Engine.chronicle.buildChapters` はUI/データベースタブからのみ呼ばれ tickWeek 経路には無いため、semantic fingerprint は影響を受けない想定どおり |
+| `npm run test:ui:ignite -- --scenario chronicle`(JA) | ✅ PASS(Marker HIT: chronicle-screen、Issues 0) |
+| `npm run test:ui:ignite -- --scenario chronicle --lang en` | ✅ PASS(Issues 0)。**i18n-miss 1件を検出したが本タスクと無関係**: `インタビュー後、{nameA}は{nameB}の名前を口にしなかった`(GL-12/関係性グリンプス叙述、data.js)がPH置換後の完成文でt()を呼んでおり辞書キーと不一致(fill-then-translate違反、規約§9型の既存バグ)。`Engine.chronicle`/`Engine.relationships`とは別系統でスコープ外のため未修正、記録のみ |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS。Actions 336 **digest=`b3b7a2c05a7e6016`(既存基準と完全一致・不変)**。Issues 0 |
+| `npm run test:ui:walkthrough:en` | ✅ PASS。Actions 399 **digest=`a21c9e961ea228ed`(既存基準と完全一致・不変)**。Issues 0・**i18n-miss 0** |
+
+### 見つけたが対象外の別件(記録のみ)
+
+- `management.js` GL-12 `インタビュー後、{nameA}は{nameB}の名前を口にしなかった` のfill-then-translate型 i18n-miss(上記参照)。呼び出し元は `Engine.relationships` 系のグリンプス生成と推定されるが未特定。次にこの系統を触るバッチへ引き継ぎ
+
+### docs/specs
+
+- `specs/chronicle-system-spec-v0.3.md` §G.4 新設: 「選手の呼び方は姓」の設計を明文化(`_getSurname`/`_chapterSurname`の契約とEN側の仕組み)
+- `docs/i18n-keisuke-rulings-pending-v0.1.md` B-2 に実装済みマークを別コミットで追記(コミットIDが確定してから)
+- `docs/実機確認バックログ.md` 先頭に「P7-38」節を追加(章タイトル/叙述の姓表示・EN側の見え方の変化・同姓フルネームガードの3点)
+- `docs/game-system-roadmap.md` の英語対応1行へP7-38の要約を追記(既存行を編集・行を追加しない)
+
 ## 🌐 英語対応 P7-36 — 週次ティッカー(📰帯)廃止(2026-09-06・worktree agent-ac58d81c02c63e492)
 
 Keisuke裁定(2026-09-05「ティッカーは廃止。ゲームの各要素が揃う前に作ったもの」)。背景と決定は `docs/i18n-keisuke-rulings-pending-v0.1.md` E節。着手前にworktreeをmain先端(863ff2b1)へfast-forward済み。

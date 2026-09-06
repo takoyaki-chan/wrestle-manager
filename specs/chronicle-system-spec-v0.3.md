@@ -203,6 +203,15 @@ ace_score = baseScore × 0.5 + achievementScore × 0.5
 
 UI 側は dual カード内の `chron-dual-quote` を削除し、`chron-dual-shared-quote` として 2 カードの下に 1 つだけ配置。
 
+### G.4 選手の呼び方は「姓」(P7-38, 2026-09-06)
+
+叙述文・記者の目・章タイトルは選手をフルネームではなく **姓** で呼ぶ(日本語のスポーツ記事の慣習に合わせる。2026-09-05 Keisuke裁定B-2)。
+
+- `Engine.chronicle._getSurname(arg)`: オブジェクト(`.surname` 優先、無ければ `.name` で再帰)/文字列いずれも受け付け、文字列は `ALL_CHARS` を名前で逆引きして姓を返す(章キャッシュの縮約 ace/peer オブジェクトや `fighterArchive` スナップショットは `.surname` を複写していないため、名前引き逆引きが本経路)。`ALL_CHARS` に無い名前は空白分割へ fail-open(日本語氏名は空白を含まないためフルネームのまま返る)
+- `Engine.chronicle._chapterSurname(person, cast)`: `_getSurname` の結果を使い、**同じ章の登場人物 (`cast` = `aces` + `peers`) の中に同姓が2人以上いればフルネームへ切り替える**。EN側(`pnSurname`/名前辞書の `convertNames` 経路)は個人名→英語姓の1:1写像で同姓衝突の判定を行わないため(`ALL_CHARS.surname` は127名で衝突ゼロと確認済み)、JA側でこのガードを独自に持つ
+- `surname`/`surname1`/`surname2`/`topRivalSurname`/`topBondSurname`/`risingPeerSurname`/`nextChapterTopSurname` など、章の登場人物を指す全てのスロットは `_chapterSurname` を経由する(次章参照 `nextChapterTopSurname` は次章自身の cast で衝突判定する)
+- EN側は `{surname}` パラメータが名前辞書(`names`、`WM_I18N.t()` の `convertNames` 経路)の姓のみキー(`"阿武隈": "Abukuma"` のように `addNames` へフルネームと並んで登録済み)にヒットするため、JAが姓を返すよう修正するだけで自動的に正しい英語姓になる(`pnSurname()` を個別配線する必要はない)
+
 ---
 
 ## §H. UI 章ヘッダ + タイムライン
