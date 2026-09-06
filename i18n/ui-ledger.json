@@ -50096,5 +50096,77 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "対抗戦(JT出演料)のメディア収入ラベル、固定文言。docs/i18n-coverage-report-v0.1.md §8-3が指摘していた未収載項目。P7-46でt()化(以前はWM_I18N.tを一度も通さず生JAのままG._pendingMediaIncomesへ焼いていた)"
+  },
+  {
+    "key": "将来のエース候補",
+    "en": "A future ace candidate",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.draft.EVAL_TIERS(旗揚げドラフト画面のコーチ評価「将来性: …」の中身)。getEvalComment()が返すtierオブジェクトのtextを、ui-render.jsの表示点(2箇所: 設立メンバー/候補選手カード)でWM_I18N.t(c.coachEval.text)として個別に訳してから、外側テンプレ「将来性: {text}」(既存キー)へ差し込む形にした(P7-49)。management.jsはui-ledger走査対象外につき手追加。"
+  },
+  {
+    "key": "逸材の匂いがする",
+    "en": "A whiff of something special",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.draft.EVAL_TIERS(旗揚げドラフト画面のコーチ評価「将来性: …」の中身)。getEvalComment()が返すtierオブジェクトのtextを、ui-render.jsの表示点(2箇所: 設立メンバー/候補選手カード)でWM_I18N.t(c.coachEval.text)として個別に訳してから、外側テンプレ「将来性: {text}」(既存キー)へ差し込む形にした(P7-49)。management.jsはui-ledger走査対象外につき手追加。"
+  },
+  {
+    "key": "かなりの素質あり",
+    "en": "Considerable raw talent",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.draft.EVAL_TIERS(旗揚げドラフト画面のコーチ評価「将来性: …」の中身)。getEvalComment()が返すtierオブジェクトのtextを、ui-render.jsの表示点(2箇所: 設立メンバー/候補選手カード)でWM_I18N.t(c.coachEval.text)として個別に訳してから、外側テンプレ「将来性: {text}」(既存キー)へ差し込む形にした(P7-49)。management.jsはui-ledger走査対象外につき手追加。"
+  },
+  {
+    "key": "十分な伸びしろ",
+    "en": "Plenty of room to grow",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.draft.EVAL_TIERS(旗揚げドラフト画面のコーチ評価「将来性: …」の中身)。getEvalComment()が返すtierオブジェクトのtextを、ui-render.jsの表示点(2箇所: 設立メンバー/候補選手カード)でWM_I18N.t(c.coachEval.text)として個別に訳してから、外側テンプレ「将来性: {text}」(既存キー)へ差し込む形にした(P7-49)。management.jsはui-ledger走査対象外につき手追加。"
+  },
+  {
+    "key": "堅実に育つタイプ",
+    "en": "The steady, reliable type",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.draft.EVAL_TIERS(旗揚げドラフト画面のコーチ評価「将来性: …」の中身)。getEvalComment()が返すtierオブジェクトのtextを、ui-render.jsの表示点(2箇所: 設立メンバー/候補選手カード)でWM_I18N.t(c.coachEval.text)として個別に訳してから、外側テンプレ「将来性: {text}」(既存キー)へ差し込む形にした(P7-49)。management.jsはui-ledger走査対象外につき手追加。"
+  },
+  {
+    "key": "未知数",
+    "en": "An unknown quantity",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.draft.EVAL_TIERS(旗揚げドラフト画面のコーチ評価「将来性: …」の中身)。getEvalComment()が返すtierオブジェクトのtextを、ui-render.jsの表示点(2箇所: 設立メンバー/候補選手カード)でWM_I18N.t(c.coachEval.text)として個別に訳してから、外側テンプレ「将来性: {text}」(既存キー)へ差し込む形にした(P7-49)。management.jsはui-ledger走査対象外につき手追加。"
   }
 ]

@@ -1,5 +1,55 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-49 — 旗揚げドラフト画面のコーチ評価「Upside: …」EN未訳を修正(2026-09-06・worktree agent-a1469d9574f1b153f)
+
+### 背景
+
+P7-47が新設したignite `opening-flow --lang en`が、旗揚げドラフト画面のコーチ評価行(「Upside: …」)に日本語漏れを検出しFAILしていた(P7-47エントリに未修正のまま報告のみ記載)。原因は`Engine.draft.EVAL_TIERS`(`src/management.js`。**実際は6段階**——起票時は5本と見誤っていた: `将来のエース候補`/`逸材の匂いがする`/`かなりの素質あり`/`十分な伸びしろ`/`堅実に育つタイプ`/`未知数`)が`getEvalComment()`から生JA文字列のまま返され、`ui-render.js`の表示点(旗揚げドラフト画面の設立メンバーカード`.draft-fc.fixed`/候補選手カード`.draft-fc.cand`、計2箇所)が`WM_I18N.t('将来性: {text}', { text: c.coachEval.text })`で外側テンプレ(「将来性:」→「Upside:」)だけ訳し、`{text}`へ差し込む`c.coachEval.text`自体を`t()`に通していなかったこと。
+
+### 修正
+
+- アーキテクチャ5原則§1(Engine純粋関数)に沿い、Engineは`WM_I18N`を呼ばない方針を維持。`management.js`の`EVAL_TIERS`/`getEvalComment()`は無変更。
+- `src/ui-render.js`の表示点2箇所を `WM_I18N.t('将来性: {text}', { text: WM_I18N.t(c.coachEval.text) })` に変更(外側テンプレキー「将来性: {text}」自体は既存のまま。中身の`text`を個別に`t()`へ通すだけ)。
+- `i18n/ui-ledger.json`の末尾へ6件を手追加(`node test/i18n-extract-ui.js`は実行せず——過去バッチの手追加約130行が並び替わるため。`management.js`はui-ledgerの走査対象外につき「走査対象外につき手追加」の既存慣例に合わせた)。
+- `node test/i18n-build-dict.js`で`src/lang-en.js`を再生成(台帳4,726キー、未訳0)。
+
+### 対訳表(EVAL_TIERS全6段階)
+
+| JA(min potOVR) | アイコン | EN |
+|---|---|---|
+| 将来のエース候補(155+) | 🌟 | A future ace candidate |
+| 逸材の匂いがする(145+) | ✨ | A whiff of something special |
+| かなりの素質あり(135+) | 💎 | Considerable raw talent |
+| 十分な伸びしろ(125+) | 📈 | Plenty of room to grow |
+| 堅実に育つタイプ(115+) | 🌱 | The steady, reliable type |
+| 未知数(0+) | 🔮 | An unknown quantity |
+
+### 検証結果
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`(management.js/ui-render.js) | OK |
+| `node test/ja-golden.js` | OK: 完全一致(lines=7507, hash=`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`) |
+| `node test/i18n-build-dict.js` | 台帳総キー数=4726 訳文あり=4726 未訳(fail-open)=0 |
+| `node test/i18n-ledger-consistency-test.js` | ok(2台帳以上に存在するキー=17件、すべて訳文一致) |
+| `node test/i18n-ratchet.js` | OK: 直書き日本語文字列の増加なし(files=31 totalJaStrings=27929) |
+| `npm test` | 265/265 PASS |
+| `npm run test:ui:ignite -- --scenario opening-flow`(JA) | **PASS**(7マーカーHIT。Overflow情報2件は既知の週画面ボタン折返し・失敗条件ではない) |
+| `npm run test:ui:ignite -- --scenario opening-flow --lang en` | **PASS**(scenario-wide JA exposure=0、i18n-miss=0。修正前は「Upside: …」欄のJA露出でFAILしていたゲートが0件に。titleScreenの参考情報1件は言語トグル入力欄由来の既知informational項目で失敗条件ではない) |
+
+### ドキュメント更新
+
+- `test/ui-walkthrough/README.md`の「2026-09-06実走で発見(未修正・出す判断はKeisuke裁定待ち)」節を「→ 2026-09-06 P7-49で修正済み」へ更新し、実際は6段階だった訂正を明記。
+- `docs/実機確認バックログ.md`の先頭にP7-49の実機確認項目(3項目)を追加。
+- `docs/game-system-roadmap.md`の🌐英語対応の1行内、P7-47エントリの「EVAL_TIERS未訳(P7-49)」を「(P7-49で解消)」に書き換え、末尾にP7-49✅の要約を追記(行は増やさず既存1行を編集)。
+
+### 確認してほしい画面・操作・表示
+
+- 言語設定をENにして新規ゲーム開始→団体名入力→旗揚げする→ゲーム開始→序章4幕クリック→旗揚げドラフト画面まで進み、設立メンバー2名・候補選手6名すべてのカードで「Upside: …」欄が英語(上記対訳表の6文言のいずれか)で出ていること。日本語が混ざっていないか。
+- 同じ画面をJAのまま確認し、「将来性: …」の文言が従来と1文字も変わっていないこと。
+
+---
+
 ## 🌐 英語対応 P7-47 — 開幕導線(タイトル→新規ゲーム→旗揚げ序章→ドラフト→設立挨拶→第1週)の実UI点火シナリオ`opening-flow`を新設(2026-09-06・worktree agent-a5a70786febfab360)
 
 ### 背景

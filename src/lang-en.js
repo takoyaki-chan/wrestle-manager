@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4720件、訳文あり4720件)
+//  生成元: i18n/ui-ledger.json (総キー4726件、訳文あり4726件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -4733,7 +4733,13 @@
     " 人気+{v}": " Popularity +{v}",
     "挑戦状 vs {org}": "Challenge Letter vs {org}",
     "対抗戦 vs {org}": "Interpromotional Match vs {org}",
-    "対抗戦出演料": "Interpromotional Match Appearance Fee"
+    "対抗戦出演料": "Interpromotional Match Appearance Fee",
+    "将来のエース候補": "A future ace candidate",
+    "逸材の匂いがする": "A whiff of something special",
+    "かなりの素質あり": "Considerable raw talent",
+    "十分な伸びしろ": "Plenty of room to grow",
+    "堅実に育つタイプ": "The steady, reliable type",
+    "未知数": "An unknown quantity"
   }
   );
 })();

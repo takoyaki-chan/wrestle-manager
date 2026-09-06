@@ -927,7 +927,7 @@ function renderWeekScreen() {
             ${strengths.length ? WM_I18N.t('強み: ') + strengths.join(', ') : ''}
             ${weaknesses.length ? (strengths.length ? ' / ' : '') + WM_I18N.t('課題: ') + weaknesses.join(', ') : ''}
           </div>
-          <div class="draft-coach-quote">${c.coachEval.emoji} ${WM_I18N.t('将来性: {text}', { text: c.coachEval.text })}</div>
+          <div class="draft-coach-quote">${c.coachEval.emoji} ${WM_I18N.t('将来性: {text}', { text: WM_I18N.t(c.coachEval.text) })}</div>
         </div>
       </div>`;
     }
@@ -973,7 +973,7 @@ function renderWeekScreen() {
             ${strengths.length ? WM_I18N.t('強み: ') + strengths.join(', ') : ''}
             ${weaknesses.length ? (strengths.length ? ' / ' : '') + WM_I18N.t('課題: ') + weaknesses.join(', ') : ''}
           </div>
-          <div class="draft-coach-quote">${c.coachEval.emoji} ${WM_I18N.t('将来性: {text}', { text: c.coachEval.text })}</div>
+          <div class="draft-coach-quote">${c.coachEval.emoji} ${WM_I18N.t('将来性: {text}', { text: WM_I18N.t(c.coachEval.text) })}</div>
           <div class="draft-contract-fee">${WM_I18N.t('契約金:')} <strong>${c.assessedValue || 0}</strong> ${WM_I18N.t('万')}
             ${tooExpensive ? `<span style="color:#922b21;font-weight:700;margin-left:6px">${WM_I18N.t('資金不足')}</span>` : ''}</div>
         </div>
