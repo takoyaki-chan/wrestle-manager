@@ -13403,7 +13403,13 @@ const Engine = {
       const promoIncomes = G._pendingPromoIncomes || [];
       promoIncomes.forEach(pi => {
         totalIncome += pi.income;
-        const popTag = pi.popGain > 0 ? ` 人気+${Math.round(pi.popGain * 10) / 10}` : '';
+        // i18n P7-46: popTag自体もテンプレ経由で辞書を引く(「人気+」がdict()を通らず
+        // 生JAのまま外側テンプレの{popTag}へ差し込まれ、EN実行時だけ残っていた穴)。
+        // _wmFillWithDict はdict未指定(auto-sim/ja-golden)でもfillTemplateVarsで
+        // プレースホルダ充填だけは行うため、JA側は1バイトも変わらない。
+        const popTag = pi.popGain > 0
+          ? _wmFillWithDict(dict, ' 人気+{v}', { v: Math.round(pi.popGain * 10) / 10 })
+          : '';
         details.push({ label: _wmFillWithDict(dict, 'プロモ収入（{name} {eventName}{popTag}）', { name: pi.name, eventName: _wmDictLabel(dict, pi.eventName), popTag }), val: pi.income, type: 'income', category: 'promo' });
       });
 
@@ -13558,7 +13564,10 @@ const Engine = {
         // (EN走破で `中ホールB` が唯一の非テンプレmissとして出ていた)。値をそのままパラメータで
         // 渡せば、t()のenブランチが持つパラメータ値の名前自動変換(D-P6-2 convertNames)が引き当てる。
         // JA/dict無し(auto-sim・ja-golden)はどちらの経路でも生の会場名で1バイト不変。
-        details.push({ label: _wmFillWithDict(dict, '会場費（{venue}）', { venue: VENUES[G.showVenue].name }), val: -rev.venueCost, type: 'expense' });
+        // i18n P7-46: category:'venue'を併記(表示側/Survival.estimateWeeklyNetの会場費
+        // 判定がラベル文字列の再比較(d.label.includes('会場'))に依存しないように。
+        // 選手給与のcategory:'salary'(P3a-3 D-G4)と同じ流儀)。
+        details.push({ label: _wmFillWithDict(dict, '会場費（{venue}）', { venue: VENUES[G.showVenue].name }), val: -rev.venueCost, type: 'expense', category: 'venue' });
 
         // 金銭バランス改善: 興行グッズブースト（出場選手のみ）
         const showGoods = Engine.economy.calcShowGoodsBoost(roster, G.lastShowResults, attendance, VENUES[G.showVenue].cap);

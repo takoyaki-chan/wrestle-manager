@@ -50038,5 +50038,53 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": " 人気+{v}",
+    "en": " Popularity +{v}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.season.processSettlement内promoIncomes.forEach()のpopTag(プロモ収入明細のポップ増分タグ)。P7-46でdict()を通すよう修正(以前は生JAのまま外側テンプレの{popTag}へ差し込まれ、EN実行時だけ「人気+」が残っていた)。走査対象外につき手追加"
+  },
+  {
+    "key": "挑戦状 vs {org}",
+    "en": "Challenge Letter vs {org}",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "App.b3系(挑戦状イベント)のメディア収入ラベル。G._pendingMediaIncomes[].label(前週イベントからの繰越としてmanagement.js processSettlementが「メディア収入（{label}）」の値として差し込む)。P7-46でt()化(以前は`挑戦状 vs ${WM_I18N.pn(orgName)}`とprefixだけ生JAのまま焼いていた)。走査対象外につき手追加"
+  },
+  {
+    "key": "対抗戦 vs {org}",
+    "en": "Interpromotional Match vs {org}",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "対抗戦(war)勝利時のメディア収入ラベル。上と同型・同じG._pendingMediaIncomes経由。P7-46でt()化"
+  },
+  {
+    "key": "対抗戦出演料",
+    "en": "Interpromotional Match Appearance Fee",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "対抗戦(JT出演料)のメディア収入ラベル、固定文言。docs/i18n-coverage-report-v0.1.md §8-3が指摘していた未収載項目。P7-46でt()化(以前はWM_I18N.tを一度も通さず生JAのままG._pendingMediaIncomesへ焼いていた)"
   }
 ]

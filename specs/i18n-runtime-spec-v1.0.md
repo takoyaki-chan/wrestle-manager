@@ -2467,3 +2467,28 @@ DOMに入るが描画されないので同じく除外。
 | 26 | 〃 | 愚直な姿勢でチームを牽引する | She leads the team by plain, dogged effort |
 | 27 | emotional(感情的) | 感情の振れ幅で試合をドラマに変える | The swing of her emotions turns matches into drama |
 | 28 | 〃 | 熱が乗ったときの爆発力が桁違い | When she gets fired up, her explosiveness is on another level |
+
+## 47. Stage B P7-46 — 財務明細ラベル `weeklyFinance[].details[].label` の残存JA露出4件を修正(2026-09-06追加)
+
+P7-31 §44-5-発見1が起票した「財務タブの明細ラベルが6箇所で生JAのまま描画される」は、**着手時点で前提が崩れていた**。P6-13(2026-09-04)が`Engine.season.processSettlement(G, dict)`を`_wmFillWithDict`でdict-opts化済みで、`weeklyFinance.details[].label`は**settlement時点(tickWeekの`opts.dict`)で言語別の完成文として焼かれる**設計に既に切り替わっていた。表示側6箇所(ui-render.js)が`d.label`を素通しで描画するのは**正しい実装**であり、§14-3(追加フィールド方式)は**適用しない**と判断した。
+
+### 47-1. §14-3ではなく§12-3(dict-opts + `_wmFillWithDict`)が既に正解だった理由
+
+§14-3が要るのは「選出が`Math.random()`等の非決定要素に依存し、表示時点で同じ値を再生成できない」族(PPV煽り・年代記narrative)。`weeklyFinance.details`はこれに該当しない — `Engine.tickWeek(G, opts)`の呼び出し時点で`opts.dict`(=`WM_I18N.t`)が既に揃っており、`processSettlement`内で`_wmFillWithDict(dict, tpl, params)`へ通すだけで**その場で確定的に**言語別の完成文が作れる(構造規約1「Engineは WM_I18N を呼ばない」は、Engineが`WM_I18N`を直接importしないという意味であり、呼び出し元が関数として注入した`dict`を呼ぶことは違反しない — §6のdict-opts方式全体がこの原則で成立している)。
+
+そのため`label`自体は**言語非依存の不変値ではなく、settlement時点の言語で確定した完成文**になる(旧来の`_wmFillWithDict`系フィールドと同じ扱い)。言語を後から切り替えても、**過去に確定した週の`label`は再翻訳されない**(settlement時点の言語のまま凍結される)。これは§14-3の「JAは不変・EN切替は表示時」とは異なる契約だが、CLAUDE.mdのプロジェクト方針(ゲーム内言語切替は稀な操作で、週次決算は都度再生成される)のもとでは実害がない。**旧セーブ/旧言語で確定した過去の`financeHistory`行がその言語のまま残るのは仕様**(実機確認バックログに記載)。
+
+### 47-2. それでも見つかった4種の実バグ(いずれも「dict-opts化されているのに一部だけ生JAが残る/JA前提の後処理が壊れる」型)
+
+1. **`popTag`(management.js processSettlement、プロモ収入明細)が`_wmFillWithDict`を経由していなかった** — `` ` 人気+${Math.round(pi.popGain*10)/10}` ``という生JAの文字列を組み立ててから、既にdict()を通した外側テンプレの`{popTag}`へ値として差し込んでいた。外側テンプレ自身は正しく訳されるため一見気づきにくいが、EN実行時は`Promo Income (... Popularity/人気+2.1)`のように**値の中だけJAが残る**(§14-2型: 値そのものが未翻訳)。修正は`popTag`自身も`_wmFillWithDict(dict, ' 人気+{v}', { v })`で組み立てる(プレースホルダを持つ値なので`_wmDictLabel`ではなく`_wmFillWithDict`を使う)。新規キー` 人気+{v}`をui-ledgerへ手追加(`EN: " Popularity +{v}"`)。dict省略時は`fillTemplateVars`がPH充填のみ行うため、JA出力は1バイト不変
+2. **会場費明細に`category`が付いていなかった**(P7-33 §8-4が「今回は据え置き」と明記していた積み残し)。`Survival.estimateWeeklyNet`(app.js)が`d.label.includes('会場')`という**完成文の部分一致でUI分岐**しており(構造規約5違反)、EN実行時は`label`が`"Venue Cost (...)"`になるため一致せず、サバイバルパネルの週間収支見積りの会場費が常に0円として計算される潜在バグだった。選手給与の`category:'salary'`(Stage A P3a-3 D-G4)と同じ流儀で`category:'venue'`を新設し、`estimateWeeklyNet`の判定を`d.category === 'venue'`(旧セーブ=`category`未設定のときだけJA部分一致へfail-open)に切替
+3. **表示側の正規化ヘルパーがJA前提の文字列加工だった**(`_normalizeFinanceLabel`/収入タブのカテゴリ内サブラベル剥がし)。`label.startsWith('会場費')`・`label.replace(/（.*?）/g,'')`(全角括弧固定)・`label.replace(/^(グッズ収入|メディア収入|プロモ収入)/,'')`はいずれもJAリテラル/全角括弧前提で、EN実行時は素通りする。**JA前提の正規表現がEN実行時にただ素通りするだけなら実害は小さい**(グルーピングが少し粗くなる程度)が、**「先頭だけ剥がして末尾だけ剥がさない」ような非対称な加工を書くと文字列が破損する**(実際に`_normalizeFinanceLabel`とは別の「収入タブのサブラベル剥がし」の初版修正で`"Promo Income (Saeko Iijima ... +2.4)"`が`"(Saeko Iijima ... +2.4"`(先頭の`(`が残り末尾の`)`だけ消える)という壊れた文字列になる回帰を自己レビューで発見・修正した)。**教訓: 剥がす/剥がさないは必ずセットで判定する**(先頭・末尾どちらか一方だけ一致した状態を許さない。本件は「先頭と末尾が両方そろっているときだけペアで剥がす」ガードで解決)。`_normalizeFinanceLabel`は第2引数`category`を追加し、`category==='venue'`を最優先判定にした(旧セーブ向けのJA文字列判定はfail-openとして残す)
+4. **`_pendingMediaIncomes[].label`(対抗戦/挑戦状のメディア収入、app.js)が団体名だけpn()訳・地の文prefixは生JAのまま**だった(`docs/i18n-coverage-report-v0.1.md` §8-3が「対抗戦出演料」として指摘していた積み残し3箇所)。調査の結果`_pendingMediaIncomes`は`industryNews`のような複数週にわたる永続キューではなく、**「前週イベント→翌週processSettlementで消費して即delete」の1週限りの繰越値**(management.js:13857で消費後に削除)と判明。隣の団体名部分は既にP7-6が「生成時翻訳のリスクは実質的に無い(ゲーム内で言語切替が起きないため)」という判断でpn()生成時翻訳を採用していた実績があり、同じ判断をprefix全体に広げても矛盾しない。3箇所とも`` `挑戦状 vs ${WM_I18N.pn(orgName)}` ``型の手動`pn()`呼び出しから`WM_I18N.t('挑戦状 vs {org}', {org: orgName})`(D-P6-2のパラメータ値自動変換で団体名も同時に訳される)へ統一した。management.js側の消費点(`_wmFillWithDict(dict, 'メディア収入（{label}）', {label: pm.label})`)は無改修——`pm.label`が生成時点で既に完成した言語別テキストになるため、そのまま挿しても正しく動く。**注意: この判断は`_pendingMediaIncomes`固有**(1週限りの短命値)であり、`元所属団体`/AI団体ブレークスルー`{detail}`3種のような`industryNews`永続キューに載る値には適用できない(§8共通所見のとおり据え置き)
+
+### 47-3. 副産物として見つかった既存訳のIncome/Revenue不一致(未修正・据え置き)
+
+収入タブの「メディア収入」「グッズ収入」は**カテゴリ見出し**(`WM_I18N.t('メディア収入')`)が`"Media Income"`/`"Merch Income"`と訳されている一方、**個別明細のテンプレ**(`メディア収入（週次）`等)は`"Media Revenue (Weekly)"`のように`"Revenue"`と訳されており、同じJA原文「メディア収入」が文脈によって異なる英単語に訳されている。§47-2-3の剥がし処理はこの不一致を検知すると安全側(剥がさずd.labelを全文表示、例:「▼ Media Income」の下に「└ Media Revenue (Weekly)」)にfail-openするため実害はないが、見出しと項目名が並ぶと語感の不統一が目立つ。訳語調整はKeisukeの語彙判断が要るため本バッチでは触れず、次のEN検品バッチへの申し送りとする(`プロモ収入`は両方とも`"Promo Income"`で一致しており対象外)。
+
+### 47-4. 検証
+
+`node test/ja-golden.js`(hash `3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`不変)/ `node test/i18n-build-dict.js`(ui-ledger 4,715→4,719・未訳0)/ `node test/i18n-ledger-consistency-test.js` / `npm test`(265/265)/ `node test/i18n-ratchet.js`(増加なし)/ `node test/auto-sim.js 20 42`(ALL CLEAR・指紋`96492883`不変・台帳検査3種すべて違反0)/ Playwright(page.evaluate、実ワークツリーを配信する専用サーバ経由。共有launch.jsonの`dev`構成は別ディレクトリ(mainツリー)を配信していたため使えなかった)でEN財務タブ(収入/支出両タブ、`period='all'`でシーズン跨ぎ集計)にJA文字が無いこと・懸垂括弧の破損が無いこと・JA側は同一seedで従来と同じ行数・同じグルーピング結果になることを実測 / `npm run test:ui:walkthrough`(JA、336手・digest`b3b7a2c05a7e6016`基準と完全一致)/ `npm run test:ui:walkthrough:en`(EN、i18n-miss 0・Issues 0)

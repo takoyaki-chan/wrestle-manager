@@ -1,5 +1,57 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-46 — 財務明細ラベル `weeklyFinance[].details[].label` の残存JA露出4件を修正(2026-09-06・worktree agent-a4d9d523c874b2cae)
+
+P7-31 §44-5-発見1が起票した「財務タブの明細ラベルが6箇所で生JAのまま描画される」の消化。着手前にworktreeブランチをmain先端(4ca9953f)へfast-forward済み。
+
+### 0. 前提が崩れていた — §14-3ではなく既存のdict-opts方式が正解だった
+
+着手前にauto-simと同じ手法(vmでsrc/*.jsをグローバル展開)でEngine+実i18n辞書を読み込み、ENモードで実際に数季分tickWeekを回して`weeklyFinance.details[].label`を全数走査するスクリプトを書いた(生JAの検出は`test/ui-walkthrough/detectors.js`の`JAPANESE_CHAR_PATTERN`を`eval`で直接読み込んで使う——後述のとおり手で再入力すると事故る)。結果、**`label`自体は既にほぼ全部英語化されていた**。理由は2026-09-04のP6-13が`Engine.season.processSettlement(G, dict)`を`_wmFillWithDict`でdict-opts化済みで、`weeklyFinance.details[].label`はsettlement時点(`tickWeek`の`opts.dict`=`WM_I18N.t`)で**言語別の完成文として焼かれる**設計に切り替わっていたため。表示側6箇所(ui-render.js)が`d.label`を素通しで描画するのは正しい実装であり、指示書が挙げた`labelTpl`/`labelVars`併記(§14-3)は**適用しないと判断した**(§14-3は`Math.random()`等で選出が表示時に再生成できない族向けで、settlement時点でdictが揃っているweeklyFinanceには不要)。詳細はspecs/i18n-runtime-spec-v1.0.md §47-1。
+
+### 1. 明細の種類表(全22 push箇所を`_wmFillWithDict`の有無で仕分け)
+
+| 種類 | 件数 | 例 | 状態(着手前) |
+|---|---:|---|---|
+| 固定ラベル(プレースホルダなし) | 5 | 選手給与/固定費（施設+事務）/グッズ収入（週次）等 | 既にdict-opts済み・既訳あり |
+| テンプレ+数値/団体名(名前辞書automatic変換で解決) | 10 | コーチ給与（{n}名）/会場費（{venue}）/チケット収入（…） | 既にdict-opts済み・既訳あり |
+| テンプレ+**値側が未翻訳**(今回の実バグ①) | 1 | プロモ収入（{name} {eventName}{popTag}）の`popTag` | `popTag`が生JAのまま値として挿入されていた |
+| category未整備で言語非依存の判定ができない(実バグ②) | 1 | 会場費（{venue}） | `Survival.estimateWeeklyNet`がJA部分一致で判定 |
+| app.js生成・1週限りの繰越値(実バグ④) | 3 | 挑戦状 vs {org}/対抗戦 vs {org}/対抗戦出演料 | prefixが生JAのまま`_pendingMediaIncomes`へ焼かれていた |
+
+### 2. 見つけた4件の実バグと直し方
+
+1. **`popTag`(management.js`processSettlement`、プロモ収入明細)が`_wmFillWithDict`を経由していなかった**。` 人気+${Math.round(pi.popGain*10)/10}`という生JA文字列を組み立ててから、既にdict()を通した外側テンプレの`{popTag}`へ値として差し込んでいた。EN実行時は`Promo Income (... Popularity/人気+2.1)`のように値の中だけJAが残る。`popTag`自身も`_wmFillWithDict(dict, ' 人気+{v}', { v })`で組み立てるよう修正。新規キー` 人気+{v}`をui-ledgerへ手追加(EN: `" Popularity +{v}"`)
+2. **会場費明細に`category`が付いていなかった**(P7-33 §8-4/i18n-coverage-report §8-5-4が「今回は据え置き」と明記していた積み残し)。`Survival.estimateWeeklyNet`(app.js)が`d.label.includes('会場')`という完成文の部分一致でUI分岐しており(構造規約5違反)、EN実行時は`label`が`"Venue Cost (...)"`になるため一致せず、**サバイバルパネルの週間収支見積りの会場費が常に0円として計算される**潜在バグだった。選手給与の`category:'salary'`と同じ流儀で`category:'venue'`を新設し、判定を`d.category === 'venue'`(旧セーブ=`category`未設定のときだけJA部分一致へfail-open)に切替
+3. **表示側の正規化ヘルパーがJA前提の文字列加工だった**(`_normalizeFinanceLabel`/収入タブのカテゴリ内サブラベル剥がし)。`label.startsWith('会場費')`・全角括弧固定の`.replace(/（.*?）/g,'')`・JAリテラルの`.replace(/^(グッズ収入|メディア収入|プロモ収入)/,'')`はいずれもEN実行時に素通りする。**自己レビューで「先頭だけ剥がして末尾だけ剥がさない」非対称な加工が文字列を破損させる回帰を発見・修正した**(1回目の修正で`"Promo Income (Saeko Iijima ... +2.4)"`が`"(Saeko Iijima ... +2.4"`になる懸垂括弧バグを作り込み、Playwright実機検査で発覚→「先頭と末尾が両方そろっているときだけペアで剥がす」ガードに直した)。`_normalizeFinanceLabel`は第2引数`category`を追加し`category==='venue'`を最優先判定に
+4. **`_pendingMediaIncomes[].label`(対抗戦/挑戦状のメディア収入、app.js)が団体名だけpn()訳・地の文prefixは生JAのまま**だった(i18n-coverage-report §8-3「対抗戦出演料」の積み残し)。調査の結果このフィールドは`industryNews`のような複数週永続キューではなく「前週イベント→翌週processSettlementで消費して即delete」の1週限りの繰越値と判明。隣の団体名部分は既にP7-6が生成時翻訳(pn())を採用していた実績があり、同じ判断をprefix全体に広げても矛盾しない。3箇所(`挑戦状 vs {org}`/`対抗戦 vs {org}`/固定文言`対抗戦出演料`)を`WM_I18N.t()`へ統一。management.js側は無改修(`pm.label`が生成時点で完成した言語別テキストになるため)
+
+### 3. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(management.js/ui-render.js/app.js) | ✅ 全OK |
+| `node test/ja-golden.js` | ✅ 基準と**完全一致**(hash`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`不変) |
+| `node test/i18n-build-dict.js` | ✅ ui-ledger 4,715→**4,719**(+4)・未訳0 |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー17件、すべて訳文一致 |
+| `npm test` | ✅ **265/265** |
+| `node test/i18n-ratchet.js` | ✅ 増加なし(27,927) |
+| `node test/auto-sim.js 20 42` | ✅ **ALL CLEAR**・指紋`96492883`**不変**・台帳検査3種(給与連続性/更改の約束/資金恒等式)いずれも違反0 |
+| Playwright(page.evaluate、実測) | ✅ 詳細は下記4節 |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・336手・digest`b3b7a2c05a7e6016`**基準と完全一致** |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・i18n-miss 0・Issues 0 |
+
+### 4. Playwright実機検証の詰まり所
+
+共有`launch.json`の`dev`構成(`serve src`)はワークツリーではなく**mainツリーのsrcを配信していた**(preview_startのプロセスが固定のcwdで起動するため)。修正前のコードがいつまでも配信され、ブラウザの`fetch(cache:'no-store')`でも古い内容しか取れず30分近く原因調査で溶かした。**教訓: プレビューサーバ経由でワークツリーの変更を検証するときは、`.claude/launch.json`の構成がどのディレクトリを配信するか毎回疑う**。対処は`npx serve <worktree>/src -l <空きport>`をBashで自前起動し、`navigate`でそのURLへ直接繋ぐ(`preview_start`のlaunch.json経由を使わない)。
+
+実機検証(EN、seed42、40週分をtickWeek+executeShowで生成)で確認した内容:
+- 収入タブ: プロモ収入明細に日本語なし(`Popularity +2.4`等)。支出タブ: 「Fighter Salaries」「Fixed Costs」「Venue Cost (Community Center)」の3行(JAの「選手給与」「固定費」「会場費（公民館）」と同じ3行構成)
+- 副産物として、収入タブの「メディア収入」「グッズ収入」は**カテゴリ見出し**(`WM_I18N.t('メディア収入')`→`"Media Income"`)と**個別明細のテンプレ**(`メディア収入（週次）`→`"Media Revenue (Weekly)"`)で同じJA原文が異なる英単語(Income/Revenue)に訳されている既存の不一致を発見。剥がし処理はこれを検知すると安全側(剥がさず全文表示)にfail-openするため実害はないが、訳語調整はKeisukeの語彙判断が要るため今回は触れず申し送り(specs §47-3)
+
+### 5. 実機確認
+
+`docs/実機確認バックログ.md`「P7-46 — 財務タブ・週次レポートの明細ラベルがEN実行時に英語で出るようになった」節。EN財務タブの収入/支出サブタブ・月次収支レポート・サバイバルパネルの週間収支見積り・対抗戦/挑戦状決算(自然発生待ち)。旧セーブの旧行がJAのまま残るのは仕様。
+
 ## 🌐 英語対応 P7-45 — 死蔵ヘルパー `_aceFlavorByPersona`(28本)をエース欄へ配線・英訳／`STYLE_META[*].desc` 6件を削除(2026-09-06・worktree agent-a63c88cea1fb83159)
 
 Keisuke裁定 **C-3=①「配線して出す」** と **C-4同族「死骸なら削除」**(`docs/i18n-keisuke-rulings-pending-v0.1.md`)の消化。着手前に worktree を main 先端(ab7bb554)へ fast-forward 済み。

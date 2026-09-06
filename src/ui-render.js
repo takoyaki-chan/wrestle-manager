@@ -1577,7 +1577,7 @@ function renderWeekScreen() {
           target[key].val += d.val;
           target[key].count++;
         } else {
-          const key = _normalizeFinanceLabel(d.label);
+          const key = _normalizeFinanceLabel(d.label, d.category);
           if (!mExpenses[key]) mExpenses[key] = { label: d.label, val: 0, count: 0 };
           mExpenses[key].val += d.val;
           mExpenses[key].count++;
@@ -3987,13 +3987,20 @@ function _isSalaryDetail(d) {
 }
 
 // 財務タブリデザイン: ラベル正規化ヘルパー
-function _normalizeFinanceLabel(label) {
+// i18n P7-46: category(第2引数、任意)があれば最優先で判定する。会場費はcategory:'venue'
+// (management.js processSettlement)が「会場ごとに分けて表示」を最も確実に表せる——
+// `label.startsWith('会場費')`はJA前提でEN実行時は素通りしてしまう(たまたま両言語とも
+// 個別表示という同じ結果になっていたが、依存としては壊れていた)。category未指定
+// (旧セーブ・calcDrawPowerBreakdown等の別系統呼び出し)は従来どおりlabel文字列で判定する。
+function _normalizeFinanceLabel(label, category) {
+  if (category === 'venue') return label; // 会場ごとに分けて表示
   if (label.startsWith('チケット収入')) return 'チケット収入';
   if (label.startsWith('グッズ収入')) return 'グッズ収入';
   if (label.startsWith('メディア収入')) return 'メディア収入';
   if (label.startsWith('プロモ収入')) return 'プロモ収入';
-  if (label.startsWith('会場費')) return label; // 会場ごとに分けて表示
-  return label.replace(/（.*?）/g, '').replace(/\d+人/g, '').trim();
+  if (label.startsWith('会場費')) return label; // 旧セーブ(category未設定)向けフォールバック
+  // 全角括弧(JA)・半角括弧(EN訳)の両方を吸収する(EN訳は`Coach Salaries (3)`のように半角)
+  return label.replace(/[（(].*?[）)]/g, '').replace(/\d+人/g, '').trim();
 }
 
 // 財務タブリデザイン: 期間フィルタ
@@ -4275,7 +4282,23 @@ function renderFinance() {
           html += `<span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(catTotal).toLocaleString() })}</span></div>`;
           html += `<div id="${detailId}" style="display:none;padding-left:16px">`;
           subs.forEach(d => {
-            const subLabel = d.label.replace(/^(グッズ収入|メディア収入|プロモ収入)/, '').replace(/^（/, '').replace(/）$/, '') || d.label;
+            // i18n P7-46: 剥がすprefixは「グッズ収入|メディア収入|プロモ収入」固定JAではなく、
+            // 上のカテゴリ見出しと同じcat.label(既にt()済み)を使う。JA前提の正規表現だと
+            // EN実行時は一致せず「▼ Media Income」の下に「└ Media Revenue (Weekly)」が
+            // そのまま重複表示されていた。
+            // 括弧は「先頭と末尾が両方そろっているとき」だけペアで剥がす(EN訳は
+            // "Promo Income ({...})"のようにprefixと括弧の間に半角スペースが入るため、
+            // 前後別々にreplaceすると先頭だけ残って末尾だけ消える欠けた文字列になる。
+            // 全角/半角どちらの括弧にも対応)。prefix自体が不一致(グッズ/メディアは
+            // カテゴリ見出し「Merch/Media Income」と項目側「Merch/Media Revenue」の
+            // 訳語が食い違っている)ときはd.labelをそのまま表示するfail-open
+            const prefixRe = new RegExp('^' + _wmEscapeRegExp(cat.label));
+            let subLabel = d.label;
+            if (prefixRe.test(subLabel)) {
+              const rest = subLabel.replace(prefixRe, '').trim();
+              subLabel = (/^[（(]/.test(rest) && /[）)]$/.test(rest)) ? rest.slice(1, -1) : rest;
+            }
+            subLabel = subLabel || d.label;
             html += `<div class="finance-row"><span class="f-label" style="font-size:11px;color:var(--text-dim)">└ ${subLabel}</span><span style="font-size:11px" class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(d.val).toLocaleString() })}</span></div>`;
           });
           html += `</div>`;
@@ -4309,7 +4332,7 @@ function renderFinance() {
     const items = {};
     filtered.forEach(h => {
       (h.details || []).filter(d => d.type === 'expense').forEach(d => {
-        const key = _normalizeFinanceLabel(d.label);
+        const key = _normalizeFinanceLabel(d.label, d.category);
         if (!items[key]) items[key] = { label: key, val: 0, count: 0 };
         items[key].val += d.val;
         items[key].count++;
