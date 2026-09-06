@@ -1,5 +1,10 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-06 P7-38 マージ(015d92ac)— auto-sim 指紋 e96444c1→96492883 の理由
+
+- P7-38(年代記の姓化)を main へマージ。ja-golden 完全一致(3466a6ff…、年代記は基準外)/ npm test 265 / auto-sim 20季 ALL CLEAR。
+- **指紋が変わった**が、P7-27 のときと同じく `G.chronicle.chaptersCache[].narrativeParts`(毎季 forceRebuild される派生表示キャッシュ)に姓化後の叙述が入るためで、ゲーム状態(試合結果・数値)は不変。auto-sim の違反0・台帳違反0。以後の基準指紋は **96492883**。
+
 ## 🌐 英語対応 P7-38 — 年代記の叙述が選手をフルネームで呼んでいたJAバグを修正(姓呼びへ)(2026-09-06・worktree agent-a727648cb7d5e21e5)
 
 Keisuke裁定B-2=①(2026-09-05、`docs/i18n-keisuke-rulings-pending-v0.1.md`)。P7-10(2026-09-04)が発見・修正案未実装のまま残っていた `Engine.chronicle._getSurname` のバグを直した。着手前にworktreeをmain先端(2ca7b540、P7-36 ja-golden再焼き後)へfast-forward済み。
