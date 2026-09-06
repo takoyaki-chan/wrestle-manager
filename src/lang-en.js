@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4748件、訳文あり4748件)
+//  生成元: i18n/ui-ledger.json (総キー4750件、訳文あり4750件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -791,7 +791,7 @@
     "━━ 通算実績 ━━": "━━ Career Totals ━━",
     "└ 担当選手なし": "└ No wrestlers assigned",
     "▎ 入札卓 ▎": "▎ Bidding Table ▎",
-    "■ ブランド収入": "■ Brand Revenue",
+    "■ ブランド収入": "■ Brand Income",
     "■ 興行収入": "■ Show Revenue",
     "▲ 1位": "▲ 1st",
     "△ 両者譲らず、DRAW": "△ Neither gives an inch — DRAW",
@@ -1329,10 +1329,10 @@
     "グッズ収入": "Merch Income",
     "グッズ収入がアップします": "Merch income goes up",
     "グッズ収入がアップします（2週間）": "Merch income goes up (2 weeks)",
-    "グッズ収入（タレント活動）": "Merch Revenue (Talent Work)",
-    "グッズ収入（プロモ連動）": "Merch Revenue (Promo Tie-in)",
-    "グッズ収入（興行ブースト）": "Merch Revenue (Show Boost)",
-    "グッズ収入（週次）": "Merch Revenue (Weekly)",
+    "グッズ収入（タレント活動）": "Merch Income (Talent Work)",
+    "グッズ収入（プロモ連動）": "Merch Income (Promo Tie-in)",
+    "グッズ収入（興行ブースト）": "Merch Income (Show Boost)",
+    "グッズ収入（週次）": "Merch Income (Weekly)",
     "グッズ売上にボーナス。興行出場で人気が上がりやすい": "Bonus to merch income. Popularity climbs more easily from working shows",
     "グッズ販売会": "Merch sale event",
     "グラウンド攻撃": "Ground Attack",
@@ -1653,13 +1653,13 @@
     "メディア功労賞": "Media Merit Award",
     "メディア収入": "Media Income",
     "メディア収入がアップします": "Media income goes up",
-    "メディア収入（{label}）": "Media Revenue ({label})",
-    "メディア収入（タレント活動）": "Media Revenue (Talent Work)",
-    "メディア収入（プロモ連動）": "Media Revenue (Promo Tie-in)",
-    "メディア収入（ライバル抗争）": "Media Revenue (Rivalry Feud)",
-    "メディア収入（期待カード）": "Media Revenue (Anticipated Card)",
-    "メディア収入（興行放映）": "Media Revenue (Show Broadcast)",
-    "メディア収入（週次）": "Media Revenue (Weekly)",
+    "メディア収入（{label}）": "Media Income ({label})",
+    "メディア収入（タレント活動）": "Media Income (Talent Work)",
+    "メディア収入（プロモ連動）": "Media Income (Promo Tie-in)",
+    "メディア収入（ライバル抗争）": "Media Income (Rivalry Feud)",
+    "メディア収入（期待カード）": "Media Income (Anticipated Card)",
+    "メディア収入（興行放映）": "Media Income (Show Broadcast)",
+    "メディア収入（週次）": "Media Income (Weekly)",
     "メディア取材": "Press Interview",
     "メディア対応する（-30万）": "Handle the media (-¥300k)",
     "メディア露出手配書": "Media Push Order",
@@ -4364,7 +4364,7 @@
     "黒字転換": "In the Black",
     "黒字転換達成！ この調子で{n}週間黒字を維持すればクリア！（現在の資金: {funds}万{goalNote}）": "You're in the black! Keep it up for a {n}-week stretch and you clear the goal! (funds now: ¥{funds:man}{goalNote})",
     "黒星": "Loss",
-    "黒田 沙智子 編集記事": "Editorial by Sachiko Kuroda",
+    "黒田幸子 編集記事": "Editorial by Sachiko Kuroda",
     "黙認した。{faction}の自由は守られたが、道場の空気は淀んだ。": "You let it pass. {faction} kept its freedom, but the air in the dojo went stale.",
     "黙認した。{target}は言葉を呑み込んだ。": "You let it pass. {target} swallowed what she wanted to say.",
     "黙認する": "Look the other way",
@@ -4761,7 +4761,9 @@
     "見込みあり": "Good chance",
     "年末MVP受賞": "Year-End MVP",
     "天頂戦 優勝": "Tenchosen Winner",
-    "引き止め確定、キャップ発動": "Retention locked in — the cap kicks in"
+    "引き止め確定、キャップ発動": "Retention locked in — the cap kicks in",
+    "業界紙報道: {name}、{orgName} と電撃契約": "From the trade press: {name} signs with {orgName} out of nowhere",
+    "スカウト合戦の裏で進められていた極秘交渉が明らかに": "Talks had been running in secret behind the scouting war"
   }
   );
 })();

@@ -1,6 +1,135 @@
 # Wrestle Manager 作業ログ（worklog）
 
-## 2026-09-06 P7-53（裁定 C-6）— 観戦モードの試合実況ログ52本をテンプレ化・英訳・演出分類の言語非依存化
+## 2026-09-06 P7-55 — Keisuke 裁定(2026-09-06)の4件: A-2b 死んだ GLIMPSE_A_LINES 初代表878行の削除 / F-1 黒田記者の署名統一 / F-2 EMPRESS 電撃契約ポップアップの復活 / F-3 財務 Media Income 訳語統一
+
+`docs/i18n-keisuke-rulings-pending-v0.1.md` の A-2b・F-1・F-2・F-3(いずれも 2026-09-06 裁定済み)をまとめて実装した。着手前に worktree を main 先端(f8db085b)へ fast-forward 済み。並行エージェント P7-54(management.js の特性判定3箇所・data.js の `TRAIT_DEFS['ファンサービス'].desc`・台帳の desc キー)とは触る箇所が重ならないことを確認済み。
+
+### 1. A-2b — 死んだ `GLIMPSE_A_LINES` 初代表878行を削除(data.js)
+
+P7-42(同日先行)が特定した「上書きで到達不能になった死んだリテラル52行」の入れ物である `const GLIMPSE_A_LINES = { … }`(data.js:27888-28765、878行。アーキタイプ→性格の順で書かれた初代の表)を削除し、`const GLIMPSE_A_LINES = {};` へ置換した。直後に続く `GLIMPSE_A_LINES.<閾値> = {…}` 代入11本(性格→アーキタイプの順の現行の表)は無変更 — 元々この11本が初代表の全プロパティを丸ごと上書きしていたため、削除後も実行時オブジェクトは1バイトも変わらない。
+
+**deepEqual 証明の方法**: `test/helpers/load-game.js` と同じ「data.js を `var` 変換して `vm.runInThisContext()` で評価し `global.GLIMPSE_A_LINES` を読む」手順を、削除前・削除後でそれぞれ**別プロセス**で実行し、キーを再帰的にソートした JSON へダンプして比較した。
+
+| 検査 | 結果 |
+|---|---|
+| 削除前後のJSONダンプが byte-identical か | **true** |
+| `assert.deepStrictEqual(before, after)` | **PASS** |
+| 閾値数(11)・実行時ユニークJA行数(847) | 削除前後で不変 |
+
+data.js は 33,069行 → 32,192行(−877行。878行ブロックを1行の `const GLIMPSE_A_LINES = {};` へ置換したため −878+1)。`node test/glimpse-a-dojo-i18n-test.js` も削除後にそのまま再実行し、プール検査1,936件・実行時セリフ847行・`checkALayer` 産539件・ラベル11本のいずれも従来どおり ok。
+
+`node test/ja-golden.js` は削除前後とも `hash=3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`(lines=7507)で1バイトも変わらない — 削除したブロックはそもそも実行時に一度も評価されない文だったため、当然の結果として ja-golden の対象外。
+
+`node test/i18n-ratchet.js` は「data.js の生JA文字列 17,730→17,439(−291)」を検出(削除ブロック内のJA文字列リテラルの総数。前回P7-42調査で報告された「52行」はこのうち実行時オブジェクトに存在しない差分だけを数えたもので、ブロック全体としては共有セルも含めて291本のJAリテラルを含んでいた)。`--update` でラチェット基準を更新した(総数 27,932→27,641)。
+
+### 2. F-1 — 団体解散セレモニーの黒田記者署名を「黒田幸子」に統一
+
+`src/ui-common.js`(団体解散セレモニーのスライド1・崩壊コラム見出し)の
+
+```
+${WM_I18N.t('黒田 沙智子 編集記事')}
+```
+
+を
+
+```
+${WM_I18N.t('黒田幸子 編集記事')}
+```
+
+へ変更(表記は全編で使われる正式表記「黒田幸子」に統一。姓名間のスペースも他の署名(`——黒田幸子(本紙)` 等、`ui-render.js` の `NP_KURODA_BYLINE`)に合わせて詰めた)。`i18n/ui-ledger.json` のキーも `黒田 沙智子 編集記事` → `黒田幸子 編集記事` へ差し替え(en は `Editorial by Sachiko Kuroda` のまま不変)、`node test/i18n-build-dict.js` で `src/lang-en.js` を再生成した。編集長(黒田貫一郎)とは別人物なので混同ではなく、口調バイブル改訂前の旧名の取り残しだった。
+
+### 3. F-2 — EMPRESS 安全網の電撃契約ポップアップを `showEventPopup` へ載せ替えて復活
+
+`src/ui-common.js` の `_finalizeDraft()`(ドラフト完了処理)内、EMPRESS 安全網(§6.4)が有力新人を S級団体へ拾わせたときの通知ポップアップが、実装以来一度も定義されていない `showPopup` を呼んでおり `typeof showPopup === 'function'` のガードで常に素通りしていた(P7-30 発見)。現行のポップアップ基盤 `showEventPopup`(mdl-c3型・`_eventPopupQueue` で直列化・二重表示防止は共有キューが担う)へ載せ替え、文言もニュース記事 `draft_empress_reinforce_news` と同内容(見出し+詳細の2段)を `WM_I18N.t()` 経由で辞書引きするよう修正した(旧コードは生JAテンプレート文字列を直接組み立てておりEN未対応だった)。
+
+```diff
+- if (typeof showPopup === 'function') {
++ if (typeof showEventPopup === 'function') {
+    setTimeout(() => {
+-     showPopup({
+-       type: 'scout', tone: 'negative',
+-       message: `業界紙報道: ${WM_I18N.pn(ev.template.name)}、${sOrgName} と電撃契約`,
+-       detail: 'スカウト合戦の裏で進められていた極秘交渉が明らかに',
++     showEventPopup({
++       type: 'system', tone: 'negative',
++       message: WM_I18N.t('業界紙報道: {name}、{orgName} と電撃契約', { name: WM_I18N.pn(ev.template.name), orgName: sOrgName }),
++       detail: WM_I18N.t('スカウト合戦の裏で進められていた極秘交渉が明らかに'),
+      });
+    }, 500);
+  }
+```
+
+ログ行 `draft_empress_reinforce_news` の push は変更していない(従来どおり)。`i18n/ui-ledger.json` に新規2キー(手追加・末尾へ追記して既存の並びは動かさない — 後述の「note」参照)を登録し `node test/i18n-build-dict.js` で辞書を再生成した。
+
+**機械確認(新規 `test/draft-empress-popup-i18n-test.js`)**: `_finalizeDraft` のソースを `new Function` で切り出し、`Engine.draftNegotiation.empressReinforce` をモックして実在キャラ(`ALL_CHARS[0]` 阿武隈塔子)・実在団体名(名前辞書登録済みの `皇武館`)で発火させ、以下を機械確認した。
+
+| 検査 | 結果 |
+|---|---|
+| ソース走査: `showPopup(...)` 呼び出し・`typeof showPopup` ガードが跡形もなく消えている | PASS |
+| JA: `showEventPopup` が exactly once 呼ばれる | PASS(1回) |
+| JA: message/detail に `{name}`/`{orgName}` 残留なし・文面が期待どおり | PASS |
+| EN(実辞書 `lang-en.js`+`lang-en-names.js` をVMで読み込み): `showEventPopup` が exactly once 呼ばれる | PASS(1回) |
+| EN: 選手名・団体名とも名前辞書経由(`t()` のパラメータ値自動変換 D-P6-2 と同じ契約を再現)で完全に英語化・JA残留なし | PASS(`From the trade press: Toko Abukuma signs with Kobukan out of nowhere`) |
+| ゲームログ `draft_empress_reinforce_news` の退行なし | PASS |
+| EMPRESS不発火(空イベント配列)時に `showEventPopup` が一切呼ばれない(fail-open) | PASS(0回) |
+
+**実際のドラフト自然発火での確認**: JA/EN 走破(後述)は Issues 0・i18n-miss 0 で通過。JA 走破は seed42 の1季ではポップアップが自然発火しない経路だった(action-log で `showEventPopup`/`closeEventPopup` の呼び出し件数・digest が F-2 適用前後で完全一致することを `git checkout` での一時巻き戻し比較で確認 — 後述の「検証」参照)。ポップアップ自体の発火・表示・EN完全解決は上記のユニットテストで直接証明している。
+
+### 4. F-3 — 財務の「メディア収入」訳語統一(Media Revenue → Media Income)
+
+財務タブで、収入の**カテゴリ見出し**「メディア収入」は `Media Income`、**明細行**「メディア収入（タレント活動）」等は `Media Revenue (Talent Work)` と、同じ日本語に2つの英語が当たっていた(P7-46 発見)。同型の不整合を他の収入カテゴリにも当たり、見つかった分をまとめて `Income` へ統一した。
+
+| JA | 旧EN | 新EN | 備考 |
+|---|---|---|---|
+| メディア収入（{label}） | Media Revenue ({label}) | Media Income ({label}) | 対抗戦/挑戦状のメディア収入ラベル |
+| メディア収入（タレント活動） | Media Revenue (Talent Work) | Media Income (Talent Work) | |
+| メディア収入（プロモ連動） | Media Revenue (Promo Tie-in) | Media Income (Promo Tie-in) | |
+| メディア収入（ライバル抗争） | Media Revenue (Rivalry Feud) | Media Income (Rivalry Feud) | |
+| メディア収入（期待カード） | Media Revenue (Anticipated Card) | Media Income (Anticipated Card) | |
+| メディア収入（興行放映） | Media Revenue (Show Broadcast) | Media Income (Show Broadcast) | |
+| メディア収入（週次） | Media Revenue (Weekly) | Media Income (Weekly) | |
+| グッズ収入（タレント活動） | Merch Revenue (Talent Work) | Merch Income (Talent Work) | 見出し「グッズ収入」は元から `Merch Income` で同型の不整合 |
+| グッズ収入（プロモ連動） | Merch Revenue (Promo Tie-in) | Merch Income (Promo Tie-in) | |
+| グッズ収入（興行ブースト） | Merch Revenue (Show Boost) | Merch Income (Show Boost) | |
+| グッズ収入（週次） | Merch Revenue (Weekly) | Merch Income (Weekly) | |
+| ■ ブランド収入 | ■ Brand Revenue | ■ Brand Income | 見出し「ブランド収入」(■無し・`ui-render.js:1613`)は元から `Brand Income`。同一JA文言が画面によって2つの英語(`ui-render.js:1613` は `■`+`t('ブランド収入')`=Income、`ui-render.js:4341` は `t('■ ブランド収入')`=Revenue という別キー)で出ていた表示不整合を解消 |
+
+**統一しなかったもの(表にして報告)**: 「興行収入」(収入タブのticketカテゴリ見出し。`ui-render.js` の `catDefs` で `key:'ticket'` に割り当て)とその `■` 付き変種は両方とも `Show Revenue` で内部的に整合しており、他カテゴリの `Income` 系とは語彙が異なるが「同じ日本語に2つの英語」という F-3 の問題パターンには当たらないため触っていない。同様に `{venue}・大会総収入`(`{venue} · Total Event Revenue`)・`自団体の大会収入`(`Your Promotion's Event Revenue`)・`チケット収入（{attendance}人 / {cap}席 …）`(`Ticket Revenue (...)`)も、対応する「見出し」キー自体が存在しない(=矛盾する2つの訳語のペアが無い)ため対象外とした。「プロモ収入」は見出し・明細とも元から `Promo Income` で一致しており修正不要だった。
+
+`i18n/ui-ledger.json` の該当12キーの `en` を書き換え、`node test/i18n-build-dict.js` で `src/lang-en.js` を再生成した。
+
+### 台帳の編集方針(P7-55共通)
+
+`i18n/ui-ledger.json` は一度 `node test/i18n-extract-ui.js` を実行して差分を確認したが、過去バッチが末尾へ手追加した約10グループがアルファベット順へ一斉に再配置され297行規模の無関係な移動差分が出た(意味的な差は0だが、並行エージェントとのマージ衝突リスクが高い)ため、**この実行は破棄**し(`git checkout -- i18n/ui-ledger.json` で HEAD へ戻し)、目的の13キー(F-1×1・F-3×12)の `en` 値書き換えと、F-2 の新規2キーの**末尾追記**だけを手動で行った。最終的な `i18n/ui-ledger.json` の diff は 37 insertions / 13 deletions、`src/lang-en.js` の diff は 17 insertions / 15 deletions のみ。
+
+### 検証
+
+- `node --check` × 6(data.js/ui-common.js/ui-render.js/management.js/relationships.js/match-engine.js) — 全て OK
+- `node test/ja-golden.js` — `hash=3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`(lines=7507)、指示どおりの基準ハッシュと完全一致
+- `node test/glimpse-a-dojo-i18n-test.js` — ok(プール検査1,936件/実行時847行/checkALayer産539件/ラベル11本)
+- `node test/i18n-ledger-consistency-test.js` — ok(2台帳以上に存在するキー17件、すべて訳文一致)
+- `node test/i18n-build-dict.js` — 台帳総キー数4,750・訳文あり4,750・未訳0
+- `node test/i18n-ratchet.js --update` — data.js生JA −291を反映して基準更新(総数27,932→27,641)
+- `node test/run-all.js` — **267/267 PASS**(新規 `test/draft-empress-popup-i18n-test.js` を含む。既存266本は無回帰)
+- `node test/auto-sim.js 20 42` — ALL CLEAR・**fingerprint 96492883 不変**(データ削除と表示文言のみの変更のため、指示どおり数値は無変化)。台帳検査(給与連続性/更改の約束/資金恒等式)も違反0
+- JA UI走破(`node test/ui-walkthrough/run.js --mode walk --seasons 1 --seed 42`) — PASS・Issues 0・Actions 337 digest `8afc9f9a7e13c543`。基準(336手/`940bcd9d0515d8d0`)からの手数差分は F-2 と無関係と確認済み: `src/ui-common.js` の diff を一時的に `git checkout` で HEAD(F-1/F-2適用前)へ戻し同一seedで再実行したところ**同じ 337手・同じ digest `8afc9f9a7e13c543`** が出た(F-2 のポップアップは本seedの1季走破では自然発火しない経路だった)。既知の環境flake(worklog内に327〜368手の変遷記録が多数あり)の範囲内と判断し、基準の取り直しはしない
+- EN UI走破(同・`--lang en`) — PASS・Issues 0・**i18n-miss 0**・Actions 403 digest `d88100f3a09e502b`
+- `npm run test:ui:ignite -- --scenario opening-flow`(JA/EN) — 両方PASS(マーカー7/7・EN側 scenario-wide JA exposure 0・i18n-miss 0)
+- `npm run test:ui:ignite -- --scenario gameover`(JA/EN) — 両方PASS(マーカー2/2・F-1の署名見出しが乗る解散セレモニー画面を通過・EN側 i18n-miss 0)。JA Actions 26 digest `08630790bbbd54ed`/EN Actions 28 digest `338836fc021abc31`(いずれもIssues 0)
+
+### 変更ファイル
+
+- `src/data.js` — A-2b(死んだ878行ブロックの削除。GLIMPSE_A_LINESの実行時オブジェクトは不変)
+- `src/ui-common.js` — F-1(署名見出し1箇所)+F-2(`_finalizeDraft` のEMPRESS通知ポップアップ)
+- `i18n/ui-ledger.json` / `src/lang-en.js` — F-1(キー名変更1件)+F-2(新規2件)+F-3(12件のen書き換え)
+- `test/draft-empress-popup-i18n-test.js`(新規) — F-2の回帰ガード
+- `test/fixtures/i18n-ratchet-baseline.json` — A-2bによる生JA減少を反映(`--update`)
+
+### 次の順
+
+`docs/i18n-keisuke-rulings-pending-v0.1.md` の A-2b/F-1/F-2/F-3 に「→ 実装済み」を追記(コミットIDは本エントリのコミット後に別コミットで追記)。残る裁定待ち項目は同ドキュメントの他セクション(A-1のCOMMON5/COMMON7/COACH_VOICE_PRAISE、A-3以降は解決済み等)を参照。
+
+
 
 ### 背景
 

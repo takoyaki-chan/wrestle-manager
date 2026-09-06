@@ -6553,12 +6553,17 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
         const sOrgName = (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級団体';
         log.push({ type: 'draft_empress_reinforce_news', data: { name: ev.template.name, orgName: sOrgName }, s: s.season, w: s.week });
         // §6.4 ドラマ演出: 通知ポップアップ
-        if (typeof showPopup === 'function') {
+        // P7-55 F-2: 未定義の`showPopup`で実装以来一度も発火していなかった死んだ分岐を、
+        // 現行のポップアップ基盤showEventPopup(mdl-c3・_eventPopupQueueで直列化済み=
+        // 二重表示防止は共有キューが担う)へ載せ替えて復活。文言は上のニュース記事
+        // (draft_empress_reinforce_news)と同内容をヘッドライン+詳細の2段で表示するため、
+        // WM_I18N.t()経由で辞書を引く(旧コードは生JAテンプレ文字列でEN未対応だった)。
+        if (typeof showEventPopup === 'function') {
           setTimeout(() => {
-            showPopup({
-              type: 'scout', tone: 'negative',
-              message: `業界紙報道: ${WM_I18N.pn(ev.template.name)}、${sOrgName} と電撃契約`,
-              detail: 'スカウト合戦の裏で進められていた極秘交渉が明らかに',
+            showEventPopup({
+              type: 'system', tone: 'negative',
+              message: WM_I18N.t('業界紙報道: {name}、{orgName} と電撃契約', { name: WM_I18N.pn(ev.template.name), orgName: sOrgName }),
+              detail: WM_I18N.t('スカウト合戦の裏で進められていた極秘交渉が明らかに'),
             });
           }, 500);
         }
@@ -16570,7 +16575,7 @@ function showGameOverCeremony(data, onDone) {
         ${reasonHeadline}<br>${WM_I18N.t('「{org}」は活動停止を発表した。', { org: data.orgName })}
       </div>
       <div style="border-top:1px solid #3a1818;margin:12px 0;padding-top:14px">
-        <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#cc8888;text-transform:uppercase;margin-bottom:8px">${WM_I18N.t('黒田 沙智子 編集記事')}</div>
+        <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#cc8888;text-transform:uppercase;margin-bottom:8px">${WM_I18N.t('黒田幸子 編集記事')}</div>
         <p style="margin:0;font-size:12px;line-height:1.95;color:#c8b8b8;white-space:pre-wrap;text-align:left;max-width:520px;margin:0 auto">${data.kurodaColumn || ''}</p>
       </div>
     </div>`
