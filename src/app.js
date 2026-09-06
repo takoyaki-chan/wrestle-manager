@@ -1820,12 +1820,14 @@ const Survival = {
       // (.includes('チケット')等)はEN実行時に一致せずshowIncomeが常に0になる潜在バグだった
       // (構造規約5「完成文の部分一致でのUI分岐禁止」)。ticket/goods側は既存のcategoryフィールド
       // (management.js processSettlement)で言語非依存に判定できるためそちらへ切替。
-      // expense側(会場費)はcategoryが未付与のため今回は据え置き(要: management.js側の追補)。
+      // i18n P7-46: expense側(会場費)もmanagement.jsでcategory:'venue'を新設したため同様に
+      // 切替。旧セーブ(このパッチ以前に保存されたweeklyFinance)はcategory未設定のまま残る
+      // ため、`!d.category`のときだけJA部分一致へフォールバックする(_isSalaryDetailと同じ流儀)。
       const showIncome = G.weeklyFinance.details
         .filter(d => d.type === 'income' && (d.category === 'ticket' || d.category === 'goods'))
         .reduce((s, d) => s + d.val, 0);
       const showCost = G.weeklyFinance.details
-        .filter(d => d.type === 'expense' && d.label.includes('会場'))
+        .filter(d => d.type === 'expense' && (d.category === 'venue' || (!d.category && d.label.includes('会場'))))
         .reduce((s, d) => s + Math.abs(d.val), 0);
       avgShowIncomePerWeek = Math.round((showIncome - showCost) / 4); // amortized over 4 weeks
     }
@@ -14388,7 +14390,14 @@ const App = {
       Math.min(matchResult.mq, 100) * MEDIA_CONFIG.eventPerMQ * b3VenueMult * 1.0);
     if (b3MediaRev > 0) {
       const b3MediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
-      b3MediaIncomes.push({ amount: b3MediaRev, label: `挑戦状 vs ${WM_I18N.pn(event.orgName)}` });
+      // i18n P7-46: 団体名だけでなく地の文「挑戦状 vs 」もWM_I18N.t()で訳す(以前はpn()で
+      // 団体名だけ訳し、prefixは生JAのまま`G._pendingMediaIncomes`(前週イベントからの
+      // 繰越)へ焼いていた)。ここはapp.js(UI層)で生成時に翻訳する方式(§6の例外)——
+      // management.js側のprocessSettlementが後で`_wmFillWithDict`の値として挿すだけの
+      // 完成文であり、生成〜消費が同一セッション・同一言語内で完結するため生成時翻訳で安全
+      // (P7-6で団体名部分は既にこの方式)。t()のパラメータ値自動変換(D-P6-2)がorgNameを
+      // 名前辞書で訳すため、pn()の明示呼び出しは不要になる
+      b3MediaIncomes.push({ amount: b3MediaRev, label: WM_I18N.t('挑戦状 vs {org}', { org: event.orgName }) });
       G = { ...G, _pendingMediaIncomes: b3MediaIncomes };
     }
 
@@ -15604,8 +15613,10 @@ const App = {
       }
     });
     if (warMediaTotal + jtMediaTotal > 0) {
-      if (warMediaTotal > 0) warMediaIncomes.push({ amount: warMediaTotal, label: `対抗戦 vs ${WM_I18N.pn(ev.opponentName)}` });
-      if (jtMediaTotal > 0) warMediaIncomes.push({ amount: jtMediaTotal, label: '対抗戦出演料' });
+      // i18n P7-46: 同上(app.js生成時翻訳・§6の例外)。「対抗戦出演料」は変数を持たない
+      // 固定ラベルなのでt()一発で足りる(旧実装はpn()すら通さず生JAのままだった)
+      if (warMediaTotal > 0) warMediaIncomes.push({ amount: warMediaTotal, label: WM_I18N.t('対抗戦 vs {org}', { org: ev.opponentName }) });
+      if (jtMediaTotal > 0) warMediaIncomes.push({ amount: jtMediaTotal, label: WM_I18N.t('対抗戦出演料') });
       G = { ...G, _pendingMediaIncomes: warMediaIncomes };
     }
 

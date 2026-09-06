@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4716件、訳文あり4716件)
+//  生成元: i18n/ui-ledger.json (総キー4720件、訳文あり4720件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -4729,7 +4729,11 @@
     "愚直な姿勢でチームを牽引する": "She leads the team by plain, dogged effort",
     "感情の振れ幅で試合をドラマに変える": "The swing of her emotions turns matches into drama",
     "熱が乗ったときの爆発力が桁違い": "When she gets fired up, her explosiveness is on another level",
-    "挑戦は見送られた。{org}との関係は冷える。": "The challenge went unanswered. Relations with {org} cool."
+    "挑戦は見送られた。{org}との関係は冷える。": "The challenge went unanswered. Relations with {org} cool.",
+    " 人気+{v}": " Popularity +{v}",
+    "挑戦状 vs {org}": "Challenge Letter vs {org}",
+    "対抗戦 vs {org}": "Interpromotional Match vs {org}",
+    "対抗戦出演料": "Interpromotional Match Appearance Fee"
   }
   );
 })();
