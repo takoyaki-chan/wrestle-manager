@@ -238,6 +238,14 @@ const Engine = {
           cardChanged = true;
           return { left: 0, right: 0, isTitle: false };
         }
+        // P7-50: 挑戦試合直訴(away/incoming)が固定するロック枠は、相手側が他団体
+        // (aiOrgs)のロスターからIDを直接埋め込む(Engine.relationships.reserveScheduledMatches/
+        // reserveScheduledSingleMatch)。rosterIds は自団体ロスターしか見ていないため、
+        // このokId検査に通すと相手選手IDが毎回「不正参照」として0クリアされ
+        // (renderShowPrepが直後に再予約して見た目は復旧するが、自己修復ログが
+        // 走破のたびに鳴り続ける=点火カタログ点火不発の副産物として検出)。
+        // ロック枠は予約システム自身が組み立てを保証するため、ここでは検査対象外にする。
+        if (match._crMatchLocked || match.isCRMatch) return match;
         if (match.matchType === 'tag') {
           const teamA = match.teamA || {};
           const teamB = match.teamB || {};

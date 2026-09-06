@@ -11187,6 +11187,41 @@ const App = {
     // MQ再設計P4 §5.3: 大ニュース週頭通知（他のポップアップの後に鳴らす）
     App._maybeShowBigNewsPopup(1200);
 
+    // P7-50: 派閥イベント(F01〜F08)と挑戦試合直訴(challengeRequest)は、大型/選択イベント
+    // (management.js processManage の isShowWeek ガードで非興行週限定)と異なり興行週にも
+    // 生成されうるが、興行クローズ経路にはこの2系統を消化する分岐が無かった。
+    // processWeek 側の同名ガード(大型>派閥>直訴)だけが存在したため、興行週に生成された分は
+    // 無言のまま次の非興行週へ持ち越されるだけで、その持ち越し中に次の興行週でもう一方が
+    // 生成される衝突が起きると、直訴モーダルが週次モーダル枠を得られないまま恒久的に
+    // 塞がれていた(点火カタログ点火不発: away-challenge/incoming-challenge、2026-09-06)。
+    // processWeek と同じ優先順位で、興行クローズでもその週ぶんを即時消化する。
+    //
+    // ただし単純にsetTimeoutで即発火すると、天頂戦W48直後のオフシーズン移行など
+    // 「このクローズの直後に別の専用シーケンスへ分岐する週」でタイマー発火時には
+    // もう別画面へ進んでおり、F02演出オーバーレイがクリック不能なまま固まる事故が
+    // 出た(2026-09-06実測)。発火直前に「まだ平常のweek画面(manage)に静かに
+    // 着地しているか」をGから直接再確認し、そうでなければ何もしない
+    // (pendingThisWeek/_pendingFactionEventはGに残ったままなので、次のprocessWeek
+    // またはcloseShowResultが同じデータを拾って再挑戦する。dropStalePending等の
+    // 自浄フローも影響を受けない)。
+    if (G._pendingFactionEvent || (G.challengeRequest && G.challengeRequest.pendingThisWeek)) {
+      // 週送り自体(_tryAutoAdvance→advanceFromWeekSummary)はこの直後に同期実行され、
+      // season/weekはこの時点の値からすぐ進んでしまうため比較対象にしない
+      // (advanceWeek後の値を先読みできない)。weekPhaseだけを再確認すれば、
+      // 天頂戦/秋対抗戦/PPV等の専用シーケンスに入っていないかは十分に判定できる。
+      setTimeout(() => {
+        if (!G || G.weekPhase !== 'manage') return;
+        if (G._pendingFactionEvent) {
+          const pending = G._pendingFactionEvent;
+          const { _pendingFactionEvent: _, ...cleanFeShow } = G;
+          G = cleanFeShow;
+          App.handleFactionEvent(pending);
+        } else if (G.challengeRequest && G.challengeRequest.pendingThisWeek) {
+          App.handleChallengeRequest(G.challengeRequest.pendingThisWeek);
+        }
+      }, 1400);
+    }
+
     // 週次処理と次週遷移は1クリック内で完結させる(processWeek と同じ形)。
     //
     // **task-48(b33519b)の取りこぼし。** あの修正で _tryAutoAdvance は「常に true を返し、
@@ -12102,10 +12137,20 @@ const App = {
     // 自然にモーダル化される。重複トリガーは発生しない。
     const pendingFactionEvent = G._pendingFactionEvent || null;
     if (pendingFactionEvent && !pendingLargeEvent) {
-      const { _pendingFactionEvent: _, ...cleanFe } = G;
-      G = cleanFe;
       const factionDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 650;
-      setTimeout(() => App.handleFactionEvent(pendingFactionEvent), factionDelay);
+      setTimeout(() => {
+        // P7-50: このタイマー発火までにオフシーズン移行・天頂戦/秋対抗戦/PPVの専用
+        // シーケンスへ分岐していると、派閥モーダルがクリック不能なまま固まることが
+        // ある(2026-09-06実測)。平常のweek画面(manage)に静かに着地しているときだけ
+        // ここで消化し、_pendingFactionEventの剥がしもこの時点まで遅らせる
+        // (先に剥がすと不発時にデータが失われる)。着地していなければGに残したまま
+        // 何もしない — 次のprocessWeek/closeShowResultが同じデータを拾って再挑戦する。
+        if (!G || G.weekPhase !== 'manage' || !G._pendingFactionEvent) return;
+        const pending = G._pendingFactionEvent;
+        const { _pendingFactionEvent: _, ...cleanFe } = G;
+        G = cleanFe;
+        App.handleFactionEvent(pending);
+      }, factionDelay);
     }
 
     // challenge-request-spec-v0.1 Phase 2: 挑戦試合直訴モーダル表示
@@ -12113,7 +12158,14 @@ const App = {
     const crPending = (G.challengeRequest && G.challengeRequest.pendingThisWeek) || null;
     if (crPending && !pendingLargeEvent && !pendingFactionEvent) {
       const crDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 700;
-      setTimeout(() => App.handleChallengeRequest(crPending), crDelay);
+      setTimeout(() => {
+        // P7-50: 派閥イベントと同じ理由で、発火直前にweek画面へ静かに着地しているかを
+        // 再確認する(pendingThisWeek自体は元々ここでは剥がしていないため、再確認して
+        // 不発ならそのまま何もしないだけでよい)。
+        if (!G || G.weekPhase !== 'manage') return;
+        const stillPending = G.challengeRequest && G.challengeRequest.pendingThisWeek;
+        if (stillPending) App.handleChallengeRequest(stillPending);
+      }, crDelay);
     }
 
     // 「こちらの番」は通知フラグではなく挑戦権の実体(_pendingUnifiedPlayerTurn)で判定する。
