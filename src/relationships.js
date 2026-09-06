@@ -5248,9 +5248,19 @@ Engine.glimpse = {
             const text = (typeof dict === 'function')
               ? dict(tpl, { nameA: fA.name, nameB: fB.name })
               : tpl.replace(/\{nameA\}/g, fA.name).replace(/\{nameB\}/g, fB.name);
+            // i18n P7-44(GL-12): dict経由のtextはEN完成文(=辞書キーと一致しない値)なので、
+            // 表示点が念のためもう一度t()に掛けると必ずi18n-missを1件記録する(§13-2型2/型5、
+            // P7-31発見5)。§14-3と同型の「生キー+材料」を追加フィールドで併記しておく
+            // (dialogue自体は保存互換のため不変)。表示点をdialogueTpl優先(あれば
+            // `WM_I18N.t(dialogueTpl, dialogueVars)`で毎回作り直し、無ければ従来のdialogueへ
+            // fail-open)へ切り替えるのが本筋の直し方(ui-render.jsの道場バナー消費点1箇所)だが、
+            // 当バッチでは並行作業中の同ファイル領域(道場シーン)に触れない方針のため、この
+            // 生成側の追加フィールドまでを実装し、表示点の配線は次バッチへ引き継ぐ
+            // (docs/worklog.md 該当エントリ参照)。
             candidates.push({ type: 'GL-12', weight: 1, fighterId: fA.id,
               fighterName: fA.name, fighter2Id: fB.id, fighter2Name: fB.name,
-              dialogue: text, tone: 'narration', label: '第三者の証言' });
+              dialogue: text, dialogueTpl: tpl, dialogueVars: { nameA: fA.name, nameB: fB.name },
+              tone: 'narration', label: '第三者の証言' });
           }
         }
       }
@@ -5276,13 +5286,17 @@ Engine.glimpse = {
 
     // glimpse オブジェクト構築
     allSelected.forEach(g => {
-      glimpses.push({
+      const built = {
         layer: 'B', type: g.type, subType: g.subType || null,
         tone: g.tone, label: g.label,
         speakerId: g.fighterId, speakerName: g.fighterName,
         targetId: g.fighter2Id || null, targetName: g.fighter2Name || null,
         dialogue: g.dialogue,
-      });
+      };
+      // i18n P7-44(GL-12): dialogueTpl/dialogueVars(生キー+材料、§14-3と同型)を
+      // 正規化後も温存する。dialogueは保存互換のため不変(候補側のコメント参照)。
+      if (g.dialogueTpl) { built.dialogueTpl = g.dialogueTpl; built.dialogueVars = g.dialogueVars || null; }
+      glimpses.push(built);
     });
 
     // state更新

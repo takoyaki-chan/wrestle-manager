@@ -10256,8 +10256,11 @@ function _factionF02RenderClash(payload, state, onChoice) {
   const roster = state ? (state.roster || []) : [];
   const leaderA = roster.find(c => c.id === payload.leaderAId);
   const leaderB = roster.find(c => c.id === payload.leaderBId);
-  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
-  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
+  // i18n P7-44: showFactionF02Modal(act1ナレーション)は既にP7-43で_factionDisplayName()を
+  // 通していたが、ここ(act2クラッシュ画面、同ファイル内の別スコープ)は未対策のまま
+  // payload.factionAName/BNameを生読みしていた(EN走破でrole表記に生JA露出。specs§45-4記録済み)。
+  const factionAName = _factionDisplayName(payload.factionAName) || WM_I18N.t('派閥A');
+  const factionBName = _factionDisplayName(payload.factionBName) || WM_I18N.t('派閥B');
   const aName = leaderA ? leaderA.name : '???';
   const bName = leaderB ? leaderB.name : '???';
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
@@ -11197,8 +11200,10 @@ function showFactionF08Modal(payload, state, onChoice) {
   const leaderBUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
   const leaderAOvr = leaderA ? Engine.util.ov(leaderA) : '—';
   const leaderBOvr = leaderB ? Engine.util.ov(leaderB) : '—';
-  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
-  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
+  // i18n P7-44: role表記(「{faction}・LEADER」)へ生読みのpayload.factionAName/BNameを渡していた
+  // (EN走破でF08「対立ヒートアップ」モーダルに生JA派閥名が露出。specs§45-4記録済み)。
+  const factionAName = _factionDisplayName(payload.factionAName) || WM_I18N.t('派閥A');
+  const factionBName = _factionDisplayName(payload.factionBName) || WM_I18N.t('派閥B');
   const hostilityPeak = payload.hostilityPeak != null ? payload.hostilityPeak : '—';
   const hostilityLabel = Engine.factions.getHostilityLabel(hostilityPeak === '—' ? 0 : Number(hostilityPeak));
 
@@ -11316,7 +11321,10 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.factionA.leaderName, line: data.lineA, imgUrl: aPortraitUrl,
-                role: `${WM_I18N.pn(data.factionA.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
+                // i18n P7-44: pn()は名前辞書引き(「{surname}派」形式には無効)なので生JAが素通り
+                // していた。_factionDisplayName()に差し替え(EN走破で本モーダルに生JA派閥名が
+                // 露出。specs§45-4記録済み)。
+                role: `${_factionDisplayName(data.factionA.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11324,7 +11332,7 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.factionB.leaderName, line: data.lineB, imgUrl: bPortraitUrl,
-                role: `${WM_I18N.pn(data.factionB.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
+                role: `${_factionDisplayName(data.factionB.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11376,7 +11384,12 @@ function showFactionF08AftermathModal(data, state, onContinue) {
 
   const wPortraitUrl = _factionUpperUrl(data.winner.id);
   const lPortraitUrl = _factionUpperUrl(data.loser.id);
-  const roleTag = (faction, role) => (faction ? `${faction} ・ ${role}` : role);
+  // i18n P7-44: data.winner/loser.factionNameは生読みだった(EN走破でWINNER/LOSERラベルに
+  // 生JA派閥名が露出。specs§45-4記録済み)。_factionDisplayName()を通してから組み立てる。
+  const roleTag = (faction, role) => {
+    const disp = _factionDisplayName(faction);
+    return disp ? `${disp} ・ ${role}` : role;
+  };
 
   // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。1人ずつ順に見せる決着画面のため
   // baseline §2「勝敗の格差の付け方」に従い勝者だけ一段大きいLサイズ(isBig)を許容する。
@@ -12050,8 +12063,11 @@ function showFactionF02ResolutionModal(payload, state, onContinue) {
   const roster = state ? (state.roster || []) : [];
   const winner = roster.find(c => c.id === payload.winnerId);
   const loser = roster.find(c => c.id === payload.loserId);
-  const winnerFactionName = payload.winnerFactionName || WM_I18N.t('勝者派閥');
-  const loserFactionName = payload.loserFactionName || WM_I18N.t('敗者派閥');
+  // i18n P7-44: payload.winnerFactionName/loserFactionNameは「{surname}派」の生JA
+  // (rollResolutionAfterMatchが積む値、D-P6-4)。5箇所の表示点すべてに素通ししていたため
+  // _factionDisplayName()を通す(EN走破でF02③決着モーダルに生JA派閥名が露出)。
+  const winnerFactionName = _factionDisplayName(payload.winnerFactionName) || WM_I18N.t('勝者派閥');
+  const loserFactionName = _factionDisplayName(payload.loserFactionName) || WM_I18N.t('敗者派閥');
   const wName = winner ? winner.name : '???';
   const lName = loser ? loser.name : '???';
   const wUrl = winner ? _factionUpperUrl(winner.id) : '';
@@ -12608,8 +12624,11 @@ function showFactionCommon7Modal(payload, state, onChoice) {
   const lB = roster.find(c => c.id === payload.leaderBId);
   const lAName = lA ? lA.name : (payload.leaderAName || '???');
   const lBName = lB ? lB.name : (payload.leaderBName || '???');
-  const factionAName = String(payload.factionAName || WM_I18N.t('派閥A'));
-  const factionBName = String(payload.factionBName || WM_I18N.t('派閥B'));
+  // i18n P7-44: payload.factionAName/BNameは「{surname}派」の生JA。_factionDisplayName()を
+  // 通さずvars/roleへ直接渡していたため、coachLine/roleラベル/フォールバック文の3箇所全部で
+  // 生JA派閥名が露出していた(EN走破実測: 「根岸派 and 小西派 have floated a joint project」)。
+  const factionAName = _factionDisplayName(String(payload.factionAName || '')) || WM_I18N.t('派閥A');
+  const factionBName = _factionDisplayName(String(payload.factionBName || '')) || WM_I18N.t('派閥B');
   // i18n Stage B P5-2m: planType は COMMON7_LINES.planType の生JA値(辞書キー)。
   // ここで t() を通さないと (a) 12416 の直挿入 (b) vars 経由で coachReport 文へ
   // 混入 (c) 12424 のヒント文 の3箇所で日本語のまま出る。値の側も辞書を引く。

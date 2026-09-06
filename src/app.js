@@ -13599,7 +13599,9 @@ const App = {
           eventId: 'F02_PEACE',
           category: WM_I18N.t('抗争沈静化'),
           resultText: result.resultText,
-          factionName: payload.factionAName || payload.factionBName || WM_I18N.t('派閥'),
+          // i18n P7-44: payload.factionAName/BNameは「{surname}派」の生JA。showFactionEventResultの
+          // opts.factionNameは.mdl-a-subject-nameへ直接埋まる(生読みだとEN走破で露出)。
+          factionName: _factionDisplayName(payload.factionAName) || _factionDisplayName(payload.factionBName) || WM_I18N.t('派閥'),
           factionTone: 'allied',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
@@ -13616,27 +13618,32 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
+        // i18n P7-44: payload.factionAName/BNameは「{surname}派」の生JA。showFactionEventResultの
+        // opts.factionName/factionPair[].factionName/reporterTextの3経路すべてが生読みだと
+        // EN走破で露出する(F02_PEACE/F02_ENDLESSと同型)。
+        const igniteFactionAName = _factionDisplayName(payload.factionAName);
+        const igniteFactionBName = _factionDisplayName(payload.factionBName);
         showFactionEventResult({
           eventId: 'F02_IGNITE',
           category: WM_I18N.t('抗争発火'),
           resultText: result.resultText,
-          factionName: payload.factionAName || payload.factionBName || WM_I18N.t('派閥'),
+          factionName: igniteFactionAName || igniteFactionBName || WM_I18N.t('派閥'),
           factionTone: 'hostile',
           factionPair: [
             {
-              factionName: payload.factionAName,
+              factionName: igniteFactionAName,
               leaderId: payload.leaderAId,
               leaderName: payload.leaderAName,
               sideLabel: WM_I18N.t('抗争側'),
             },
             {
-              factionName: payload.factionBName,
+              factionName: igniteFactionBName,
               leaderId: payload.leaderBId,
               leaderName: payload.leaderBName,
               sideLabel: WM_I18N.t('対抗側'),
             },
           ],
-          reporterText: WM_I18N.t('{a}と{b}のリーダー対決を、今週のメインイベントとして公式戦に組みました', { a: payload.factionAName || WM_I18N.t('派閥'), b: payload.factionBName || WM_I18N.t('派閥') }),
+          reporterText: WM_I18N.t('{a}と{b}のリーダー対決を、今週のメインイベントとして公式戦に組みました', { a: igniteFactionAName || WM_I18N.t('派閥'), b: igniteFactionBName || WM_I18N.t('派閥') }),
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
           state: G,
@@ -13698,7 +13705,8 @@ const App = {
           eventId: 'F02_ENDLESS',
           category: WM_I18N.t('無限抗争'),
           resultText: result.resultText,
-          factionName: payload.factionAName || payload.factionBName || WM_I18N.t('派閥'),
+          // i18n P7-44: F02_PEACE/F02_IGNITEと同型(payload.factionAName/BNameの生読み)。
+          factionName: _factionDisplayName(payload.factionAName) || _factionDisplayName(payload.factionBName) || WM_I18N.t('派閥'),
           factionTone: 'hostile',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
