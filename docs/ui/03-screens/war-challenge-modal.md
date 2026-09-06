@@ -1,7 +1,7 @@
 # 画面：対抗戦・挑戦状モーダル(B3)— 辞退時の相手エース反応(追加要素)
 
 作成: 2026-09-05(Keisuke 裁定 A-1「`WAR_DECLINE_DIALOGUE` 58本は配線して出す」に基づく)
-実装状況: **未実装(仕様のみ)**。第3波(P7-30/31/33)マージ後に P7-41 として実装予定。
+実装状況: **実装済み(2026-09-06、P7-41、worktree agent-a6a95ed4ed56e4ab1)**。`src/ui-common.js` `_showWarDeclineReaction`/`_warDeclineContinue`。特有ルール1〜5すべて反映。観察文は候補3本のうち①を採用(候補と選定理由は `docs/worklog.md` の P7-40/41 エントリ)。実機確認は `docs/実機確認バックログ.md` 参照。
 既存画面: `src/ui-common.js` の挑戦状モーダル(A型モーダル `_mdlAOpen`、`data-war-choice="accept|decline"` の2択)。本書は既存画面の全体仕様ではなく、**辞退を選んだ直後の1幕**を追加定義する。
 
 ## 基本属性
@@ -94,10 +94,13 @@
 
 ## 検証
 
-- ignite か Playwright で「辞退」を踏み、一幕の DOM(反応セリフ・トレイ非表示)と、TAP 後に `war_challenge_declined` が**1回だけ**積まれることを機械確認
-- JA 走破は辞退を踏まない想定(digest 不変)。踏む経路があれば基準の取り直し
-- EN で JA 露出 0
+- ignite シナリオ `war-decline` を新設(`test/ui-walkthrough/scenarios.js`)。JA/EN とも PASS。マーカー `war-decline-reaction` ヒット、`finalProbe` で `pendingEvent` 消化済み・`war_challenge_declined` が**1回だけ**積まれたことを機械確認
+- JA 走破は「辞退を踏まない想定」だったが、seed42 の自然な進行で **season1/week10 に実際に辞退分岐を踏んだ**(想定外・仕様通りの偶然)。digest は 336手/`b3b7a2c05a7e6016` → 368手/`d14879bdb516ac76` に変化。before/after の action-log を突合し、最初の分岐が `[data-choice=decline]` 直後の `div:_warDeclineContinue`(本機能が追加した1手)であることを確認済み。以降の乱数消費ずれで経路全体が変わるのは既知のパターン(2026-09-06 worklog「328手→336手」の前例と同型)。digest を新基準として確定
+- EN 走破は digest 不変(399手/`a21c9e961ea228ed`)・JA 露出 0・i18n-miss 0(この run では辞退分岐を踏まなかった。JA/EN で辿る経路が既に異なっていたため — ignite `war-decline` が言語非依存の決定的な受け入れ経路)
 
 ## 未決事項
 
-- 観察文の文言(実装時に候補2〜3本を提示)
+- なし。観察文は次の3候補から①を採用した(選定理由は `docs/worklog.md` P7-40/41 エントリ):
+  1. **(採用)** `挑戦は見送られた。{org}との関係は冷える。`
+  2. `挑戦は届かなかった。{org}との関係が悪化した。`
+  3. `この対抗戦は不成立に終わった。{org}との溝が深まった。`

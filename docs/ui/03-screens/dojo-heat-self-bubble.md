@@ -1,7 +1,7 @@
 # 画面：今週タブ・道場シーン — 熱量の本人セリフ吹き出し(追加要素)
 
 作成: 2026-09-05(Keisuke 裁定 A-1「`HEAT_STATE_SELF_LINES` 75本は配線して出す」に基づく)
-実装状況: **未実装(仕様のみ)**。第3波(P7-30/31/33)マージ後に P7-40 として実装予定。
+実装状況: **実装済み(2026-09-06、P7-40、worktree agent-a6a95ed4ed56e4ab1)**。`src/ui-render.js` `_renderRosterDojoHeader`。特有ルール1〜6すべて反映。実機確認は `docs/実機確認バックログ.md` 参照。
 親仕様: `docs/ui/03-screens/week-dashboard.md`(今週タブ)。本書はその道場シーンへの追加要素だけを定義する。
 
 ## 基本属性
@@ -92,10 +92,10 @@
 
 ## 検証
 
-- JA 走破 digest は**変わる**(道場シーンの DOM が増える)→ 実装時に基準を取り直し、理由を worklog に書く
-- EN 走破で JA 露出が増えないこと(台帳収載済み)
-- `node test/heat-lines-test.js` のガード文言更新
-- 実機: 追い込み中の選手がいる週に道場シーンで本人の一言が出る/コーチが同じ選手を語る週は別の選手か非表示
+- JA 走破 digest は**変わった**が、原因は本書の変更ではなく `war-challenge-modal.md`(P7-41)側 — 自然な walkthrough が season1/week10 で対抗戦の辞退分岐を実際に踏んだため(336手/`b3b7a2c05a7e6016` → 368手/`d14879bdb516ac76`。before/after の action-log 突合で最初の分岐点が `_warDeclineContinue` の1手であることを確認済み)。本書の `.dojo-heat-bubble` 自体はクリック候補を増やさない要素なので、それ単独では digest を動かさない(stash比較で確認済み)
+- EN 走破は digest 不変(399手/`a21c9e961ea228ed`)・i18n-miss 0
+- `node test/heat-lines-test.js` のガード文言更新済み(道場シーンでの使用を許可する形に反転)
+- 実機: 専用 Playwright チェック `test/ui-walkthrough/dojo-heat-self-bubble-check.js`(手動実行)で、fixture を heavy 状態へ加工し (1) 雰囲気0人枠でも列に割り込む (2) 吹き出しがDOM順で顔画像より前(=画像の上) (3) 掛け声`.dojo-scene-shout`は出ない (4) 本文に選手名を含まない (5) EN で日本語残り0 (6) コーチが同じ選手を語る週は次点(別のheavy選手)へ回避、候補が無ければ出さない、の6点をすべて機械確認(ALL CHECKS PASS)
 
 ## 未決事項
 

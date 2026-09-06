@@ -17,8 +17,8 @@ Stage B(P4〜P7)の作業中に「Claude 側では決められない」と判断
 
 | プール | 行数 | 本来の用途 | なぜ出ていないか |
 |---|---:|---|---|
-| `HEAT_STATE_SELF_LINES` | 75 | 練習の熱量(fresh/中程度/heavy の3状態)を**選手本人が自覚して言う一言**。状態×アーキタイプ×性格で書き分け済み | 07-31 の「熱量の可視化」(task-44)で採用されたのは**道場コーチが観察して言う吹き出し**(`HEAT_STATE_COACH_LINES`)だけ。本人向けは接続されず、`test/heat-lines-test.js` が「選手詳細へ戻さない」を**意図的にガード**している(当時の判断を固定したもの) |
-| `WAR_DECLINE_DIALOGUE` | 58 | 対抗戦の挑戦状を**プレイヤーが辞退したとき**、相手エースが言う皮肉・落胆の一言(性格×アーキタイプ) | 辞退の分岐自体は存在する(`war_challenge_declined` イベントで新聞・ログには載る)が、相手のセリフを出す画面が無い |
+| `HEAT_STATE_SELF_LINES` | 75 | 練習の熱量(fresh/中程度/heavy の3状態)を**選手本人が自覚して言う一言**。状態×アーキタイプ×性格で書き分け済み | 07-31 の「熱量の可視化」(task-44)で採用されたのは**道場コーチが観察して言う吹き出し**(`HEAT_STATE_COACH_LINES`)だけ。本人向けは接続されず、`test/heat-lines-test.js` が「選手詳細へ戻さない」を**意図的にガード**している(当時の判断を固定したもの) **→ 実装済み(P7-40、コミット PENDING-COMMIT-HASH)**: 道場シーンの練習中の列に本人セリフ吹き出しを追加。仕様は `docs/ui/03-screens/dojo-heat-self-bubble.md` |
+| `WAR_DECLINE_DIALOGUE` | 58 | 対抗戦の挑戦状を**プレイヤーが辞退したとき**、相手エースが言う皮肉・落胆の一言(性格×アーキタイプ) | 辞退の分岐自体は存在する(`war_challenge_declined` イベントで新聞・ログには載る)が、相手のセリフを出す画面が無い **→ 実装済み(P7-41、コミット PENDING-COMMIT-HASH)**: 辞退直後に同じモーダル内で相手エースの反応を一幕表示。仕様は `docs/ui/03-screens/war-challenge-modal.md` |
 | `COMMON5_LINES` の A 分岐 | 51 | 派閥イベント Common-5「派閥代表のメディア取材」で、**選択肢 A を選んだときの**リーダーの一言(42)・見出し(6)・結果コメント(3) | 取材イベントの実装が `coachReport`(秘書報告)だけを引いていて、A 分岐の文面を引く処理が無い |
 | `WEEKLY_STORY_TICKER` の未使用キー | 29 | 週次の関係性ティッカー(画面上部を流れる一行)の文面。12キーのうち `clash`/`trustWarning` の2つだけが使われ、`bestFriends`(親友)・`hostileEnemy`・`goodRivalZone`・`unrequitedBond`(片思いの絆)など**10キーが未使用** | ティッカー実装時に「衝突」と「信頼の警告」だけ配線し、穏やかな関係の文面は接続されなかった **→ 実装済み(P7-36、コミット015dc91a): 表を`RELATION_EVENT_LINES`へ改名し29本削除、現存3キー36行は不変** |
 | `COACH_VOICE_PRAISE_LINES` | 16 | PPV(年末大興行)後にコーチが選手を褒める一言(コーチ個性別) | `ppvPraise` カテゴリとして登録はあるが、呼び出し(`pickCoachVoiceQuote('ppvPraise', …)`)が src に1つも無い |

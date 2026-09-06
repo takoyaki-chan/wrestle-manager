@@ -1,5 +1,75 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-40/41 — 死蔵セリフ配線(引き継ぎ完走): 道場「熱量の本人セリフ」+ 対抗戦「辞退時の相手エース反応」(2026-09-06・worktree agent-a6a95ed4ed56e4ab1)
+
+Keisuke裁定(2026-09-05 A-1「`HEAT_STATE_SELF_LINES` 75本・`WAR_DECLINE_DIALOGUE` 58本は配線して出す」)の残り2件。前任エージェントがプロセス終了で中断した作業ツリー(未コミット差分8ファイル)を引き継ぎ、完走させた。
+
+### 引き継ぎ時点の状態
+
+- 実装(`src/ui-render.js`/`src/ui-common.js`/`src/index.html` CSS)・テスト更新(`test/heat-lines-test.js`/`test/ui-walkthrough/scenarios.js`)・i18n抽出(`i18n/ui-ledger.json`/`src/lang-en.js`/`test/fixtures/i18n-ratchet-baseline.json`)まで完了していたが、**未コミットのまま**作業が途切れていた。
+- 画面仕様書2枚(`docs/ui/03-screens/dojo-heat-self-bubble.md` / `war-challenge-modal.md`)は「未実装(仕様のみ)」のまま、worklog/roadmap/`docs/i18n-keisuke-rulings-pending-v0.1.md`/`docs/実機確認バックログ.md` への反映は未着手だった。
+- `git diff` を全読みし、仕様書の特有ルール((40)の1〜6、(41)の1〜5)と突き合わせたところ、**すべて仕様どおりに実装済み**で逸脱は見つからなかった。前任の判断をそのまま尊重し、未了だった検証・docs反映・コミットのみを完走させた。
+
+### (40) 道場シーン: 熱量の本人セリフ吹き出し
+
+- `_renderRosterDojoHeader`(`src/ui-render.js`)に実装。`heavy` の選手がいれば必ず練習中の列へ割り込ませる(雰囲気レベルが0人枠の週でも表示)。いなければ列内の `warm` を30%、それも無ければ練習週限定で `fresh` を20%の順で抽選。乱数は `Engine.rng.derive(G.rngSeed, season, week, fighterId, 0x48534C46)` で週固定。
+- コーチが同じ選手の熱量を今週語っている場合(`coachHeatFighterId`)は本人セリフの候補から除外し、次点(別の `heavy` 選手など)へ回す。候補が無ければ出さない。
+- 吹き出しCSS `.dojo-heat-bubble`(`src/index.html`)は既存 `.dojo-rest-bubble` と同じ見た目(クリーム地・黒文字・尻尾中央)を踏襲し、色は `var(--office-panel-cream-card)` 等トークンのみ使用。同じ選手には掛け声(`.dojo-scene-shout`)を出さず吹き出しに差し替える。
+
+### (41) 対抗戦・挑戦状: 辞退時の相手エース反応
+
+- `showWarChallenge` の辞退ボタン押下で `_mdlAClose()` せず、同じ `mdl-a` カードの innerHTML を `_showWarDeclineReaction`(`src/ui-common.js`)が反応セリフへ差し替える。決断トレイは再描画自体をしない形で非表示、観察文を新規1本に差し替え。TAPで `_warDeclineContinue()` → `_mdlAClose(); skipEvent();`(二重起動防止フラグ `_warDeclineAdvancing`、外側の `choiceMade` と二重にガード)。
+- `WAR_DECLINE_DIALOGUE` 表が丸ごと無ければ `typeof WAR_DECLINE_DIALOGUE === 'undefined'` で fail-open即閉じ(既存の `getDialoguePool` の性格×アーキタイプ→`_default`フォールバックは他の死蔵セリフ表と共通の仕組みをそのまま利用)。
+
+### 観察文の候補(実装時提示・Keisuke未裁定のため①を暫定採用)
+
+1. **①(採用・実装済み)** `挑戦は見送られた。{org}との関係は冷える。`
+2. `挑戦は届かなかった。{org}との関係が悪化した。`(data.js に既にある「関係が悪化」表現へ寄せた安全策)
+3. `この対抗戦は不成立に終わった。{org}との溝が深まった。`
+
+選定理由: ①は決断カードのヒント文言「団体評価↓／関係悪化」と字面が重複せず、「辞退という行為」と「関係悪化という帰結」を1文で示せる。②は既存の頻出表現に揃えた無難案、③はやや硬い言い回し。実機確認で違和感があれば②に差し替え候補。
+
+### 検証
+
+| 項目 | 結果 |
+|---|---|
+| `node --check` ui-render.js / ui-common.js | OK |
+| `node test/ja-golden.js` | OK: 完全一致(lines=7507, hash=`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`)。UIのみの変更のため不変(想定どおり) |
+| `node test/i18n-extract-ui.js` → `node test/i18n-build-dict.js` | 台帳4688キー中訳文あり4688・未訳(fail-open)0。冪等(前任が生成した差分と同一) |
+| `node test/i18n-ledger-consistency-test.js` | ok(2台帳以上に存在するキー17件、すべて訳文一致) |
+| `node test/i18n-ratchet.js` | OK: 直書き日本語文字列の増加なし(baseline更新は前任分で完了済み) |
+| `node test/heat-lines-test.js` | PASS(道場シーンでの使用を許可する形にガード文言を反転済み) |
+| `node test/ui-baseline-guard-test.js` | ok(ladder=82, face<=52=62, allowed=98/98) |
+| `npm test` | 265/265 PASS |
+| `npm run test:ui:walkthrough`(JA) | PASS。**Actions 368 digest=`d14879bdb516ac76`**(旧基準336手/`b3b7a2c05a7e6016`から変化)。**原因の特定**: `git stash` でこの差分だけを外した状態で再走破すると336手/`b3b7a2c05a7e6016`に完全復元(=道場の吹き出し自体はクリック候補を増やさず無関係と確認)。差分を戻すと再び368手/`d14879bdb516ac76`(2回実行して決定的に同一)。`--action-log` で before/after を突合したところ、**55手目までは1バイトも違わず**、56手目 `[data-choice=decline]`(season1/week10・自然発生した対抗戦挑戦状)の直後に本タスクが追加した `div:_warDeclineContinue` の1手が新たに挟まり、以降は乱数消費ずれで経路全体が変わる(2026-09-06の328→336手の前例と同型の正当な変化)。Issues 0 |
+| `npm run test:ui:walkthrough:en` | PASS。**Actions 399 digest=`a21c9e961ea228ed`(不変)**。この run では辞退分岐を自然に踏まなかった(JA/ENの経路は元々別物。EN側でも `war-decline` ignite シナリオで機能自体は別途機械確認済み)。Issues 0・i18n-miss 0 |
+| `npm run test:ui:ignite -- --scenario war-decline`(JA) | PASS。marker `war-decline-reaction` HIT。finalProbe: `pendingEventLeft=false, declinedCount=1`(1回だけ) |
+| `npm run test:ui:ignite -- --scenario war-decline --lang en` | PASS。同上・i18n-miss 0 |
+| `node test/ui-walkthrough/dojo-heat-self-bubble-check.js`(新規・手動実行、run-all対象外) | ALL CHECKS PASS。fixture(`season-1-week-1-seed42.json`)をheavy状態へ加工し (1)雰囲気0人枠でも列に割り込む (2)吹き出しがDOM順で顔画像より前(=画像の上) (3)掛け声`.dojo-scene-shout`は出ない (4)本文に選手名を含まない (5)EN日本語残り0 (6)コーチが同じ選手を語る週は次点(別のheavy選手)へ回避・候補が無ければ出さない、の6点を機械確認 |
+
+### 頻出違反7項目チェック(ui-check)
+
+| # | 項目 | (40)道場本人吹き出し | (41)辞退反応 |
+|---|---|---|---|
+| 1 | 選手画像は2:3か | ○ 既存40px丸顔をそのまま流用(新規画像要素なし) | ○ 既存 `_mdlAFlowPortraitHtml` の big(2:3)を再利用、変更なし |
+| 2 | 正方形の顔は52px以下か | ○ 40px(既存) | N/A(2:3画像のみ、正方形顔なし) |
+| 3 | 吹き出しは画像の上か・名前非露出 | ○ DOM順で顔画像より前(Playwrightで実測)。本文に選手名を含まないことも実測確認 | ○ 既存コンポーネントをそのまま再利用。名前/所属は吹き出し外(`.mdl-a-subject-name`/`-org`) |
+| 4 | 複数人は隊列になっているか | N/A(個々の額縁追加なし、既存の列表示のまま) | N/A(単騎の反応画面) |
+| 5 | 勝敗が画像から読めるか | N/A | N/A |
+| 6 | 待ちに時限の保険 | N/A(進行を伴わない静的表示) | ○ ユーザー操作待ちのみ(コールバック待ちではない)なのでタイムアウトは仕様どおり不要。二重起動防止フラグ `_warDeclineAdvancing` あり |
+| 7 | 1操作=1進行か | N/A | ○ 外側 `choiceMade` + 内側 `_warDeclineAdvancing` の二重ガード。igniteのfinalProbeで `declinedCount=1` を実測済み |
+
+### 触ったファイル(前任分+今回の完走分)
+
+src: index.html / lang-en.js / ui-common.js / ui-render.js
+test: fixtures/i18n-ratchet-baseline.json / heat-lines-test.js / ui-walkthrough/scenarios.js / ui-walkthrough/dojo-heat-self-bubble-check.js(新規・受け入れ確認用、run-all対象外)
+i18n: ui-ledger.json
+docs: ui/03-screens/dojo-heat-self-bubble.md / ui/03-screens/war-challenge-modal.md / game-system-roadmap.md(🌐行) / i18n-keisuke-rulings-pending-v0.1.md(A-1) / 実機確認バックログ.md
+
+### 見つけた別件(このタスクの範囲外・未対応)
+
+- `heavyFighters[0]`(コーチ側、`src/ui-render.js` L1967)は roster 配列順の先頭を拾うだけで `_heat` の大小を見ていない。本人セリフ側(P7-40新設)は `_heat` 降順ソートで最大値を拾う。両者の選定基準が異なるため、heavy が複数いる週は「コーチが語る選手」と「本人セリフの最有力候補」が食い違いうる(本タスクの回避ロジックが正しく働くための前提でもあるので、直すなら仕様からの再検討が要る。実害としては軽微 — heavy が2人以上同時発生する週自体が稀)
+
 ## 🌐 英語対応 P7-36 — 週次ティッカー(📰帯)廃止(2026-09-06・worktree agent-ac58d81c02c63e492)
 
 Keisuke裁定(2026-09-05「ティッカーは廃止。ゲームの各要素が揃う前に作ったもの」)。背景と決定は `docs/i18n-keisuke-rulings-pending-v0.1.md` E節。着手前にworktreeをmain先端(863ff2b1)へfast-forward済み。
