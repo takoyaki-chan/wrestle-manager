@@ -1,5 +1,11 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-06 P7-51 マージ(40fa2c56)+ F02 セレモニーの記者ストリップ二重 t() を修正 / chronicle ignite JA は main で PASS
+
+- P7-51 の発見「`_mdlAReporterStrip(state, opts.reporterText || '派閥について…')` が app.js 側で訳済みの `reporterText` をもう一度 `t()` に掛けて EN で i18n-miss 1件」を、既存の第3引数 `lineTranslated` に `!!opts.reporterText` を渡して修正(訳済み文は素通し、JA の既定文は従来どおり内部で `t()`)。JA 表示不変。
+- P7-51 が worktree で見た「ignite chronicle JA が確定章2本<3本で FAIL」は、main(40fa2c56)で再実行すると **PASS**(chapters 4 / confirmed 3)。並行タスク(P7-50)の stash が混入した時間帯の計測で、main に回帰なし。
+- 事故の記録: `git stash` の refs/stash は worktree 間で共有される。P7-51 が P7-50 の stash を pop してしまい、P7-50 側の stash エントリは消えた(退避 patch: scratchpad/p751/p7-50-recovered.patch)。以後エージェント指示書は stash 禁止(記憶 feedback_git_stash_shared_across_worktrees)。
+
 ## 🌐 英語対応 P7-51 — `npm run test:ui:ignite -- --scenario faction-ignite --lang en` の既存FAIL修正(ハーネス側不具合)(2026-09-06・worktree agent-aff8c07309679d1dd)
 
 ### 背景

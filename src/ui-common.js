@@ -10748,7 +10748,7 @@ function showFactionEventResult(arg, onClose) {
 
   const html = `
     ${_mdlAHeader(titleHtml, metaHtml)}
-    ${_mdlAReporterStrip(state, opts.reporterText || '派閥について、ひとつご報告があります')}
+    ${_mdlAReporterStrip(state, opts.reporterText || '派閥について、ひとつご報告があります', !!opts.reporterText)}
     ${subjectHtml}
     <div class="mdl-a-prompt" style="padding-bottom:24px">
       <button class="mdl-a-continue-btn" id="fevtResultClose">${WM_I18N.t('— 見 届 け る —')}</button>
