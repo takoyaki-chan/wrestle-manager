@@ -181,16 +181,16 @@
 
 | ID | JA | 第一案 | 対案 | なぜ確認が要るか |
 |---|---|---|---|---|
-| 3 | 澤出みずき | Mizuki **Sawade** | Sawaide / Sawaide | 「澤出」は希少姓。サワデ/サワイデ両方実在 |
+| 3 | 澤出みずき | Mizuki **Sawaide** | Sawaide / Sawaide | 「澤出」は希少姓。サワデ/サワイデ両方実在 |
 | 6 | 副沢たまき | Tamaki **Fukuzawa** | Soezawa / Soesawa | 「副沢」は希少姓。フクザワ/ソエザワ |
 | 8 | 林真尋 | **Mahiro** Hayashi | Masahiro / Mihiro | 「真尋」はマヒロが現代女性名として優勢だが確定しない |
-| 11 | 橘玲美 | **Remi** Tachibana | Tamami / Reimi | 「玲美」レミ/タマミ/レイミ。蠱惑属性のアンカー選手なので特に要確認 |
+| 11 | 橘玲美 | **Reimi** Tachibana | Tamami / Reimi | 「玲美」レミ/タマミ/レイミ。蠱惑属性のアンカー選手なので特に要確認 |
 | 16 | 大河内紗代子 | Sayoko **Okochi** (2026-09-04 Keisuke裁定: 現行維持。ネイティブ提案 Ookouchi/Ōkouchi は不採用——マクロンなし・長音落としの全体方針を優先。長音を残す代替 Ohkochi も見送り) | Okawachi | 「大河内」オオコウチ/オオカワチ。**お嬢様属性のアンカー選手**(トーンバイブル §2-2 のキャラ裁定対象)なので最優先で確定したい |
-| 21 | 木ノ内幸音 | **Yukine** Kinouchi | Kone / Yukine Kinonouchi | 「幸音」ユキネ/コウネ。姓もキノウチ/キノウチ |
+| 21 | 木ノ内幸音 | **Sachine** Kinouchi | Kone / Sachine Kinonouchi | 「幸音」ユキネ/コウネ。姓もキノウチ/キノウチ |
 | 25 | 石戸谷なつき | Natsuki **Ishitoya** | Ishidoya | 「石戸谷」イシトヤ/イシドヤ両方実在 |
 | 29 | 相沢未来 | **Mirai** Aizawa | Miku / Miki | 「未来」ミライ/ミク/ミキ。どれも女性名として普通 |
 | 30 | 松川杏樹 | **Anju** Matsukawa | Anna / Anzu / Kyoju | 「杏樹」アンジュ/アンナ/アンズ |
-| 32 | 双里明日香 | Asuka **Futasato** | Sori / Namisato / Sosato | 「双里」は極めて希少。読みの根拠が薄い |
+| 32 | 双里明日香 | Asuka **Sori** | Sori / Namisato / Sosato | 「双里」は極めて希少。読みの根拠が薄い |
 | 37 | 白銀麗子 | Reiko **Shirogane** | Shirokane | 「白銀」シロガネ/シロカネ。地名はシロカネ、姓はシロガネが多い |
 | 38 | 芝彩音 | **Ayane** Shiba | Ayano / Saine | 「彩音」アヤネ/アヤノ |
 | 43 | 金沢文 | **Aya** Kanazawa | Fumi / Bun / Aya | 一文字名「文」。アヤ/フミ/ブン |
@@ -211,7 +211,7 @@
 | 116 | リナ・モーガン | **Rina Morgan** | Lina Morgan / Lena Morgan | **原語綴りの推定**。外国人キャラ。R/L のどちらか、日系設定かどうかで決まる |
 | 117 | クラッシャー毒島 | **Crusher Busujima** | Crusher Dokushima / Kurassha Busujima | 「毒島」はブスジマが実在読み。冠称は英語リングネーム語法で Crusher 推奨 |
 | 118 | 割田久美 | Kumi **Warita** | Wareda / Warida | 「割田」ワリタ/ワリダ |
-| 119 | 岩小路志摩子 | Shimako **Iwakoji** | Iwashoji / Iwakouji | 「岩小路」イワコウジ/イワショウジ |
+| 119 | 岩小路志摩子 | Shimako **Iwanokoji** | Iwashoji / Iwakouji | 「岩小路」イワコウジ/イワショウジ |
 | 124 | 清川 怜 | **Rei** Kiyokawa | Ryo / Satoshi / Rei | 一文字名「怜」。レイ/リョウ/サトシ。※JA原文に姓名間スペースあり(他キャラと不統一) |
 | 125 | 藤代絵麻 | Ema **Fujishiro** | Fujidai / Fujishiro | 「藤代」フジシロ/フジダイ |
 | 126 | 西園百合香 | Yurika **Nishizono** | Saien / Nishizono Yuriko | 「西園」ニシゾノ/サイエン、「百合香」ユリカ/ユリコ |
