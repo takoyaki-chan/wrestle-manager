@@ -729,4 +729,4 @@ async function runWalk(options) {
   return { actionLog, completed: false, finalState: finalSnapshot.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
 }
 
-module.exports = { createSeededPrng, listCandidates, runScreenTour, runWalk };
+module.exports = { createSeededPrng, listCandidates, runScreenTour, runWalk, settleClock };

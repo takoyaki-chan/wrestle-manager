@@ -45,7 +45,9 @@
 | R10 | 大ニュース一面(hotProspectDebut/fatedRivals/王座交代) | trainCap等の条件 | 該当条件の新人/王者交代を加工 | 次バッチ |
 | R11 | 怪我発生→欠場→復帰 | 確率 | 怪我状態を加工し復帰週まで走破 | 次バッチ |
 | R12 | 年代記/序章(データベース→年代記タブ→序章/各章/再構築を巡回。`tour`方式) | 章確定に十数季かかる | S18まで進めた確定章3本以上のセーブ。`fixture.maxWeeks=1400` | ✅ PASS(JA/EN) — 詳細は`test/ui-walkthrough/README.md` |
-| R13 | 新聞4面(年間MVPレース)。1面「MVPレース詳細 ▶」→4面を`tour`で巡回、`_npMvpI18n`(P7-23)のフォールバック件数も計測 | ナビ巡回・自然走破のどちらも素通りする | S1W3までheadless進行(加工不要。mvpRace.rankings≥4件をassert) | ✅ PASS(JA) / ❌ FAIL(EN・既知の未修正バグ。§8参照) |
+| R13 | 新聞4面(年間MVPレース)。1面「MVPレース詳細 ▶」→4面を`tour`で巡回、`_npMvpI18n`(P7-23)のフォールバック件数も計測 | ナビ巡回・自然走破のどちらも素通りする | S1W3までheadless進行(加工不要。mvpRace.rankings≥4件をassert) | ✅ PASS(JA) / ✅ PASS(EN・§8のFAILはP7-35で解消済み) |
+| R14 | 対抗戦・挑戦状の辞退→死蔵セリフ(WAR_DECLINE_DIALOGUE)配線(P7-41) | 週10/22/34限定+抽選+隣接ランクの複合条件で自然発火が稀 | pendingEvent(type:'war')+weekPhase:'event'を直接合成 | ✅ PASS |
+| R15 | **開幕導線**(タイトル→新規ゲーム→団体名入力→旗揚げ序章4幕→旗揚げドラフト→設立挨拶→第1週。P7-47) | fixtureベースの全シナリオが構造的に踏めない(誰も実UIで検査していなかった) | fixtureを使わない(`fixture:null`)。`preSteps`でタイトル画面から決定論的にclick/fillして難易度確定まで進める | ✅ PASS(JA) / ❌ FAIL(EN・新規発見の未修正バグ。§9参照) |
 
 優先順位はレア度×実装の新しさ×壊れたときの被害で決める。R3/R4(2026-08-13マージの最新画面)とR5が次候補。
 
@@ -93,3 +95,20 @@ P7-23(`Engine.mvpRace`の新聞フレーバー285本をJA完成文でセーブ�
 **JA: PASS**。**EN: FAIL(新規発見・未修正)**。`--lang en`で`#newspaperContent`内に18件のJA露出——内訳は`src/ui-render.js`の`_npMvpRaceRank1Card`/`_npMvpRaceMinorCard`/`_npMvpRaceListRow`が選手名(`entry.fighterName`)・団体名(`entry.orgName`)を表示する箇所で、同ファイル内の他箇所と揃えて使うべき`WM_I18N.pn()`を通していないこと、および黒田コラム署名(`WM_I18N.t('— 編集長 {name}', { name: '黒田 貫一郎' })`)が名前をハードコードで埋め込み`pn()`を通していないことの2種類。`window.__mvpFallback`(`_npMvpI18n`のフォールバック計測)は常に0件で、P7-23が実装した見出し/リード/寸評/黒田コメントの再生成方式そのものは正常——EN失敗はP7-23の担当範囲ではなく、page4のカードUIが元々(Stage B以前から)持っていた固有名詞の未配線。
 
 このタスクの範囲は検証ハーネスの新設のみ(`src/`改変は他エージェントとの並行作業を避けるため対象外)としたため、`src/ui-render.js`の3関数+署名1箇所へ`WM_I18N.pn()`を足す修正は別タスクへ切り出した(spawn_task経由でチケット化)。修正はJAで無変化(`pn()`はja/pseudo時に素通しのfail-open)、EN側のみ改善される想定で、修正後はR13が自動的にEN PASSへ切り替わる。
+
+**(解消済み・P7-35)** 上記の3関数+署名1箇所へ`pn()`配線を追加。R13はJA/EN両PASSになった(詳細は`test/ui-walkthrough/README.md`)。
+
+## 9. R15 開幕導線(opening-flow)追加の記録（2026-09-06 P7-47）
+
+②のWモード走破も③のignite全シナリオも、fixtureは例外なく`weekPhase:'manage'`(S1W1・ドラフト完了)のオートセーブから起動する設計だった(headless-simがheadless進行で作れる状態がそれしか無いため)。そのため**タイトル画面→新規ゲーム→団体名入力→旗揚げ序章4幕→旗揚げドラフト→設立挨拶→第1週**という開幕導線そのものは、実UIのボタン・入力・遷移としては一度も検査されたことがなかった(序章の描画だけは`opening-scene-i18n-check.js`が`renderOpeningScreen()`を直接叩いて別枠で検査していたが、タイトル画面のボタン・団体名入力・難易度選択・ドラフトの実クリック経路はカバー外)。R15はこの構造的な穴を埋める。
+
+**設計の要点**:
+- 前提fixtureを持たない初のシナリオ(`fixture: null`)。`generate-scenario-fixture.js`(headless-sim経由)を一切使わず、`run.js`の`setupPage()`がオートセーブを書かないよう分岐した。これにより本物の初回起動(タイトル画面の「CONTINUE」ボタンが出ない状態)を再現する
+- 団体名の入力(テキストフィールド)は、既存の`runWalk`(クリックだけを当てずっぽうで選ぶ汎用機構)にも`tour`(決定論的クリック列だが`type:'click'`のみ)にも無い操作種別だったため、`run.js`に**`preSteps`**(シナリオが`{label,selector,type:'click'|'fill',value?}`の配列またはlang引数の関数を宣言し、`page.locator().click()/.fill()`で直列実行する)を新設した。preSteps各段は通常のwalkループと同じ検査(D1/D3/JA露出/オーバーフロー)を受ける
+- 旗揚げドラフトの候補カード(`.draft-fc.cand`)は強み/課題/コーチ寸評/契約金まで含む説明文が優に100字を超え、`driver.js`の「記事本文のような無差別onclick divを弾く100字フィルタ」(P7-22)にそのまま引っかかり、走破の候補にすら挙がらなかった(他の全画面はbutton/data-choice/data-fighter-id経由でこのフィルタを素通りしていたため、このタスクで初めて表面化)。原則2「fixture合成のみ・DOM直書き換え禁止」は守った上で、**`src/ui-render.js`に`data-walk-role="draft-pick"`属性を1つだけ追加**してisStructuredPicker扱いにした(属性の追加は表示テキストに影響しないため`node test/ja-golden.js`は基準ハッシュ`3466a6ff...`と完全一致のまま)。`boost`関数が契約金の安い順に決定的に3名を選ぶ(開始資金5000万に対し安価候補2名保証(§3.6)があるため資金不足に陥らない)
+- `detectors.js`の`activeScreen`判定を、`titleScreen`だけでなく`orgSetupScreen`/`difficultyScreen`も見るよう拡張した(`src/app.js`の`_isTitleFlowVisible()`と同じ3枚組=ゲーム開始前の同一シーケンスという既存の設計意図をそのまま流用)。既存シナリオはこの2画面を通らないため挙動・digestは不変
+- ENでのJA露出ゼロは`tour.jaExposureScreens`(画面単位)ではなく`jaExposureAllowText`(シナリオ全体の許容リスト方式)で新設した。開幕導線はほぼ全画面が検査対象になるため、画面を1枚ずつ列挙するより「言語トグルの『日本語』ラベルだけ除外して残り全部ゼロ」の方が素直だった
+
+**JA: PASS**(9操作・12秒)。**EN: FAIL(新規発見・未修正)**。旗揚げドラフト画面の「Upside: …」(将来性評価)欄に日本語5種が漏れる——`Engine.draft.EVAL_TIERS`(`src/management.js`)の評価テキスト5種(`逸材の匂いがする`/`かなりの素質あり`/`十分な伸びしろ`/`堅実に育つタイプ`/`未知数`)が生JA文字列のまま返され、`ui-render.js`の`WM_I18N.t('将来性: {text}', { text: c.coachEval.text })`は外側テンプレ("将来性:"→"Upside:")だけ訳して`{text}`の中身自体は`t()`を通していない(呼び出し2箇所、いずれも旗揚げドラフト画面限定。`lang-en.js`に該当5文字列の辞書登録も無い)。このタスクの範囲は検証ハーネスの新設のみのため修正は別タスクへ切り出す(report内で言及。年次ドラフト/スカウトは別のテキストを使うため無関係)。
+
+回帰確認: 既存10シナリオをJAで、`newspaper-mvprace`/`faction-ignite`/`chronicle`をENでも再実行。`away-challenge`/`incoming-challenge`はマージ由来の既存不具合(このタスクの変更を外しても同一結果で再現)、`unified-player-turn`は本表R4の調査中扱いのままFAIL、`faction-ignite --lang en`は既知FAILのまま変化なし、それ以外はPASS。詳細は`docs/worklog.md`のP7-47エントリを参照。

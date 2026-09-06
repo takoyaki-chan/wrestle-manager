@@ -1,5 +1,59 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-47 — 開幕導線(タイトル→新規ゲーム→旗揚げ序章→ドラフト→設立挨拶→第1週)の実UI点火シナリオ`opening-flow`を新設(2026-09-06・worktree agent-a5a70786febfab360)
+
+### 背景
+
+UI自動走破(`test/ui-walkthrough`)のwalkもigniteも、fixtureは全て`weekPhase:'manage'`(S1W1・ドラフト完了)のオートセーブ起動——**開幕導線(タイトル画面→新規ゲーム→団体名入力→旗揚げ序章4幕→旗揚げドラフト→設立挨拶→第1週)は誰も実UIのボタン・入力・遷移として検査していない構造的な穴**だった(P7-31発見4)。序章の描画だけは`test/ui-walkthrough/opening-scene-i18n-check.js`が`renderOpeningScreen()`を実関数直叩きで別枠検査していたが、タイトル画面のクリック・団体名のテキスト入力・難易度選択・旗揚げドラフトの実クリック経路はカバー外のままだった。
+
+着手前に`git merge --ff-only main`でworktreeを348コミット分更新(i18n Stage B/Kaigo系の大量マージ)。
+
+### 実装
+
+新しいignite `opening-flow` は他の全シナリオと違い**前提fixtureを使わない**(`fixture: null`)。真っさらな`localStorage`からタイトル画面を開き、以下を実UIクリック/入力で通す:
+
+1. タイトル画面→「NEW GAME」
+2. 団体名入力(固定名。JA=「紅蓮」/EN=「Ember」。EN側は英語名の実例として使う)+アイコン選択→「旗揚げする」
+3. 難易度選択(補助金モード↔通常モードを一度切り替えて既定=通常へ戻す)→「ゲーム開始」
+4. 旗揚げ序章4幕を「CLICK TO CONTINUE」でTAP進行
+5. 旗揚げドラフト(固定2名+候補6名から3名選択)→「この5名でシーズン開始」
+6. 設立挨拶(5名の頭上吹き出し)→「事務所へ ▶」
+7. 第1週(`weekPhase:'manage'`, S1W1)到達
+
+**フレームワーク拡張(すべて`test/`配下)**:
+- `test/ui-walkthrough/run.js`: `scenario.fixture === null` の場合はfixture生成/読込を丸ごとスキップし、`setupPage()`が`wrestle_manager_autosave`を書かないよう分岐(本物の初回起動を再現)。新設の**`preSteps`**機構(`scenario.preSteps`=`lang=>[{label,selector,type:'click'|'fill',value?}]`)を追加——団体名のテキスト入力は既存の`runWalk`(クリックだけの汎用当てずっぽう)にも`tour`(決定論クリック列だが`click`のみ)にも表現できない操作種別だったため、生のPlaywright `click`/`fill`を直列実行する新ブロックを設けた。各段は通常のwalkループと同じ検査(D1/D3/JA露出/オーバーフロー)を受ける。加えて、シナリオ全体を通じたJA露出ゼロゲート`scenario.jaExposureAllowText`(既存の`tour.jaExposureScreens`は画面単位だが、開幕導線はほぼ全画面が検査対象になるため全量チェック方式にした)を新設
+- `test/ui-walkthrough/detectors.js`: `activeScreen`判定を`titleScreen`だけでなく`orgSetupScreen`/`difficultyScreen`も見るよう拡張(3箇所: `readPageSnapshot`/`scanOverflow`/`scanJaExposureDetail`)。`src/app.js`の`_isTitleFlowVisible()`が既に持つ「タイトル/団体名/難易度はゲーム開始前の同一シーケンス」という設計意図をそのまま流用した。既存シナリオはこの2画面を通らないため挙動・digestは不変
+- `test/ui-walkthrough/driver.js`: `settleClock`を`module.exports`に追加(run.jsのpreStepsループが再利用するため。ロジック変更なし)
+- `test/ui-walkthrough/scenarios.js`: `opening-flow`本体+`_openingFlowPreSteps`(preSteps生成)+`_openingFlowDraftBoost`(ドラフト候補の決定的選択)を追加
+
+**唯一のsrc変更(CLAUDE.md事前承認どおり`data-walk-role`属性1つ)**: `src/ui-render.js`の旗揚げドラフト候補カード(`.draft-fc.cand`)に`data-walk-role="draft-pick"`を追加。候補カードは強み/課題/コーチ寸評/契約金まで含む説明文が優に100字を超え、`driver.js`の「記事本文のような無差別onclick divを弾く100字フィルタ」(P7-22)にそのまま引っかかり走破の候補にすら挙がらなかった(他の全画面はbutton/data-choice/data-fighter-id経由でこのフィルタを素通りしていたため、このタスクで初めて表面化)。属性の追加は表示テキストに影響しないため`node test/ja-golden.js`は基準ハッシュ`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`と完全一致のまま。`_openingFlowDraftBoost`は契約金(見立て評価額)の安い順に決定的に3名を選ぶ(開始資金5000万に対し安価候補2名保証(§3.6)があるため資金不足に陥らない)。
+
+点火マーカー7段(すべてrequired): `title-screen` / `org-setup-screen` / `difficulty-screen` / `opening-overlay` / `draft-screen` / `founding-greeting` / `week1-reached`。
+
+### 検証結果
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`(全変更ファイル) | OK |
+| `node test/ja-golden.js` | OK: 完全一致(lines=7507, hash=`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`) |
+| `npm run test:ui:ignite -- --scenario opening-flow`(JA) | **PASS**。9操作・12.09秒・マーカー7/7 HIT・finalProbe `{weekPhase:"manage",season:1,week:1,orgName:"紅蓮",rosterCount:5,draftComplete:true,prologueFounders:5}`。Overflow情報集計2件(週画面の既存ボタン折返し、他画面でも既知の傾向と同型・失敗条件ではない) |
+| `npm run test:ui:ignite -- --scenario opening-flow --lang en` | **FAIL(新規発見・未修正)**。マーカーは7/7 HIT・finalProbe正常(`orgName:"Ember"`)だが、`jaExposureAllowText`ゲートが旗揚げドラフト画面の「Upside: …」欄に日本語5件を検出。原因: `Engine.draft.EVAL_TIERS`(`src/management.js`、`逸材の匂いがする`/`かなりの素質あり`/`十分な伸びしろ`/`堅実に育つタイプ`/`未知数`の5段階評価文)が生JA文字列のまま`getEvalComment()`から返され、`ui-render.js`の`WM_I18N.t('将来性: {text}', { text: c.coachEval.text })`は外側テンプレ("将来性:"→"Upside:")だけ訳して`{text}`の中身自体は`t()`を通していない(呼び出し箇所2つ、いずれも旗揚げドラフト画面限定=`.draft-fc.fixed`/`.draft-fc.cand`)。`lang-en.js`に該当5文字列の辞書登録も無い。年次ドラフト/スカウトは別の評価テキストを使うため無関係。**このタスクの範囲は検証ハーネス新設のみ(src改変は他エージェントとの並行作業を避けるため`data-walk-role`属性1つに限定)としたため、修正はここでは行わず本エントリで報告に留める** |
+| `npm test` | 265/265 PASS |
+| `npm run test:ui:walkthrough`(JA、seed42・1季) | PASS。367手 digest=`7b3faff2792abc0f`。`git stash`でこのタスクの差分だけを外しても同一手数・同一digest(=本タスクの変更は標準walkthroughに一切影響しない)。**注記**: 直近のworklog(P7-40/41)に記載の基準「368手/d14879bdb516ac76」とは異なる値になっているが、これも348コミットのマージ由来のドリフト(stash比較で確認済み・本タスク起因ではない)。原因の遡及調査は本タスクの範囲外 |
+| 既存igniteシナリオ回帰(JA、10本) | `gameover` PASS / `war-decline` PASS / `away-challenge` **FAIL**(点火マーカー`petition-modal`等が不発。`git stash`で本タスクの差分を外しても同一結果=**マージ由来の既存不具合、本タスク起因ではない**) / `incoming-challenge` **FAIL**(同型・同じく`git stash`で無変化を確認) / `faction-ignite` PASS / `tenchosen` PASS(110秒) / `unified-player-turn` **FAIL**(設計書`docs/rare-screen-ignition-catalog-design-v0.1.md` R4に記載済みの調査中扱いのまま=既知) / `newspaper-mvprace` PASS / `newspaper-mvprace-legacy` PASS / `chronicle` PASS(53秒) |
+| 既存igniteシナリオ回帰(EN、3本スポットチェック) | `newspaper-mvprace` **PASS**(設計書§8記載の旧FAILはP7-35のpn()配線修正で解消済みと確認) / `faction-ignite` **FAIL**(D5_WATCHDOG。`git stash`で無変化を確認=既知のFAILのまま) / `chronicle` PASS(52秒) |
+
+### 見つけた不具合(まとめ)
+
+1. **新規発見・未修正**: 旗揚げドラフト画面(`.draft-fc.fixed`/`.draft-fc.cand`、`src/ui-render.js:930,976`)の「Upside: …」評価文が、EN実行時に生JAのまま表示される(`Engine.draft.EVAL_TIERS`の5文字列が`WM_I18N.t()`未経由+`lang-en.js`に辞書登録なし)。影響範囲は旗揚げドラフト限定
+2. **マージ由来の既存不具合(本タスク起因ではないがこの回帰確認で顕在化)**: `away-challenge`/`incoming-challenge`igniteが点火モーダル(直訴/果たし状)に到達しない。`git stash`でこのタスクの変更を外しても同一結果で再現するため、348コミットのマージ内のどこかで挑戦状/果たし状の発火経路が壊れている可能性がある。詳細な原因特定はこのタスクの範囲外
+
+### docs/specs更新
+
+- `docs/rare-screen-ignition-catalog-design-v0.1.md`: カタログ表にR14(`war-decline`、これまで表に未掲載だった既存シナリオ)とR15(`opening-flow`)を追加。§8にR13のP7-35解消済み追記、新設§9にR15の設計・発見をまとめた
+- `test/ui-walkthrough/README.md`: `opening-flow`専用セクション(fixture不要シナリオ・`preSteps`・`data-walk-role="draft-pick"`・発見した不具合)+既存シナリオ回帰確認の記録を追加
+- `docs/game-system-roadmap.md`: 「🌐 英語対応:」行(既存1本)にP7-47の要約を追記(行を増やしていない)
+
 ## 🌐 英語対応 P7-40/41 — 死蔵セリフ配線(引き継ぎ完走): 道場「熱量の本人セリフ」+ 対抗戦「辞退時の相手エース反応」(2026-09-06・worktree agent-a6a95ed4ed56e4ab1)
 
 Keisuke裁定(2026-09-05 A-1「`HEAT_STATE_SELF_LINES` 75本・`WAR_DECLINE_DIALOGUE` 58本は配線して出す」)の残り2件。前任エージェントがプロセス終了で中断した作業ツリー(未コミット差分8ファイル)を引き継ぎ、完走させた。

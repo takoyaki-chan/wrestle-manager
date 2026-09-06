@@ -322,6 +322,62 @@ function _engineerWarChallengePending(G) {
   };
 }
 
+// ── R15(P7-47): 開幕導線(タイトル→新規ゲーム→団体名入力→旗揚げ序章4幕→
+// 旗揚げドラフト→設立挨拶→第1週)の点火 ──
+// 他の全シナリオは`weekPhase:'manage'`(ドラフト完了済み)のオートセーブから始まるため、
+// 開幕導線そのものはUI自動走破②(walk)もigniteのどのシナリオも構造的に踏めない穴だった
+// (P7-31発見4)。このシナリオだけは前提fixtureを使わず(fixture:null)、真っさらな
+// localStorageからタイトル画面を開く。団体名入力(テキスト入力)はクリックだけのwalk/tour
+// 機構では表現できないため、run.jsに`preSteps`(click/fillの決定論的な手続き)を追加した。
+const OPENING_FLOW_ORG_NAME = { en: 'Ember', ja: '紅蓮' };
+
+function _openingFlowPreSteps(lang) {
+  const orgName = OPENING_FLOW_ORG_NAME[lang] || OPENING_FLOW_ORG_NAME.ja;
+  return [
+    { label: 'NEW GAME', selector: '.title-btn.primary[onclick="App.titleNewGame()"]', type: 'click' },
+    { label: '団体名入力', selector: '#orgSetupNameInput', type: 'fill', value: orgName },
+    { label: '団体アイコン選択', selector: '#orgIconGrid img[data-idx="3"]', type: 'click' },
+    { label: '旗揚げする', selector: '[onclick="App.confirmOrgSetup()"]', type: 'click' },
+    // 難易度ピッカーは両方を一度は触ってから既定(通常=hard)へ戻す(ラジオ切替の経路も検査対象にする)
+    { label: '難易度: 補助金モードへ切替', selector: '#diffOptNormal', type: 'click' },
+    { label: '難易度: 通常モードへ戻す', selector: '#diffOptHard', type: 'click' },
+    { label: 'ゲーム開始', selector: '[onclick="App.confirmDifficulty()"]', type: 'click' },
+  ];
+}
+
+// 旗揚げドラフト画面の誘導。候補カード(.draft-fc.cand)は強み/課題/コーチ寸評/契約金まで
+// 含めた説明文が優に100字を超えるため、driver.jsのlistCandidatesが持つ「記事本文のような
+// 無差別onclick divを弾く100字フィルタ」(P7-22)にそのまま引っかかり候補にすら挙がらない
+// (他の全画面はbutton/data-choice/data-fighter-id経由でこのフィルタを素通りしていたため、
+// このタスクで初めて表面化した穴)。ui-render.js側に data-walk-role="draft-pick" を1つだけ
+// 追加してisStructuredPicker扱いにし(属性の追加は表示テキストに影響しない —
+// node test/ja-golden.js 完全一致で確認済み)、このboostが個体を明示的にスコアリングする。
+// disabled(資金不足)/選択済みは常に-Infinity(nullを返してWALK_ROLE_SCORESの既定へ
+// フォールスルーさせない — 既定には'draft-pick'を登録していないため無関係だが、
+// 将来登録されても誤ってヒットしないよう明示する)。
+function _openingFlowDraftBoost(candidate, all) {
+  if (candidate.walkRole === 'draft-pick') {
+    const isPickable = /App\.toggleDraftPick\(\d+\)/.test(candidate.onclick || '');
+    const alreadyPicked = /(?:^| )picked(?: |$)/.test(candidate.className || '');
+    if (!isPickable || alreadyPicked) return -Infinity;
+    // 決定的に選ぶ: 契約金(見立て評価額)の安い順(同額はDOM順)。開始資金5000万に対し
+    // 最低2名は120万以下の安価候補が保証されている(§3.6)ので、資金不足に陥らない
+    const feeOf = c => {
+      const m = /(?:契約金:|Signing fee:)\s*([\d,]+)/.exec(c.searchText || c.text || '');
+      return m ? Number(m[1].replace(/,/g, '')) : Infinity;
+    };
+    const pickable = all
+      .filter(c => c.walkRole === 'draft-pick'
+        && /App\.toggleDraftPick\(\d+\)/.test(c.onclick || '')
+        && !/(?:^| )picked(?: |$)/.test(c.className || ''))
+      .sort((a, b) => feeOf(a) - feeOf(b) || a.index - b.index);
+    const rank = pickable.findIndex(c => c.index === candidate.index);
+    return rank >= 0 ? 9990 - rank : -Infinity;
+  }
+  if (/App\.completeDraft\(\)/.test(candidate.onclick || '')) return 9985;
+  return null; // 序章4幕・設立挨拶・週1到達は既定スコアに委ねる("CLICK TO CONTINUE"=10000等)
+}
+
 module.exports = {
   chronicle: {
     description: '年代記/序章の点火: 十数季進めたセーブ(序章=進行中+確定章6本)から、実UIでデータベース→年代記タブ→序章/各章/再構築を巡回し、章題・副題・ハイライト・章末・エース/同期カード・外敵・通算タイルの表示を検査する(ENでは日本語残り0をゲートにする)',
@@ -900,6 +956,60 @@ module.exports = {
     finalAssert: probe => {
       const fails = [];
       if (!probe || probe.weekPhase !== 'gameover') fails.push(`weekPhase=${probe && probe.weekPhase} — gameoverに到達していない`);
+      return fails;
+    },
+  },
+
+  'opening-flow': {
+    description: '開幕導線の点火(P7-47): fixtureを使わず真っさらなタイトル画面から新規ゲーム→団体名入力(JA/EN別の固定名)→難易度選択→旗揚げ序章4幕(TAP)→旗揚げドラフト(固定2名+安価3名を決定的に選択)→設立挨拶→第1週の今週タブ到達までを実UIで通す。既存の全シナリオがweekPhase:manage(ドラフト完了済み)のオートセーブから始まるため誰も踏んでいなかった穴(P7-31発見4)',
+    // このシナリオだけ前提セーブを使わない — run.jsがlocalStorageへ何も書かず素のタイトル画面から始める
+    fixture: null,
+    // 走破ドライバの決定論(tie-break PRNG)用のシード。ゲーム内部のcreateInitialStateの
+    // rngSeedはpage.clock固定時刻由来のDate.now()で決まる(fixtureのseedとは無関係)
+    seed: 42,
+    // タイトル→難易度確定までの手続き型導線。lang => [{label,selector,type:'click'|'fill',value?}]
+    preSteps: _openingFlowPreSteps,
+    walk: { seasons: 1, maxSteps: 80 },
+    boost: _openingFlowDraftBoost,
+    until: s => !!(s.state && s.state.weekPhase === 'manage' && s.state.season === 1 && s.state.week === 1
+      && !s.state.offSeason && (!s.overlays || s.overlays.length === 0)),
+    ignition: [
+      { name: 'title-screen', required: true, match: s => s.activeScreen === 'titleScreen' },
+      { name: 'org-setup-screen', required: true, match: s => s.activeScreen === 'orgSetupScreen' },
+      { name: 'difficulty-screen', required: true, match: s => s.activeScreen === 'difficultyScreen' },
+      { name: 'opening-overlay', required: true, match: s => overlayHit(s, 'opening-overlay') },
+      { name: 'draft-screen', required: true, match: s => !!(s.state && s.state.weekPhase === 'draft') },
+      { name: 'founding-greeting', required: true, match: s => overlayHit(s, 'completion-overlay') },
+      {
+        name: 'week1-reached',
+        required: true,
+        match: s => !!(s.state && s.state.weekPhase === 'manage' && s.state.season === 1 && s.state.week === 1
+          && (!s.overlays || s.overlays.length === 0)),
+      },
+    ],
+    // EN専用: 開幕導線の全段を通じて日本語露出0(言語トグルの「日本語」ラベルだけは仕様上の
+    // 例外 — index.htmlのコメントどおり意図的に翻訳しない)。記号(○×△等)はJAPANESE_CHAR_PATTERN
+    // の対象外(CJK統合漢字/かな以外)なので許容リストに含める必要が無い
+    jaExposureAllowText: ['日本語'],
+    finalProbe: `(() => ({
+      weekPhase: (typeof G !== 'undefined' && G) ? G.weekPhase : null,
+      season: (typeof G !== 'undefined' && G) ? G.season : null,
+      week: (typeof G !== 'undefined' && G) ? G.week : null,
+      orgName: (typeof G !== 'undefined' && G) ? G.orgName : null,
+      rosterCount: (typeof G !== 'undefined' && G && Array.isArray(G.roster)) ? G.roster.length : 0,
+      draftComplete: (typeof G !== 'undefined' && G) ? !!G.draftComplete : false,
+      prologueFounders: (typeof G !== 'undefined' && G && G.prologue && Array.isArray(G.prologue.founderIds)) ? G.prologue.founderIds.length : 0,
+    }))()`,
+    finalAssert: (probe, lang) => {
+      const fails = [];
+      if (!probe) return ['finalProbeが取れていない'];
+      const expectedOrgName = OPENING_FLOW_ORG_NAME[lang] || OPENING_FLOW_ORG_NAME.ja;
+      if (probe.weekPhase !== 'manage') fails.push(`weekPhase=${probe.weekPhase}(manageを期待)`);
+      if (probe.season !== 1 || probe.week !== 1) fails.push(`season/week=${probe.season}/${probe.week}(1/1を期待)`);
+      if (probe.rosterCount !== 5) fails.push(`roster数=${probe.rosterCount}(5名=固定2+選択3を期待)`);
+      if (!probe.draftComplete) fails.push('draftComplete=falseのまま(ドラフト完了フラグが立っていない)');
+      if (probe.orgName !== expectedOrgName) fails.push(`orgName="${probe.orgName}"(期待="${expectedOrgName}" — 団体名入力が反映されていない)`);
+      if (probe.prologueFounders < 5) fails.push(`序章founderIds=${probe.prologueFounders}件(5名を期待 — Engine.prologue.createが走っていない)`);
       return fails;
     },
   },

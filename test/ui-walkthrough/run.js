@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 const { WalkthroughDetectors, stableHash, writeFailureArtifacts } = require('./detectors');
-const { runScreenTour, runWalk } = require('./driver');
+const { runScreenTour, runWalk, settleClock } = require('./driver');
 const scenarios = require('./scenarios');
 const { startStaticServer } = require('./server');
 
@@ -108,9 +108,14 @@ async function setupPage(browser, server, fixtureText, seed, lang = 'ja') {
     // P6-2: src/i18n.js の readStoredLang() は wm_lang 未設定時に既定'ja'へ落ちるため、
     // 'ja'を明示的に書いても既存挙動と結果は同一(digest不変)
     localStorage.setItem('wm_lang', uiLang);
-    const parsed = JSON.parse(save);
-    parsed.rngSeed = runSeed;
-    localStorage.setItem('wrestle_manager_autosave', JSON.stringify(parsed));
+    // P7-47: opening-flowシナリオ(fixture:null)はsaveがnull — オートセーブを一切書かず、
+    // 真っさらな状態でapp.js起動時のApp.showTitleScreen()に任せる(「CONTINUE」ボタンも
+    // 出ない=本物の初回起動と同じ)
+    if (save) {
+      const parsed = JSON.parse(save);
+      parsed.rngSeed = runSeed;
+      localStorage.setItem('wrestle_manager_autosave', JSON.stringify(parsed));
+    }
   }, { save: fixtureText, runSeed: seed, uiLang: lang });
   await page.goto(`${server.baseUrl}/`, { waitUntil: 'domcontentloaded' });
   await page.clock.runFor(1000);
@@ -160,21 +165,29 @@ async function main() {
 
   const fixtureRoot = path.resolve(HARNESS_ROOT, 'fixtures');
   const scenario = options.mode === 'ignite' ? scenarios[options.scenario] : null;
-  const effectiveSeed = scenario && !options.seedExplicit ? scenario.fixture.seed : options.seed;
+  // P7-47: opening-flowのように前提fixtureを持たないシナリオ(fixture:null)は
+  // headless-simで作る状態が無い — 真っさらなタイトル画面から始める
+  const usesFixture = !!(scenario && scenario.fixture);
+  const effectiveSeed = scenario && !options.seedExplicit
+    ? (usesFixture ? scenario.fixture.seed : (scenario.seed || options.seed))
+    : options.seed;
   const effectiveMaxSteps = scenario && !options.maxStepsExplicit ? scenario.walk.maxSteps : options.maxSteps;
   const effectiveSeasons = scenario ? scenario.walk.seasons : options.seasons;
 
-  let fixturePath;
+  let fixturePath = null;
   if (scenario) {
-    fixturePath = path.join(fixtureRoot, 'generated', `${options.scenario}-seed${effectiveSeed}.json`);
-    if (options.regen || !fs.existsSync(fixturePath)) {
-      console.log(`Generating fixture for scenario "${options.scenario}" (seed=${effectiveSeed})...`);
-      execFileSync(process.execPath, [
-        path.join(fixtureRoot, 'generate-scenario-fixture.js'),
-        options.scenario,
-        String(effectiveSeed),
-      ], { stdio: 'inherit' });
+    if (usesFixture) {
+      fixturePath = path.join(fixtureRoot, 'generated', `${options.scenario}-seed${effectiveSeed}.json`);
+      if (options.regen || !fs.existsSync(fixturePath)) {
+        console.log(`Generating fixture for scenario "${options.scenario}" (seed=${effectiveSeed})...`);
+        execFileSync(process.execPath, [
+          path.join(fixtureRoot, 'generate-scenario-fixture.js'),
+          options.scenario,
+          String(effectiveSeed),
+        ], { stdio: 'inherit' });
+      }
     }
+    // usesFixture===false: fixturePathはnullのまま — setupPageがオートセーブを書かない
   } else {
     fixturePath = path.resolve(HARNESS_ROOT, 'fixtures', options.fixture);
     if (!fixturePath.startsWith(`${fixtureRoot}${path.sep}`)) throw new Error('Fixture must be inside test/ui-walkthrough/fixtures');
@@ -200,7 +213,7 @@ async function main() {
       return;
     }
 
-    const fixtureText = fs.readFileSync(fixturePath, 'utf8');
+    const fixtureText = fixturePath ? fs.readFileSync(fixturePath, 'utf8') : null;
     const setup = await setupPage(browser, server, fixtureText, effectiveSeed, options.lang);
     context = setup.context;
     const page = setup.page;
@@ -222,6 +235,41 @@ async function main() {
       }
     } : null;
 
+    // P7-47: preSteps — fixtureを使わないシナリオ(opening-flow)がタイトル画面から
+    // 「新規ゲーム→団体名入力(テキスト)→難易度確定」までを進めるための決定論的な
+    // click/fill手続き。runWalkの汎用クリック当てずっぽう機構はテキスト入力を表現できない
+    // ため、ここだけ生のPlaywright操作を直列に実行する。各段の後にobserve/detectorsへ
+    // 通常のwalkループと同じ検査(D1/D3/JA露出/オーバーフロー)をかける
+    const preStepFailures = [];
+    if (scenario) {
+      const rawPreSteps = typeof scenario.preSteps === 'function' ? scenario.preSteps(options.lang) : scenario.preSteps;
+      if (Array.isArray(rawPreSteps) && rawPreSteps.length > 0) {
+        const initialSnapshot = await detectors.snapshot(page);
+        if (observe) observe(initialSnapshot);
+        await detectors.scanText(page);
+        await detectors.scanOverflow(page);
+        await detectors.scanJaExposureDetail(page);
+        for (const preStep of rawPreSteps) {
+          try {
+            const locator = page.locator(preStep.selector).first();
+            if (preStep.type === 'fill') await locator.fill(preStep.value, { timeout: 5000 });
+            else await locator.click({ timeout: 5000 });
+            await settleClock(page, 500);
+          } catch (error) {
+            preStepFailures.push(`前段(${preStep.label || preStep.selector})を操作できない: ${String(error.message || error).split('\n')[0]}`);
+            break;
+          }
+          const snapshot = await detectors.snapshot(page);
+          if (observe) observe(snapshot);
+          await detectors.scanText(page);
+          await detectors.scanOverflow(page);
+          await detectors.scanJaExposureDetail(page);
+          process.stdout.write(`  pre-step: ${preStep.label} -> activeScreen=${snapshot.activeScreen} overlays=${(snapshot.overlays || []).join('|') || 'none'}\n`);
+          if (detectors.issues.length > 0) break;
+        }
+      }
+    }
+
     const result = await Promise.race([
       runWalk({
         artifactRoot: path.join(HARNESS_ROOT, 'artifacts'),
@@ -230,7 +278,7 @@ async function main() {
           ? scenario.makeBoost(JSON.parse(fixtureText))
           : (scenario && scenario.boost ? scenario.boost : null),
         detectors,
-        fixtureName: scenario ? path.basename(fixturePath) : options.fixture,
+        fixtureName: scenario ? (fixturePath ? path.basename(fixturePath) : '(no-fixture:title-screen)') : options.fixture,
         maxSteps: effectiveMaxSteps,
         // ナビ巡回はwalkモード限定。igniteはシナリオの誘導(boost/until)と手数予算が主役で、
         // 自由閲覧画面の検査はwalk側が担う
@@ -254,8 +302,19 @@ async function main() {
       fs.writeFileSync(options.jaExposureLog, `${JSON.stringify(detectors.jaExposureRecords, null, 2)}\n`, 'utf8');
     }
 
-    let ignitionFailures = [];
+    let ignitionFailures = [...preStepFailures];
     if (scenario) {
+      // P7-47: シナリオ全体(preSteps+walk+tour)を通じたJA露出ゼロゲート。tour限定の
+      // gateScreens(P6-18)とは別枠 — opening-flowのような「画面のほぼ全部が検査対象」の
+      // シナリオ向けに、収集済みjaExposureRecords全量を許容リスト(言語トグルの「日本語」等、
+      // 仕様上意図的に翻訳しない文言)だけ除いて検査する
+      if (options.lang === 'en' && Array.isArray(scenario.jaExposureAllowText)) {
+        const allow = new Set(scenario.jaExposureAllowText);
+        const leaked = (detectors.jaExposureRecords || []).filter(r => !allow.has(r.text));
+        console.log(`Scenario-wide JA exposure (allowlist: ${scenario.jaExposureAllowText.join(', ') || 'none'}): ${leaked.length}`);
+        for (const record of leaked.slice(0, 30)) console.log(`  ${record.screen} | ${record.selector} | "${record.text}"`);
+        if (leaked.length > 0) ignitionFailures.push(`開幕導線のEN表示に日本語が残っている(許容リスト除外後): ${leaked.length}件`);
+      }
       // P6-18: 画面ツアー(自由閲覧画面の奥にあるレア画面)。走破の後に決定論クリック列で開く
       if (scenario.tour) {
         const tour = await runScreenTour({
@@ -287,7 +346,7 @@ async function main() {
         const probe = await page.evaluate(scenario.finalProbe).catch(error => ({ probeError: String(error) }));
         console.log(`Final probe: ${JSON.stringify(probe)}`);
         if (probe && probe.probeError) ignitionFailures.push(`finalProbe失敗: ${probe.probeError}`);
-        else if (scenario.finalAssert) ignitionFailures.push(...scenario.finalAssert(probe));
+        else if (scenario.finalAssert) ignitionFailures.push(...scenario.finalAssert(probe, options.lang));
       }
       if (ignitionFailures.length > 0 && !result.artifactDirectory) {
         const issue = detectors.record('IGNITION_MISFIRE', ignitionFailures.join(' / '), { scenario: options.scenario });
@@ -307,7 +366,7 @@ async function main() {
     const elapsedMs = Date.now() - startedAt;
     const passed = result.completed && result.issues.length === 0 && ignitionFailures.length === 0;
     console.log(`${scenario ? `Ignition [${options.scenario}]` : 'Walkthrough'}: ${passed ? 'PASS' : 'FAIL'}`);
-    console.log(`Fixture: ${path.basename(fixturePath)} seed=${effectiveSeed} seasons=${effectiveSeasons}`);
+    console.log(`Fixture: ${fixturePath ? path.basename(fixturePath) : '(none — fresh title screen)'} seed=${effectiveSeed} seasons=${effectiveSeasons}`);
     console.log(`Actions: ${result.actionLog.length} digest=${result.actionDigest || stableHash(JSON.stringify(result.actionLog))}`);
     console.log(`Duration: ${(elapsedMs / 1000).toFixed(2)}s`);
     console.log(`Final state: ${JSON.stringify(result.finalState)}`);
