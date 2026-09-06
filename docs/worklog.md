@@ -1,5 +1,10 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-06 P7-44 マージ(291d7a34)+ GL-12 表示側1行の配線(指揮官・同コミットに同梱)
+
+- P7-44 が `relationships.js` に足した `dialogueTpl`/`dialogueVars`(GL-12「第三者の証言」の生キー+材料)を、道場シーンの休憩吹き出し(`ui-render.js` `.dojo-rest-bubble`)で `g.dialogueTpl ? t(g.dialogueTpl, g.dialogueVars) : t(g.dialogue)` として消費するよう1行配線した(P7-44 は P7-40/41 との衝突回避で表示側を保留していた。P7-40/41 は 3ba1d8ab でマージ済み)。旧行(dialogueTpl なし)は従来どおり `t(g.dialogue)` で fail-open。
+- 検証: ja-golden 完全一致 / npm test 265 / auto-sim 20季 ALL CLEAR・指紋 96492883 不変 / glimpse-a-dojo-i18n-test ok。EN 走破は別途1本(i18n-miss 0 の確認)。
+
 ## 🌐 英語対応 P7-44 — F08/F02/Common-7の派閥名EN露出11箇所+GL-12 i18n-missの生成側修正(2026-09-06・worktree agent-af5085c74a53255df)
 
 P7-43(10a72efc)が「残: F08バナー・F02衝突画面の派閥名(同型・別箇所)」として書き残した宿題(specs/i18n-runtime-spec-v1.0.md §45-4)の解消と、GL-12(第三者の証言)のi18n-miss(P7-31発見5)の調査・対処。着手前にworktreeをmain先端(ab7bb554)へfast-forward。
