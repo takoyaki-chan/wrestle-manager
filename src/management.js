@@ -1291,7 +1291,7 @@ const Engine = {
       // A3-A4: 華/ファンサ
       let traitDraw = 0;
       if (Traits.has(fighter, '華'))    traitDraw += cfg.traitFlat + popDraw * cfg.traitMult;
-      if (Traits.has(fighter, 'ファンサ')) traitDraw += cfg.traitFlat + popDraw * cfg.traitMult;
+      if (Traits.has(fighter, 'ファンサービス')) traitDraw += cfg.traitFlat + popDraw * cfg.traitMult;
 
       // A8: 王者
       let situational = 0;
@@ -1334,7 +1334,7 @@ const Engine = {
       let traitDraw = 0;
       const traits = [];
       if (Traits.has(fighter, '華'))    { const v = Math.round(cfg.traitFlat + popDraw * cfg.traitMult); traitDraw += v; traits.push({ label: _wmFillWithDict(dict, '✨華'), value: v }); }
-      if (Traits.has(fighter, 'ファンサ')) { const v = Math.round(cfg.traitFlat + popDraw * cfg.traitMult); traitDraw += v; traits.push({ label: _wmFillWithDict(dict, '🤝ファンサ'), value: v }); }
+      if (Traits.has(fighter, 'ファンサービス')) { const v = Math.round(cfg.traitFlat + popDraw * cfg.traitMult); traitDraw += v; traits.push({ label: _wmFillWithDict(dict, '🤝ファンサ'), value: v }); }
       const details = [];
       if (G.titles?.world?.championId === fighter.id) details.push({ label: _wmFillWithDict(dict, '👑王者'), value: cfg.champBonus });
       if (fighter.breakthroughWeeksLeft > 0) details.push({ label: _wmFillWithDict(dict, '🔥BT'), value: cfg.btBonus });
@@ -1373,7 +1373,7 @@ const Engine = {
       const fanExpectBonus = context.isFanExpect ? cfg.fanExpectAppeal : 0;
       const challengeRequestBonus = context.isChallengeRequest ? cfg.challengeRequestAppeal : 0;
       let heelFaceBonus = 0;
-      if ((Traits.has(fighterA, 'ヒール') && !Traits.has(fighterB, 'ヒール')) || (!Traits.has(fighterA, 'ヒール') && Traits.has(fighterB, 'ヒール'))) heelFaceBonus = cfg.heelFaceAppeal;
+      if ((Traits.has(fighterA, 'ヒール適性') && !Traits.has(fighterB, 'ヒール適性')) || (!Traits.has(fighterA, 'ヒール適性') && Traits.has(fighterB, 'ヒール適性'))) heelFaceBonus = cfg.heelFaceAppeal;
       const clashAppeal = (context.pendingClashBonus || 0) * cfg.pendingClashAppeal;
       const firstMeetBonus = context.isFirstMeet ? cfg.firstMeetAppeal : 0;
       let stalePenalty = 0;
@@ -1435,8 +1435,8 @@ const Engine = {
 
       // ヒールvsベビー
       let heelFaceBonus = 0;
-      const aIsHeel = Traits.has(fighterA, 'ヒール');
-      const bIsHeel = Traits.has(fighterB, 'ヒール');
+      const aIsHeel = Traits.has(fighterA, 'ヒール適性');
+      const bIsHeel = Traits.has(fighterB, 'ヒール適性');
       if ((aIsHeel && !bIsHeel) || (!aIsHeel && bIsHeel)) heelFaceBonus = cfg.heelFaceAppeal;
 
       // 乱闘蓄積（週中衝突の話題性）
@@ -16660,8 +16660,12 @@ const Engine = {
       }
 
       // §4.2 Scout estimates (noisy display values)
-      const hasJinmyaku = (state.roster || []).some(f => Traits.has(f, '人脈'));
-      const noiseRange = hasJinmyaku ? 0.05 : 0.10;
+      // P7-54: '人脈' は選手にもコーチにも存在しないキーで、この判定は常にfalseだった
+      // (死コード。docs/dead-trait-checks-report-v0.1.md #3)。spec の意図(目利きがいると
+      // 見立てが正確になる)を、道場レポートの精度と同じ鍵=コーチの観察眼等級(observation)
+      // に接続する。A/Bランクのコーチが1人でもいれば±5%、それ以外は±10%
+      const hasKeenEyeCoach = (state.coaches ? Engine.coach.getHiredCoaches(state) : []).some(c => c.observation === 'A' || c.observation === 'B');
+      const noiseRange = hasKeenEyeCoach ? 0.05 : 0.10;
       for (const c of candidates) {
         const est = {};
         for (const p of ['pw','sp','te','st','mn']) {
