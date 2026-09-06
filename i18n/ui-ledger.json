@@ -50165,5 +50165,269 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "プロデビュー",
+    "en": "Turned pro",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "{stat} +{gain} のブレークスルー！",
+    "en": "{stat} +{gain} Breakthrough!",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "{belt} 獲得",
+    "en": "Won the {belt}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "{belt} {n}度防衛",
+    "en": "Defended the {belt} (No. {n})",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "{belt} 陥落（{n}度防衛）",
+    "en": "Lost the {belt} (Defenses: {n})",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "{from}から移籍",
+    "en": "Transferred from {from}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "スランプ突入（{trigger}）",
+    "en": "Slump began ({trigger})",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "スランプ脱出（{n}週間）",
+    "en": "Recovered from a {n}-week slump",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "モチベーション喪失",
+    "en": "Lost motivation",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "再起（{n}週間）",
+    "en": "Back after a {n}-week absence",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: fighter.careerHistory(選手個人のキャリア年表)detailTplの追加フィールド(§14-3)。detail自体は生JAのまま不変(セーブ値不変・旧セーブfail-open用)。表示点はEngine.milestone.get(management.js)とui-common.js経歴タブの2箇所。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "対抗戦 勝利",
+    "en": "Won the Interpromotional Match",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.retirement.buildCareerSummary(management.js、引退モーダルのキャリアサマリ行)が呼ぶ_wmDictLabel/_wmFillWithDict向け。表示のたびにcareerRecord.historyから組み直されるため永続化なし。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "対抗戦 敗北",
+    "en": "Lost the Interpromotional Match",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.retirement.buildCareerSummary(management.js、引退モーダルのキャリアサマリ行)が呼ぶ_wmDictLabel/_wmFillWithDict向け。表示のたびにcareerRecord.historyから組み直されるため永続化なし。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "{org}に移籍",
+    "en": "Transferred to {org}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.retirement.buildCareerSummary(management.js、引退モーダルのキャリアサマリ行)が呼ぶ_wmDictLabel/_wmFillWithDict向け。表示のたびにcareerRecord.historyから組み直されるため永続化なし。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "全盛期",
+    "en": "Peak",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.retirement.buildCareerSummary(management.js、引退モーダルのキャリアサマリ行)が呼ぶ_wmDictLabel/_wmFillWithDict向け。表示のたびにcareerRecord.historyから組み直されるため永続化なし。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "ほぼ不可能",
+    "en": "Nearly impossible",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.negotiate.getRateLabel(management.js、引き抜き交渉プランの「見通し」曖昧ラベル)。消費点(ui-common.js showNegotiationPanel/confirmNegotiation)がt()を一度も通していなかった配線穴。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "非常に困難",
+    "en": "Very difficult",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.negotiate.getRateLabel(management.js、引き抜き交渉プランの「見通し」曖昧ラベル)。消費点(ui-common.js showNegotiationPanel/confirmNegotiation)がt()を一度も通していなかった配線穴。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "厳しい",
+    "en": "Tough odds",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.negotiate.getRateLabel(management.js、引き抜き交渉プランの「見通し」曖昧ラベル)。消費点(ui-common.js showNegotiationPanel/confirmNegotiation)がt()を一度も通していなかった配線穴。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "五分五分",
+    "en": "Fifty-fifty",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.negotiate.getRateLabel(management.js、引き抜き交渉プランの「見通し」曖昧ラベル)。消費点(ui-common.js showNegotiationPanel/confirmNegotiation)がt()を一度も通していなかった配線穴。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "見込みあり",
+    "en": "Good chance",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.negotiate.getRateLabel(management.js、引き抜き交渉プランの「見通し」曖昧ラベル)。消費点(ui-common.js showNegotiationPanel/confirmNegotiation)がt()を一度も通していなかった配線穴。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "年末MVP受賞",
+    "en": "Year-End MVP",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: Engine.achievement.add()(management.js、シーズン実績ポイントのlabel)が焼く生JA完成文。state.achievementItemsへ永続し、表示点(ui-render.js _buildAchievementTooltip)がt()を一度も通していなかった配線穴。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "天頂戦 優勝",
+    "en": "Tenchosen Winner",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true,
+    "kept": true,
+    "note": "i18n P7-52: Engine.achievement.add()(management.js、シーズン実績ポイントのlabel)が焼く生JA完成文。state.achievementItemsへ永続し、表示点(ui-render.js _buildAchievementTooltip)がt()を一度も通していなかった配線穴。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
+  },
+  {
+    "key": "引き止め確定、キャップ発動",
+    "en": "Retention locked in — the cap kicks in",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-52: management.jsのE6(引き抜き承知)選択肢hint。消費点(ui-common.js showChoiceEventModal)は既にWM_I18N.t(c.hint)を通しており配線は正しかったが、この文言だけ台帳未登録で未訳(fail-open)だった。management.jsはui-ledgerのJS_FILES走査対象外につき手追加"
   }
 ]
