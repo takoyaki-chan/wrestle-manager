@@ -41,7 +41,14 @@ const formatStart = source.indexOf('Engine.formatFinish = function(');
 const formatEnd = source.indexOf('// ╔', formatStart);
 const formatFinish = new Function('Engine', `${finishTextSource}\n${source.slice(formatStart, formatEnd)}; return Engine.formatFinish;`)({});
 assert.strictEqual(formatFinish('HP判定', ''), '判定勝ち', '結果画面・新聞で時間切れの白星根拠が伝わらない');
-assert.ok(source.includes('時間切れ判定により、${winner === \'left\' ? L.name : R.name}の勝利'),
-  '試合ログに判定勝ちの一言が無い');
+// i18n Stage B P7-53(裁定C-6): 実況ログの文面は data.js の BATTLE_LOG_TEMPLATES へ移設し、
+// match-engine.js 側はテンプレIDで積むようになった(specs §42-7「ソースの形を見る契約テストは
+// i18n配線で落ちる」の再来)。契約は「時間切れの勝者を告げる1行が、テンプレとして存在し、
+// 実際に時間切れ分岐から積まれている」こと — 移設先と呼び出しの両方を見る。
+assert.ok(singlesTimeout.includes("pushLog('timeout'")
+  && singlesTimeout.includes("name: winner === 'left' ? L.name : R.name"),
+  '試合ログに判定勝ちの一言を積む呼び出しが無い');
+assert.ok(dataSource.includes("timeout: '⏰ 時間切れ判定により、{name}の勝利！',"),
+  'BATTLE_LOG_TEMPLATESに時間切れの一言が無い');
 
 console.log('match-timeout-no-draw-test: ok');

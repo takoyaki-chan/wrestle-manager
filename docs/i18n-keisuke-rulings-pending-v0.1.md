@@ -206,7 +206,13 @@ Stage B(P4〜P7)の作業中に「Claude 側では決められない」と判断
 
 **推奨**: #1 (a)(説明文に「集客力にもボーナス」追記) / #2 (d)(暫定 (a) 可) / #3 (a')。**コードは未変更・裁定待ち**。
 
-### C-6. match-engine.js の試合実況ログが実は観戦画面に生JAで出ている(P7-52 で前提を訂正・**規模超過のため設計相談**)
+### C-6. match-engine.js の試合実況ログが実は観戦画面に生JAで出ている(P7-52 で前提を訂正) → **✅ 実装済み(P7-53、2026-09-06。選択肢1を採用)**
+
+> **解決**: 選択肢1(構造化して表示時翻訳する)を P7-53 で実装した。文面52本(single 24 / tag 28)を `data.js` の `BATTLE_LOG_TEMPLATES` へ移設し、`pushLog(id, params)` 一本へ統一。ただし**dict-opts ではなく §14-3(追加フィールド方式)**を採った——`recordFrames` の呼び出し元10箇所のうちジュニアTN・天頂戦の2経路は `tickWeek` 配下(Engine層)で `WM_I18N` を持てず、かつその `frames` は `G` へ永続するため、生成時翻訳では旧セーブ互換が壊れる。`log`(=`result.log`)はJA完成文のまま1バイト不変で、フレームに `logLineTpls` / `logLineVars` を併記し、観戦iframeの `_logLineHtml` が `WM_I18N.t(tpl, vars)` を引く(旧フレームはJAへfail-open)。あわせて「危険パターン」だった**完成文の部分一致による演出分類3箇所も撤廃**(`logLineSpoilers` / `logLineClasses`)。JA同一性は実試合18,615行+凍結コピー2,808通りで差異0、分類の等価性も25,131行で不一致0。検証の全表は `docs/worklog.md` の P7-53 エントリ、仕様は `specs/i18n-runtime-spec-v1.0.md` §51。
+>
+> **裁定不要になった点**: 選択肢2(据え置き)・3(簡易措置)は採らなかった。**実機確認は残っている** — `docs/実機確認バックログ.md` の P7-53 節を参照。
+
+以下は起票当時(P7-52)の記述。
 
 **状況**: これまで「match-engine.js の `log.push` 試合ログは `result.log` の UI 消費点が無いので表示されない」という前提で棚卸し対象から外していた(docs/i18n-coverage-report-v0.1.md 表5「match-engine.js」の注記)。P7-52 で再確認したところ、この前提は**誤りだった**。`pushLog()`/`log.push()` が積む生JA文(`T{turn}: [開幕大技]{atk}の{move} → 透かされた！{def}に反撃の好機！` 等、単体戦約20種+タッグ戦約20種、合計約90箇所)は各フレームの `logLines` 配列に入り、観戦モードの実描画コード(`battle-engine-main.js` の `_appendLogForFrame()` が `fr.logLines` を `_logLineHtml()` 経由で `#battleLog` へ直接 innerHTML 注入、`tag-battle-main.js` も同型)から**確実に消費・表示されている**。つまり毎試合の実況テロップは、EN実行時も生JAのまま出続けている。
 

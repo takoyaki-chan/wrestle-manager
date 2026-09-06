@@ -547,32 +547,71 @@ function _updatePanel(side){
 }
 
 // 結末を示唆するログ行を判定。pin/rollup/tkoStop シーケンスフレームでのみ hold する。
+// i18n Stage B P7-53(裁定C-6): 完成文の部分一致は**翻訳した瞬間に無音で壊れる**ので、
+// 生成元(match-engine.js の pushLog)がテンプレIDに固定した `logLineSpoilers` を正とする。
+// 下の正規表現は、この配列を持たない旧フレーム(旧セーブのJT/天頂戦リプレイ)専用の保険。
 const _SPOILER_LINE_RE = /(★|カウント2で返した|振りほどいた|キックアウト|ロープエスケープ|カットイン|見殺し|丸め込み|タップ|レフェリーストップ|大金星)/;
 function _isSpoilerLine(line){
   const t = String(line).trim();
   return _SPOILER_LINE_RE.test(t);
 }
 
+// i18n Stage B P7-53: フレームのログ行を「1行=1レコード」へ展開する。
+// text(JA完成文)は §14-3 の追加フィールド方式でそのまま残っており、tpl/vars があれば
+// 表示直前に WM_I18N.t() で言語別に組み直す。tpl が無い旧フレームは text へ fail-open。
+//   - {name}/{move} は t() のパラメータ値自動変換(D-P6-2/P7-5)で名前辞書・技名辞書を通る
+//   - cls / spoiler は言語非依存(生成元が確定済み)。無ければ従来の部分一致へ落ちる
+function _logRecords(fr){
+  const lines = (fr && fr.logLines) || [];
+  const tpls = (fr && fr.logLineTpls) || [];
+  const vars = (fr && fr.logLineVars) || [];
+  const clss = (fr && fr.logLineClasses) || [];
+  const spos = (fr && fr.logLineSpoilers) || [];
+  return lines.map((text, i) => ({
+    text,
+    tpl: tpls[i] || null,
+    vars: vars[i] || null,
+    cls: (clss.length > i) ? clss[i] : undefined,
+    spoiler: (spos.length > i) ? !!spos[i] : _isSpoilerLine(text),
+  }));
+}
+
+// 行頭の字下げ("  → …")は保ったまま返す(旧 `logLines.join(' ')` と1バイト同一にする)。
+// trim は表示側(_logLineHtml)が従来どおり行う。
+function _logRecordText(rec){
+  if (rec && rec.tpl) {
+    try { return String(WM_I18N.t(rec.tpl, rec.vars || {})); } catch (e) {}
+  }
+  return String((rec && rec.text) || '');
+}
+
 function _appendLogForFrame(fr){
   if (!fr) return;
   const turnMarker = `<div class="log-new-marker">— Turn ${fr.turn} —</div>`;
-  let rawLines = fr.logLines || [];
+  let recs = _logRecords(fr);
   // pin seq 予定フレーム: ★決着行＋結末示唆行（カウント2返し/キックアウト/カットイン/丸め込み等）を保留
   if (S.pinSeqPending) {
-    const held = rawLines.filter(l => _isSpoilerLine(l));
-    rawLines = rawLines.filter(l => !_isSpoilerLine(l));
+    const held = recs.filter(r => r.spoiler);
+    recs = recs.filter(r => !r.spoiler);
     S.heldWinLogs = { turn: fr.turn, held };
   }
-  const lines = rawLines.map(l => _logLineHtml(l, fr)).join('');
+  const lines = recs.map(r => _logLineHtml(r)).join('');
   S.logHtml = turnMarker + lines + S.logHtml;
   const lb = document.getElementById('battleLog');
   if (lb){ lb.innerHTML = S.logHtml; lb.scrollTop = 0; }
 }
 
-function _logLineHtml(line, fr){
-  const t = String(line).trim();
+function _logLineHtml(rec){
+  const t = _logRecordText(rec).trim();
   if (!t) return '';
-  if (t.startsWith('★') || t.includes('時間切れ') || t.includes('丸め込みで逆転'))
+  // 生成元が確定させたクラス(P7-53)を最優先。undefined=クラス情報を持たない旧フレーム
+  // のときだけ、従来の完成文部分一致へフォールバックする。
+  let cls = rec ? rec.cls : undefined;
+  if (cls === undefined) {
+    const ja = String((rec && rec.text) || '').trim();
+    cls = (ja.startsWith('★') || ja.includes('時間切れ') || ja.includes('丸め込みで逆転')) ? 'finish' : null;
+  }
+  if (cls === 'finish')
     return `<div class="log-event finish"><span class="log-event-text log-finish-text">${escHtml(t)}</span></div>`;
   const m = t.match(/^T(\d+)\s+\[[^\]]+\]\s+(.*)$/);
   if (m) return `<div class="log-line"><span style="color:#444">T${m[1]}</span> ${escHtml(m[2])}</div>`;
@@ -1204,7 +1243,7 @@ function _finishPinSeq(){
 
   // 保留していた「★ 決着！」ログ追記
   if (S.heldWinLogs && fr && S.heldWinLogs.turn === fr.turn && S.heldWinLogs.held.length) {
-    const heldHtml  = S.heldWinLogs.held.map(l => _logLineHtml(l, fr)).join('');
+    const heldHtml  = S.heldWinLogs.held.map(r => _logLineHtml(r)).join('');
     const markerEnd = S.logHtml.indexOf('</div>');
     if (markerEnd >= 0) {
       const cut = markerEnd + '</div>'.length;
@@ -1290,7 +1329,7 @@ function _rebuildLogUntil(frameCount){
     const frame = S.frames[i];
     if (!frame) continue;
     const marker = `<div class="log-new-marker">— Turn ${frame.turn} —</div>`;
-    const lines = (frame.logLines || []).map(line => _logLineHtml(line, frame)).join('');
+    const lines = _logRecords(frame).map(r => _logLineHtml(r)).join('');
     html = marker + lines + html;
   }
   return html;
@@ -1573,7 +1612,9 @@ function _narrateFrame(fr){
   }
 
   const action = fr.action;
-  if (!action) return { text: (fr.logLines || []).join(' '), dramatic: false };
+  // P7-53: action を持たないフレームは試合ログ行をそのまま実況ストリップへ出す。
+  // 表示点なので言語別に組み直したテキストを使う(JAは1バイト同一)。
+  if (!action) return { text: _logRecords(fr).map(_logRecordText).join(' '), dramatic: false };
 
   const atk = action.atkSide === 'left' ? S.L : S.R;
   const def = action.atkSide === 'left' ? S.R : S.L;

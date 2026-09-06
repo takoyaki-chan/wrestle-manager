@@ -820,6 +820,153 @@ const FINISH_TEXT = {
 // finTypeがテーブルに無い(想定外)ときの表示フォールバック。
 const FINISH_TEXT_FALLBACK = '激闘決着';
 
+// ── i18n Stage B P7-53(裁定C-6): 観戦モードの試合実況ログ ──────────────────
+// match-engine.js の `log.push` / `pushLog` が積んでいたJSテンプレートリテラルを、
+// data.js のトップレベル表へ移設したもの(§10-2「関数の中のリテラルはどの抽出器からも
+// 見えない」型)。**JA原文は1バイトも変えていない** — 従来のテンプレートリテラルが
+// 生成していた完成文と、この表を fillTemplateVars で充填した結果は完全一致する
+// (証明: docs/worklog.md の P7-53 エントリ。18,615行の全数突合)。
+//
+// 分岐は完全文で持つ(構造規約3)。決着種別(フォール/ギブアップ/TKO)・クリティカル・
+// 「透かし後の反撃」注記・タッチ種別のように**文中へ差し込まれるJA語彙**は、値だけ
+// 訳す仕組み(§14-2)を使わず変種テンプレへ展開してある。英語では語順・前置詞ごと
+// 変わるため、値の差し替えでは英文が組み上がらない。
+//
+// 消費点は match-engine.js の `pushLog(id, params)` 一本。engineはJA完成文を
+// `log`(=result.log、従来どおりJA)へ積みつつ、フレームへ `logLineTpls` /
+// `logLineVars` を併記する(§14-3の追加フィールド方式)。表示点は観戦iframeの
+// `_logLineHtml`(battle-engine-main.js / tag-battle-main.js)で、そこが
+// `WM_I18N.t(tpl, vars)` を引く。**Engineは WM_I18N を呼ばない**(§1)。
+// {name}/{move} はt()のパラメータ値自動変換(D-P6-2/P7-5)で名前辞書・技名辞書を通る。
+// {phase} は 'Opening'/'Mid'/'End'/'Climax' で元から英語なので訳出対象ではない。
+const BATTLE_LOG_TEMPLATES = {
+  // シングル戦(Engine.battle.simulateMatch)
+  single: {
+    openingExecMiss: 'T{turn}: [開幕大技] {name}の{move} → 透かされた！ {name2}に反撃の好機！',
+    openingExecHit: 'T{turn}: [開幕大技] {name}の{move} → {name2}に{dmg}の大ダメージ！ (HP:{hp}/{mhp})',
+    openingFinishFall: '★ [開幕決着] {name}、{move}でフォール勝ち！',
+    openingFinishGu: '★ [開幕決着] {name}、{move}でギブアップ勝ち！',
+    openingFinishTko: '★ [開幕決着] {name}、{move}でTKO勝ち！',
+    miss: 'T{turn}: {name}の{move} → MISS',
+    counter: 'T{turn}: {name}の{move} → カウンター！ {name2}の{move2}で{name}に{dmg}ダメージ',
+    hit: 'T{turn}: {name}の{move} → {name2}に{dmg}ダメージ (HP:{hp}/{mhp})',
+    hitCrit: 'T{turn}: {name}の{move} → {name2}に{dmg}の大ダメージ！ (HP:{hp}/{mhp})',
+    hitBoost: 'T{turn}: {name}の{move}（透かし後の反撃） → {name2}に{dmg}ダメージ (HP:{hp}/{mhp})',
+    hitBoostCrit: 'T{turn}: {name}の{move}（透かし後の反撃） → {name2}に{dmg}の大ダメージ！ (HP:{hp}/{mhp})',
+    kickoutGrit: '  → {name}がキックアウト！ Grit発動！',
+    hpNote: '  → {name} HP:{hp}/{mhp}',
+    ropeEscapeGrit: '  → {name}がロープエスケープ！ Grit発動！',
+    finishFall: '★ {name}、{move}でフォール勝ち！',
+    finishGu: '★ {name}、{move}でギブアップ勝ち！',
+    finishTko: '★ {name}、{move}でTKO勝ち！',
+    pinSubmission: '★ {name}、{move}でギブアップ！',
+    pinFall: '★ {name}、{move}からのフォールで3カウント！',
+    pinFailSub: '  → 締めに入った！ だが{name}が振りほどいた！',
+    pinFailFall: '  → フォール！ だが{name}がカウント2で返した！',
+    rollup: '★ {name}、まさかの{move}で3カウント！ 大金星！',
+    refStop: '★ レフェリーストップ！ {name}のTKO勝利！',
+    timeout: '⏰ 時間切れ判定により、{name}の勝利！',
+  },
+  // タッグ戦(Engine.tagMatch.simulateTagMatch)
+  tag: {
+    downTko: '  ★ 決着！ {name}は立ち上がれない。TKO！（{phase}）',
+    miss: 'T{turn} [{phase}] {name}の{move}→MISS',
+    counter: 'T{turn} [{phase}] {name}がカウンター！ {move} → {name2}に{dmg}ダメージ',
+    hit: 'T{turn} [{phase}] {name}の{move} → {name2}に{dmg}ダメージ (HP:{hp}/{mhp})',
+    kickout: '  → {name}がキックアウト！ ({n}回目)',
+    betrayal: '  → {name}が助けに行かない！ 見殺し！',
+    cutinSave: '  → {name}がカットイン！ {name2}を救出！',
+    ropeEscape: '  → {name}がロープエスケープ！',
+    counterFinishFall: '  ★ 決着！ {name}のカウンター（{move}）でフォール勝ち！ ({phase})',
+    counterFinishGu: '  ★ 決着！ {name}のカウンター（{move}）でギブアップ勝ち！ ({phase})',
+    counterFinishTko: '  ★ 決着！ {name}のカウンター（{move}）でTKO勝ち！ ({phase})',
+    finishFall: '  ★ 決着！ {name}の{move}でフォール勝ち！ ({phase})',
+    finishGu: '  ★ 決着！ {name}の{move}でギブアップ勝ち！ ({phase})',
+    finishTko: '  ★ 決着！ {name}の{move}でTKO勝ち！ ({phase})',
+    rollupCutin: '  → {name}の{move}！ しかし{name2}がカットイン！',
+    rollupWin: '  ★ {name}が{move}で3カウント！ ({phase})',
+    refStop: '  ★ レフェリーストップ！ {name}のTKO勝利！ ({phase})',
+    pinBetrayalWin: '  → ピン成功！ {name}が見殺し！ {name2}の勝利！',
+    pinCutin: '  → ピン！ だが{name}がカットイン！',
+    pinWin: '  ★ ピン成功！ {name}の勝利！ ({phase})',
+    pinKickout: '  → ピン！ だが{name}が返した！',
+    doubleTeam: '  ★ ダブルチーム！ {name}&{name2}の{move}！ {name3}に{dmg}ダメージ！',
+    doubleTeamCutin: '  → {name}がカットイン！ なんとか阻止！',
+    tagMoveFinish: '  ★ タッグ技で決着！',
+    friendlyFire: '  ※ 連携にほころび！ {name}の反撃が{name2}をかすめる！',
+    hotTag: '  ★ 反撃のタッチ！ {name}から{name2}へ！ 会場が沸く！',
+    touchTactical: '  ↔ タッチ(戦術): {name} → {name2}',
+    touchWorn: '  ↔ タッチ(消耗): {name} → {name2}',
+  },
+};
+
+// i18n Stage B P7-53: 実況ログ1行あたりの**言語非依存**な演出分類。
+// 従来 battle-engine-main.js / tag-battle-main.js は完成文の部分一致
+// (`startsWith('★')` / `includes('時間切れ')` / `includes('キックアウト')` …)で
+// この2つを判定していた——翻訳した瞬間に無音で壊れる型。生成元であるここで
+// テンプレIDに固定し、フレームへ `logLineClasses` / `logLineSpoilers` として運ぶ。
+//   cls     : ログ行のCSSクラス(null=無分類)。従来 pushLog の第2引数だったもの
+//   spoiler : ピン/丸め込み/TKOシーケンスの再生中は伏せておく行か
+//             (従来の `_SPOILER_LINE_RE` に一致していた行 = true)
+const BATTLE_LOG_LINE_KINDS = {
+  single: {
+    openingExecMiss: { cls: null, spoiler: false },
+    openingExecHit: { cls: null, spoiler: false },
+    openingFinishFall: { cls: 'finish', spoiler: true },
+    openingFinishGu: { cls: 'finish', spoiler: true },
+    openingFinishTko: { cls: 'finish', spoiler: true },
+    miss: { cls: null, spoiler: false },
+    counter: { cls: null, spoiler: false },
+    hit: { cls: null, spoiler: false },
+    hitCrit: { cls: null, spoiler: false },
+    hitBoost: { cls: null, spoiler: false },
+    hitBoostCrit: { cls: null, spoiler: false },
+    kickoutGrit: { cls: null, spoiler: true },
+    hpNote: { cls: null, spoiler: false },
+    ropeEscapeGrit: { cls: null, spoiler: true },
+    finishFall: { cls: 'finish', spoiler: true },
+    finishGu: { cls: 'finish', spoiler: true },
+    finishTko: { cls: 'finish', spoiler: true },
+    pinSubmission: { cls: 'finish', spoiler: true },
+    pinFall: { cls: 'finish', spoiler: true },
+    pinFailSub: { cls: null, spoiler: true },
+    pinFailFall: { cls: null, spoiler: true },
+    rollup: { cls: 'finish', spoiler: true },
+    refStop: { cls: 'finish', spoiler: true },
+    timeout: { cls: 'finish', spoiler: false },
+  },
+  tag: {
+    downTko: { cls: 'finish', spoiler: true },
+    miss: { cls: null, spoiler: false },
+    counter: { cls: null, spoiler: false },
+    hit: { cls: null, spoiler: false },
+    kickout: { cls: null, spoiler: true },
+    betrayal: { cls: 'betrayal', spoiler: true },
+    cutinSave: { cls: 'cutin', spoiler: true },
+    ropeEscape: { cls: null, spoiler: true },
+    counterFinishFall: { cls: 'finish', spoiler: true },
+    counterFinishGu: { cls: 'finish', spoiler: true },
+    counterFinishTko: { cls: 'finish', spoiler: true },
+    finishFall: { cls: 'finish', spoiler: true },
+    finishGu: { cls: 'finish', spoiler: true },
+    finishTko: { cls: 'finish', spoiler: true },
+    rollupCutin: { cls: 'cutin', spoiler: true },
+    rollupWin: { cls: null, spoiler: true },
+    refStop: { cls: null, spoiler: true },
+    pinBetrayalWin: { cls: 'betrayal', spoiler: true },
+    pinCutin: { cls: 'cutin', spoiler: true },
+    pinWin: { cls: 'finish', spoiler: true },
+    pinKickout: { cls: null, spoiler: true },
+    doubleTeam: { cls: 'double', spoiler: true },
+    doubleTeamCutin: { cls: 'cutin', spoiler: true },
+    tagMoveFinish: { cls: 'finish', spoiler: true },
+    friendlyFire: { cls: null, spoiler: false },
+    hotTag: { cls: 'hottag', spoiler: true },
+    touchTactical: { cls: 'touch', spoiler: false },
+    touchWorn: { cls: 'touch', spoiler: false },
+  },
+};
+
 // ── Tier 2: ビッグマッチ用パラメータ（PPV/タイトル/対抗戦/トーナメント）──
 const BIGMATCH_MAX_T = 33;
 const BIGMATCH_PHASES = [

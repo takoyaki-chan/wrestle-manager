@@ -128,7 +128,7 @@ GLIMPSE_B のイベントラベルとして ui-ledger に既訳("A fated nemesis
 | data.js | 108 | 1,298 | `名���負製造機`(**★文字化けバグ、下記参照**)、`試練`、`{name}は、この日を最後に現役を引退した。`、絆・因縁イベントの短い口上(27000番台)。**★P7-33で仕分け済み**(TRAIT_DEFS/INJURY_*/SEASON_HEADLINE_LABEL/FAREWELL_CLOSING/FAREWELL_KIND_TEXT/GLIMPSE_A_LINES分。§8参照。他の残りは未着手) |
 | management.js(上記A/B以外の残り) | 170 | 1,242 | `📉◯に◯（連敗◯）`、`🌅◯が今季限りでの引退を表明`、`タッグ(◯) vs ◯`、`少し距離を感じる`(gameLog隣接の短い通知文が主体)。**P7-33で関連バグ2件を発見**(§8参照。management.js自体は編集対象外のため未修正) |
 | app.js | 55 | 538 | `杯`、`自身の試合評価の最高値`、`この団体を、必ず大きくしてみせます。`(イントロ台詞?)、`[WM][challenge-request]...`系デバッグconsole.error。**★P7-33で仕分け済み**(33件。§8参照。残22件はconsole.error等デバッグ文字列で本タスク対象外) |
-| match-engine.js | 48 | 451 | `T{turn}: [開幕大技]{atk}の{move} → 透かされた！`等、`T{turn}:`接頭の実況トレース文。実際の観戦画面に出る実況ログか内部トレースのみかは要確認 |
+| match-engine.js | 48 | 451 | `T{turn}: [開幕大技]{atk}の{move} → 透かされた！`等、`T{turn}:`接頭の実況トレース文。**観戦画面に出る実況ログだった**(P7-52で前提訂正 → **P7-53で解決済み**。§9-3・specs §51) |
 | relationships.js(上記A以外) | 29 | 265 | `同期入団`、`元タッグパートナー`、`練習中の敵意`、`仲間への想い`(関係性イベントの短いラベル)。**★P7-33で仕分け済み**(38件。§8参照) |
 | factions.js / tag-battle-main.js / その他5ファイル | 32 | 91 | 小粒(1ファイルあたり数件〜十数件)。**★P7-33で仕分け済み**(factions.js 4件+観戦系10件。§8参照) |
 
@@ -231,7 +231,9 @@ P7-52は「4台帳のどれにも載っていない残り」を**全数**仕分�
 4. **実績ポイントlabel(ランキング画面の実績ツールチップ)** — `Engine.achievement.add()`が焼く`label`(年末MVP受賞/ベストマッチ賞等8種)を、`ui-render.js`の`_buildAchievementTooltip`が`escHtml(it.label)`で無変換描画していた配線穴。`escHtml(WM_I18N.t(it.label))`へ変更し、未登録だった2種(年末MVP受賞/天頂戦優勝)をui-ledgerへ追加(残り6種は既存ledgerで対応済み)
 5. **E6(引き抜き承知イベント)の「引き止め確定、キャップ発動」hint** — 消費点(`showChoiceEventModal`)は既に`WM_I18N.t(c.hint)`で正しく配線されていたが、この1文言だけledger未登録で未訳(fail-open)だった。翻訳のみ追加(コード変更なし)
 
-### 9-3. (a') match-engine.js — 前提の訂正(規模超過につき未着手)
+### 9-3. (a') match-engine.js — 前提の訂正(規模超過につき未着手) → **✅ P7-53(2026-09-06)で解決**
+
+> **解決**: 文面52本(single 24 / tag 28)を `data.js` の `BATTLE_LOG_TEMPLATES` へ移設し、`pushLog(id, params)` へ統一。**dict-opts ではなく §14-3(追加フィールド方式)** を採った(JT・天頂戦の frames は tickWeek 配下で生成され `G` へ永続するため。詳細は `specs/i18n-runtime-spec-v1.0.md` §51-2)。`.includes()` 分類ロジックも `logLineClasses` / `logLineSpoilers` へ置き換え済み。**実測は「約90箇所」ではなく `log.push` 16 + `pushLog` 33 = 49呼び出し**だった。JA同一性は実試合18,615行+凍結コピー2,808通りで差異0。
 
 指示書の既知情報は「match-engine.js の `log.push` 試合ログ(表示されない=`result.log` の UI 消費点なし。P7-33 で確認済み)」だったが、**再確認の結果これは誤りだった**。
 

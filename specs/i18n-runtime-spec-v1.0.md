@@ -2581,3 +2581,65 @@ P7-31 §44-5-発見1が起票した「財務タブの明細ラベルが6箇所�
 ### 50-4. 前提の訂正: match-engine.jsの試合実況ログは表示されている
 
 `docs/i18n-coverage-report-v0.1.md`表5(§5)の「match-engine.js(48/451字): `T{turn}:`接頭の実況トレース文。実際の観戦画面に出る実況ログか内部トレースのみかは要確認」という**未確認のまま「表示されない」に倒して棚卸し対象から外していた**判断を、P7-52で追跡した結果**誤りと判明**した。`pushLog()`/`log.push()`が積む文字列は`logLines`としてフレームに記録され、`battle-engine-main.js`/`tag-battle-main.js`の`_appendLogForFrame()`が`fr.logLines`を`#battleLog`へ直接innerHTML注入している——**Engineが生成した生JA文字列がそのままDOMへ渡る、§1(Engine純粋関数)とは別の軸で見ても典型的な未対応箇所**。件数(約90箇所のpushLog呼び出し)と、ログ行の生JA文字列に依存する演出分類ロジック(`.includes('★ 決着')`等、§8-2で個別に危険パターンとして温存してきたもの)が絡み合っているため、**この1バッチでは着手せず**`docs/i18n-keisuke-rulings-pending-v0.1.md` C-6として設計相談を起票した。次にmatch-engine.jsのログを扱うバッチは、この節と§8-2の危険パターン一覧を先に読むこと。
+
+> **→ P7-53(2026-09-06)で解消済み。仕様は §51 を参照**(実測は約90箇所ではなく`log.push` 16 + `pushLog` 33 = 49呼び出し / 52テンプレだった)。
+
+---
+
+## 51. Stage B P7-53(裁定C-6) — 観戦モードの試合実況ログ(2026-09-06追加)
+
+`match-engine.js` の両エンジン(`Engine.battle.simulateMatch` / `Engine.tagMatch.simulateTagMatch`)が積む実況ログ52本(single 24 / tag 28)を `data.js` の `BATTLE_LOG_TEMPLATES` へ移設し、観戦モード(`battle-engine.html` / `tag-battle.html`)の表示点で言語別に組み直す形にした。**JA出力は1バイト不変**(実試合18,615行+凍結コピー2,808通りで差異0。証明の詳細は `docs/worklog.md` の P7-53 エントリ)。
+
+### 51-1. 消費経路
+
+- 表: `BATTLE_LOG_TEMPLATES.single` / `.tag`(data.js トップレベル、`test/i18n-extract-templates.js` の TARGET_TABLES 登録済み)
+- 生成: `pushLog(id, params)`(両エンジンのローカル関数)。`log.push(fillTemplateVars(tpl, params))` で**JA完成文を従来どおり `log` へ積み**、並走する `logTpl` / `logVars` / `logCls` / `logSpoiler` へ同じ添字でメタを積む
+- フレーム: `logLines`(JA・従来から不変) + `logLineTpls` / `logLineVars` / `logLineClasses` / `logLineSpoilers`
+- 表示: 観戦iframeの `_logRecords(fr)` → `_logRecordText(rec)` → `_logLineHtml(rec)`。`rec.tpl ? WM_I18N.t(rec.tpl, rec.vars) : rec.text`
+- **Engineは `WM_I18N` を呼ばない**(§1)。辞書を引くのは iframe(UI層)だけ
+
+`{name}`/`{move}` は `t()` のパラメータ値自動変換(D-P6-2 / P7-5)で名前辞書・技名辞書を通るので、値の変換配線は不要。`{phase}` は `'Opening'/'Mid'/'End'/'Climax'` で元から英語。
+
+### 51-2. dict-optsが使えない族 — 「生成がEngine層の奥で起きるので dict が渡せない」
+
+指示書の初期案は dict-opts(`opts.dict` を糸通しして翻訳してから充填)だったが、**呼び出し元を数えた結果それでは塞がらなかった**。`recordFrames: true` の呼び出し元は10箇所(app.js 6 / management.js 4)あり、うち**ジュニアTNと天頂戦は `tickWeek` の中で事前シミュレートされる**。tickWeek は Engine 層で `WM_I18N` を持てない(§1)ため、この2経路に dict を渡す手立てがない。しかもその `frames` は `G.juniorTournament.rounds[].matches[].frames` 等として**セーブへ永続する**ので、生成時に翻訳して焼くと「ENでセーブ→JAで再生」がEN表示になる(§14-3が禁じる形)。
+
+**したがって §14-3(追加フィールド方式)を採る**。§14-3 は元々「`Math.random()` で選ぶので表示時再生成が使えない」族のために作られた形だが、**「生成がEngine層の奥で起きるので dict を渡せない」族にもそのまま効く**。判定は「dictを渡せるか」ではなく次の2問:
+
+1. その完成文は**セーブへ永続するか**(する → §14-3 / しない → dict-opts か表示時再生成)
+2. 生成点まで**UI層から dict を糸通しできるか**(できない → §14-3)
+
+どちらか一方でもNoなら §14-3。逆に「呼ばれるたびに組み直せて、永続しない」なら §13-1(表示時再生成)で足りる。
+
+### 51-3. 完成文の部分一致による演出分類は生成元でIDに固定する
+
+§8-2 が「危険パターン」として温存してきた3箇所を撤廃した。
+
+| 旧判定 | 新 |
+|---|---|
+| `_SPOILER_LINE_RE`(★・キックアウト・カットイン・見殺し・丸め込み等) — ピンシーケンス中に伏せる行の判定 | `frames[].logLineSpoilers[i]` |
+| single `_logLineHtml` の `startsWith('★') \|\| includes('時間切れ')` | `frames[].logLineClasses[i]` |
+| tag `_logLineHtml` のフォールバック7分岐 | 同上 |
+
+正は `data.js` の **`BATTLE_LOG_LINE_KINDS`**(テンプレIDごとに `{ cls, spoiler }`)。**1つのIDに1つの分類**という形にしたので、pushLog 側は `cls` を手渡さない(タッグは従来第2引数で渡していた)。旧判定は「配列を持たない旧フレーム(旧セーブのJT・天頂戦リプレイ)」専用のフォールバックとして残すが、**JA原文(`rec.text`)に対して掛ける** — 表示文はENでは一致しない。
+
+- **等価性は機械証明する**。実試合25,131行について旧正規表現/旧`startsWith`の判定と新配列が全行一致(不一致0)であることを確認した
+- **`fr.logLines.indexOf(line)` で引くのは不可**。同一ターン内に同じ文が2行出ると先頭のクラスを取り違える(P3a-3 D-G4 のタッグ実装にこの穴があった)。**行レコード(`_logRecords`)で添字ごと運ぶ**
+
+### 51-4. 分岐は完全文で持つ(構造規約3)— 決着種別を値で差し込まない
+
+`{finType}`(フォール/ギブアップ/TKO)や「大ダメージ」注記・「透かし後の反撃」注記・タッチ種別(戦術/消耗)は、JAでは値の差し替えで足りるが**英語では語順と前置詞ごと変わる**("wins by pinfall with X" / "wins by submission with X")。§14-2 の `_wmDictLabel`(値だけ訳す)ではなく、変種テンプレへ展開した。JA 49呼び出しに対しテンプレは52本(+3)。
+
+### 51-5. 到達しない枝は凍結コピーで担保する
+
+`tag.downTko`(ターン開始時にHP≤0を検出するセーフティネット。本来はダメージ発生箇所で決着するので通常は踏まない)は実試合の総当りでも到達しない。**`test/battle-log-template-test.js`** が移設前のJSテンプレートリテラルを凍結コピーとして持ち、代表値・境界値の直積を**表の全キー**へ通す(2,808通り)。`BATTLE_LOG_LINE_KINDS` のキー集合が表と一致すること、`cls` が観戦側CSSの既知クラスのみであることも同テストで検査する(片方だけキーを足すと既定値へ黙って落ちるため)。
+
+### 51-6. 「ソースの形を見る契約テスト」の更新(§42-7 の3例目)
+
+`test/match-timeout-no-draw-test.js` が `source.includes('時間切れ判定により、${winner === ...}の勝利')` で match-engine.js のソース文字列を見ていたため、移設で落ちた。契約は「時間切れの勝者を告げる1行が存在し、実際に時間切れ分岐から積まれている」ことなので、**移設先(data.js のテンプレ)と呼び出し(`pushLog('timeout', …)`)の両方を見る**形へ書き換えた。
+
+### 51-7. 検証(すべてフォアグラウンド実行)
+
+`node --check`(4ファイル)/ `ja-golden` 完全一致(`3466a6ff…1037b`)/ `npm test` **266/266** / `balance-baseline` 逸脱なし / `auto-sim 20 42` ALL CLEAR・指紋 96492883 不変 / `i18n-ratchet`(data.js +51・match-engine.js −51 の移設、総数27,932不変。`--update` 済)/ `i18n-build-template-dict` 3,533キー未訳0 / `i18n-ledger-consistency-test` ok / `spectator-move-i18n-check` **ALL CHECKS PASS(77項目)** / JA走破 PASS 336手 digest `940bcd9d0515d8d0` / EN走破 PASS 401手 i18n-miss 0。
+
+`spectator-move-i18n-check` には P7-9 からの繰り越し「試合ログ行の実況ストリップ落ち込みは判定から除く」があったが、本タスクで**撤廃**した。あわせて、実DOM `#battleLog` は再生の進み方(アニメ完了後に追記される)でサンプルが揺れるため、**描画関数 `_logLineHtml` へ全フレームを通した決定的な採取**を併置している。

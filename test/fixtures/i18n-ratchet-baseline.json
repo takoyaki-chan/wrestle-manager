@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-06T05:44:22.393Z",
+  "generatedAt": "2026-09-06T06:14:16.314Z",
   "files": {
     "data.js": {
-      "jaCount": 17679,
-      "jaChars": 315560
+      "jaCount": 17730,
+      "jaChars": 316066
     },
     "kuroda-text.js": {
       "jaCount": 900,
@@ -81,10 +81,6 @@
       "jaCount": 90,
       "jaChars": 842
     },
-    "match-engine.js": {
-      "jaCount": 95,
-      "jaChars": 647
-    },
     "draft-negotiation.js": {
       "jaCount": 54,
       "jaChars": 617
@@ -92,6 +88,10 @@
     "relationships.js": {
       "jaCount": 46,
       "jaChars": 397
+    },
+    "match-engine.js": {
+      "jaCount": 44,
+      "jaChars": 175
     },
     "flight-recorder.js": {
       "jaCount": 13,

@@ -304,6 +304,21 @@ Engine.battle = {
       };
 
       let mom = 0, turn = 1, log = [], winner = null, finType = null, finMove = null, finishPhase = null;
+      // i18n Stage B P7-53(裁定C-6): 実況ログはテンプレID + パラメータで積む。
+      // logには従来と1バイト同一のJA完成文が入る(=result.logは不変)。フレームには
+      // テンプレID由来の tpl/vars と言語非依存の分類(cls/spoiler)を併記し、
+      // 観戦iframe(battle-engine-main.js)の表示点が WM_I18N.t で引き直す(§14-3)。
+      // **Engineは WM_I18N を呼ばない**(§1) — ここはJAの組み立てだけを行う。
+      const logTpl = [], logVars = [], logCls = [], logSpoiler = [];
+      function pushLog(id, params) {
+        const tpl = BATTLE_LOG_TEMPLATES.single[id];
+        const kind = BATTLE_LOG_LINE_KINDS.single[id] || { cls: null, spoiler: false };
+        log.push(fillTemplateVars(tpl, params));
+        logTpl.push(tpl);
+        logVars.push(params || {});
+        logCls.push(kind.cls);
+        logSpoiler.push(!!kind.spoiler);
+      }
       // 威圧感: 序盤モメンタム優位（左+/右-）
       if (Traits.has(charL, '威圧感') && !Traits.has(charR, '威圧感')) mom += 3;
       if (Traits.has(charR, '威圧感') && !Traits.has(charL, '威圧感')) mom -= 3;
@@ -387,6 +402,12 @@ Engine.battle = {
           consecL: L.consecutiveHits | 0,
           consecR: R.consecutiveHits | 0,
           logLines: log.slice(_turnLogStart),
+          // P7-53: 表示点(観戦iframe)が言語別に組み直すためのテンプレIDと値、
+          // および言語非依存の演出分類。logLinesと同じ添字で並ぶ。
+          logLineTpls: logTpl.slice(_turnLogStart),
+          logLineVars: logVars.slice(_turnLogStart),
+          logLineClasses: logCls.slice(_turnLogStart),
+          logLineSpoilers: logSpoiler.slice(_turnLogStart),
           action: _turnAction,
           kickout: _turnKickout,
           pinAttempt: _turnPinAttempt,
@@ -459,7 +480,7 @@ Engine.battle = {
             if (!hit) {
               def.openingCounterBoost = true;
               mom += isLeftAtk ? -eng.counterMomShift : eng.counterMomShift;
-              log.push(`T${turn}: [開幕大技] ${atk.name}の${mv.n} → 透かされた！ ${def.name}に反撃の好機！`);
+              pushLog('openingExecMiss', { turn, name: atk.name, move: mv.n, name2: def.name });
               if (recordFrames) {
                 _turnAction = {
                   kind: 'miss', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c,
@@ -479,7 +500,7 @@ Engine.battle = {
               _openingExecutionData.damage = dmg;
               _openingExecutionData.damageRatio = executionDamage.ratio;
               _openingExecutionData.damageBand = executionDamage.band;
-              log.push(`T${turn}: [開幕大技] ${atk.name}の${mv.n} → ${def.name}に${dmg}の大ダメージ！ (HP:${Math.max(0, def.hp)}/${def.mhp})`);
+              pushLog('openingExecHit', { turn, name: atk.name, move: mv.n, name2: def.name, dmg, hp: Math.max(0, def.hp), mhp: def.mhp });
               if (recordFrames) {
                 _turnAction = {
                   kind: 'hit', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c,
@@ -498,7 +519,8 @@ Engine.battle = {
                 finMove = mv.n;
                 finishPhase = ph.name;
                 _openingExecutionData.finished = true;
-                log.push(`★ [開幕決着] ${atk.name}、${mv.n}で${finLabel}勝ち！`);
+                pushLog(fType === 'fall' ? 'openingFinishFall' : fType === 'gu' ? 'openingFinishGu' : 'openingFinishTko',
+                  { name: atk.name, move: mv.n });
                 if (recordFrames) {
                   if (fType === 'tko') _turnTkoStop = true;
                   else if (fType === 'gu') {
@@ -530,7 +552,7 @@ Engine.battle = {
         const roll = Engine.rng.float(rng) * 100;
 
         if (roll > hitRate) {
-          log.push(`T${turn}: ${atk.name}の${mv.n} → MISS`);
+          pushLog('miss', { turn, name: atk.name, move: mv.n });
           mom += isLeftAtk ? -5 : 5;
           if (recordFrames) {
             _turnAction = { kind: 'miss', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, dmg: 0, isCrit: false, isBig: false };
@@ -560,7 +582,7 @@ Engine.battle = {
             mom += isLeftAtk ? -eng.counterMomShift : eng.counterMomShift;
             def.consecutiveHits = 0;
             totalCounters++;
-            log.push(`T${turn}: ${atk.name}の${mv.n} → カウンター！ ${def.name}の${cMv.n}で${atk.name}に${cDmg}ダメージ`);
+            pushLog('counter', { turn, name: atk.name, move: mv.n, name2: def.name, move2: cMv.n, dmg: cDmg });
             if (recordFrames) {
               _turnAction = { kind: 'counter', atkSide: isLeftAtk ? 'right' : 'left', move: mv.n, counterMove: cMv.n, moveD: mv.d, moveCat: mv.c, dmg: cDmg, isCrit: cDmg >= 15, isBig: cDmg >= 10 };
             }
@@ -600,8 +622,12 @@ Engine.battle = {
             if (L.gritTurns > 0) L.gritTurns--;
             if (R.gritTurns > 0) R.gritTurns--;
 
-            const dmgStr = dmg >= 15 ? `${dmg}の大ダメージ！` : `${dmg}ダメージ`;
-            log.push(`T${turn}: ${atk.name}の${mv.n}${openingCounterBoost ? '（透かし後の反撃）' : ''} → ${def.name}に${dmgStr} (HP:${Math.max(0, def.hp)}/${def.mhp})`);
+            // P7-53: 「大ダメージ」注記と「透かし後の反撃」注記の組み合わせは、
+            // 値の差し替えではなく4通りの完全文テンプレへ展開してある(構造規約3)。
+            pushLog(openingCounterBoost
+              ? (dmg >= 15 ? 'hitBoostCrit' : 'hitBoost')
+              : (dmg >= 15 ? 'hitCrit' : 'hit'),
+              { turn, name: atk.name, move: mv.n, name2: def.name, dmg, hp: Math.max(0, def.hp), mhp: def.mhp });
 
             if (def.hp <= 0) {
               const fType = B.determineFinishType(rng, mv);
@@ -621,8 +647,8 @@ Engine.battle = {
                   def.kickoutCount++;
                   totalKickouts++;
                   def.gritTurns = eng.gritDuration;
-                  log.push(`  → ${def.name}がキックアウト！ Grit発動！`);
-                  log.push(`  → ${def.name} HP:${Math.max(0, def.hp)}/${def.mhp}`);
+                  pushLog('kickoutGrit', { name: def.name });
+                  pushLog('hpNote', { name: def.name, hp: Math.max(0, def.hp), mhp: def.mhp });
                   if (recordFrames) _turnKickout = { count: def.kickoutCount, escapeType: fType };
                 }
               } else if (fType === 'gu') {
@@ -637,8 +663,8 @@ Engine.battle = {
                   def.hp = Math.round(def.mhp * 0.05);
                   def.kickoutCount++;
                   def.gritTurns = eng.gritDuration;
-                  log.push(`  → ${def.name}がロープエスケープ！ Grit発動！`);
-                  log.push(`  → ${def.name} HP:${Math.max(0, def.hp)}/${def.mhp}`);
+                  pushLog('ropeEscapeGrit', { name: def.name });
+                  pushLog('hpNote', { name: def.name, hp: Math.max(0, def.hp), mhp: def.mhp });
                   totalKickouts++;
                   if (recordFrames) _turnKickout = { count: def.kickoutCount, escapeType: 'gu' };
                 }
@@ -648,7 +674,8 @@ Engine.battle = {
                 finType = finLabel;
                 finishPhase = ph.name;
                 finMove = mv.n;
-                log.push(`★ ${atk.name}、${mv.n}で${finLabel}勝ち！`);
+                pushLog(fType === 'fall' ? 'finishFall' : fType === 'gu' ? 'finishGu' : 'finishTko',
+                  { name: atk.name, move: mv.n });
                 // リプレイ用: 直接決着でもピン/TKOシーケンスUIを表示する
                 if (recordFrames) {
                   if (fType === 'tko') {
@@ -670,16 +697,14 @@ Engine.battle = {
                 finType = isSubPin ? 'ギブアップ' : 'ピン';
                 finishPhase = ph.name;
                 finMove = mv.n;
-                log.push(isSubPin ? `★ ${atk.name}、${mv.n}でギブアップ！` : `★ ${atk.name}、${mv.n}からのフォールで3カウント！`);
+                pushLog(isSubPin ? 'pinSubmission' : 'pinFall', { name: atk.name, move: mv.n });
                 if (recordFrames) {
                   _turnPinAttempt = 'success';
                   if (isSubPin) _turnKickout = { count: 0, escapeType: 'gu' };
                 }
               } else {
                 def.gritTurns = eng.gritDuration;
-                log.push(isSubPin
-                  ? `  → 締めに入った！ だが${def.name}が振りほどいた！`
-                  : `  → フォール！ だが${def.name}がカウント2で返した！`);
+                pushLog(isSubPin ? 'pinFailSub' : 'pinFailFall', { name: def.name });
                 totalKickouts++;
                 if (recordFrames) _turnPinAttempt = isSubPin ? 'kickout2_sub' : 'kickout2';
               }
@@ -693,7 +718,7 @@ Engine.battle = {
                 finType = '丸め込み';
                 finishPhase = ph.name;
                 finMove = mv.n;
-                log.push(`★ ${atk.name}、まさかの${mv.n}で3カウント！ 大金星！`);
+                pushLog('rollup', { name: atk.name, move: mv.n });
                 if (recordFrames) _turnRollup = 'success';
               }
             }
@@ -704,7 +729,7 @@ Engine.battle = {
                 finType = 'TKO';
                 finishPhase = ph.name;
                 finMove = mv.n;
-                log.push(`★ レフェリーストップ！ ${atk.name}のTKO勝利！`);
+                pushLog('refStop', { name: atk.name });
                 if (recordFrames) _turnTkoStop = true;
               }
             }
@@ -719,7 +744,7 @@ Engine.battle = {
         winner = resolveTimeoutWinner(L.hp, R.hp, mom, -mom, rng, 'left', 'right');
         finType = 'HP判定';
         finishPhase = 'Timeout';
-        log.push(`⏰ 時間切れ判定により、${winner === 'left' ? L.name : R.name}の勝利！`);
+        pushLog('timeout', { name: winner === 'left' ? L.name : R.name });
         // 最終フレームに winner を刻む。最後に push された直前のフレームを上書きしても良いが、
         // 追加フレーム (turnSub 無し、turn は維持) で timeout 表示を分離した方が演出しやすい
         if (recordFrames && frames.length > 0) {
@@ -729,6 +754,11 @@ Engine.battle = {
           last.finMove = null;
           last.finishPhase = 'Timeout';
           last.logLines = last.logLines.concat([log[log.length - 1]]);
+          // P7-53: 並走する4本(tpl/vars/cls/spoiler)も同じ添字で伸ばす。
+          last.logLineTpls = (last.logLineTpls || []).concat([logTpl[logTpl.length - 1]]);
+          last.logLineVars = (last.logLineVars || []).concat([logVars[logVars.length - 1]]);
+          last.logLineClasses = (last.logLineClasses || []).concat([logCls[logCls.length - 1]]);
+          last.logLineSpoilers = (last.logLineSpoilers || []).concat([logSpoiler[logSpoiler.length - 1]]);
         }
       }
 
@@ -1018,9 +1048,20 @@ Engine.tagMatch = (() => {
     // tag-battle-main.jsの_logLineHtmlは従来「完成文の部分一致」でクラスを再判定していた
     // (翻訳した瞬間に無音故障する最危険パターン)。生成元であるここで、どの分岐から
     // pushしたかに基づいてクラスを確定させ、logLinesと一緒にframeへ運ぶ。
-    // 文言(logの中身)は一切変更しない — pushLogはlog.pushの単純な置き換え。
-    let logCls = [];
-    function pushLog(text, cls) { log.push(text); logCls.push(cls || null); }
+    // i18n Stage B P7-53(裁定C-6): 文面もテンプレID化した(BATTLE_LOG_TEMPLATES.tag)。
+    // logには従来と1バイト同一のJA完成文が入る(=result.logは不変)。クラスと
+    // 「ピンシーケンス中に伏せる行か(spoiler)」はテンプレIDに固定してframeへ運ぶ
+    // (第2引数のcls手渡しは廃止 — 1つのIDに1つの分類、という形で監査できるようにした)。
+    let logCls = [], logTpl = [], logVars = [], logSpoiler = [];
+    function pushLog(id, params) {
+      const tpl = BATTLE_LOG_TEMPLATES.tag[id];
+      const kind = BATTLE_LOG_LINE_KINDS.tag[id] || { cls: null, spoiler: false };
+      log.push(fillTemplateVars(tpl, params));
+      logTpl.push(tpl);
+      logVars.push(params || {});
+      logCls.push(kind.cls);
+      logSpoiler.push(!!kind.spoiler);
+    }
     let winner = null, finType = null, finMove = null, finishPhase = null;
     let winAttribution = { pinnedBy: null, pinnedWho: null };
 
@@ -1052,6 +1093,9 @@ Engine.tagMatch = (() => {
       if (!recordFrames) return;
       const turnLog = log.slice(_turnLogStart);
       const turnLogCls = logCls.slice(_turnLogStart);
+      const turnLogTpl = logTpl.slice(_turnLogStart);
+      const turnLogVars = logVars.slice(_turnLogStart);
+      const turnLogSpoiler = logSpoiler.slice(_turnLogStart);
       const turnEvents = dramaSummary
         .filter(d => d.turn === totalTurn && !d._framed)
         .map(d => { d._framed = true; return { type: d.type, by: d.by, victim: d.victim, tagged: d.tagged, saved: d.saved, team: d.team, move: d.move, moveCat: d.moveCat, attemptType: d.attemptType, byId: d.byId, onId: d.onId, outcome: d.outcome, count: d.count }; });
@@ -1094,6 +1138,11 @@ Engine.tagMatch = (() => {
         mom,
         logLines: turnLog,
         logLineClasses: turnLogCls,
+        // P7-53: 表示点(観戦iframe)が言語別に組み直すためのテンプレIDと値、
+        // および「ピンシーケンス中に伏せる行か」。logLinesと同じ添字で並ぶ。
+        logLineTpls: turnLogTpl,
+        logLineVars: turnLogVars,
+        logLineSpoilers: turnLogSpoiler,
         events: turnEvents,
         action: _turnAction,
         segmentIdx: segments.length, // 現在進行中セグメントのインデックス
@@ -1144,7 +1193,7 @@ Engine.tagMatch = (() => {
         finishPhase = ph.name;
         winAttribution.pinnedBy = null;
         winAttribution.pinnedWho = legalA.id;
-        pushLog(`  ★ 決着！ ${legalA.name}は立ち上がれない。TKO！（${ph.name}）`, 'finish');
+        pushLog('downTko', { name: legalA.name, phase: ph.name });
         pushFrame(ph.name);
         break;
       }
@@ -1155,7 +1204,7 @@ Engine.tagMatch = (() => {
         finishPhase = ph.name;
         winAttribution.pinnedBy = null;
         winAttribution.pinnedWho = legalB.id;
-        pushLog(`  ★ 決着！ ${legalB.name}は立ち上がれない。TKO！（${ph.name}）`, 'finish');
+        pushLog('downTko', { name: legalB.name, phase: ph.name });
         pushFrame(ph.name);
         break;
       }
@@ -1196,7 +1245,7 @@ Engine.tagMatch = (() => {
         _turnOutcome = 'miss';
         mom += isAAttacking ? -5 : 5;
         mom = clamp(mom, -50, 50);
-        pushLog(`T${totalTurn} [${ph.name}] ${atkFighter.name}の${mv.n}→MISS`);
+        pushLog('miss', { turn: totalTurn, phase: ph.name, name: atkFighter.name, move: mv.n });
         if (recordFrames) {
           _turnAction = { attackerId: atkFighter.id, defenderId: defFighter.id, atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, kind: 'miss', dmg: 0, isCrit: false };
         }
@@ -1221,7 +1270,7 @@ Engine.tagMatch = (() => {
           atkFighter.consecutiveHits = 0;
           mom += isAAttacking ? -ENG.counterMomShift : ENG.counterMomShift;
           mom = clamp(mom, -50, 50);
-          pushLog(`T${totalTurn} [${ph.name}] ${defFighter.name}がカウンター！ ${cMv.n} → ${atkFighter.name}に${cDmg}ダメージ`);
+          pushLog('counter', { turn: totalTurn, phase: ph.name, name: defFighter.name, move: cMv.n, name2: atkFighter.name, dmg: cDmg });
           if (recordFrames) {
             _turnAction = { attackerId: defFighter.id, defenderId: atkFighter.id, atkSide: atkSide === 'left' ? 'right' : 'left', move: cMv.n, origMove: mv.n, moveD: cMv.d, moveCat: cMv.c, kind: 'counter', dmg: cDmg, isCrit: cDmg >= 15 };
           }
@@ -1244,7 +1293,7 @@ Engine.tagMatch = (() => {
                   atkFighter.kickoutCount++;
                   atkFighter.gritTurns = ENG.gritDuration;
                   totalKickouts++;
-                  pushLog(`  → ${atkFighter.name}がキックアウト！ (${atkFighter.kickoutCount}回目)`);
+                  pushLog('kickout', { name: atkFighter.name, n: atkFighter.kickoutCount });
                   dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'fall', byId: defFighter.id, onId: atkFighter.id, outcome: 'kickout', count: 2 });
                 } else {
                   const apronAtk = isAAttacking ? apronA : apronB;
@@ -1253,7 +1302,7 @@ Engine.tagMatch = (() => {
                     finished = true;
                     dramaSummary.push({ type: 'betrayal', turn: totalTurn, by: apronAtk.id, victim: atkFighter.id });
                     dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'fall', byId: defFighter.id, onId: atkFighter.id, outcome: 'betrayalWin', count: 3 });
-                    pushLog(`  → ${apronAtk.name}が助けに行かない！ 見殺し！`, 'betrayal');
+                    pushLog('betrayal', { name: apronAtk.name });
                   } else {
                     const cutinRate = calcCutinRate('pin', apronAtk, atkBond, apronAtk.cutinCount);
                     if (Engine.rng.float(rng) < cutinRate) {
@@ -1263,7 +1312,7 @@ Engine.tagMatch = (() => {
                       totalKickouts++;
                       dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronAtk.id, saved: atkFighter.id });
                       dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'fall', byId: defFighter.id, onId: atkFighter.id, outcome: 'cutinSave', count: 2 });
-                      pushLog(`  → ${apronAtk.name}がカットイン！ ${atkFighter.name}を救出！`, 'cutin');
+                      pushLog('cutinSave', { name: apronAtk.name, name2: atkFighter.name });
                     } else {
                       finished = true;
                       dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'fall', byId: defFighter.id, onId: atkFighter.id, outcome: 'win', count: 3 });
@@ -1279,7 +1328,7 @@ Engine.tagMatch = (() => {
                 atkFighter.kickoutCount++;
                 atkFighter.gritTurns = ENG.gritDuration;
                 totalKickouts++;
-                pushLog(`  → ${atkFighter.name}がロープエスケープ！`);
+                pushLog('ropeEscape', { name: atkFighter.name });
                 dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'gu', byId: defFighter.id, onId: atkFighter.id, outcome: 'escape', count: 0 });
               } else {
                 finished = true;
@@ -1293,7 +1342,8 @@ Engine.tagMatch = (() => {
               finishPhase = ph.name;
               winAttribution.pinnedBy = defFighter.id;
               winAttribution.pinnedWho = atkFighter.id;
-              pushLog(`  ★ 決着！ ${defFighter.name}のカウンター（${cMv.n}）で${finType}勝ち！ (${ph.name})`, 'finish');
+              pushLog(fType === 'fall' ? 'counterFinishFall' : fType === 'gu' ? 'counterFinishGu' : 'counterFinishTko',
+                { name: defFighter.name, move: cMv.n, phase: ph.name });
               pushFrame(ph.name);
               break;
             }
@@ -1310,7 +1360,7 @@ Engine.tagMatch = (() => {
                 apronAtk.cutinCount++;
                 dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronAtk.id, saved: atkFighter.id });
                 dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: defFighter.id, onId: atkFighter.id, outcome: 'cutinSave', count: 2 });
-                pushLog(`  → ${defFighter.name}の${cMv.n}！ しかし${apronAtk.name}がカットイン！`, 'cutin');
+                pushLog('rollupCutin', { name: defFighter.name, move: cMv.n, name2: apronAtk.name });
               } else {
                 winner = isAAttacking ? 'teamB' : 'teamA';
                 finType = '丸め込み';
@@ -1319,7 +1369,7 @@ Engine.tagMatch = (() => {
                 winAttribution.pinnedBy = defFighter.id;
                 winAttribution.pinnedWho = atkFighter.id;
                 dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: defFighter.id, onId: atkFighter.id, outcome: 'win', count: 3 });
-                pushLog(`  ★ ${defFighter.name}が${cMv.n}で3カウント！ (${ph.name})`);
+                pushLog('rollupWin', { name: defFighter.name, move: cMv.n, phase: ph.name });
                 pushFrame(ph.name);
                 break;
               }
@@ -1335,7 +1385,7 @@ Engine.tagMatch = (() => {
             winAttribution.pinnedBy = defFighter.id;
             winAttribution.pinnedWho = atkFighter.id;
             dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'tko', byId: defFighter.id, onId: atkFighter.id, outcome: 'win', count: 0 });
-            pushLog(`  ★ レフェリーストップ！ ${defFighter.name}のTKO勝利！ (${ph.name})`);
+            pushLog('refStop', { name: defFighter.name, phase: ph.name });
             pushFrame(ph.name);
             break;
           }
@@ -1364,7 +1414,7 @@ Engine.tagMatch = (() => {
           mom += isAAttacking ? 8 : -8;
           mom = clamp(mom, -50, 50);
           if (mv.d >= 10) bigMoves++;
-          pushLog(`T${totalTurn} [${ph.name}] ${atkFighter.name}の${mv.n} → ${defFighter.name}に${dmg}ダメージ (HP:${Math.round(defFighter.hp)}/${defFighter.mhp})`);
+          pushLog('hit', { turn: totalTurn, phase: ph.name, name: atkFighter.name, move: mv.n, name2: defFighter.name, dmg, hp: Math.round(defFighter.hp), mhp: defFighter.mhp });
           if (recordFrames) {
             _turnAction = { attackerId: atkFighter.id, defenderId: defFighter.id, atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, kind: 'hit', dmg, isCrit: dmg >= 15 };
           }
@@ -1388,7 +1438,7 @@ Engine.tagMatch = (() => {
                   defFighter.kickoutCount++;
                   defFighter.gritTurns = ENG.gritDuration;
                   totalKickouts++;
-                  pushLog(`  → ${defFighter.name}がキックアウト！ (${defFighter.kickoutCount}回目)`);
+                  pushLog('kickout', { name: defFighter.name, n: defFighter.kickoutCount });
                   dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'fall', byId: atkFighter.id, onId: defFighter.id, outcome: 'kickout', count: 2 });
                 } else {
                   const apronDef = isAAttacking ? apronB : apronA;
@@ -1397,7 +1447,7 @@ Engine.tagMatch = (() => {
                     finished = true;
                     dramaSummary.push({ type: 'betrayal', turn: totalTurn, by: apronDef.id, victim: defFighter.id });
                     dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'fall', byId: atkFighter.id, onId: defFighter.id, outcome: 'betrayalWin', count: 3 });
-                    pushLog(`  → ${apronDef.name}が助けに行かない！ 見殺し！`, 'betrayal');
+                    pushLog('betrayal', { name: apronDef.name });
                   } else {
                     const cutinRate = calcCutinRate('pin', apronDef, defBond, apronDef.cutinCount);
                     if (Engine.rng.float(rng) < cutinRate) {
@@ -1407,7 +1457,7 @@ Engine.tagMatch = (() => {
                       totalKickouts++;
                       dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronDef.id, saved: defFighter.id });
                       dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'fall', byId: atkFighter.id, onId: defFighter.id, outcome: 'cutinSave', count: 2 });
-                      pushLog(`  → ${apronDef.name}がカットイン！ ${defFighter.name}を救出！`, 'cutin');
+                      pushLog('cutinSave', { name: apronDef.name, name2: defFighter.name });
                     } else {
                       finished = true;
                       dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'fall', byId: atkFighter.id, onId: defFighter.id, outcome: 'win', count: 3 });
@@ -1423,7 +1473,7 @@ Engine.tagMatch = (() => {
                 defFighter.kickoutCount++;
                 defFighter.gritTurns = ENG.gritDuration;
                 totalKickouts++;
-                pushLog(`  → ${defFighter.name}がロープエスケープ！`);
+                pushLog('ropeEscape', { name: defFighter.name });
                 dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'gu', byId: atkFighter.id, onId: defFighter.id, outcome: 'escape', count: 0 });
               } else {
                 finished = true;
@@ -1438,7 +1488,8 @@ Engine.tagMatch = (() => {
               finishPhase = ph.name;
               winAttribution.pinnedBy = atkFighter.id;
               winAttribution.pinnedWho = defFighter.id;
-              pushLog(`  ★ 決着！ ${atkFighter.name}の${mv.n}で${finType}勝ち！ (${ph.name})`, 'finish');
+              pushLog(fType === 'fall' ? 'finishFall' : fType === 'gu' ? 'finishGu' : 'finishTko',
+                { name: atkFighter.name, move: mv.n, phase: ph.name });
               pushFrame(ph.name);
               break;
             }
@@ -1461,7 +1512,7 @@ Engine.tagMatch = (() => {
                   winAttribution.pinnedWho = defFighter.id;
                   dramaSummary.push({ type: 'betrayal', turn: totalTurn, by: apronDef.id, victim: defFighter.id });
                   dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'pin', byId: atkFighter.id, onId: defFighter.id, outcome: 'betrayalWin', count: 3 });
-                  pushLog(`  → ピン成功！ ${apronDef.name}が見殺し！ ${atkFighter.name}の勝利！`, 'betrayal');
+                  pushLog('pinBetrayalWin', { name: apronDef.name, name2: atkFighter.name });
                   pushFrame(ph.name);
                   break;
                 }
@@ -1470,7 +1521,7 @@ Engine.tagMatch = (() => {
                   apronDef.cutinCount++;
                   dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronDef.id, saved: defFighter.id });
                   dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'pin', byId: atkFighter.id, onId: defFighter.id, outcome: 'cutinSave', count: 2 });
-                  pushLog(`  → ピン！ だが${apronDef.name}がカットイン！`, 'cutin');
+                  pushLog('pinCutin', { name: apronDef.name });
                 } else {
                   winner = isAAttacking ? 'teamA' : 'teamB';
                   finType = 'ピン';
@@ -1479,13 +1530,13 @@ Engine.tagMatch = (() => {
                   winAttribution.pinnedBy = atkFighter.id;
                   winAttribution.pinnedWho = defFighter.id;
                   dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'pin', byId: atkFighter.id, onId: defFighter.id, outcome: 'win', count: 3 });
-                  pushLog(`  ★ ピン成功！ ${atkFighter.name}の勝利！ (${ph.name})`, 'finish');
+                  pushLog('pinWin', { name: atkFighter.name, phase: ph.name });
                   pushFrame(ph.name);
                   break;
                 }
               } else {
                 dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'pin', byId: atkFighter.id, onId: defFighter.id, outcome: 'kickout', count: 2 });
-                pushLog(`  → ピン！ だが${defFighter.name}が返した！`);
+                pushLog('pinKickout', { name: defFighter.name });
               }
             }
           }
@@ -1503,7 +1554,7 @@ Engine.tagMatch = (() => {
                 apronDef.cutinCount++;
                 dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronDef.id, saved: defFighter.id });
                 dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: atkFighter.id, onId: defFighter.id, outcome: 'cutinSave', count: 2 });
-                pushLog(`  → ${atkFighter.name}の${mv.n}！ しかし${apronDef.name}がカットイン！`, 'cutin');
+                pushLog('rollupCutin', { name: atkFighter.name, move: mv.n, name2: apronDef.name });
               } else {
                 winner = isAAttacking ? 'teamA' : 'teamB';
                 finType = '丸め込み';
@@ -1512,7 +1563,7 @@ Engine.tagMatch = (() => {
                 winAttribution.pinnedBy = atkFighter.id;
                 winAttribution.pinnedWho = defFighter.id;
                 dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'rollup', byId: atkFighter.id, onId: defFighter.id, outcome: 'win', count: 3 });
-                pushLog(`  ★ ${atkFighter.name}が${mv.n}で3カウント！ (${ph.name})`);
+                pushLog('rollupWin', { name: atkFighter.name, move: mv.n, phase: ph.name });
                 pushFrame(ph.name);
                 break;
               }
@@ -1529,7 +1580,7 @@ Engine.tagMatch = (() => {
             winAttribution.pinnedBy = atkFighter.id;
             winAttribution.pinnedWho = defFighter.id;
             dramaSummary.push({ type: 'pinAttempt', turn: totalTurn, attemptType: 'tko', byId: atkFighter.id, onId: defFighter.id, outcome: 'win', count: 0 });
-            pushLog(`  ★ レフェリーストップ！ ${atkFighter.name}のTKO勝利！ (${ph.name})`);
+            pushLog('refStop', { name: atkFighter.name, phase: ph.name });
             pushFrame(ph.name);
             break;
           }
@@ -1567,7 +1618,7 @@ Engine.tagMatch = (() => {
         bigMoves++;
         // T1: moveCat をイベントに乗せる (tag-battle-main.js の実況文選択に使用)
         dramaSummary.push({ type: 'doubleTeam', turn: totalTurn, by: [atkFighter.id, atkApron.id], move: tagMv.n, moveCat: tagMv.c });
-        pushLog(`  ★ ダブルチーム！ ${atkFighter.name}&${atkApron.name}の${tagMv.n}！ ${defFighter.name}に${tagDmg}ダメージ！`, 'double');
+        pushLog('doubleTeam', { name: atkFighter.name, name2: atkApron.name, move: tagMv.n, name3: defFighter.name, dmg: tagDmg });
 
         if (defFighter.hp <= 0) {
           const apronDef = isAAttacking ? apronB : apronA;
@@ -1579,7 +1630,7 @@ Engine.tagMatch = (() => {
             defFighter.gritTurns = ENG.gritDuration;
             totalKickouts++;
             dramaSummary.push({ type: 'cutinSave', turn: totalTurn, by: apronDef.id, saved: defFighter.id });
-            pushLog(`  → ${apronDef.name}がカットイン！ なんとか阻止！`, 'cutin');
+            pushLog('doubleTeamCutin', { name: apronDef.name });
           } else {
             winner = isAAttacking ? 'teamA' : 'teamB';
             finType = 'フォール';
@@ -1587,7 +1638,7 @@ Engine.tagMatch = (() => {
             finishPhase = ph.name;
             winAttribution.pinnedBy = atkFighter.id;
             winAttribution.pinnedWho = defFighter.id;
-            pushLog(`  ★ タッグ技で決着！`, 'finish');
+            pushLog('tagMoveFinish');
             pushFrame(ph.name);
             break;
           }
@@ -1609,7 +1660,7 @@ Engine.tagMatch = (() => {
         mom += isAAttacking ? 6 : -6;
         mom = clamp(mom, -50, 50);
         dramaSummary.push({ type: 'friendlyFire', turn: totalTurn, team: isAAttacking ? 'B' : 'A', victim: defApron.id });
-        pushLog(`  ※ 連携にほころび！ ${defFighter.name}の反撃が${defApron.name}をかすめる！`);
+        pushLog('friendlyFire', { name: defFighter.name, name2: defApron.name });
       }
 
       // ── タッチ判定 ──
@@ -1634,12 +1685,12 @@ Engine.tagMatch = (() => {
             touchTypes.add(tType);
             if (tType === 'hotTag') {
               dramaSummary.push({ type: 'hotTag', turn: totalTurn, team: 'A', tagged: apronA.id });
-              pushLog(`  ★ 反撃のタッチ！ ${legalA.name}から${apronA.name}へ！ 会場が沸く！`, 'hottag');
+              pushLog('hotTag', { name: legalA.name, name2: apronA.name });
               if (Engine.rng.float(rng) < TC.touch.hotTagBuffChance) {
                 apronA.hotTagBuff = TC.touch.hotTagBuffTurns;
               }
             } else {
-              pushLog(`  ↔ タッチ(${tType === 'tactical' ? '戦術' : '消耗'}): ${legalA.name} → ${apronA.name}`, 'touch');
+              pushLog(tType === 'tactical' ? 'touchTactical' : 'touchWorn', { name: legalA.name, name2: apronA.name });
             }
             curSegment.touchType = tType;
             segments.push({ ...curSegment });
@@ -1664,12 +1715,12 @@ Engine.tagMatch = (() => {
             touchTypes.add(tType);
             if (tType === 'hotTag') {
               dramaSummary.push({ type: 'hotTag', turn: totalTurn, team: 'B', tagged: apronB.id });
-              pushLog(`  ★ 反撃のタッチ！ ${legalB.name}から${apronB.name}へ！ 会場が沸く！`, 'hottag');
+              pushLog('hotTag', { name: legalB.name, name2: apronB.name });
               if (Engine.rng.float(rng) < TC.touch.hotTagBuffChance) {
                 apronB.hotTagBuff = TC.touch.hotTagBuffTurns;
               }
             } else {
-              pushLog(`  ↔ タッチ(${tType === 'tactical' ? '戦術' : '消耗'}): ${legalB.name} → ${apronB.name}`, 'touch');
+              pushLog(tType === 'tactical' ? 'touchTactical' : 'touchWorn', { name: legalB.name, name2: apronB.name });
             }
             curSegment.touchType = tType;
             segments.push({ ...curSegment });

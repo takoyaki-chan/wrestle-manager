@@ -1,8 +1,8 @@
 # 画面：シングル戦バトル観戦
 
 **ファイル**：`docs/ui/03-screens/battle-spectator.md`
-**最終更新**：2026-09-04
-**実装状況**：完了（Pattern C v4、実機確認待ち）／**多言語対応完了（i18n Stage B P7-5+P7-9）**：技名・実況ナレーション・技説明・攻撃矢印ラベル・ピンカウント演出・決着表記がすべて言語別。レイアウトと演出タイミングはJA/ENで同一で、言語別に変えているのは実況ストリップの見出しラベルのみ（CSS `::after` の `content`。JA「実況」／EN `COMMENTARY`、`html[lang="en"]` 分岐）。**技名・技説明の“選択”は日本語のまま行い、英語化は描画の直前だけ**（効果音判定 `battle-sfx.js` と `_movePresentation` の正規表現がJA技名を見ているため）。最新ログパネルは試合ログ行＝セーブ値のためJA固定（specs/i18n-runtime-spec-v1.0.md §23-6-3）。仕様の正は同spec §23／§26
+**最終更新**：2026-09-06
+**実装状況**：完了（Pattern C v4、実機確認待ち）／**多言語対応完了（i18n Stage B P7-5+P7-9＋P7-53）**：技名・実況ナレーション・技説明・攻撃矢印ラベル・ピンカウント演出・決着表記・**最新ログパネル（試合実況ログ `#battleLog`）**がすべて言語別。レイアウトと演出タイミングはJA/ENで同一で、言語別に変えているのは実況ストリップの見出しラベルのみ（CSS `::after` の `content`。JA「実況」／EN `COMMENTARY`、`html[lang="en"]` 分岐）。**技名・技説明の“選択”は日本語のまま行い、英語化は描画の直前だけ**（効果音判定 `battle-sfx.js` と `_movePresentation` の正規表現がJA技名を見ているため）。**最新ログパネルは P7-53（裁定C-6）で言語別化した** — 文面52本は `data.js` の `BATTLE_LOG_TEMPLATES`、Engine は JA 完成文（`result.log`・不変）に加えてフレームへ `logLineTpls`/`logLineVars` を併記し、`_logLineHtml` が `WM_I18N.t` で組み直す（§14-3 追加フィールド方式。旧セーブのフレームは JA へ fail-open）。**ログ行のCSSクラスとネタバレ保留は完成文の部分一致をやめ、`logLineClasses`/`logLineSpoilers` で言語非依存**に判定する。仕様の正は同spec §23／§26／**§51**
 
 ---
 

@@ -496,7 +496,9 @@ function _narrateFrame(fr){
     return { text: WM_I18N.t('決着！'), dramatic:true };
   }
   const a = fr.action;
-  if (!a) return { text: (fr.logLines||[]).join(' '), dramatic:false };
+  // P7-53: action を持たないフレーム(タッチ等)は試合ログ行をそのまま実況ストリップへ出す。
+  // 表示点なので言語別に組み直したテキストを使う(JAは1バイト同一)。
+  if (!a) return { text: _logRecords(fr).map(_logRecordText).join(' '), dramatic:false };
   const atk = byId(a.attackerId);
   const def = byId(a.defenderId);
   if (!atk || !def) return { text: _mvFull(a.move)||'', dramatic:false };
@@ -643,24 +645,55 @@ function _updateCenter(fr){
 }
 
 // 結末を示唆するログ行（pin/rollup/tkoStop シーケンス完了まで保留）
+// i18n Stage B P7-53(裁定C-6): 完成文の部分一致は**翻訳した瞬間に無音で壊れる**ので、
+// 生成元(match-engine.js の pushLog)がテンプレIDに固定した `logLineSpoilers` を正とする。
+// 下の正規表現は、この配列を持たない旧フレーム(旧セーブのJT/天頂戦リプレイ)専用の保険。
 const _SPOILER_LINE_RE = /(★|カウント2で返した|振りほどいた|キックアウト|ロープエスケープ|カットイン|見殺し|丸め込み|タップ|なんとか阻止|返した)/;
 function _isSpoilerLine(line){
   const t = String(line).trim();
   return _SPOILER_LINE_RE.test(t);
 }
 
+// i18n Stage B P7-53: フレームのログ行を「1行=1レコード」へ展開する。
+// text(JA完成文)は §14-3 の追加フィールド方式でそのまま残っており、tpl/vars があれば
+// 表示直前に WM_I18N.t() で言語別に組み直す。tpl が無い旧フレームは text へ fail-open。
+// 添字で引くので、従来 `fr.logLines.indexOf(line)` に頼っていた同一文の取り違えも起きない。
+function _logRecords(fr){
+  const lines = (fr && fr.logLines) || [];
+  const tpls = (fr && fr.logLineTpls) || [];
+  const vars = (fr && fr.logLineVars) || [];
+  const clss = (fr && fr.logLineClasses) || [];
+  const spos = (fr && fr.logLineSpoilers) || [];
+  return lines.map((text, i) => ({
+    text,
+    tpl: tpls[i] || null,
+    vars: vars[i] || null,
+    cls: (clss.length > i) ? clss[i] : undefined,
+    spoiler: (spos.length > i) ? !!spos[i] : _isSpoilerLine(text),
+  }));
+}
+
+// 行頭の字下げ("  ↔ …")は保ったまま返す(旧 `logLines.join(' ')` と1バイト同一にする)。
+// trim は表示側(_logLineHtml)が従来どおり行う。
+function _logRecordText(rec){
+  if (rec && rec.tpl) {
+    try { return String(WM_I18N.t(rec.tpl, rec.vars || {})); } catch (e) {}
+  }
+  return String((rec && rec.text) || '');
+}
+
 function _appendLogForFrame(fr){
   if (!fr) return;
   const evClass = _detectEventClass(fr);
   const turnMarker = `<div class="log-new-marker">— Turn ${fr.turn} —</div>`;
-  let rawLines = fr.logLines || [];
+  let recs = _logRecords(fr);
   // ピン seq 予定フレーム: ★決着行＋結末示唆行（カットイン/見殺し/カウント2返し/丸め込み等）を保留
   if (S.pinSeqPending) {
-    const held = rawLines.filter(l => _isSpoilerLine(l));
-    rawLines = rawLines.filter(l => !_isSpoilerLine(l));
+    const held = recs.filter(r => r.spoiler);
+    recs = recs.filter(r => !r.spoiler);
     S.heldWinLogs = { turn: fr.turn, held };
   }
-  const lines = rawLines.map(l => _logLineHtml(l, fr)).join('');
+  const lines = recs.map(r => _logLineHtml(r)).join('');
   // 新しいターンを先頭に追加 (新しい順 = 上が最新)
   S.logHtml = turnMarker + lines + S.logHtml;
   S.lastEventClass = evClass;
@@ -688,26 +721,24 @@ function _detectEventClass(fr){
   return '';
 }
 
-function _logLineHtml(line, fr){
-  const t = line.trim();
+function _logLineHtml(rec){
+  const t = _logRecordText(rec).trim();
   if (!t) return '';
-  // i18n Stage A P3a-3 D-G4: 生成元(match-engine.js simulateTagMatchのpushLog)が
-  // 確定させたクラスをfr.logLineClasses経由で最優先に使う(logLinesと同じ添字)。
+  // i18n Stage A P3a-3 D-G4 / P7-53: 生成元(match-engine.js simulateTagMatchのpushLog)が
+  // 確定させたクラスを最優先に使う(logLinesと同じ添字で _logRecords が組んである)。
   // 完成文の部分一致判定(翻訳した瞬間に無音故障する最危険パターン)は、クラス情報を
   // 持たない旧フレーム(念のための保険)に限りフォールバックとして残す。
-  let cls;
-  if (fr && Array.isArray(fr.logLines) && Array.isArray(fr.logLineClasses)) {
-    const idx = fr.logLines.indexOf(line);
-    if (idx >= 0) cls = fr.logLineClasses[idx]; // null=無分類確定 / 'finish'等の文字列=分類確定
-  }
+  // 部分一致は**JA原文(rec.text)**に対して掛ける — 表示文(t)はENでは一致しない。
+  let cls = rec ? rec.cls : undefined; // null=無分類確定 / 'finish'等の文字列=分類確定
   if (cls === undefined) {
-    if (t.includes('★ 決着') || t.includes('★ ピン') || t.includes('★ タッグ技') || t.includes('時間切れ') || t.includes('丸め込みで逆転')) cls = 'finish';
-    else if (t.includes('反撃のタッチ')) cls = 'hottag';
-    else if (t.includes('ダブルチーム') || t.includes('タッグ技')) cls = 'double';
-    else if (t.includes('カットイン')) cls = 'cutin';
-    else if (t.includes('同士討ち')) cls = 'friendly';
-    else if (t.includes('見殺し')) cls = 'betrayal';
-    else if (t.includes('↔ タッチ')) cls = 'touch';
+    const ja = String((rec && rec.text) || '').trim();
+    if (ja.includes('★ 決着') || ja.includes('★ ピン') || ja.includes('★ タッグ技') || ja.includes('時間切れ') || ja.includes('丸め込みで逆転')) cls = 'finish';
+    else if (ja.includes('反撃のタッチ')) cls = 'hottag';
+    else if (ja.includes('ダブルチーム') || ja.includes('タッグ技')) cls = 'double';
+    else if (ja.includes('カットイン')) cls = 'cutin';
+    else if (ja.includes('同士討ち')) cls = 'friendly';
+    else if (ja.includes('見殺し')) cls = 'betrayal';
+    else if (ja.includes('↔ タッチ')) cls = 'touch';
   }
   if (cls) {
     return `<div class="log-event ${cls}"><span class="log-event-text log-${cls}-text">${escHtml(t)}</span></div>`;
@@ -1378,7 +1409,7 @@ function _finishPinSeq(){
 
   // 保留していた「★ 決着！」ログを現ターンの先頭に挿入 (turn marker 直後)
   if (S.heldWinLogs && fr && S.heldWinLogs.turn === fr.turn && S.heldWinLogs.held.length) {
-    const heldHtml = S.heldWinLogs.held.map(l => _logLineHtml(l, fr)).join('');
+    const heldHtml = S.heldWinLogs.held.map(r => _logLineHtml(r)).join('');
     // turn marker の閉じ </div> 直後に挿入 (ターン内の他行より上 = 最新位置)
     const markerEnd = S.logHtml.indexOf('</div>');
     if (markerEnd >= 0) {

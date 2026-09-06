@@ -248,6 +248,15 @@ const TARGET_TABLES = [
   // 役割6種・季4種・試合種別3種・実績ラベル7種・特性名は ui-ledger に既訳があるので
   // 本表へは入れない(§15-3。JA原文は management.js に1本だけ置き `_wmDictLabel` で引く)。
   'MVP_RACE_TEXTS',
+  // P7-53で追加(裁定C-6)。観戦モードの試合実況ログ52本(single 24 / tag 28)。
+  // match-engine.js の `log.push(\`…\`)` / `pushLog(\`…\`)` に直書きされていた
+  // JSテンプレートリテラル(§10-2「関数の中のリテラルはどの抽出器からも見えない」型)を
+  // data.js のトップレベル表へ移設したもの。消費点は同ファイルの `pushLog(id, params)`
+  // 一本で、EngineはJA完成文を `log` へ積みつつフレームへ tpl/vars を併記する(§14-3)。
+  // 実際に辞書を引くのは観戦iframeの `_logLineHtml`(battle-engine-main.js /
+  // tag-battle-main.js)——Engineは WM_I18N を呼ばない(§1)。
+  // 分類メタ(`BATTLE_LOG_LINE_KINDS`)は日本語を持たない識別子なので対象外。
+  'BATTLE_LOG_TEMPLATES',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ

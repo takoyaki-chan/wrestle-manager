@@ -205,10 +205,57 @@ const PROBE = `([payload, isTag]) => new Promise((resolve) => {
 
       // 行頭のインデント(match-engine の pushLog は "  ↔ …" のように字下げする)は
       // DOM 側で trim されるので、突合前にこちらも trim しておく。
+      // P7-53: 実況ストリップへ落ちるログ行も英語化されたので、ここは「JA原文」ではなく
+      // **表示された文**を採る(_narrateFrame と同じ経路 = _logRecords/_logRecordText)。
       rec.logFallbacks = (S.frames || [])
         .filter((f) => f && !f.action)
-        .map((f) => (f.logLines || []).join(' ').trim())
+        .map((f) => (typeof _logRecords === 'function'
+          ? _logRecords(f).map(_logRecordText).join(' ').trim()
+          : (f.logLines || []).join(' ').trim()))
         .filter(Boolean);
+      // ── P7-53: 試合実況ログ(#battleLog)の実測 ──
+      //   battleLogDom  = 実際に #battleLog へ描画された行(表示の本体)
+      //   battleLogJa   = フレームが持つJA完成文(logLines。result.log と同じ値)
+      //   battleLogTpl  = テンプレIDの有無(§14-3の追加フィールドが全行に付いているか)
+      //   battleLogCls  = 行のCSSクラス(言語非依存の分類が効いているか)
+      // 決着行はピンシーケンス完了まで hold されるため、再生を最後まで進めた
+      // 時点(このブロックに来た時点)の #battleLog を読む。
+      try {
+        const lb = document.getElementById('battleLog');
+        rec.battleLogDom = lb
+          ? Array.from(lb.querySelectorAll('.log-line, .log-event')).map((el) => el.textContent.trim()).filter(Boolean)
+          : [];
+        rec.battleLogCls = lb
+          ? Array.from(lb.querySelectorAll('.log-event')).map((el) => el.className)
+          : [];
+      } catch (e) { rec.battleLogErr = String(e); }
+      rec.battleLogJa = [];
+      rec.battleLogTplMissing = 0;
+      rec.battleLogShown = [];
+      (S.frames || []).forEach((f) => {
+        (f.logLines || []).forEach((l, i) => {
+          rec.battleLogJa.push(String(l).trim());
+          if (!(f.logLineTpls || [])[i]) rec.battleLogTplMissing++;
+        });
+        if (typeof _logRecords === 'function') {
+          _logRecords(f).forEach((r) => rec.battleLogShown.push(_logRecordText(r).trim()));
+        }
+      });
+      // 実DOM(#battleLog)は「ピンseqで保留された行」「再生が終わった時点までの行」しか
+      // 溜まらず、実時間依存でサンプルが揺れる。全行をDOMレベルで確実に見るために、
+      // **実際の描画関数(_logLineHtml)** に全フレームを通して切り離した要素へ流し込む。
+      // 経路は #battleLog と同一(_appendLogForFrame も _logLineHtml を呼ぶだけ)。
+      rec.battleLogAllDom = []; rec.battleLogAllCls = [];
+      try {
+        const box = document.createElement('div');
+        box.innerHTML = (S.frames || [])
+          .map((f) => _logRecords(f).map((r) => _logLineHtml(r)).join(''))
+          .join('');
+        rec.battleLogAllDom = Array.from(box.querySelectorAll('.log-line, .log-event'))
+          .map((el) => el.textContent.trim()).filter(Boolean);
+        rec.battleLogAllCls = Array.from(box.querySelectorAll('.log-line, .log-event'))
+          .map((el) => el.className);
+      } catch (e) { rec.battleLogAllErr = String(e); }
       // ── P7-21: 観戦カットイン CUTIN_LINES の全数検査 ──
       // 実再生では matchInfo.rivalryTier>0 のときにしか発火せず(しかも確率ゲート付き)、
       // 自然走破では一度も踏めない。表(battle-lines.js へ移設済み)と実関数を直接叩いて
@@ -422,6 +469,10 @@ async function runMidShot(browser, server, lang, file, payload, isTag, shot) {
     console.log('  カットイン実DOM(.cutin-text):');
     (r.cutinDom || []).forEach((s) => console.log('    · ' + s));
     if (r.cutinDomErr) console.log('    !! cutinDomErr:', r.cutinDomErr);
+    console.log(`  試合実況ログ 全行(${(r.battleLogAllDom || []).length}行・実DOM #battleLog は${(r.battleLogDom || []).length}行):`);
+    (r.battleLogAllDom || []).forEach((s) => console.log('    · ' + s));
+    if (r.battleLogErr) console.log('    !! battleLogErr:', r.battleLogErr);
+    if (r.battleLogAllErr) console.log('    !! battleLogAllErr:', r.battleLogAllErr);
     console.log('  決着表記:', r.finishLabel);
     console.log('  SFX列:', r.sfx.slice(0, 14).join(',') + (r.sfx.length > 14 ? '…' : ''), `全${r.sfx.length}回`);
     if (r.i18nMiss.length) console.log('  i18n-miss:', uniq(r.i18nMiss).join(' | '));
@@ -440,19 +491,16 @@ async function runMidShot(browser, server, lang, file, payload, isTag, shot) {
     const ja = out[kind + '-ja'], en = out[kind + '-en'];
     const j = (r, k) => (r.judged.find((x) => x[0] === k) || [])[1];
     // EN側で日本語が残っている表示文字列を全部集める(地の文の受け入れ本体)。
-    // 試合ログ行(action無しフレームで実況ストリップへ落ちる分)は P7-9 のスコープ外
-    // (Gへ永続する記録を兼ねており {type,data} 化が前提)なので、既知の繰り越しとして
-    // 件数だけ報告し、判定からは除く。
-    const logFb = new Set(en.logFallbacks || []);
-    const isLogFallback = (s) => { for (const l of logFb) { if (l && s.indexOf(l) >= 0) return true; } return false; };
+    // P7-53(裁定C-6)で試合実況ログもテンプレ化・英訳したので、P7-9からの繰り越し
+    // 「試合ログ行の実況ストリップ落ち込み」除外は撤廃した。ログ行も #battleLog も
+    // 判定対象に入る。
     const enProse = []
       .concat(en.narrations, en.guides, en.bigIntros, en.pinCounts, en.finishLabels,
         en.arrowLabels, en.moveNames, en.bigmove, en.pinSeqTexts || [],
-        en.cutinShown || [], en.cutinDom || [], [en.finishLabel]);
-    const enProseJaAll = uniq(enProse.filter((s) => s && JA_RE.test(s)));
-    const enProseJa = enProseJaAll.filter((s) => !isLogFallback(s));
-    const deferredLog = enProseJaAll.filter(isLogFallback);
-    const enNarrationsJa = uniq(en.narrations.filter((s) => JA_RE.test(s) && !isLogFallback(s)));
+        en.cutinShown || [], en.cutinDom || [], en.battleLogDom || [], en.battleLogAllDom || [],
+        [en.finishLabel]);
+    const enProseJa = uniq(enProse.filter((s) => s && JA_RE.test(s)));
+    const enNarrationsJa = uniq(en.narrations.filter((s) => JA_RE.test(s)));
     const jaProse = [].concat(ja.narrations, ja.guides, ja.bigIntros, ja.pinCounts, ja.pinSeqTexts || []);
     console.log(`[${kind}]`);
     // ── (3) 判定層の不変(P7-5から継続) ──
@@ -476,7 +524,7 @@ async function runMidShot(browser, server, lang, file, payload, isTag, shot) {
     // ── (1)(2) 表示層の英語化 ──
     check('EN の技名パネルに日本語が無い', en.moveNames.length > 0 && !uniq(en.moveNames).some((s) => JA_RE.test(s)));
     check('EN のビッグムーブに日本語が無い', !uniq(en.bigmove).some((s) => JA_RE.test(s)));
-    check('EN の実況ナレーションに日本語が無い(試合ログ行の落ち込みを除く)',
+    check('EN の実況ナレーションに日本語が無い',
       en.narrations.length > 0 && enNarrationsJa.length === 0, enNarrationsJa.join(' | '));
     check('EN の技の解説文に日本語が無い', en.guides.length > 0 && !uniq(en.guides).some((s) => JA_RE.test(s)));
     check('EN のピン導入/カウント/決着表記に日本語が無い',
@@ -489,11 +537,46 @@ async function runMidShot(browser, server, lang, file, payload, isTag, shot) {
       (ja.pinSeqTexts || []).length === (en.pinSeqTexts || []).length && (ja.pinSeqTexts || []).length > 0);
     check(`EN の表示文字列すべてに日本語残り0(${enProse.filter(Boolean).length}件走査)`,
       enProseJa.length === 0, enProseJa.join(' | '));
-    if (deferredLog.length) {
-      console.log(`  --  (既知の繰り越し: 試合ログ行の実況ストリップ落ち込み ${deferredLog.length}種 — `
-        + `result.log としてGへ永続する記録のため specs §23-6-3 の {type,data} 化まで JA 据え置き)`);
-      deferredLog.forEach((s) => console.log('        · ' + s));
-    }
+    // ── P7-53(裁定C-6): 試合実況ログ(#battleLog)──
+    // (a) EN側の実況ログに日本語が1文字も残らないこと(本タスクの受け入れ本体)
+    // (b) JA側の #battleLog が **フレームのJA完成文(=result.logと同じ値)** と
+    //     完全一致すること(表示経路をテンプレ化してもJAが1バイトも動いていない証明)
+    // (c) 全ログ行が tpl を持つこと(§14-3の追加フィールドの取りこぼしゼロ)
+    // (d) 分類が言語非依存であること: .log-event のクラス列が JA と EN で完全一致
+    const enLogJa = uniq((en.battleLogDom || []).filter((s) => JA_RE.test(s)));
+    check(`EN の試合実況ログ(実DOM #battleLog)に日本語残り0(${(en.battleLogDom || []).length}行)`,
+      (en.battleLogDom || []).length > 0 && enLogJa.length === 0, enLogJa.slice(0, 10).join(' | '));
+    const enAllJa = uniq((en.battleLogAllDom || []).filter((s) => JA_RE.test(s)));
+    check(`EN の試合実況ログ 全行(描画関数 _logLineHtml 経由)に日本語残り0(${(en.battleLogAllDom || []).length}行)`,
+      (en.battleLogAllDom || []).length > 0 && enAllJa.length === 0, enAllJa.slice(0, 10).join(' | '));
+    check(`JA の試合実況ログはJA原文のまま(${(ja.battleLogAllDom || []).length}行・JA不変)`,
+      (ja.battleLogAllDom || []).length > 0 && (ja.battleLogAllDom || []).some((s) => JA_RE.test(s)));
+    const jaShown = (ja.battleLogShown || []).map((s) => s.trim()).filter(Boolean);
+    const jaRaw = (ja.battleLogJa || []).filter(Boolean);
+    check(`JA の表示テキストがフレームのJA完成文と完全一致(${jaRaw.length}行・result.logと同値)`,
+      jaRaw.length > 0 && JSON.stringify(jaShown) === JSON.stringify(jaRaw),
+      `shown=${jaShown.length} raw=${jaRaw.length}`);
+    // タッグの `T{n} [{phase}] …` 行は、描画時に従来からフェーズ角かっこを畳んで
+    // `T{n} …` で出す(_logLineHtml の正規表現)。JA不変の突合はその既知の整形を
+    // 掛けた上で行う(整形自体は言語非依存でENでも同じように効く)。
+    const domify = (s) => {
+      const t = String(s).trim();
+      const m = t.match(/^T(\d+)\s+\[[^\]]+\]\s+(.*)$/);
+      return m ? `T${m[1]} ${m[2]}` : t;
+    };
+    check(`JA の描画DOMがフレームのJA完成文と完全一致(${(ja.battleLogAllDom || []).length}行・既知のフェーズ畳み込み後)`,
+      (ja.battleLogAllDom || []).length > 0
+      && JSON.stringify(ja.battleLogAllDom) === JSON.stringify(jaRaw.filter(Boolean).map(domify)),
+      `dom=${(ja.battleLogAllDom || []).length} raw=${jaRaw.length}`);
+    check(`全ログ行がテンプレIDを持つ(取りこぼし ${en.battleLogTplMissing} 行)`,
+      en.battleLogTplMissing === 0 && ja.battleLogTplMissing === 0);
+    check(`実況ログ全行のCSSクラス列が JA と EN で完全一致(分類が言語非依存・${(en.battleLogAllCls || []).length}行)`,
+      (en.battleLogAllCls || []).length > 0
+      && JSON.stringify(ja.battleLogAllCls) === JSON.stringify(en.battleLogAllCls),
+      `ja=${JSON.stringify((ja.battleLogAllCls || []).slice(0, 6))} en=${JSON.stringify((en.battleLogAllCls || []).slice(0, 6))}`);
+    check('実況ログの採取で例外ゼロ',
+      !en.battleLogErr && !ja.battleLogErr && !en.battleLogAllErr && !ja.battleLogAllErr,
+      String(en.battleLogErr || ja.battleLogErr || en.battleLogAllErr || ja.battleLogAllErr || ''));
     // ── P7-21: 観戦カットイン(CUTIN_LINES) ──
     check(`CUTIN_LINES が ${kind} 側でも読めている(battle-lines.js の読み込み順)`,
       en.cutinTableLoaded === true && ja.cutinTableLoaded === true);

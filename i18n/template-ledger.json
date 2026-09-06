@@ -10,6 +10,306 @@
     "hasProperNoun": false
   },
   {
+    "key": "  ※ 連携にほころび！ {name}の反撃が{name2}をかすめる！",
+    "en": "  ※ The teamwork frays! {name}'s counter clips {name2}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → {name} HP:{hp}/{mhp}",
+    "en": "  → {name} HP:{hp}/{mhp}",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → {name}がカットイン！ {name2}を救出！",
+    "en": "  → {name} breaks it up! {name2} is saved!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → {name}がカットイン！ なんとか阻止！",
+    "en": "  → {name} breaks it up! Just in time!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → {name}がキックアウト！ ({n}回目)",
+    "en": "  → {name} kicks out! (kickout {n})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → {name}がキックアウト！ Grit発動！",
+    "en": "  → {name} kicks out! Grit is up!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → {name}がロープエスケープ！",
+    "en": "  → {name} gets to the ropes!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → {name}がロープエスケープ！ Grit発動！",
+    "en": "  → {name} gets to the ropes! Grit is up!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → {name}が助けに行かない！ 見殺し！",
+    "en": "  → {name} does not move to help! Left to fall!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → {name}の{move}！ しかし{name2}がカットイン！",
+    "en": "  → {name} hits {move}! But {name2} breaks it up!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → ピン成功！ {name}が見殺し！ {name2}の勝利！",
+    "en": "  → The cover holds! {name} never moves! The win goes to {name2}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → ピン！ だが{name}がカットイン！",
+    "en": "  → The cover! But {name} breaks it up!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → ピン！ だが{name}が返した！",
+    "en": "  → The cover! But {name} kicks out!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → フォール！ だが{name}がカウント2で返した！",
+    "en": "  → The cover! But {name} kicks out at two!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  → 締めに入った！ だが{name}が振りほどいた！",
+    "en": "  → The hold is locked in! But {name} works free!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ↔ タッチ(戦術): {name} → {name2}",
+    "en": "  ↔ Tag (tactical): {name} → {name2}",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ↔ タッチ(消耗): {name} → {name2}",
+    "en": "  ↔ Tag (worn down): {name} → {name2}",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ {name}が{move}で3カウント！ ({phase})",
+    "en": "  ★ {name} takes the three count with {move}! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ タッグ技で決着！",
+    "en": "  ★ The tag move ends it!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ ダブルチーム！ {name}&{name2}の{move}！ {name3}に{dmg}ダメージ！",
+    "en": "  ★ Double team! {name} & {name2} hit {move}! {dmg} damage to {name3}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ ピン成功！ {name}の勝利！ ({phase})",
+    "en": "  ★ The cover holds! {name} wins! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ レフェリーストップ！ {name}のTKO勝利！ ({phase})",
+    "en": "  ★ The referee stops it! {name} wins by TKO! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ 反撃のタッチ！ {name}から{name2}へ！ 会場が沸く！",
+    "en": "  ★ The hot tag! {name} to {name2}! The crowd is on its feet!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ 決着！ {name}の{move}でTKO勝ち！ ({phase})",
+    "en": "  ★ It's over! {name} wins by TKO with {move}! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ 決着！ {name}の{move}でギブアップ勝ち！ ({phase})",
+    "en": "  ★ It's over! {name} wins by submission with {move}! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ 決着！ {name}の{move}でフォール勝ち！ ({phase})",
+    "en": "  ★ It's over! {name} wins by pinfall with {move}! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ 決着！ {name}のカウンター（{move}）でTKO勝ち！ ({phase})",
+    "en": "  ★ It's over! {name}'s counter ({move}) takes it by TKO! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ 決着！ {name}のカウンター（{move}）でギブアップ勝ち！ ({phase})",
+    "en": "  ★ It's over! {name}'s counter ({move}) takes it by submission! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ 決着！ {name}のカウンター（{move}）でフォール勝ち！ ({phase})",
+    "en": "  ★ It's over! {name}'s counter ({move}) takes it by pinfall! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "  ★ 決着！ {name}は立ち上がれない。TKO！（{phase}）",
+    "en": "  ★ It's over! {name} cannot get up. TKO! ({phase})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "16名の精鋭を4連勝でなぎ倒しての栄冠である。決勝のゴングから間を置かず、リング上でベルトの授与が発表され、場内の熱は最高潮に達した。",
     "en": "Four straight wins over 16 picked entrants, and the crown at the end of it. The presentation was announced in the ring almost before the final bell had stopped, and the building was as loud as it got all night.",
     "files": [
@@ -1536,6 +1836,116 @@
     "en": "Transfer: {name} -> {destOrg}{ejectedSuffix}",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn} [{phase}] {name}がカウンター！ {move} → {name2}に{dmg}ダメージ",
+    "en": "T{turn} [{phase}] {name} counters! {move} → {dmg} damage to {name2}",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn} [{phase}] {name}の{move} → {name2}に{dmg}ダメージ (HP:{hp}/{mhp})",
+    "en": "T{turn} [{phase}] {name}'s {move} → {dmg} damage to {name2} (HP:{hp}/{mhp})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn} [{phase}] {name}の{move}→MISS",
+    "en": "T{turn} [{phase}] {name}'s {move}→MISS",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn}: [開幕大技] {name}の{move} → {name2}に{dmg}の大ダメージ！ (HP:{hp}/{mhp})",
+    "en": "T{turn}: [Opening Bomb] {name}'s {move} → {dmg} heavy damage to {name2}! (HP:{hp}/{mhp})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn}: [開幕大技] {name}の{move} → 透かされた！ {name2}に反撃の好機！",
+    "en": "T{turn}: [Opening Bomb] {name} goes for {move} → {name2} slips away! An opening for the counter!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn}: {name}の{move} → MISS",
+    "en": "T{turn}: {name}'s {move} → MISS",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn}: {name}の{move} → {name2}に{dmg}の大ダメージ！ (HP:{hp}/{mhp})",
+    "en": "T{turn}: {name}'s {move} → {dmg} heavy damage to {name2}! (HP:{hp}/{mhp})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn}: {name}の{move} → {name2}に{dmg}ダメージ (HP:{hp}/{mhp})",
+    "en": "T{turn}: {name}'s {move} → {dmg} damage to {name2} (HP:{hp}/{mhp})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn}: {name}の{move} → カウンター！ {name2}の{move2}で{name}に{dmg}ダメージ",
+    "en": "T{turn}: {name}'s {move} → countered! {name2}'s {move2} does {dmg} damage to {name}",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn}: {name}の{move}（透かし後の反撃） → {name2}に{dmg}の大ダメージ！ (HP:{hp}/{mhp})",
+    "en": "T{turn}: {name}'s {move} (counter off the slip) → {dmg} heavy damage to {name2}! (HP:{hp}/{mhp})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "T{turn}: {name}の{move}（透かし後の反撃） → {name2}に{dmg}ダメージ (HP:{hp}/{mhp})",
+    "en": "T{turn}: {name}'s {move} (counter off the slip) → {dmg} damage to {name2} (HP:{hp}/{mhp})",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -13725,6 +14135,116 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⏰ 時間切れ判定により、{name}の勝利！",
+    "en": "⏰ Time limit reached — the decision goes to {name}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ [開幕決着] {name}、{move}でTKO勝ち！",
+    "en": "★ [Opening Finish] {name} wins by TKO with {move}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ [開幕決着] {name}、{move}でギブアップ勝ち！",
+    "en": "★ [Opening Finish] {name} wins by submission with {move}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ [開幕決着] {name}、{move}でフォール勝ち！",
+    "en": "★ [Opening Finish] {name} wins by pinfall with {move}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ {name}、{move}からのフォールで3カウント！",
+    "en": "★ {name} pins off {move} for the three count!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ {name}、{move}でTKO勝ち！",
+    "en": "★ {name} wins by TKO with {move}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ {name}、{move}でギブアップ勝ち！",
+    "en": "★ {name} wins by submission with {move}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ {name}、{move}でギブアップ！",
+    "en": "★ {name} forces the tap with {move}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ {name}、{move}でフォール勝ち！",
+    "en": "★ {name} wins by pinfall with {move}!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ {name}、まさかの{move}で3カウント！ 大金星！",
+    "en": "★ {name} steals the three count with {move}! A huge upset!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★ レフェリーストップ！ {name}のTKO勝利！",
+    "en": "★ The referee stops it! {name} wins by TKO!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {

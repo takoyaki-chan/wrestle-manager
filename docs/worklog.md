@@ -1,5 +1,172 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-06 P7-53（裁定 C-6）— 観戦モードの試合実況ログ52本をテンプレ化・英訳・演出分類の言語非依存化
+
+### 背景
+
+P7-52 が訂正した前提（`docs/i18n-keisuke-rulings-pending-v0.1.md` C-6 / specs §50-4）——「`match-engine.js` の `log.push` / `pushLog` が積む生JA文は表示されない」は**誤りで、観戦モードの `#battleLog` に毎試合そのまま出ている**——を受けて、選択肢1（構造化して表示時翻訳する）を実装した。あわせて、ログ行の**完成文の部分一致**でCSSクラスとネタバレ保留を決めていた3箇所（翻訳した瞬間に無音で壊れる最危険パターン）を、生成元が確定するテンプレIDベースの言語非依存判定へ置き換えた。
+
+### 設計判断: dict-opts ではなく §14-3（追加フィールド方式）を採った理由
+
+指示書は当初 dict-opts（`opts.dict` を糸通しして Engine 内で翻訳してから充填）を想定していたが、**呼び出し元を数えた結果それでは塞がらない**ことが分かったため、§14-3 の追加フィールド方式に切り替えた。
+
+1. **`recordFrames: true` の呼び出し元は10箇所**（app.js 6・management.js 4）あり、うち**ジュニアトーナメントと天頂戦は `tickWeek` の中で事前シミュレートされる**。tickWeek は Engine 層で `WM_I18N` を持てない（§1）ので、この2経路には dict を渡す手立てthat がない
+2. その2経路の `frames` は **`G` に永続する**（`G.juniorTournament.rounds[].matches[].frames` 等）。生成時に翻訳して焼くと、EN でセーブ→JA で再生したときに EN のログが出る（§14-3 が禁じている形）
+3. 追加フィールド方式なら、`log`（=`result.log`）は**JA完成文のまま1バイト不変**で、フレームに `logLineTpls` / `logLineVars` を併記するだけ。表示点（観戦iframeの `_logLineHtml`）が `WM_I18N.t(tpl, vars)` を引く。**旧セーブのフレームは tpl を持たないので JA へ fail-open** する
+
+Engine は WM_I18N を一切呼ばない（§1）点は dict-opts と同じ。文面テンプレは `data.js` のトップレベル表 `BATTLE_LOG_TEMPLATES` へ移設し、`test/i18n-extract-templates.js` の TARGET_TABLES へ登録した（§10-2）。
+
+### 文型の表（52本 = single 24 / tag 28）
+
+分岐は**完全文で持つ**（構造規約3）。決着種別（フォール／ギブアップ／TKO）・クリティカル・「透かし後の反撃」注記・タッチ種別のような**文中へ差し込まれるJA語彙**は、値だけ訳す仕組み（§14-2）を使わず変種テンプレへ展開した。英語では語順と前置詞ごと変わるため、値の差し替えでは英文が組み上がらない。
+
+| 文型 | single | tag |
+|---|---|---|
+| 通常ヒット | `hit` / `hitCrit` / `hitBoost` / `hitBoostCrit`（4変種） | `hit` |
+| MISS | `miss` | `miss` |
+| カウンター | `counter` | `counter` |
+| 開幕大技 | `openingExecMiss` / `openingExecHit` / `openingFinish{Fall,Gu,Tko}` | —（タッグに開幕大技は無い） |
+| キックアウト | `kickoutGrit` + `hpNote` | `kickout`（回数つき） |
+| ロープエスケープ | `ropeEscapeGrit` + `hpNote` | `ropeEscape` |
+| 決着（直接KO） | `finish{Fall,Gu,Tko}` | `finish{Fall,Gu,Tko}` / `counterFinish{Fall,Gu,Tko}` |
+| ピン試み | `pinSubmission` / `pinFall` / `pinFailSub` / `pinFailFall` | `pinWin` / `pinKickout` / `pinCutin` / `pinBetrayalWin` |
+| 丸め込み | `rollup` | `rollupWin` / `rollupCutin` |
+| レフェリーストップ | `refStop` | `refStop` / `downTko`（HP0セーフティネット） |
+| 時間切れ | `timeout` | —（タッグは最終フレームへ winner を刻むだけでログ行を出さない） |
+| カットイン／見殺し | — | `cutinSave` / `betrayal` / `doubleTeamCutin` |
+| タッグ技 | — | `doubleTeam` / `tagMoveFinish` |
+| 同士討ち | — | `friendlyFire` |
+| タッチ | — | `hotTag` / `touchTactical` / `touchWorn` |
+
+プレースホルダは `{turn}` `{phase}` `{name}` `{name2}` `{name3}` `{move}` `{move2}` `{dmg}` `{hp}` `{mhp}` `{n}`。`{name}`／`{move}` は `t()` のパラメータ値自動変換（D-P6-2 / P7-5）で名前辞書・技名辞書を通るので配線ゼロで英語化される。`{phase}` は `'Opening'/'Mid'/'End'/'Climax'` で元から英語なので訳出対象ではない。
+
+### 52テンプレの JA / EN 全文（Keisuke レビュー用）
+
+**シングル戦（24本）**
+
+| # | JA | EN |
+|---|---|---|
+| 1 | `T{turn}: [開幕大技] {name}の{move} → 透かされた！ {name2}に反撃の好機！` | `T{turn}: [Opening Bomb] {name} goes for {move} → {name2} slips away! An opening for the counter!` |
+| 2 | `T{turn}: [開幕大技] {name}の{move} → {name2}に{dmg}の大ダメージ！ (HP:{hp}/{mhp})` | `T{turn}: [Opening Bomb] {name}'s {move} → {dmg} heavy damage to {name2}! (HP:{hp}/{mhp})` |
+| 3 | `★ [開幕決着] {name}、{move}でフォール勝ち！` | `★ [Opening Finish] {name} wins by pinfall with {move}!` |
+| 4 | `★ [開幕決着] {name}、{move}でギブアップ勝ち！` | `★ [Opening Finish] {name} wins by submission with {move}!` |
+| 5 | `★ [開幕決着] {name}、{move}でTKO勝ち！` | `★ [Opening Finish] {name} wins by TKO with {move}!` |
+| 6 | `T{turn}: {name}の{move} → MISS` | `T{turn}: {name}'s {move} → MISS` |
+| 7 | `T{turn}: {name}の{move} → カウンター！ {name2}の{move2}で{name}に{dmg}ダメージ` | `T{turn}: {name}'s {move} → countered! {name2}'s {move2} does {dmg} damage to {name}` |
+| 8 | `T{turn}: {name}の{move} → {name2}に{dmg}ダメージ (HP:{hp}/{mhp})` | `T{turn}: {name}'s {move} → {dmg} damage to {name2} (HP:{hp}/{mhp})` |
+| 9 | `T{turn}: {name}の{move} → {name2}に{dmg}の大ダメージ！ (HP:{hp}/{mhp})` | `T{turn}: {name}'s {move} → {dmg} heavy damage to {name2}! (HP:{hp}/{mhp})` |
+| 10 | `T{turn}: {name}の{move}（透かし後の反撃） → {name2}に{dmg}ダメージ (HP:{hp}/{mhp})` | `T{turn}: {name}'s {move} (counter off the slip) → {dmg} damage to {name2} (HP:{hp}/{mhp})` |
+| 11 | `T{turn}: {name}の{move}（透かし後の反撃） → {name2}に{dmg}の大ダメージ！ (HP:{hp}/{mhp})` | `T{turn}: {name}'s {move} (counter off the slip) → {dmg} heavy damage to {name2}! (HP:{hp}/{mhp})` |
+| 12 | `  → {name}がキックアウト！ Grit発動！` | `  → {name} kicks out! Grit is up!` |
+| 13 | `  → {name} HP:{hp}/{mhp}` | `  → {name} HP:{hp}/{mhp}`（日本語を含まない・両言語同一） |
+| 14 | `  → {name}がロープエスケープ！ Grit発動！` | `  → {name} gets to the ropes! Grit is up!` |
+| 15 | `★ {name}、{move}でフォール勝ち！` | `★ {name} wins by pinfall with {move}!` |
+| 16 | `★ {name}、{move}でギブアップ勝ち！` | `★ {name} wins by submission with {move}!` |
+| 17 | `★ {name}、{move}でTKO勝ち！` | `★ {name} wins by TKO with {move}!` |
+| 18 | `★ {name}、{move}でギブアップ！` | `★ {name} forces the tap with {move}!` |
+| 19 | `★ {name}、{move}からのフォールで3カウント！` | `★ {name} pins off {move} for the three count!` |
+| 20 | `  → 締めに入った！ だが{name}が振りほどいた！` | `  → The hold is locked in! But {name} works free!` |
+| 21 | `  → フォール！ だが{name}がカウント2で返した！` | `  → The cover! But {name} kicks out at two!` |
+| 22 | `★ {name}、まさかの{move}で3カウント！ 大金星！` | `★ {name} steals the three count with {move}! A huge upset!` |
+| 23 | `★ レフェリーストップ！ {name}のTKO勝利！` | `★ The referee stops it! {name} wins by TKO!` |
+| 24 | `⏰ 時間切れ判定により、{name}の勝利！` | `⏰ Time limit reached — the decision goes to {name}!` |
+
+**タッグ戦（28本）**
+
+| # | JA | EN |
+|---|---|---|
+| 1 | `  ★ 決着！ {name}は立ち上がれない。TKO！（{phase}）` | `  ★ It's over! {name} cannot get up. TKO! ({phase})` |
+| 2 | `T{turn} [{phase}] {name}の{move}→MISS` | `T{turn} [{phase}] {name}'s {move}→MISS` |
+| 3 | `T{turn} [{phase}] {name}がカウンター！ {move} → {name2}に{dmg}ダメージ` | `T{turn} [{phase}] {name} counters! {move} → {dmg} damage to {name2}` |
+| 4 | `T{turn} [{phase}] {name}の{move} → {name2}に{dmg}ダメージ (HP:{hp}/{mhp})` | `T{turn} [{phase}] {name}'s {move} → {dmg} damage to {name2} (HP:{hp}/{mhp})` |
+| 5 | `  → {name}がキックアウト！ ({n}回目)` | `  → {name} kicks out! (kickout {n})` |
+| 6 | `  → {name}が助けに行かない！ 見殺し！` | `  → {name} does not move to help! Left to fall!` |
+| 7 | `  → {name}がカットイン！ {name2}を救出！` | `  → {name} breaks it up! {name2} is saved!` |
+| 8 | `  → {name}がロープエスケープ！` | `  → {name} gets to the ropes!` |
+| 9 | `  ★ 決着！ {name}のカウンター（{move}）でフォール勝ち！ ({phase})` | `  ★ It's over! {name}'s counter ({move}) takes it by pinfall! ({phase})` |
+| 10 | `  ★ 決着！ {name}のカウンター（{move}）でギブアップ勝ち！ ({phase})` | `  ★ It's over! {name}'s counter ({move}) takes it by submission! ({phase})` |
+| 11 | `  ★ 決着！ {name}のカウンター（{move}）でTKO勝ち！ ({phase})` | `  ★ It's over! {name}'s counter ({move}) takes it by TKO! ({phase})` |
+| 12 | `  ★ 決着！ {name}の{move}でフォール勝ち！ ({phase})` | `  ★ It's over! {name} wins by pinfall with {move}! ({phase})` |
+| 13 | `  ★ 決着！ {name}の{move}でギブアップ勝ち！ ({phase})` | `  ★ It's over! {name} wins by submission with {move}! ({phase})` |
+| 14 | `  ★ 決着！ {name}の{move}でTKO勝ち！ ({phase})` | `  ★ It's over! {name} wins by TKO with {move}! ({phase})` |
+| 15 | `  → {name}の{move}！ しかし{name2}がカットイン！` | `  → {name} hits {move}! But {name2} breaks it up!` |
+| 16 | `  ★ {name}が{move}で3カウント！ ({phase})` | `  ★ {name} takes the three count with {move}! ({phase})` |
+| 17 | `  ★ レフェリーストップ！ {name}のTKO勝利！ ({phase})` | `  ★ The referee stops it! {name} wins by TKO! ({phase})` |
+| 18 | `  → ピン成功！ {name}が見殺し！ {name2}の勝利！` | `  → The cover holds! {name} never moves! The win goes to {name2}!` |
+| 19 | `  → ピン！ だが{name}がカットイン！` | `  → The cover! But {name} breaks it up!` |
+| 20 | `  ★ ピン成功！ {name}の勝利！ ({phase})` | `  ★ The cover holds! {name} wins! ({phase})` |
+| 21 | `  → ピン！ だが{name}が返した！` | `  → The cover! But {name} kicks out!` |
+| 22 | `  ★ ダブルチーム！ {name}&{name2}の{move}！ {name3}に{dmg}ダメージ！` | `  ★ Double team! {name} & {name2} hit {move}! {dmg} damage to {name3}!` |
+| 23 | `  → {name}がカットイン！ なんとか阻止！` | `  → {name} breaks it up! Just in time!` |
+| 24 | `  ★ タッグ技で決着！` | `  ★ The tag move ends it!` |
+| 25 | `  ※ 連携にほころび！ {name}の反撃が{name2}をかすめる！` | `  ※ The teamwork frays! {name}'s counter clips {name2}!` |
+| 26 | `  ★ 反撃のタッチ！ {name}から{name2}へ！ 会場が沸く！` | `  ★ The hot tag! {name} to {name2}! The crowd is on its feet!` |
+| 27 | `  ↔ タッチ(戦術): {name} → {name2}` | `  ↔ Tag (tactical): {name} → {name2}` |
+| 28 | `  ↔ タッチ(消耗): {name} → {name2}` | `  ↔ Tag (worn down): {name} → {name2}` |
+
+訳の方針（`docs/en-tone-bible-draft-v0.1.md`）: 実況は**短い事実描写**（記者の地の文ではない）。感嘆符は JA に「！」がある文にだけ、同じ数だけ置いた。格言化・タブロイド語彙は使わない（`slam`/`erupt`/`epic` 等は辞書ビルドの禁止語grepにも掛かる。当初案の "The building erupts!" は `erupts` に掛かるので "The crowd is on its feet!" へ書き換えた）。
+
+### JA 同一性の証明
+
+**(a) 実試合の全数突合（移設の証明）** — 修正前後で同一シード・同一入力の `Engine.battle.simulateMatch`（24選手の総当り552試合 × ティア1/2 × タイトル戦・因縁リングインの有無）と `Engine.tagMatch.simulateTagMatch`（176試合、bond/tagExp を振る）を回し、`result.log` 全行・`frames[].logLines` 全フレーム・`frames[].logLineClasses`・`finType`/`finMove`/`winner`/`turns`/`mq` を突合。
+
+> **比較行数 18,615（single 10,888 / tag 7,727） / フレーム 17,024 → 差異 0**
+
+**(b) 凍結コピーとの全数突合（到達しない枝も含む証明）** — 新規テスト `test/battle-log-template-test.js`。移設前のJSテンプレートリテラルを凍結コピーとして持ち、代表値・境界値の直積（名前3×技名3×数値6＝54通り）× 52テンプレ＝**2,808通り**を突合して不一致0。実試合では踏めない `tag.downTko`（HP0セーフティネット）もここで担保する。`BATTLE_LOG_LINE_KINDS` のキー集合が表と一致すること・`cls` が既知クラスのみであることも同テストで検査する。
+
+**(c) 表示経路の証明** — `test/ui-walkthrough/spectator-move-i18n-check.js` で、実UI（`battle-engine.html` / `tag-battle.html`）に実フレームを流し、描画関数 `_logLineHtml` を通した全行のDOMテキストが JA 側で `frames[].logLines`（=`result.log` と同値）と完全一致することを確認（タッグの `T{n} [{phase}]` は従来から描画時にフェーズ角かっこを畳むので、その既知の整形を掛けた上で突合）。
+
+**(d) ja-golden / auto-sim** — `test/ja-golden.js` はハッシュ `3466a6ff…1037b` で完全一致（試合ログは元々ゴールデンの対象外だが、`Engine.formatFinish` 等の周辺が動いていないことの担保）。`auto-sim 20 42` の意味論指紋 **96492883** も不変（ログ文はゲーム状態に入らない）。
+
+### 演出分類の言語非依存化（文字列一致の廃止）
+
+ログ行を**完成文の部分一致**で分類していた箇所は3つあった。いずれも生成元がテンプレIDに対して確定させた値をフレームで運ぶ形へ置き換えた。
+
+| 旧判定 | 場所 | 新 |
+|---|---|---|
+| `_SPOILER_LINE_RE`（★・キックアウト・カットイン・見殺し・丸め込み等の11〜12語） | `battle-engine-main.js` / `tag-battle-main.js` の `_isSpoilerLine` | `frames[].logLineSpoilers[i]`（`BATTLE_LOG_LINE_KINDS[*].spoiler`） |
+| `t.startsWith('★') \|\| t.includes('時間切れ') \|\| t.includes('丸め込みで逆転')` | `battle-engine-main.js` `_logLineHtml`（シングルにはクラス情報が無かった） | `frames[].logLineClasses[i]` |
+| `t.includes('★ 決着') \|\| …`（7分岐） | `tag-battle-main.js` `_logLineHtml` のフォールバック | 同上（タッグは P3a-3 D-G4 で既に `logLineClasses` があったが、`fr.logLines.indexOf(line)` で引いていたので**同一文が2行あると取り違える**穴があった。行レコード（`_logRecords`）で添字ごと持つ形に変えて解消） |
+
+**等価性の機械証明**: 実試合 25,131 行について「旧正規表現／旧 `startsWith` の判定結果」と「新しい `logLineSpoilers` / `logLineClasses`」が全行一致（不一致0）。テンプレ到達率は single 24/24、tag は通常再生で25/28＋低bond再生で `betrayal`・`pinBetrayalWin` を追加して 27/28（残る `downTko` は (b) の凍結コピー突合でカバー）。旧判定はいずれも「配列を持たない旧フレーム（旧セーブのJT・天頂戦リプレイ）」専用のフォールバックとして残し、**JA原文（`rec.text`）に対して**掛ける（表示文はENでは一致しないため）。
+
+### 変更ファイル
+
+- `src/data.js` — `BATTLE_LOG_TEMPLATES`（52本）と `BATTLE_LOG_LINE_KINDS`（`cls`/`spoiler`）を新設
+- `src/match-engine.js` — 両エンジンの `pushLog(id, params)` 化（`log.push` 直書き16箇所 + `pushLog` 33箇所 = 49呼び出し）、フレームへ `logLineTpls` / `logLineVars` / `logLineClasses` / `logLineSpoilers` を追加。タッグの `pushLog` は第2引数 `cls` の手渡しをやめ、IDから引く形に統一
+- `src/battle-engine-main.js` / `src/tag-battle-main.js` — `_logRecords(fr)`（1行=1レコードへ展開）と `_logRecordText(rec)`（`tpl` があれば `WM_I18N.t`、無ければ `text` へ fail-open）を新設。`_appendLogForFrame` / `_logLineHtml` / `_rebuildLogUntil` / 保留ログの再挿入 / `_narrateFrame` の action なしフレームをレコード経由へ
+- `test/i18n-extract-templates.js` — TARGET_TABLES に `BATTLE_LOG_TEMPLATES` を追加
+- `i18n/template-ledger.json` — 3,481 → **3,533**行（+52・未訳0）、`src/lang-en-templates.js` 再生成
+- `test/battle-log-template-test.js` — 新規（凍結コピー突合＋分類メタの妥当性）
+- `test/match-timeout-no-draw-test.js` — 「ソースの形を見る契約テスト」の更新（specs §42-7 の3例目）。移設で消えた `時間切れ判定により、${…}の勝利` の grep を、`pushLog('timeout', …)` の呼び出しと `BATTLE_LOG_TEMPLATES` 側のテンプレの2本立てへ
+- `test/ui-walkthrough/spectator-move-i18n-check.js` — P7-9 からの繰り越し「試合ログ行の実況ストリップ落ち込みは判定から除く」を**撤廃**。`#battleLog` の実DOMと、描画関数へ全フレームを通した全行DOMを採取して6項目を追加
+- `test/fixtures/i18n-ratchet-baseline.json` — 更新（理由: data.js +51 / match-engine.js −51 の**移設**。総数 27,932 で不変）
+
+### 検証
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`（data.js / match-engine.js / battle-engine-main.js / tag-battle-main.js） | OK |
+| `node test/ja-golden.js` | OK 完全一致 `3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b` |
+| `node test/balance-baseline.js` | ✅ ベースラインから逸脱なし（ターン14.74 / カウンター0.713 / 脱出0.044 / MQ80.0、gapCurve・spikeGrid60構成・styleAvg すべて不変） |
+| `npm test` | **266/266 PASS**（新規 `battle-log-template-test` を含む） |
+| `node test/auto-sim.js 20 42` | ALL CLEAR ✓ 指紋 **96492883** 不変 / 台帳検査（給与連続性7,969件・更改の約束・資金恒等式2,120回）違反0 |
+| `node test/i18n-ratchet.js` | OK（`--update` 済み。移設で総数不変） |
+| `node test/i18n-build-template-dict.js` | 台帳3,533キー / 訳文あり3,533 / **未訳0** |
+| `node test/i18n-ledger-consistency-test.js` | ok（2台帳以上に存在する17キーすべて訳文一致） |
+| `test/ui-walkthrough/spectator-move-i18n-check.js` | **ALL CHECKS PASS（77項目）** — EN の `#battleLog` に日本語0、JA は原文と完全一致、全行がテンプレIDを持つ、CSSクラス列が JA/EN 完全一致、i18n-miss 0 |
+| `npm run test:ui:walkthrough`（JA） | PASS / Actions **336** digest **940bcd9d0515d8d0**（基準どおり） / Issues 0 |
+| `npm run test:ui:walkthrough:en`（EN） | PASS / Actions 401 digest bc101bdd96bc3c96 / Issues 0 / **i18n-miss 0** |
+
+### 発見
+
+- **`recordFrames` の呼び出し元10箇所のうち2箇所は Engine 内（tickWeek 配下）**。「dict を糸通しする」処方箋は、生成が tickWeek で起きる族（JT・天頂戦のリプレイ用フレーム）には原理的に届かない。§14-3（追加フィールド方式）は「`Math.random()` で選ぶから表示時再生成が使えない」族のために作られた形だが、**「生成が Engine 層の奥で起きるので dict が渡せない」族**にもそのまま効く。specs へ §51-2 として書いた
+- **タッグの `logLineClasses` は既に存在したが、引き方が `fr.logLines.indexOf(line)`** だった。同一ターン内に同じ文が2行出ると（例: 両チームが同じ相手にキックアウト、`  → ピン！ だが◯◯が返した！` の連続）先頭のクラスを取り違える。行レコード化で添字ごと運ぶようにして解消した（実害の観測はしていないが、構造的に起こりうる）
+- **`docs/i18n-coverage-report-v0.1.md` 表5 の「約90箇所」は過大**。実測は `log.push` 16 + `pushLog` 33 = **49呼び出し / 52テンプレ**（変種展開で3本増）だった
+- **観戦モードの実DOM `#battleLog` は、再生を最後まで進めても数行しか溜まらないことがある**（`nextFrame()` が `frameIdx` を先に進め、ログ追記はアニメ完了後）。実DOMだけを見る検査はサンプルが実時間に依存して揺れるので、**描画関数へ全フレームを通した決定的な採取**を併置した
+
+---
+
 ## 2026-09-06 P7-52 — 台帳未収載の残り(実質324件)を全数最終仕分け・表示到達5箇所を修正・観戦ログの前提訂正
 
 ### 背景・手法
