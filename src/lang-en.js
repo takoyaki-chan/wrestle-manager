@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4726件、訳文あり4726件)
+//  生成元: i18n/ui-ledger.json (総キー4748件、訳文あり4748件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -4739,7 +4739,29 @@
     "＋オフシーズンです。": " plus an offseason.",
     "：互いに力を認め合い、表情が和らいだ": ": they acknowledged each other's strength, and their faces softened",
     "：社長の裁定に納得し、気持ちにも張りが戻った": ": she accepted your ruling, and the spring came back into her step",
-    "｜ 抗争{n}勝": "| {n} feud wins"
+    "｜ 抗争{n}勝": "| {n} feud wins",
+    "プロデビュー": "Turned pro",
+    "{stat} +{gain} のブレークスルー！": "{stat} +{gain} Breakthrough!",
+    "{belt} 獲得": "Won the {belt}",
+    "{belt} {n}度防衛": "Defended the {belt} (No. {n})",
+    "{belt} 陥落（{n}度防衛）": "Lost the {belt} (Defenses: {n})",
+    "{from}から移籍": "Transferred from {from}",
+    "スランプ突入（{trigger}）": "Slump began ({trigger})",
+    "スランプ脱出（{n}週間）": "Recovered from a {n}-week slump",
+    "モチベーション喪失": "Lost motivation",
+    "再起（{n}週間）": "Back after a {n}-week absence",
+    "対抗戦 勝利": "Won the Interpromotional Match",
+    "対抗戦 敗北": "Lost the Interpromotional Match",
+    "{org}に移籍": "Transferred to {org}",
+    "全盛期": "Peak",
+    "ほぼ不可能": "Nearly impossible",
+    "非常に困難": "Very difficult",
+    "厳しい": "Tough odds",
+    "五分五分": "Fifty-fifty",
+    "見込みあり": "Good chance",
+    "年末MVP受賞": "Year-End MVP",
+    "天頂戦 優勝": "Tenchosen Winner",
+    "引き止め確定、キャップ発動": "Retention locked in — the cap kicks in"
   }
   );
 })();

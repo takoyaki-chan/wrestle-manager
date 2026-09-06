@@ -1763,7 +1763,7 @@ function showNegotiatePopup(orgId, fighterId) {
     html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;margin-bottom:6px;background:var(--bg-card);${borderStyle};border-radius:6px;opacity:${opacity}">`;
     html += `<div><div style="font-size:13px;font-weight:700;color:${canAfford ? rc : 'var(--text-dim)'}">${planLabels[i]} <span style="font-size:11px;font-weight:400;color:var(--text-sub)">${planDescs[i]}</span></div>`;
     const rateLabel = Engine.negotiate.getRateLabel(rate);
-    html += `<div style="font-size:11px;color:var(--text-dim);margin-top:2px">${WM_I18N.t('費用')}: ${WM_I18N.t('{v}万', { v: cost })} ｜ ${WM_I18N.t('失敗時損失')}: ${WM_I18N.t('{v}万', { v: failCost })} ｜ ${WM_I18N.t('見通し')}: <span style="color:${rateLabel.color};font-weight:600">${rateLabel.text}</span></div></div>`;
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-top:2px">${WM_I18N.t('費用')}: ${WM_I18N.t('{v}万', { v: cost })} ｜ ${WM_I18N.t('失敗時損失')}: ${WM_I18N.t('{v}万', { v: failCost })} ｜ ${WM_I18N.t('見通し')}: <span style="color:${rateLabel.color};font-weight:600">${WM_I18N.t(rateLabel.text)}</span></div></div>`;
     html += `<button class="btn" style="font-size:12px;padding:6px 14px;background:${canAfford ? rc+'20' : 'var(--bg-mid)'};color:${canAfford ? rc : '#666'};border:1px solid ${canAfford ? rc+'40' : '#444'}" ${canAfford ? `onclick="confirmNegotiation('${orgId}',${fighterId},${i})"` : 'disabled'}>${WM_I18N.t('選択')}</button>`;
     html += `</div>`;
   }
@@ -1800,7 +1800,7 @@ function confirmNegotiation(orgId, fighterId, planIndex) {
   showConfirm(
     `<div style="text-align:center"><strong>${WM_I18N.pn(fighter.name)}</strong>${WM_I18N.t('への引き抜き交渉を開始します。')}<br><br>` +
     `${WM_I18N.t('プラン')}: ${planLabels[planIndex]}（${WM_I18N.t('費用')}: ${WM_I18N.t('{v}万', { v: cost })}）<br>` +
-    `${WM_I18N.t('見通し')}: <strong style="color:${confirmRateLabel.color}">${confirmRateLabel.text}</strong><br>` +
+    `${WM_I18N.t('見通し')}: <strong style="color:${confirmRateLabel.color}">${WM_I18N.t(confirmRateLabel.text)}</strong><br>` +
     `${WM_I18N.t('交渉期間: 4週間（キャンセル不可）')}<br><br>` +
     `${WM_I18N.t('よろしいですか？')}</div>`,
     WM_I18N.t('交渉開始'),
@@ -4659,9 +4659,12 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const seasonStr = h.season ? WM_I18N.t('キャリア{n}年目', { n: _relS }) : '';
           const weekStr   = h.week   ? ` ${WM_I18N.t('{n}週', { n: h.week })}` : '';
           // i18n P7-28: detail は怪我名を埋め込んだ完成文のことがある(型はinjury/injury_retirement)。
-          // 表示は必ず _wmCareerInjuryDetail を通す(それ以外のtypeは非対象・従来どおり非ラップ)
+          // 表示は必ず _wmCareerInjuryDetail を通す。
+          // i18n P7-52: それ以外のtypeは detailTpl/detailVars(§14-3)があれば言語別に組み直す。
+          // 旧行(P7-52より前のセーブ)はdetailTplが無いのでdetailへfail-open
           const _hDetail = (h.type === 'injury' || h.type === 'injury_retirement')
-            ? _wmCareerInjuryDetail(WM_I18N.t, h.detail) : h.detail;
+            ? _wmCareerInjuryDetail(WM_I18N.t, h.detail)
+            : (h.detailTpl ? WM_I18N.t(h.detailTpl, h.detailVars) : h.detail);
           html += `<div style="padding:6px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;border-left:2px solid ${typeColor}33;padding-left:10px;line-height:1.5">
             <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:70px;font-family:'Courier New',monospace">${seasonStr}${weekStr}</span>
             <span style="flex-shrink:0">${typeIcon}</span>

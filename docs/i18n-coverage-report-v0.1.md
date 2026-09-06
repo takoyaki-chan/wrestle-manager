@@ -205,3 +205,61 @@ data.js **60行目**、キャラid:49(高橋まゆみ)の`traits`配列で `'名
 2. ~~`GLIMPSE_A_LINES`51行の英訳(Opus主筆のセリフ層バッチへ回付)~~ → **P7-42で解決(2026-09-06)。生きている847行は既に全訳済み**。代わりに新しい裁定事項が1件: **上書きで到達不能になった死んだリテラル52行(data.js:27901-28778の878行ブロック)を削るか残すか**(`docs/i18n-keisuke-rulings-pending-v0.1.md` A-2b)
 3. `元所属団体`/AI団体ブレークスルー`{detail}`3種——management.js側にRaw値再構築(`_wmResolvePreformattedIndustryData`への`case`追加、または`_wmDictLabel`適用)を追加する追補タスクの起票要否。**P7-46追記(2026-09-06)**: 同じ束だった`対抗戦出演料`系2件は「industryNewsのような複数週永続キューではなく1週限りの繰越値」と判明したため生成時翻訳(`WM_I18N.t()`)へ切替・解決済み(§8-3参照)。残る4件(元所属団体1+detail3)は依然`industryNews`永続キューに載るため未解決のまま。**P7-42追記(2026-09-06)**: 同じ束に `management.js:14286` の「💬 {選手名}が退団を考えているという噂がある」(Glimpse A層 tone=danger の週次レポート1行)も入る。`tickWeek(state, opts)` は `opts.dict` を持っている(同関数内の`processManage`/`processSettlement`は渡している)のにこの行は使っておらず、`app.js:16156`で`gameLog`へ永続するためEN実行でログ画面にJAが残る。EN走破の`JA exposure by screen`が`screen-log=40`で最大なのはこの族(`tickWeek`内の生JA`events.push`は同種15箇所以上)
 4. ~~会場費(`会場`部分一致)側のcategoryフィールド追加要否~~ → ✅**P7-46(2026-09-06)で解決**。`category:'venue'`を追加し`Survival.estimateWeeklyNet`をcategory判定へ切替(§8-4参照)
+
+## 9. 最終仕分け(P7-52、2026-09-06)
+
+P7-52は「4台帳のどれにも載っていない残り」を**全数**仕分けした最終バッチ。再計測(main 0dabd094、classify.jsと同じ手法)で監査対象27,122件中の未収載491件から、記号のみ・`warn(`直呼び・`events.push`直リテラル・開発専用ファイルを除いた実質324件(ファイル別: management.js 106 / data.js 98 / match-engine.js 46 / ui-common.js 39→再フィルタ後14 / app.js 18 / relationships.js 14 / ui-render.js 6 / draft-negotiation.js 5 / index.html 2 / 観戦系4)を対象に、1件ずつ表示到達を`grep`で追跡した。
+
+### 9-1. 内訳(a/b/c/d)
+
+| 区分 | 件数(概算) | 内容 |
+|---|---:|---|
+| (a) 表示到達→修正 | 24 | 下記9-2参照。すべてmanagement.js発(消費点はui-common.js/ui-render.jsも含む) |
+| (a') 表示到達だが規模超過→未着手・別タスク行き | 46 | match-engine.js。下記9-3参照 |
+| (b) 仕様除外・内部キー比較・防御的フォールバック・測定アーティファクト | 約230 | 下記9-4参照 |
+| (c) Keisuke裁定待ち(既存+新規) | 約55 | GLIMPSE_A_LINES死literal50(A-2b既知)/元所属団体+AI団体detail3種(既知)/同門1件(新規、同族) |
+| (d) 死骸(参照ゼロ、証拠つき) | 約35 | 下記9-5参照 |
+| 測定時点で既に解決済み(スナップショットのstale false positive) | 9 | battle-engine.html/tag-battle.html `<title data-i18n>`(2件、既に`data-i18n`+訳文あり)・tag-battle-lines.js のフォールバック語3件(既にdict経由+訳文あり)・factions.js `getHostilityLabel`4件(P7-33で既に表示側t()ラップ済み)。いずれも`node test/i18n-scan.js --json`のスナップショットが本タスク中の他バッチのマージ後ledgerを反映しておらず「未収載」に見えていただけ(現在のledgerに対して再判定すると全件covered) |
+
+### 9-2. (a) 修正した項目
+
+すべて「ledgerには近い文言が既にあるのにこの消費点だけ`WM_I18N.t()`を一度も通していない」配線穴、または「そもそも訳語が1件も無い」未収載のいずれか。
+
+1. **`fighter.careerHistory`(選手個人のキャリア年表)** — `generateBackstory`(旗揚げ時の経歴デッち上げ)と`Engine.growthEvents`(実プレイ中のブレークスルー/スランプ/モチベ喪失)が`careerHistory.push({type, detail: '完成JA文'})`の形で書き込む14箇所すべてに、§14-3と同型の`detailTpl`/`detailVars`追加フィールドを併記(`detail`自体は生JAのまま不変・旧セーブfail-open)。表示点2箇所——`Engine.milestone.get`(management.js、キャラ詳細「年表」タブ)と`ui-common.js`の「経歴(怪我・重大事項)」タブ直描画——の両方を`ev.detailTpl ? t(ev.detailTpl, ev.detailVars) : ev.detail`へ変更。ui-ledgerへ10行手追加(プロデビュー/ブレークスルー/王座獲得・防衛・陥落/移籍/スランプ突入・脱出/モチベ喪失/再起)
+2. **`Engine.retirement.buildCareerSummary`(引退モーダルのキャリアサマリ行)** — `dict`引数を新設し、debut/titleWin/titleLoss/summit/war/transfer/peakOVR/titleDefenseの全項目を`_wmDictLabel`/`_wmFillWithDict`経由に変更(呼び出し元9箇所、app.js 6箇所は`WM_I18N.t`を注入・management.js 2箇所は`advanceWeek`の`dict`を注入・`executeShow`内の1箇所は非UI/auto-sim専用のため無改修)。ui-ledgerへ4行手追加(対抗戦勝利/敗北・{org}に移籍・全盛期。団体王座獲得/陥落・頂上決戦勝利/敗北・防衛{n}回は`CAREER_MILESTONE_TEMPLATES`の既訳を再利用)
+3. **`Engine.negotiate.getRateLabel`(引き抜き交渉プランの「見通し」曖昧ラベル)** — 消費点(ui-common.js `showNegotiationPanel`/`confirmNegotiation`)が`rateLabel.text`を`t()`なしで直描画していた配線穴。2箇所に`WM_I18N.t()`を追加し、5段階ラベルをui-ledgerへ新規登録
+4. **実績ポイントlabel(ランキング画面の実績ツールチップ)** — `Engine.achievement.add()`が焼く`label`(年末MVP受賞/ベストマッチ賞等8種)を、`ui-render.js`の`_buildAchievementTooltip`が`escHtml(it.label)`で無変換描画していた配線穴。`escHtml(WM_I18N.t(it.label))`へ変更し、未登録だった2種(年末MVP受賞/天頂戦優勝)をui-ledgerへ追加(残り6種は既存ledgerで対応済み)
+5. **E6(引き抜き承知イベント)の「引き止め確定、キャップ発動」hint** — 消費点(`showChoiceEventModal`)は既に`WM_I18N.t(c.hint)`で正しく配線されていたが、この1文言だけledger未登録で未訳(fail-open)だった。翻訳のみ追加(コード変更なし)
+
+### 9-3. (a') match-engine.js — 前提の訂正(規模超過につき未着手)
+
+指示書の既知情報は「match-engine.js の `log.push` 試合ログ(表示されない=`result.log` の UI 消費点なし。P7-33 で確認済み)」だったが、**再確認の結果これは誤りだった**。
+
+`match-engine.js`の`pushLog()`/`log.push()`が生成する生JA試合実況文(`T{turn}: [開幕大技]{atk}の{move} → 透かされた！...`等、単体戦46件+タッグ戦がフレームの`logLines`配列として記録)は、観戦モードの実描画コード`battle-engine-main.js`の`_appendLogForFrame()`(`fr.logLines`を`_logLineHtml()`経由で`#battleLog`へ直接innerHTML注入)および`tag-battle-main.js`の同型コードから**確実に消費・表示されている**。つまり試合観戦のログパネルは、EN実行時も生JAのまま出ている。
+
+規模が本タスクの1バッチで扱える範囲を超える(`pushLog`/`log.push`呼び出しが単体戦・タッグ戦の2エンジンに約90箇所、加えて`_isSpoilerLine`等の`.includes()`分類ロジックが生JA文字列に依存しているため、翻訳するには「構造化データ(`{type, params}`)を積んでおき表示時に`dict`で組み直す」設計への作り替えが要る)ため、**本タスクでは着手しない**。次の指示書での起票を推奨する。関連する`battle-engine-main.js`/`tag-battle-main.js`の`.includes('★ 決着')`等の分類ロジック(6件)は既存の危険パターン警告(§8-2)どおり、翻訳すると分類が無音故障するため触っていない。
+
+### 9-4. (b) 仕様除外・内部キー・防御的フォールバック・測定アーティファクト(代表例)
+
+- **data.js**: `TRAIT_DEFS`漢字アイコン24種(B-1裁定済み=漢字のまま)/`INJURY_TABLE`等の内部キー'中傷'4件(`injuryLabel()`が表示側で対応済み)/`FAREWELL_KIND_TEXT`13件(`body: 'frag1'+'frag2'`のJS文字列連結が評価後1文になり、台帳には結合後の完成文1行として正しく載っている——ソース上の行分割数と評価後の文字列単位がズレていただけの誤検知。P7-33で既報告のFAREWELL_CLOSING誤検知と同型)
+- **management.js**: injury内部キー'中傷'4件/`reason`比較専用6件(`.includes('引退')`分岐のみに使う`AI怪我引退`等)/`personality`内部キー6件(強気/鷹揚等、実際の表示は`PT.personality.*`テーブル側)/`typeof X!=='undefined'`型の防御的フォールバック(スポンサー/雑誌社/テレビ局等6件、CM_ADVERTISER_NAMES等の定数は必ず存在するため実質到達不能)/`.replace()`の第1・第2引数自体(期待の声/根強い人気...、完成後のテンプレは既にledger収載済み)/`events.push`直系のgameLog完成文約31件(C-1ファミリー、`msg`/`event.message`/`popEvents`等の中間変数を経由するため既存の`events.push('...')`直リテラル除外フィルタをすり抜けていたが、性質はC-1と同一)/growthPenalty.source等の死フィールド(表示は`.multiplier`/`.remainingWeeks`のみ参照)/`getPostJoinStats`のtitleSummary elseブランチ(`titleByOrg.length>0`が`totalTitleWins>0`の下で論理的に必ず真になるため到達不能)
+- **relationships.js**: `BOND_LABELS`/`RIVALRY_LABELS`9件(既報告の死コード、再確認済み)/`backstoryTypes`5件(bsType比較専用の内部分岐キー)
+- **ui-common.js/ui-render.js**: HTML大ブロックの骨格(スキャナが`${...}`を半角スペースに正規化する際、埋め込み済みの`WM_I18N.t()`呼び出しが潰れて「未翻訳の骨格」に見える計測アーティファクト、5件)/`showPopup`不在に起因する死コード内の文言(後述9-5)/財務ラベル`_normalizeFinanceLabel`の`会場費`同様の旧セーブfail-open(P7-46で確立済みの意図的パターン)/ゲームログ画面のフィルタ分類`.includes()`(C-1未解決のgameLog原文に依存するため翻訳すると分類が壊れる)
+- **draft-negotiation.js**: `ns.log`/`log`フィールド5件(消費点ゼロ、後述9-5)
+- **index.html**: `日本語`(B-4裁定済み=言語トグルの自言語表記)/`たこやき`(クレジット、固有名詞)
+
+### 9-5. (d) 死骸(参照ゼロ、証拠つき)
+
+| 項目 | 件数 | 場所 | 証拠 |
+|---|---:|---|---|
+| `Engine.trust.describeChange`/`describeChangeHint` | 11 | management.js:22767-22797 | `grep -rn "describeChange" src/ test/`が定義2箇所のみヒット、呼び出し元は0件。仕様書(specs/shachoshitsu-spec-v1.0.md §4)は`describeChange`の利用を明記しているが、実装は`Engine.trust.applyCoeff`/`gainMult`等の数値ヘルパーへ完全に移行済みで、この2関数は取り残されていた |
+| `newsItems.push({type:'retirement', ...})` | 1 | management.js:7822 | 新聞コンポーザ(management.js 32770行台の`industryEvents.forEach`)は`ev.type === 'retirementDeclare'`のみを処理し、`'retirement'`型の分岐が存在しない。`grep -n "case 'retirement'\|== 'retirement'" src/*.js`が0件 |
+| `showPopup`不在による死コード | 2(1メッセージ+1detail) | ui-common.js:6556-6562 | `grep -rn "\bshowPopup\b" src/*.js`が定義箇所を含め2行のみ(呼び出しガードと呼び出し自体)。関数定義が存在しないため`typeof showPopup === 'function'`は常にfalse |
+| `draft-negotiation.js`の`ns.log`/`log`フィールド | 5(+ui-common.js内の同型コピー1件) | draft-negotiation.js:468,492,597,608,632 | `grep -rn "negState.log\|\.negState\.log\|dn\.log\b" src/ui-common.js src/app.js src/ui-render.js`が0件 |
+| `FAREWELL_CLOSING` | 2(連結後1文) | data.js:11905-11906 | 既報告(§8-3参照)の再確認。C-4裁定待ち |
+| `MVP_RACE_TEXTS`の死んだ特性名キー | 5 | data.js:18434-18456('天才肌'/'心技体'/'影の支配者'/'ガラスの心臓'/'燃えやすい') | P7-28が確認した「旧特性名参照」(現行`TRAIT_DEFS`25種に存在しない)と同じ族の**別の消費点**。`fighter.traits`に現れない値がオブジェクトキーになっているため`mvpTraitFlavor[trait]`は常にmiss。数値には無関係(表示専用の文選びテーブル)なため`Traits.has()`型の実害はないが、参照は不可能 |
+| `_weekAction`の JA 値(`療養（レンタル）`/`療養`/`休暇`) | 3 | management.js:12907,12915,12939 | `grep -rn "_weekAction" src/ui-*.js`が比較対象の英語トークン('match'/'show'/'practice'等)のみで、これら3つのJA値との比較・表示のいずれも存在しない。ui-render.js:1428のコメントが「_weekActionは前週の記録なので参照しない」と明記 |
+| `growthPenalty.source` | 4 | management.js:25306,25320×2,25332 | `grep -rn "growthPenalty" src/ui-render.js src/ui-common.js`は`.multiplier`/`.remainingWeeks`のみ参照、`.source`は0件 |
+| `treatmentNames`(特別治療/通常治療) | 2 | management.js:10336 | `grep -n "treatmentType\b" src/*.js`が定義1行のみ、`newsEntry.treatmentType`を読むコードが0件 |
+
+これらは「セリフ(台詞プール)」ではなくヘルパー関数・定数フィールドなので削除可能な範囲だが、今回は**削除せず現状維持**(参照0の証拠のみ提示・実害なし・削除の副作用調査は別タスク)。`FAREWELL_CLOSING`/`MVP_RACE_TEXTS`死キーはKeisuke裁定待ちリストへ追記した。

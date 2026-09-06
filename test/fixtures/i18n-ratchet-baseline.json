@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T02:25:15.938Z",
+  "generatedAt": "2026-09-06T05:17:46.343Z",
   "files": {
     "data.js": {
       "jaCount": 17679,
@@ -18,8 +18,8 @@
       "jaChars": 14589
     },
     "management.js": {
-      "jaCount": 1346,
-      "jaChars": 9981
+      "jaCount": 1349,
+      "jaChars": 10022
     },
     "coach-lines.js": {
       "jaCount": 483,

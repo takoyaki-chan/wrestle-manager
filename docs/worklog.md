@@ -1,5 +1,82 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-06 P7-52 — 台帳未収載の残り(実質324件)を全数最終仕分け・表示到達5箇所を修正・観戦ログの前提訂正
+
+### 背景・手法
+
+直近の再計測(main 0dabd094)で「監査対象27,122 / 台帳収載26,631 / 未収載491(1.81%)」のうち、記号のみ・`warn(`直呼び・`events.push`直リテラル・開発専用ファイルを除いた**実質324件**(scratchpadの`uncovered-<file>.txt`列挙。ファイル別: management.js 106 / data.js 98 / match-engine.js 46 / ui-common.js 14 / app.js 18 / relationships.js 14 / ui-render.js 6 / draft-negotiation.js 5 / index.html 2 / 観戦系11)を1件ずつ`grep`で消費点まで追跡し、(a)表示到達=EN化 / (b)仕様除外・論理 / (c)裁定待ち / (d)死骸 に仕分けた。
+
+再仕分けの過程で、324件のうち**9件は測定スナップショットのstale false positive**と判明(battle-engine.html/tag-battle.html `<title data-i18n>`2件・tag-battle-lines.jsのフォールバック語3件・factions.js `getHostilityLabel`4件——いずれも他バッチのマージで既に台帳に訳語があり、`node test/i18n-scan.js --json`のスナップショットがそれを反映していなかっただけ。現行ledgerに対して再判定すると全件covered)。
+
+### (a) 修正した5箇所(JA→EN対照は下表)
+
+1. **`fighter.careerHistory`(選手詳細「年表」+「経歴」タブ)** — `generateBackstory`(旗揚げ経歴デッち上げ)と`Engine.growthEvents`(ブレークスルー/スランプ/モチベ喪失)が`careerHistory.push({type, detail: '完成JA文'})`する14箇所全てに、§14-3と同型の`detailTpl`/`detailVars`追加フィールドを併記(`detail`自体は生JAのまま不変・旧セーブfail-open)。表示点2箇所——`Engine.milestone.get`(management.js、年表タブ)と`ui-common.js`の「経歴(怪我・重大事項)」タブ直描画——を`ev.detailTpl ? t(ev.detailTpl, ev.detailVars) : ev.detail`へ変更
+2. **`Engine.retirement.buildCareerSummary`(引退モーダルのキャリアサマリ)** — 第2引数`dict`を新設し、debut/titleWin/titleLoss/summit/war/transfer/peakOVR/titleDefenseの全項目を`_wmDictLabel`/`_wmFillWithDict`経由に変更。呼び出し元9箇所(app.js 6箇所は`WM_I18N.t`、management.js `advanceWeek`内1箇所は既存の`dict`変数、`executeShow`内1箇所は非UI/auto-sim専用のため無改修)
+3. **`Engine.negotiate.getRateLabel`(引き抜き交渉「見通し」ラベル)** — 消費点(ui-common.js `showNegotiationPanel`/`confirmNegotiation`)が`rateLabel.text`を`t()`なしで直描画していた配線穴。2箇所に`WM_I18N.t()`を追加
+4. **実績ポイントlabel(ランキング画面ツールチップ)** — `ui-render.js`の`_buildAchievementTooltip`が`escHtml(it.label)`で無変換描画していた配線穴。`escHtml(WM_I18N.t(it.label))`へ変更
+5. **E6イベント「引き止め確定、キャップ発動」hint** — 配線(`showChoiceEventModal`の`WM_I18N.t(c.hint)`)は既に正しかったが、この1文言だけledger未登録で未訳だった。翻訳のみ追加
+
+| JA | EN |
+|---|---|
+| プロデビュー | Turned pro |
+| {stat} +{gain} のブレークスルー！ | {stat} +{gain} Breakthrough! |
+| {belt} 獲得 | Won the {belt} |
+| {belt} {n}度防衛 | Defended the {belt} (No. {n}) |
+| {belt} 陥落（{n}度防衛） | Lost the {belt} (Defenses: {n}) |
+| {from}から移籍 | Transferred from {from} |
+| スランプ突入（{trigger}） | Slump began ({trigger}) |
+| スランプ脱出（{n}週間） | Recovered from a {n}-week slump |
+| モチベーション喪失 | Lost motivation |
+| 再起（{n}週間） | Back after a {n}-week absence |
+| 対抗戦 勝利 / 敗北 | Won / Lost the Interpromotional Match |
+| {org}に移籍 | Transferred to {org} |
+| 全盛期 | Peak |
+| ほぼ不可能 / 非常に困難 / 厳しい / 五分五分 / 見込みあり | Nearly impossible / Very difficult / Tough odds / Fifty-fifty / Good chance |
+| 年末MVP受賞 / 天頂戦 優勝 | Year-End MVP / Tenchosen Winner |
+| 引き止め確定、キャップ発動 | Retention locked in — the cap kicks in |
+
+ui-ledger.jsonへ手追加22行(いずれもmanagement.jsが走査対象外のため`kept:true`+note付き)。訳文はdocs/en-tone-bible-draft-v0.1.mdの簡潔・事実記述トーンに合わせた。
+
+### 重要な訂正発見: match-engine.js の試合実況ログ(規模超過につき本タスクでは未着手)
+
+指示書の既知情報「match-engine.js の `log.push` 試合ログは表示されない(P7-33確認済み)」を再確認したところ**誤りと判明**。`pushLog()`/`log.push()`が積む生JA実況文(単体戦・タッグ戦で計約90箇所)は`logLines`配列としてフレームに記録され、観戦モードの実描画コード`battle-engine-main.js`の`_appendLogForFrame()`(`fr.logLines`を`_logLineHtml()`経由で`#battleLog`へ直接innerHTML注入)・`tag-battle-main.js`の同型コードから**確実に消費・表示されている**。つまり毎試合の実況テロップはEN実行時も生JAのまま出続けている。
+
+規模(pushLog呼び出し約90箇所×単体/タッグ2エンジン+`.includes('★ 決着')`等の生JA依存分類ロジック+レンダラ2箇所の構造変更が要る)が本タスクの1バッチを超えるため**本タスクでは着手せず**、`docs/i18n-keisuke-rulings-pending-v0.1.md` C-6として設計相談を起票した。`docs/実機確認バックログ.md`にも観戦ログの実機確認項目を追加済み。
+
+### (b)/(c)/(d) の主な内訳(詳細はdocs/i18n-coverage-report-v0.1.md §9)
+
+- (b)仕様除外・内部キー比較・防御的フォールバック・測定アーティファクト 約230件: TRAIT_DEFS漢字アイコン(B-1裁定済み)/injury内部キー'中傷'/`reason`の`.includes('引退')`分岐専用値/personality内部キー/`typeof X!=='undefined'`型の到達不能フォールバック/`events.push`直書きのgameLog完成文(C-1ファミリー、中間変数経由で既存フィルタをすり抜けていた約31件)/HTML大ブロックの骨格(スキャナが`${...}`を空白化する際の計測アーティファクト)/BOND_LABELS・RIVALRY_LABELS(既報告の死コード再確認)等
+- (c)裁定待ち 約55件: GLIMPSE_A_LINES死literal50(A-2b既知)/元所属団体+AI団体detail3種(既知)/「同門」1件(industryNews data field、既知の族に新規合流)
+- (d)死骸(参照ゼロ・証拠つき) 約35件: `Engine.trust.describeChange`/`describeChangeHint`(呼び出し元0)/`newsItems.push({type:'retirement'})`(コンポーザは`retirementDeclare`のみ処理、`'retirement'`型は無消費)/`showPopup`不在による死コード2件(関数自体が未定義)/`draft-negotiation.js`の`ns.log`/`log`フィールド(消費点ゼロ)/`FAREWELL_CLOSING`(既報告)/`MVP_RACE_TEXTS`の死んだ特性名キー5件(新規発見、`docs/i18n-keisuke-rulings-pending-v0.1.md` C-4へ追記)/`_weekAction`のJA値3件/`growthPenalty.source`4件/`treatmentNames`2件。いずれもヘルパー・定数でセリフプールではないため**削除せず現状維持**(証拠のみ提示)
+
+### 検証
+
+- `node --check` (management.js/ui-common.js/ui-render.js) OK
+- `node test/ja-golden.js` → 完全一致(hash `3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`、要求基準と一致)
+- `node test/i18n-build-dict.js` → 台帳総キー数4748・訳文あり4748・未訳0
+- `node test/i18n-ledger-consistency-test.js` → ok(2台帳以上重複17件すべて訳文一致)
+- `node test/i18n-ratchet.js` → management.js +3(新規detailTpl等のWM_I18N.t()消費キー、正当な理由により`--update`で基準更新)
+- `npm test` → 265件 全PASS
+- `node test/auto-sim.js 20 42` → ALL CLEAR(violations 0 / errors 0 / gameover 0)、**Semantic fingerprint 96492883 不変**(表示層のみの変更であることを機械確認)
+- JA走破(`npm run test:ui:walkthrough`) → PASS・336手・digest `940bcd9d0515d8d0`(基準と完全一致)・Issues 0
+- EN走破(`--lang en --ja-exposure-log`) → 変更前後で同一条件比較(git diff退避→checkout→計測→git apply)。**変更前後とも402手・digest `071f38f017458274`・i18n-miss 0・JA露出138件(screen-log=40/screen-week=11/screen-shachoshitsu=3/titleScreen=1/screen-show=1)で完全一致** — 挙動に一切の差分がないことを確認。今回修正した5画面(引き抜き交渉/引退モーダル/年表タブ/実績ツールチップ/E6hint)はこのwalkthroughのシード42・1季分の動線には現れないため、JA露出カウント自体は減っていない(修正の正しさは上記のledger未訳0・grepでの消費点追跡で individually 確認済み)。EN digestが`docs/worklog.md`のP7-50エントリに記載の基準(400手/`1194c7dc671a90b4`)と異なるのは本タスクと無関係の既存drift(変更前測定の時点で既に402/`071f38f0`だったことで確認済み)
+
+### 変更ファイル
+
+- `src/management.js` — careerHistory系14箇所(detailTpl/detailVars追加)、`Engine.milestone.get`のcareerHist変換ループ、`Engine.retirement.buildCareerSummary`(dict引数化)、`advanceWeek`内の呼び出し元1箇所
+- `src/app.js` — `buildCareerSummary`呼び出し元6箇所へ`WM_I18N.t`を追加
+- `src/ui-common.js` — 「経歴」タブの`_hDetail`分岐、`getRateLabel`消費点2箇所
+- `src/ui-render.js` — 実績ツールチップの`it.label`
+- `i18n/ui-ledger.json` — 手追加22行(+ビルド後`src/lang-en.js`再生成)
+- `test/fixtures/i18n-ratchet-baseline.json` — 基準更新(`--update`)
+- `docs/i18n-coverage-report-v0.1.md`(§9新設)・`docs/i18n-keisuke-rulings-pending-v0.1.md`(C-4追記・C-6新設)・`docs/実機確認バックログ.md`(P7-52節)・`docs/game-system-roadmap.md`(🌐行更新)
+
+### 残作業
+
+- Keisuke実機確認(上記6項目、`docs/実機確認バックログ.md`のP7-52節)
+- match-engine.jsの試合実況ログ英語化(C-6、設計相談→専用指示書化が必要)
+- 既存の裁定待ち項目(A-2b/B-5/C-4/C-5、C-6を新設)は据え置き
+
 ## 2026-09-06 P7-50 マージ(0dabd094)後の走破基準更新 — ja 336手 / 940bcd9d0515d8d0、EN 400手 / 1194c7dc671a90b4
 
 - 挑戦状 ignite `away-challenge` / `incoming-challenge` は JA/EN とも PASS(EN miss 0、`--regen` で fixture を作り直して確認)。

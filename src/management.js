@@ -4372,8 +4372,13 @@ const Engine = {
         orgId: isFA ? undefined : orgId,
         orgName: isFA ? undefined : orgLabel
       });
+      // i18n P7-52: detailTpl/detailVars(§14-3の追加フィールド方式)。detail自体は
+      // 生JAのまま不変(セーブ値不変・旧行fail-open用)、表示点(Engine.milestone.get /
+      // ui-common.js 経歴タブ)がdetailTplがあればそちらを言語別に組み直す。
       careerHistory.push({ type: 'debut', season: 1, week: 1,
-        detail: isFA ? 'プロデビュー' : `${orgId === 'player' ? orgLabel : (rivalOrgNames[orgId] || '')}入団` });
+        detail: isFA ? 'プロデビュー' : `${orgId === 'player' ? orgLabel : (rivalOrgNames[orgId] || '')}入団`,
+        detailTpl: isFA ? 'プロデビュー' : '{org} に入団',
+        detailVars: isFA ? undefined : { org: orgId === 'player' ? orgLabel : (rivalOrgNames[orgId] || '') } });
 
       // §C-3-3 ブレークスルー
       let btExpected = careerSeasons * 0.08;
@@ -4405,7 +4410,8 @@ const Engine = {
         const gain = Engine.rng.int(rng, 2, 4);
         history.push({ type: 'breakthrough', season: btSeason, week: btWeek, stat, gain });
         careerHistory.push({ type: 'breakthrough', season: btSeason, week: btWeek,
-          detail: `${stat.toUpperCase()} +${gain} のブレークスルー！` });
+          detail: `${stat.toUpperCase()} +${gain} のブレークスルー！`,
+          detailTpl: '{stat} +{gain} のブレークスルー！', detailVars: { stat: stat.toUpperCase(), gain } });
       }
 
       // §C-3-3 タイトル歴
@@ -4424,16 +4430,19 @@ const Engine = {
         const defenses = Math.min(8, Math.round((peakOVR - threshold) / 3 + Engine.rng.int(rng, 0, 3)));
         const crownWeek = 2 + Engine.rng.int(rng, 0, 44);
         history.push({ type: 'titleWin', season: reignSeason, week: crownWeek, beltId, orgName: beltName });
-        careerHistory.push({ type: 'title_win', season: reignSeason, detail: `${beltName} 獲得` });
+        careerHistory.push({ type: 'title_win', season: reignSeason, detail: `${beltName} 獲得`,
+          detailTpl: '{belt} 獲得', detailVars: { belt: beltName } });
         totalTitleWins++;
         // 3,5回目の防衛を記録
         if (defenses >= 3) {
           history.push({ type: 'titleDefense', season: reignSeason, week: crownWeek + 6, beltId, count: 3 });
-          careerHistory.push({ type: 'title_defense', season: reignSeason, detail: `${beltName} 3度防衛` });
+          careerHistory.push({ type: 'title_defense', season: reignSeason, detail: `${beltName} 3度防衛`,
+            detailTpl: '{belt} {n}度防衛', detailVars: { belt: beltName, n: 3 } });
         }
         if (defenses >= 5) {
           history.push({ type: 'titleDefense', season: Math.min(careerSeasons, reignSeason + 1), week: crownWeek, beltId, count: 5 });
-          careerHistory.push({ type: 'title_defense', season: Math.min(careerSeasons, reignSeason + 1), detail: `${beltName} 5度防衛` });
+          careerHistory.push({ type: 'title_defense', season: Math.min(careerSeasons, reignSeason + 1), detail: `${beltName} 5度防衛`,
+            detailTpl: '{belt} {n}度防衛', detailVars: { belt: beltName, n: 5 } });
         }
         totalDefenses += defenses;
         // 陥落
@@ -4441,7 +4450,8 @@ const Engine = {
         const lossWeek = 2 + Engine.rng.int(rng, 0, 44);
         history.push({ type: 'titleLoss', season: lossSeason, week: lossWeek, beltId, defenses });
         careerHistory.push({ type: 'title_loss', season: lossSeason,
-          detail: `${beltName} 陥落（${defenses}度防衛）` });
+          detail: `${beltName} 陥落（${defenses}度防衛）`,
+          detailTpl: '{belt} 陥落（{n}度防衛）', detailVars: { belt: beltName, n: defenses } });
         return lossSeason;
       };
 
@@ -4466,7 +4476,8 @@ const Engine = {
         const fromName = rivalOrgNames[fromOrg] || fromOrg;
         const toName = isFA ? 'フリー' : (rivalOrgNames[orgId] || orgId);
         history.push({ type: 'transfer', season: transferSeason, week: 1, fromOrg: fromName, toOrg: toName });
-        careerHistory.push({ type: 'transfer', season: transferSeason, detail: `${fromName}から移籍` });
+        careerHistory.push({ type: 'transfer', season: transferSeason, detail: `${fromName}から移籍`,
+          detailTpl: '{from}から移籍', detailVars: { from: fromName } });
         // 2回目移籍（10シーズン以上で5%）
         if (careerSeasons >= 7 && Engine.rng.float(rng) < 0.05) {
           const t2Season = transferSeason + 2 + Engine.rng.int(rng, 0, 3);
@@ -4475,7 +4486,8 @@ const Engine = {
             const from2 = from2Pool.length > 0 ? from2Pool[Engine.rng.int(rng, 0, from2Pool.length - 1)] : fromOrg;
             const from2Name = rivalOrgNames[from2] || from2;
             history.push({ type: 'transfer', season: t2Season, week: 1, fromOrg: from2Name, toOrg: toName });
-            careerHistory.push({ type: 'transfer', season: t2Season, detail: `${from2Name}から移籍` });
+            careerHistory.push({ type: 'transfer', season: t2Season, detail: `${from2Name}から移籍`,
+              detailTpl: '{from}から移籍', detailVars: { from: from2Name } });
           }
         }
       }
@@ -7316,13 +7328,16 @@ const Engine = {
       // Convert careerHistory events (injuries etc.)
       for (const ev of careerHist) {
         // i18n P7-28: 'injury'/'injury_retirement' の detail は怪我名を埋め込んだ完成文
-        // なので _wmCareerInjuryDetail で言語別に引き直す。他type(生成経歴の title_win等)
-        // は本バッチの対象外(§38-9の「怪我名」に限定)のため従来どおり非ラップ
+        // なので _wmCareerInjuryDetail で言語別に引き直す。
+        // i18n P7-52: 他type(生成経歴のtitle_win/breakthrough/slump等)は detailTpl/detailVars
+        // (§14-3の追加フィールド)があれば言語別に組み直す。旧行(P7-52より前のセーブ/
+        // detailTpl未設定の型)はdetailへfail-open
         const isInjuryEv = ev.type === 'injury' || ev.type === 'injury_retirement';
+        const otherText = ev.detailTpl ? _t(ev.detailTpl, ev.detailVars) : (ev.detail || ev.type);
         milestones.push({
           season: rel(ev.season || 1), week: ev.week || 0,
           type: ev.type === 'injury_retirement' ? 'injury' : (ev.type || 'note'),
-          text: isInjuryEv ? _wmCareerInjuryDetail(dict, ev.detail) : (ev.detail || ev.type),
+          text: isInjuryEv ? _wmCareerInjuryDetail(dict, ev.detail) : otherText,
           detail: ev.type === 'injury_retirement' ? _t(T.injuryRetire) : undefined
         });
       }
@@ -7384,8 +7399,11 @@ const Engine = {
     /**
      * Build career summary from careerRecord.history (max 8 items, spec §1.2)
      * Returns array of { icon, text } objects for display.
+     * i18n P7-52: 第2引数 dict は任意の「辞書参照関数」(既定=省略でJA原文のまま。
+     * 既存呼び出し元は無改修で不変)。呼ばれるたびcareerRecord.historyから組み直され
+     * Gへ焼かれないため、追加フィールドも自己検証も要らない(§22-1と同じ族)。
      */
-    buildCareerSummary(fighter) {
+    buildCareerSummary(fighter, dict) {
       // 転生前（NPC事前史）は別人扱いで除外
       const histAll = (fighter.careerRecord?.history || []);
       const joinS = Engine.career.joinSeason(fighter);
@@ -7406,43 +7424,41 @@ const Engine = {
 
       // 1. debut (always show)
       debut.forEach(e => {
-        const via = e.via === 'draft' ? 'ドラフト' : e.via === 'fa' ? 'FA' : e.via === 'scout' ? 'スカウト' : '入団';
-        items.push({ icon: '🎓', text: `S${e.season||1} ${via}入団`, priority: 1 });
+        const viaJa = e.via === 'draft' ? 'ドラフト入団' : e.via === 'fa' ? 'FA入団' : e.via === 'scout' ? 'スカウト入団' : '入団';
+        items.push({ icon: '🎓', text: `S${e.season||1} ${_wmDictLabel(dict, viaJa)}`, priority: 1 });
       });
 
       // 2. titleWin / titleLoss (always show)
-      titleWins.forEach(e => items.push({ icon: '🏆', text: `S${e.season} W${e.week} 団体王座 獲得`, priority: 2 }));
-      titleLosses.forEach(e => items.push({ icon: '💫', text: `S${e.season} W${e.week} 団体王座 陥落`, priority: 2 }));
+      titleWins.forEach(e => items.push({ icon: '🏆', text: `S${e.season} W${e.week} ${_wmDictLabel(dict, '団体王座 獲得')}`, priority: 2 }));
+      titleLosses.forEach(e => items.push({ icon: '💫', text: `S${e.season} W${e.week} ${_wmDictLabel(dict, '団体王座 陥落')}`, priority: 2 }));
 
       // 3. summit (priority)
       summits.forEach(e => {
-        const result = e.won ? '勝利' : '敗北';
-        items.push({ icon: '🏆', text: `S${e.season} 頂上決戦（${result}）`, priority: 3 });
+        items.push({ icon: '🏆', text: `S${e.season} ${_wmDictLabel(dict, e.won ? '頂上決戦 勝利' : '頂上決戦 敗北')}`, priority: 3 });
       });
 
       // 4. war (max 2)
       wars.slice(0, 2).forEach(e => {
-        const result = e.won ? '勝利' : '敗北';
-        items.push({ icon: '⚔', text: `S${e.season} 対抗戦（${result}）`, priority: 4 });
+        items.push({ icon: '⚔', text: `S${e.season} ${_wmDictLabel(dict, e.won ? '対抗戦 勝利' : '対抗戦 敗北')}`, priority: 4 });
       });
 
       // 5. transfer (max 2)
       transfers.slice(0, 2).forEach(e => {
-        items.push({ icon: '📋', text: `S${e.season} ${e.toOrg||'他団体'}に移籍`, priority: 5 });
+        items.push({ icon: '📋', text: `S${e.season} ${_wmFillWithDict(dict, '{org}に移籍', { org: e.toOrg || _wmDictLabel(dict, '他団体') })}`, priority: 5 });
       });
 
       // 6. peakOVR (best only, always show)
       if (peakOVRs.length > 0) {
         const best = peakOVRs.reduce((a, b) => (b.ovr || 0) > (a.ovr || 0) ? b : a, peakOVRs[0]);
-        items.push({ icon: '📈', text: `S${best.season} 全盛期 OVR ${best.ovr || fighter.careerRecord?.peakOVR || '?'}`, priority: 6 });
+        items.push({ icon: '📈', text: `S${best.season} ${_wmDictLabel(dict, '全盛期')} OVR ${best.ovr || fighter.careerRecord?.peakOVR || '?'}`, priority: 6 });
       } else if (fighter.careerRecord?.peakOVR) {
-        items.push({ icon: '📈', text: `全盛期 OVR ${fighter.careerRecord.peakOVR}`, priority: 6 });
+        items.push({ icon: '📈', text: `${_wmDictLabel(dict, '全盛期')} OVR ${fighter.careerRecord.peakOVR}`, priority: 6 });
       }
 
       // 7. titleDefense (summarized, 1 line)
       if (defenses.length > 0) {
         const maxCount = Math.max(...defenses.map(e => e.count || 1));
-        items.push({ icon: '🛡️', text: `防衛 ${maxCount}回`, priority: 7 });
+        items.push({ icon: '🛡️', text: _wmFillWithDict(dict, '防衛 {n}回', { n: maxCount }), priority: 7 });
       }
 
       // Sort by priority, then trim to max 8
@@ -17966,7 +17982,7 @@ const Engine = {
             const isLastRunExpired = lastRunExpiredList.some(x => x.id === f.id);
             const route = isLastRunExpired ? 'lastrun_expired' : 'season_end';
             const { line, category } = Engine.retirement.selectLine(f, route, s, lineRng);
-            const summary = Engine.retirement.buildCareerSummary(f);
+            const summary = Engine.retirement.buildCareerSummary(f, dict);
             const canRetain = !isLastRunExpired && (f.wear || 0) < 80 && (f.retainCount || 0) < 2;
             return { fighter: f, route, line, category, summary, canRetain };
           });
@@ -22105,7 +22121,8 @@ Engine.growthEvents = {
         { type: 'breakthrough', season, week, stat, gain: actualGain }]
     };
     nf.careerHistory = [...(nf.careerHistory || []),
-      { type: 'breakthrough', season, week, detail: `${stat.toUpperCase()} +${actualGain} のブレークスルー！` }
+      { type: 'breakthrough', season, week, detail: `${stat.toUpperCase()} +${actualGain} のブレークスルー！`,
+        detailTpl: '{stat} +{gain} のブレークスルー！', detailVars: { stat: stat.toUpperCase(), gain: actualGain } }
     ];
     return { fighter: nf, stat, gain: actualGain, hotStreak };
   },
@@ -22142,7 +22159,8 @@ Engine.growthEvents = {
   applySlump(fighter, trigger, season, week) {
     let nf = { ...fighter, slump: { recoveryMomentum: 0, weeksSinceStart: 0, ovrDebuff: -1 } };
     nf.careerHistory = [...(nf.careerHistory || []),
-      { type: 'slump_start', season, week, detail: `スランプ突入（${trigger}）` }
+      { type: 'slump_start', season, week, detail: `スランプ突入（${trigger}）`,
+        detailTpl: 'スランプ突入（{trigger}）', detailVars: { trigger } }
     ];
     return nf;
   },
@@ -22164,7 +22182,8 @@ Engine.growthEvents = {
       const duration = slump.weeksSinceStart;
       let nf = { ...fighter, slump: null };
       nf.careerHistory = [...(nf.careerHistory || []),
-        { type: 'slump_end', season, week, detail: `スランプ脱出（${duration}週間）` }
+        { type: 'slump_end', season, week, detail: `スランプ脱出（${duration}週間）`,
+          detailTpl: 'スランプ脱出（{n}週間）', detailVars: { n: duration } }
       ];
       return { fighter: nf, recovered: true, duration };
     }
@@ -22199,7 +22218,8 @@ Engine.growthEvents = {
     let nf = { ...fighter, slump: null,
       motivationLoss: { recoveryMomentum: 0, weeksSinceStart: 0, ovrDebuff: -2 } };
     nf.careerHistory = [...(nf.careerHistory || []),
-      { type: 'motivation_loss_start', season, week, detail: 'モチベーション喪失' }
+      { type: 'motivation_loss_start', season, week, detail: 'モチベーション喪失',
+        detailTpl: 'モチベーション喪失' }
     ];
     return nf;
   },
@@ -22225,7 +22245,8 @@ Engine.growthEvents = {
       const duration = ml.weeksSinceStart;
       let nf = { ...fighter, motivationLoss: null };
       nf.careerHistory = [...(nf.careerHistory || []),
-        { type: 'motivation_loss_end', season, week, detail: `再起（${duration}週間）` }
+        { type: 'motivation_loss_end', season, week, detail: `再起（${duration}週間）`,
+          detailTpl: '再起（{n}週間）', detailVars: { n: duration } }
       ];
       return { fighter: nf, recovered: true, selfRetire: false, duration };
     }

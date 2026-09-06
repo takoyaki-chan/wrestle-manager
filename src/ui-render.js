@@ -5029,7 +5029,9 @@ function renderRanking() {
         total += pt;
         const ptDisp = pt === Math.round(pt) ? String(pt) : pt.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
         const winnerSuffix = it.winnerName ? ` <span style="opacity:0.7">(${escHtml(it.winnerName)})</span>` : '';
-        lines.push(`　${escHtml(it.label)}${winnerSuffix} +${ptDisp}`);
+        // i18n P7-52: it.labelはEngine.achievement.add()時点で焼かれる生JA完成文
+        // (state.achievementItemsへ永続)。t()を一度も通していなかった配線穴
+        lines.push(`　${escHtml(WM_I18N.t(it.label))}${winnerSuffix} +${ptDisp}`);
       });
     });
     lines.push(`<b>${WM_I18N.t('合計 {n}pt', { n: Math.round(total) })}</b>`);

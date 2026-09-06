@@ -2561,3 +2561,23 @@ P7-31 §44-5-発見1が起票した「財務タブの明細ラベルが6箇所�
 ### 49-4. 検証
 
 `node test/ja-golden.js`(hash `3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`不変)/ `node test/i18n-build-dict.js`(ui-ledger 4,715→4,719・未訳0)/ `node test/i18n-ledger-consistency-test.js` / `npm test`(265/265)/ `node test/i18n-ratchet.js`(増加なし)/ `node test/auto-sim.js 20 42`(ALL CLEAR・指紋`96492883`不変・台帳検査3種すべて違反0)/ Playwright(page.evaluate、実ワークツリーを配信する専用サーバ経由。共有launch.jsonの`dev`構成は別ディレクトリ(mainツリー)を配信していたため使えなかった)でEN財務タブ(収入/支出両タブ、`period='all'`でシーズン跨ぎ集計)にJA文字が無いこと・懸垂括弧の破損が無いこと・JA側は同一seedで従来と同じ行数・同じグルーピング結果になることを実測 / `npm run test:ui:walkthrough`(JA、336手・digest`b3b7a2c05a7e6016`基準と完全一致)/ `npm run test:ui:walkthrough:en`(EN、i18n-miss 0・Issues 0)
+
+## 50. Stage B P7-52 — 台帳未収載の残り最終仕分け・`fighter.careerHistory`/引退モーダル/交渉見通しラベル/実績labelへの§14-3・dict-opts適用、match-engine.jsの前提訂正(2026-09-06追加)
+
+`docs/i18n-coverage-report-v0.1.md`の未収載491件(実質324件)を全数最終仕分けした(P7-52)。詳細な内訳・修正一覧は同レポート§9を参照。本specには**新規に適用したパターン**と**既存記述の訂正**のみ記す。
+
+### 50-1. `fighter.careerHistory`は§14-3(追加フィールド方式)がそのまま当てはまる新しい適用例だった
+
+`generateBackstory`(旗揚げ時の経歴デッち上げ、management.js)と`Engine.growthEvents`(実プレイ中のブレークスルー/スランプ/モチベ喪失)がフィールドへ書き込む`careerHistory.push({type, season, week, detail: '完成JA文'})`は、`detail`が生成時点でJA完成文として選手データ(セーブ)へ永続する点で、§43-1の`growthLog[].detail`と全く同じ型だった。同じ処方箋(`detail`は不変のまま`detailTpl`/`detailVars`を追加フィールドとして併記し、表示点で`entry.detailTpl ? dict(entry.detailTpl, entry.detailVars) : entry.detail`にfail-open)を適用した。表示点は2箇所あり(`Engine.milestone.get`の`careerHist`変換ループ、`ui-common.js`の「経歴」タブ直描画)、両方を同じ条件式で統一した。
+
+### 50-2. `Engine.retirement.buildCareerSummary`は§13-1(表示時再生成)型 — dict省略時は既存呼び出し元を無改修で保つ
+
+`buildCareerSummary(fighter)`は`fighter.careerRecord.history`(構造化データ)から**呼ばれるたびに**組み直す関数で、戻り値はどこにも永続しない。§13-1の「表示時に再生成できるならdict-optsで足りる、追加フィールドは要らない」の典型例。第2引数`dict`を新設し、`_wmDictLabel`/`_wmFillWithDict`で組む形に変更。**`dict`省略時は既定で`undefined`のまま`_wmDictLabel(undefined, ja)`/`_wmFillWithDict(undefined, tpl, params)`を呼ぶことになるが、両ヘルパーは`typeof dict === 'function'`でガードしているため安全にJA原文へfail-openする**(既存の非UI呼び出し元、`Engine.executeShow`内の1箇所は無改修のまま動作が変わらない)。
+
+### 50-3. `getRateLabel`/実績`label`/選択肢`hint`は「dictへ渡す前に台帳が空」型ではなく「配線はあるが訳語が無い」型
+
+この3件は既に(あるいは今回の消費点修正で)`WM_I18N.t()`を正しく通っているのに、**該当するJA原文がどの台帳にも1行も無かった**ために結果的に未訳のままだった。§10-2が警告する「関数本体に直書きされた配列は抽出器から見えない」型の一種だが、原因は動的キー化ではなく単純な**未収載**である。ui-ledgerへ手追加するだけで解決する(コード側の配線自体は`getRateLabel`とE6 hintでは変更不要、実績labelのみ`escHtml(it.label)`→`escHtml(WM_I18N.t(it.label))`の1行修正が必要だった)。
+
+### 50-4. 前提の訂正: match-engine.jsの試合実況ログは表示されている
+
+`docs/i18n-coverage-report-v0.1.md`表5(§5)の「match-engine.js(48/451字): `T{turn}:`接頭の実況トレース文。実際の観戦画面に出る実況ログか内部トレースのみかは要確認」という**未確認のまま「表示されない」に倒して棚卸し対象から外していた**判断を、P7-52で追跡した結果**誤りと判明**した。`pushLog()`/`log.push()`が積む文字列は`logLines`としてフレームに記録され、`battle-engine-main.js`/`tag-battle-main.js`の`_appendLogForFrame()`が`fr.logLines`を`#battleLog`へ直接innerHTML注入している——**Engineが生成した生JA文字列がそのままDOMへ渡る、§1(Engine純粋関数)とは別の軸で見ても典型的な未対応箇所**。件数(約90箇所のpushLog呼び出し)と、ログ行の生JA文字列に依存する演出分類ロジック(`.includes('★ 決着')`等、§8-2で個別に危険パターンとして温存してきたもの)が絡み合っているため、**この1バッチでは着手せず**`docs/i18n-keisuke-rulings-pending-v0.1.md` C-6として設計相談を起票した。次にmatch-engine.jsのログを扱うバッチは、この節と§8-2の危険パターン一覧を先に読むこと。
