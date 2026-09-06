@@ -13812,8 +13812,8 @@
     "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
   },
   {
-    "key": "グッズ売上にボーナス。興行出場で人気が上がりやすい",
-    "en": "Bonus to merch income. Popularity climbs more easily from working shows",
+    "key": "集客力とグッズ売上にボーナス。興行出場で人気が上がりやすい",
+    "en": "Bonus to draw power and merch income. Popularity climbs more easily from working shows",
     "files": [
       "data.js"
     ],

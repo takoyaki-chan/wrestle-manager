@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-06T08:19:12.851Z",
+  "generatedAt": "2026-09-06T08:55:11.176Z",
   "files": {
     "data.js": {
       "jaCount": 17439,
-      "jaChars": 311475
+      "jaChars": 311479
     },
     "kuroda-text.js": {
       "jaCount": 900,
@@ -18,8 +18,8 @@
       "jaChars": 14589
     },
     "management.js": {
-      "jaCount": 1349,
-      "jaChars": 10022
+      "jaCount": 1348,
+      "jaChars": 10038
     },
     "coach-lines.js": {
       "jaCount": 483,

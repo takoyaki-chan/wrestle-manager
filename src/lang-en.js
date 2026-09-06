@@ -1333,7 +1333,7 @@
     "グッズ収入（プロモ連動）": "Merch Income (Promo Tie-in)",
     "グッズ収入（興行ブースト）": "Merch Income (Show Boost)",
     "グッズ収入（週次）": "Merch Income (Weekly)",
-    "グッズ売上にボーナス。興行出場で人気が上がりやすい": "Bonus to merch income. Popularity climbs more easily from working shows",
+    "集客力とグッズ売上にボーナス。興行出場で人気が上がりやすい": "Bonus to draw power and merch income. Popularity climbs more easily from working shows",
     "グッズ販売会": "Merch sale event",
     "グラウンド攻撃": "Ground Attack",
     "グラップラー": "Grappler",

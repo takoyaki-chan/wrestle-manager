@@ -128,8 +128,12 @@ const draftEligible = pool.filter(e => e.age >= 17 && e.age <= 18)
 
 ```javascript
 // 表示用の概算値（実際の入団時値にノイズを加える）
-function getScoutEstimate(actualStartValue, hasJinmyaku) {
-  let noiseRange = hasJinmyaku ? 0.05 : 0.10  🔧
+// P7-54(2026-09-06): 当初案の「コーチ『人脈』」は選手にもコーチにも
+// 存在しないキーで、hasJinmyaku は常にfalseだった(docs/dead-trait-checks-report-v0.1.md #3)。
+// コーチ能力カタログv0.2で「人脈」自体が廃止された後、鍵の付け替えが漏れていた。
+// 道場レポートの精度(COACH_OBS_INACCURACY)と同じ観察眼(observation)等級に接続し直す。
+function getScoutEstimate(actualStartValue, hasKeenEyeCoach) {
+  let noiseRange = hasKeenEyeCoach ? 0.05 : 0.10  🔧
 
   let estimate = round(actualStartValue × randomRange(1 - noiseRange, 1 + noiseRange))
   return estimate
@@ -139,7 +143,7 @@ function getScoutEstimate(actualStartValue, hasJinmyaku) {
 | 条件 | ノイズ幅 | 体感 |
 |------|:-------:|------|
 | 通常 | ±10% 🔧 | 「だいたいこのくらい」。時々外れる |
-| コーチ「人脈」あり | ±5% 🔧 | かなり正確。ほぼ実力通り |
+| 観察眼A/Bのコーチが在籍 | ±5% 🔧 | かなり正確。ほぼ実力通り |
 
 ### §4.3 成長タイプの表示（training-system-spec §8 準拠）
 
