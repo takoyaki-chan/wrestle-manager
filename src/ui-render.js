@@ -952,6 +952,7 @@ function renderWeekScreen() {
       const upperUrl = getUpperUrl(c.id);
 
       html += `<div class="draft-fc cand${picked ? ' picked' : ''}${disabled ? ' disabled' : ''}"
+        data-walk-role="draft-pick"
         onclick="${disabled ? '' : `App.toggleDraftPick(${c.id})`}">
         <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${WM_I18N.pn(c.name)}">` : ''}</div>
         <div class="draft-fc-info">

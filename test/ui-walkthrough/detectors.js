@@ -74,12 +74,15 @@ async function readPageSnapshot(page) {
       })
       .map(value => String(value).replace(/\s+/g, '.'))
       .sort();
-    // #titleScreen は .screen ではなく .title-screen で、表示中は下の .screen に全面で
-    // 重なる(下は非表示にならない)。可視ならタイトルを最優先で採る
-    const titleScreen = document.getElementById('titleScreen');
-    const activeScreen = (titleScreen && visible(titleScreen))
-      ? titleScreen
-      : Array.from(document.querySelectorAll('.screen')).find(visible);
+    // #titleScreen/#orgSetupScreen/#difficultyScreen は .screen ではなく専用クラス
+    // (.title-screen/.org-setup)で、表示中は下の .screen に全面で重なる(下は非表示に
+    // ならない)。app.js の _isTitleFlowVisible() と同じ3枚組(タイトル→団体名→難易度は
+    // ゲーム開始前の同一シーケンス)。可視ならこの3枚を最優先で採る(P7-47 opening-flow igniteが
+    // 団体名入力・難易度選択の各段を点火マーカーで検査するために必要)
+    const specialScreen = ['titleScreen', 'orgSetupScreen', 'difficultyScreen']
+      .map(id => document.getElementById(id))
+      .find(el => el && visible(el));
+    const activeScreen = specialScreen || Array.from(document.querySelectorAll('.screen')).find(visible);
     // ポップアップ直列化キューの観測プローブ(2026-08-14 キュー飢餓調査で追加)。
     // _popupQueue/_isPopupActive はメインワールドのグローバルレキシカルなので直接読める。
     // didProgress の比較対象には含めない(キュー残量の変化を「前進」と誤認させない)
@@ -313,10 +316,11 @@ class WalkthroughDetectors {
       };
       const textOf = element => (element.innerText || element.textContent || '').replace(/\s+/g, ' ').trim();
 
-      const titleScreen = document.getElementById('titleScreen');
-      const activeScreenEl = (titleScreen && visible(titleScreen))
-        ? titleScreen
-        : Array.from(document.querySelectorAll('.screen')).find(visible);
+      // P7-47: readPageSnapshotと同じ3枚組(タイトル→団体名→難易度)特別扱い
+      const specialScreen = ['titleScreen', 'orgSetupScreen', 'difficultyScreen']
+        .map(id => document.getElementById(id))
+        .find(el => el && visible(el));
+      const activeScreenEl = specialScreen || Array.from(document.querySelectorAll('.screen')).find(visible);
       const overlayEl = Array.from(document.querySelectorAll('[id*="Overlay"], .overlay, [class*="overlay"], .emr-layer'))
         .find(visible);
       const screen = activeScreenEl?.id || (overlayEl ? `overlay:${overlayEl.id || overlayEl.className}` : 'unknown');
@@ -443,10 +447,11 @@ class WalkthroughDetectors {
       };
       const textOf = element => (element.textContent || '').replace(/\s+/g, ' ').trim();
 
-      const titleScreen = document.getElementById('titleScreen');
-      const activeScreenEl = (titleScreen && visible(titleScreen))
-        ? titleScreen
-        : Array.from(document.querySelectorAll('.screen')).find(visible);
+      // P7-47: readPageSnapshotと同じ3枚組(タイトル→団体名→難易度)特別扱い
+      const specialScreen = ['titleScreen', 'orgSetupScreen', 'difficultyScreen']
+        .map(id => document.getElementById(id))
+        .find(el => el && visible(el));
+      const activeScreenEl = specialScreen || Array.from(document.querySelectorAll('.screen')).find(visible);
       const overlayEl = Array.from(document.querySelectorAll('[id*="Overlay"], .overlay, [class*="overlay"], .emr-layer'))
         .find(visible);
       const screen = activeScreenEl?.id || (overlayEl ? `overlay:${overlayEl.id || overlayEl.className}` : 'unknown');

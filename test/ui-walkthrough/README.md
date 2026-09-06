@@ -85,7 +85,7 @@ npm run test:ui:ignite -- --scenario newspaper-mvprace --lang en
 npm run test:ui:ignite -- --scenario tenchosen --regen   # fixtureを作り直す
 ```
 
-現行シナリオ(2026-08-14): `tenchosen`(天頂戦通年+初代統一王座戴冠) / `gameover`(資金破綻→解散セレモニー) / `away-challenge`(CH-1直訴→遠征→2拍) / `incoming-challenge`(果たし状迎撃→シリーズ) / `faction-ignite`(派閥開戦。boostが実際にリーダー対決をカード編成する) / `unified-player-turn`(統一王座「こちらの番」→挑戦者選出→遠征。**全6本PASS** — 当初FAILの正体は孤児化した直訴pendingが週次モーダル枠を恒久占有する製品バグで、修正済み。`specs/challenge-request-spec-v0.1.md` 2026-08-14追加改修+`test/challenge-request-stale-pending-test.js`)
+現行シナリオ(2026-08-14): `tenchosen`(天頂戦通年+初代統一王座戴冠) / `gameover`(資金破綻→解散セレモニー) / `away-challenge`(CH-1直訴→遠征→2拍) / `incoming-challenge`(果たし状迎撃→シリーズ) / `faction-ignite`(派閥開戦。boostが実際にリーダー対決をカード編成する) / `unified-player-turn`(統一王座「こちらの番」→挑戦者選出→遠征。**全6本PASS** — 当初FAILの正体は孤児化した直訴pendingが週次モーダル枠を恒久占有する製品バグで、修正済み。`specs/challenge-request-spec-v0.1.md` 2026-08-14追加改修+`test/challenge-request-stale-pending-test.js`)。加えて `chronicle` / `newspaper-mvprace` / `newspaper-mvprace-legacy` / `war-decline` / `opening-flow`(下記参照)。
 
 **推奨ゲート(2026-09-05 P7-22)**: 天頂戦igniteのEN初実行でD2_FREEZEが見つかった(→`driver.js`の2バグとして根治済み、上の「P7-22で判明した2つの落とし穴」参照)ことから分かるとおり、`--lang en`は各igniteシナリオで**一度も実走していない組み合わせ**が残っていると新しい落とし穴を踏む。`driver.js`/`ui-common.js`/`ui-render.js`を大きく触った後は、`npm run test:ui:walkthrough:en` に加えて**点火カタログの全シナリオを`--lang en`でも1本ずつ回す**ことを推奨する:
 
@@ -121,6 +121,27 @@ npm run test:ui:ignite -- --scenario chronicle --lang en
 **P7-39(2026-09-05)で `_npMvpI18n` に1条件を追加**: 保存値と現行プールの再生成が不一致(=P7-23以前の旧セーブ)でも、`WM_I18N.lang==='en'` のときは保存値を捨てて現行プールで作り直した文を出す(JA/pseudoは従来どおり保存値のまま)。この変更は本シナリオ(新品fixture=常に一致)には影響しない — 引き続き `mvpFallback: []` のままJA/EN両PASS。旧セーブ相当の挙動は姉妹シナリオ `newspaper-mvprace-legacy` で検査する(下記)。
 
 `newspaper-mvprace-legacy`(2026-09-05 P7-39で追加)は `newspaper-mvprace` と同じ土台のセーブに対し、`fixture.engineer` で保存済み5文字列(見出し/リード/黒田寸評/TOP3寸評/4位以下タグライン)を現行プールに存在しない文言へ差し替え、「P7-23以前の旧セーブ(現行プールと一致しない完成文を持つ)」を模擬します。`MVP_INSTRUMENT_PROBE` は実装と同じ分岐(不一致×`lang!=='en'`のときだけ保存値へ抜ける)を写しているため、`window.__mvpFallback` にJA/ENどちらも6件の `regen-mismatch` が記録されるのが正常です(newspaper-mvpraceとは逆に、**0件だとfixtureが機能していない**ことになるので`finalAssert`は0件をFAILにします)。`tourAssert` はJAでは差し替えた保存値がそのまま1バイト不変で出ること、ENでは差し替え前の文言(`旧プール文言`)が1文字も残らずJA露出0であることを検査します。実際に旧プールの完成文を持つ実セーブ2本(`test/ui-walkthrough/fixtures/legacy-saves/{prerefix_S12W45_2026-07-27,v1.25_S3W11_2026-08-03}.json`)は `save-regression` 棚の実データ検査用に温存し、こちらのfixture生成には使っていません(スキーマ差分による無関係な検証エラーを避けるため)。
+
+### 開幕導線(`opening-flow`・fixtureを使わないシナリオ・2026-09-06 P7-47で追加)
+
+walk/igniteの全シナリオは`weekPhase:'manage'`(ドラフト完了済み)のオートセーブから始まるため、**タイトル画面→新規ゲーム→団体名入力→旗揚げ序章4幕→旗揚げドラフト→設立挨拶→第1週**という開幕導線そのものは誰も実UIで踏んでいなかった穴だった(序章の描画だけは`opening-scene-i18n-check.js`が実関数を直接叩いて別枠で検査している。実UIのボタン・入力・遷移を検査するのは`opening-flow`が最初)。
+
+```powershell
+npm run test:ui:ignite -- --scenario opening-flow
+npm run test:ui:ignite -- --scenario opening-flow --lang en
+```
+
+- `fixture: null` — このシナリオだけ前提セーブを一切使わない。`run.js`は`wrestle_manager_autosave`を書かず、`app.js`起動時の`App.showTitleScreen()`に任せる(「CONTINUE」ボタンも出ない=本物の初回起動と同じ)
+- `preSteps`(`scenarios.js`) — タイトル→団体名入力→難易度確定までの決定論的な`click`/`fill`手続き。走破の汎用クリック当てずっぽう機構(`runWalk`)はテキスト入力(団体名)を表現できないため、`run.js`に`preSteps`実行ブロックを追加した(生のPlaywright操作を直列実行し、各段の後に`observe`/`scanText`/`scanOverflow`/`scanJaExposureDetail`を通常のwalkループと同じようにかける)。団体名はJA「紅蓮」/EN「Ember」の固定名(EN側は英語名の実例として1ケース使う)
+- 旗揚げドラフト(固定2名+候補6名から3名選択)は`boost`(`_openingFlowDraftBoost`)が契約金の安い順に決定的に3名を選ぶ。候補カード(`.draft-fc.cand`)は強み/課題/コーチ寸評/契約金まで含む説明文が100字を超えるため、`driver.js`の「記事本文のような無差別onclick divを弾く100字フィルタ」(P7-22)にそのまま引っかかり候補にすら挙がらなかった。`src/ui-render.js`に`data-walk-role="draft-pick"`属性を1つだけ追加してこのフィルタを回避している(属性追加は表示テキストに影響しないため`node test/ja-golden.js`は完全一致のまま)
+- `jaExposureAllowText: ['日本語']` — シナリオ全体(preSteps+walk)を通じたJA露出ゼロゲート(`tour.jaExposureScreens`とは別枠。開幕導線はほぼ全画面が検査対象になるため画面単位でなく全量チェックにした)。言語トグルの「日本語」ラベル(意図的に翻訳しない仕様)だけを許容リストに乗せる
+- 点火マーカー7段: `title-screen` / `org-setup-screen` / `difficulty-screen` / `opening-overlay` / `draft-screen` / `founding-greeting` / `week1-reached`。`org-setup-screen`/`difficulty-screen`の検出のため、`detectors.js`の`activeScreen`判定を`titleScreen`だけでなく`orgSetupScreen`/`difficultyScreen`も見るよう拡張した(`app.js`の`_isTitleFlowVisible()`と同じ3枚組。既存シナリオはこの3画面を通らないため digest 不変)
+
+**2026-09-06実走で発見(未修正・出す判断はKeisuke裁定待ち)**: `--lang en`で旗揚げドラフト画面(固定2名+候補6名のカード)の「Upside: …」(将来性評価)欄に日本語が漏れる。`Engine.draft.EVAL_TIERS`(`src/management.js`)の5段階評価テキスト(`逸材の匂いがする`/`かなりの素質あり`/`十分な伸びしろ`/`堅実に育つタイプ`/`未知数`)が生JA文字列のまま`getEvalComment()`から返され、`ui-render.js`側の`WM_I18N.t('将来性: {text}', { text: c.coachEval.text })`はテンプレ本体("将来性:"→"Upside:")だけ訳して`{text}`の中身(`c.coachEval.text`)自体は`WM_I18N.t()`を通していない(呼び出し箇所は`.draft-fc.fixed`/`.draft-fc.cand`の2箇所、いずれも旗揚げドラフト画面限定)。`lang-en.js`にこの5文字列の辞書登録も無い。旗揚げ以外の画面(年次ドラフト/スカウト等)はこの`EVAL_TIERS`を使っていないため無関係。
+
+### 既存シナリオ(2026-09-06 P7-47・main348コミット分マージ後の回帰確認)
+
+`opening-flow`追加に合わせ、既存10シナリオ(chronicle / newspaper-mvprace / newspaper-mvprace-legacy / tenchosen / away-challenge / incoming-challenge / unified-player-turn / faction-ignite / war-decline / gameover)をJAで、一部をENでも再実行した。`away-challenge`/`incoming-challenge`(直訴/果たし状の点火モーダルが出ない)は本タスクの変更を`git stash`で外した状態でも同一結果で再現する**マージ由来の既存不具合**(このタスクの回帰ではない)。`unified-player-turn`はカタログ設計書に記載済みの調査中扱い(R4)のままFAIL。`faction-ignite --lang en`は既知FAIL(D5_WATCHDOG)で変化なし。`newspaper-mvprace --lang en`はP7-35時点のFAILからPASSへ改善(マージで取り込まれたpn()配線修正が効いている)。詳細は`docs/worklog.md`のP7-47エントリを参照。
 
 検出器だけを既知バグ入りサンドボックスで確認するには次を実行します。
 
