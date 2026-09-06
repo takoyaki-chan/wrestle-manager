@@ -814,13 +814,19 @@ function renderWeekScreen() {
     const focusId = G._draftFocus || null;
 
     // ── Helpers ──
+    // i18n Stage B P7-45(裁定C-4と同族の掃除): この表は旗揚げドラフト画面の
+    // スタイルタグ(色・略号・クリーム配色クラス)だけを引くために使う。`desc` 6件は
+    // `sm.desc` の参照が src のどこにも無い死骸(P7-31で仕分け済み)だったため削除した。
+    // ドラフトカードのスタイル欄は `sm.cream` + 生の `c.style`(Grappler等の英字)だけを
+    // 描画しており、説明文が出る経路は最初から無い。台帳にも載っていない(未英訳の
+    // まま眠っていた)ので、削除しても JA/EN のどちらの画面出力も変わらない。
     const STYLE_META = {
-      Grappler:   {color:'#bb8fce',icon:'GRP',desc:'投げ技と関節技を軸にした正統派。パワーとテクニックに優れる',cream:'tag-cream-grappler'},
-      Striker:    {color:'#e74c3c',icon:'STK',desc:'打撃主体のファイター。パワーとスピードで圧倒する',cream:'tag-cream-striker'},
-      Submission: {color:'#e67e22',icon:'SUB',desc:'関節技のスペシャリスト。テクニックで相手を仕留める',cream:'tag-cream-submission'},
-      Aerial:     {color:'#2ecc71',icon:'AER',desc:'空中殺法と俊敏な動きで試合をコントロール',cream:'tag-cream-aerial'},
-      Allround:   {color:'#f1c40f',icon:'ALL',desc:'万能型。突出した弱点がなく安定した試合運びが可能',cream:'tag-cream-allround'},
-      Brawler:    {color:'#e88a82',icon:'BRW',desc:'喧嘩殺法。パワーとスタミナでゴリ押す荒くれ者',cream:'tag-cream-brawler'}
+      Grappler:   {color:'#bb8fce',icon:'GRP',cream:'tag-cream-grappler'},
+      Striker:    {color:'#e74c3c',icon:'STK',cream:'tag-cream-striker'},
+      Submission: {color:'#e67e22',icon:'SUB',cream:'tag-cream-submission'},
+      Aerial:     {color:'#2ecc71',icon:'AER',cream:'tag-cream-aerial'},
+      Allround:   {color:'#f1c40f',icon:'ALL',cream:'tag-cream-allround'},
+      Brawler:    {color:'#e88a82',icon:'BRW',cream:'tag-cream-brawler'}
     };
     const ROLE_META = {
       Babyface: {color:'#8bc4f0',label:WM_I18N.t('ベビーフェイス'),icon:'BF',cream:'tag-cream-bf'},
@@ -4799,6 +4805,21 @@ function renderRanking() {
     return _concatParts([baseLead, pickedCtx]);
   };
 
+  // ── エース欄の人物描写(P7-45 / 裁定C-3①「配線して出す」) ────────────────────
+  // 数字(OVR・防衛数・年齢)で語る _buildAceCopy に対し、こちらは「その子がどう
+  // 見えるか」だけを1文で足す。アーキタイプ(見え方の骨格)を第一分岐、性格を
+  // 第二分岐にして両方のプールを合わせ、seed で1本引く(セリフ軸の原則と同じ順序)。
+  //
+  // ■ 配線の履歴: 実装当初からこの関数はどこからも呼ばれておらず、文プール28本が
+  //   丸ごと死蔵されていた(P7-31 の全数仕分けで発覚 → 裁定C-3で①配線)。
+  // ■ i18n: 文断片は句点を持たない。表示側で `_joinSentences` に1本渡して句点を
+  //   打たせ、`_concatParts` で aceCopy と繋ぐ(JA=直結 / EN=半角スペース)。
+  //   プール要素は `WM_I18N.t()` の静的第1引数ではないので抽出器には載らない。
+  //   _buildLeadSentences/_orgContextSentences と同じく ui-ledger.json へ
+  //   kept:true の手追加行として台帳化してある(specs §39 の「走査対象外」族)。
+  // ■ personality の 'shy'(5名)と 'normal'(34名)には専用の行が無い。そのぶん
+  //   アーキタイプ側のプールだけで引くので pool が空になることはない(未定義キーは
+  //   `|| []` で吸われる)。JA 原文は1文字も足していないので、ここは現状のまま。
   const _aceFlavorByPersona = (f, seed) => {
     const arch = f?.archetype || 'standard';
     const pers = f?.personality || 'normal';
@@ -4820,7 +4841,8 @@ function renderRanking() {
       normal: []
     };
     const pool = (archMap[arch] || archMap.standard).concat(persMap[pers] || []);
-    return _pickSeed(pool, seed);
+    const picked = _pickSeed(pool, seed);
+    return picked ? WM_I18N.t(picked) : '';
   };
 
   // 王座の「奪い合い」検出: 直近3シーズン以内に複数のtitleWin (= 取られて取り返した) があれば true
@@ -5041,7 +5063,7 @@ function renderRanking() {
     const _orgSeed = _seedBase + _strHash(r.orgId || orgName);
     const _tagInfo = _collectOrgTags({ r, sortedAll, featured, champion, defenses, orgPop, isPlayer, rank1Entry, rankAbove });
     const nextFeatured = sortedAll.find(f => f.id !== featured?.id);
-    const aceCopy = _buildAceCopy({
+    const aceRecordCopy = _buildAceCopy({
       featured,
       defenses,
       isChampion: championId === featured?.id,
@@ -5049,6 +5071,14 @@ function renderRanking() {
       nextOvr: nextFeatured ? Engine.util.ov(nextFeatured) : 0,
       seed: _orgSeed,
     });
+    // P7-45: 戦績の1文(_buildAceCopy)の後ろに、人物描写の1文を足す。
+    // シードは団体シード由来のままだと同一団体でエースが替わっても文が動かないので、
+    // 選手idを混ぜて「誰がエースか」に追随させる(Math.random は使わない = 週が
+    // 変わっても同一シーズン内は同じ文。_seedBase が season 由来である性質を継ぐ)。
+    const aceFlavor = featured ? _aceFlavorByPersona(featured, (_orgSeed >> 5) + (Number(featured.id) || 0)) : '';
+    const aceCopy = aceFlavor
+      ? _concatParts([aceRecordCopy, _joinSentences([aceFlavor])])
+      : aceRecordCopy;
     const scoreLine = depthFaces.length
       ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + WM_I18N.t('台多数')
       : (aceOvr == null ? '—' : `${aceOvr}`);

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T00:04:27.562Z",
+  "generatedAt": "2026-09-06T00:19:24.796Z",
   "files": {
     "data.js": {
       "jaCount": 17679,
@@ -30,8 +30,8 @@
       "jaChars": 9242
     },
     "ui-render.js": {
-      "jaCount": 974,
-      "jaChars": 8654
+      "jaCount": 968,
+      "jaChars": 8515
     },
     "flag-dialogue.js": {
       "jaCount": 449,

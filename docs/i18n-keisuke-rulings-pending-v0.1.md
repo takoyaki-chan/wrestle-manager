@@ -175,6 +175,7 @@ Stage B(P4〜P7)の作業中に「Claude 側では決められない」と判断
 ### C-3. 死んだヘルパー(`_aceFlavorByPersona` 約30行 ほか)
 
 > ✅ **裁定(2026-09-05)**: ①配線して出す(P7-31 マージ後に起票)。
+> → **実装済み(P7-45 / <!--COMMIT-P745-->)**: ランキング画面 03 団体プロフィールの**エース欄**に人物描写1文を追加。28本を ui-ledger へ台帳化して英訳。仕様は `specs/i18n-runtime-spec-v1.0.md` §46 と `docs/ui/03-screens/ranking.md` §3.3。
 
 **状況**: ui-render.js の `_aceFlavorByPersona` は、団体紹介でエースをアーキタイプ7×性格5で描写する**生JA文プール約30本**を持つ関数だが、呼び出し元がゼロ(「書いてあるのに出ていない」型)。同種の死んだ参照が他にも数か所。EN 化では訳さず据え置いている(訳すなら台帳化+英訳が同時に要る)。
 
@@ -185,6 +186,7 @@ Stage B(P4〜P7)の作業中に「Claude 側では決められない」と判断
 ### C-4. `FAREWELL_CLOSING` / `SEASON_HEADLINE_LABEL`
 
 > ✅ **裁定(2026-09-05)**: 死骸なら削除(P7-33 の報告後)。
+> → **同族の `STYLE_META[*].desc`(ui-render.js:818-823、6件)は削除済み(P7-45 / <!--COMMIT-P745-->)**。`sm.desc` の参照は src に0件、ドラフトカードは `sm.cream` と生の `c.style` しか描画しておらず、台帳にも載っていなかったため JA/EN どちらの出力も不変(ratchet ui-render.js 974→968 = −6 で確認)。`FAREWELL_CLOSING` / `SEASON_HEADLINE_LABEL` 本体は P7-33 の担当範囲のまま。
 
 **状況**: data.js に定義があるが grep で消費ゼロのテーブル2つ(引退の結びの一文2本 / シーズン見出しラベル12本)。P7-33 が本当に死骸か確認中。
 

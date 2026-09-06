@@ -49702,5 +49702,341 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "鷹揚な物腰で団体を束ねる",
+    "en": "She holds the organization together with an unhurried bearing",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "常に落ち着いた佇まいが格を生む",
+    "en": "Her unbroken composure is what gives her stature",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "泰然とした空気で対戦相手を呑む",
+    "en": "Her unshaken calm swallows opponents whole",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "気品ある立ち振る舞いで観客を魅了する",
+    "en": "Her graceful bearing captivates the crowd",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "お嬢様然とした華が興行に色を添える",
+    "en": "Her ladylike glamour adds color to the shows",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "上品な所作の奥に勝負師の牙を隠す",
+    "en": "Behind her refined manners she hides a gambler's fangs",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "礼節を重んじる姿勢で敵すら味方につける",
+    "en": "Her regard for courtesy wins over even her opponents",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "丁寧で清廉な人柄が団体の品位を作る",
+    "en": "Her courteous, upright character is what gives the organization its dignity",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "クールな佇まいで観客を引き寄せる",
+    "en": "Her cool bearing pulls the crowd in",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "冷ややかな眼差しが対戦相手を凍らせる",
+    "en": "Her cold gaze freezes opponents where they stand",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "感情を見せない戦い方が逆に怖い",
+    "en": "The way she fights without showing emotion is what makes her frightening",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "不良性感度の塊で観客を煽り続ける",
+    "en": "She is all outlaw charisma, and she works the crowd with it without letup",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "荒っぽい振る舞いが団体の毒気を担う",
+    "en": "Her rough conduct is where the organization gets its venom",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "ルールの外側で観客を熱狂させる",
+    "en": "She sends the crowd into a frenzy from outside the rules",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "妖艶な魅せ方で他団体にはない色を添える",
+    "en": "Her sultry showmanship adds a color no other organization has",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "艶のある立ち姿が独自のファン層を呼ぶ",
+    "en": "Her alluring stage presence draws a fanbase all her own",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "素直な人柄が選手会の核になっている",
+    "en": "Her honest, unguarded character is the heart of the locker room",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "飾らない佇まいが逆に絵になる",
+    "en": "Her unadorned presence is precisely what makes her a picture",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "物怖じしない発言で常に火種を撒く",
+    "en": "Her fearless remarks are forever scattering sparks",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "気の強さでカードを引っ張る",
+    "en": "She carries the card on sheer nerve",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "多くを語らず試合で全てを示す",
+    "en": "She says little and shows everything in the ring",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "寡黙さの裏に確かな圧がある",
+    "en": "There is real pressure behind her silence",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "ゆるい空気で控室の緊張を解く側",
+    "en": "She is the one whose easy mood loosens up the locker room",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "飄々とした雰囲気が独特の間合いを作る",
+    "en": "Her breezy detachment creates a spacing all her own",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "真面目さがそのまま強さに直結している",
+    "en": "Her diligence translates straight into strength",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "愚直な姿勢でチームを牽引する",
+    "en": "She leads the team by plain, dogged effort",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "感情の振れ幅で試合をドラマに変える",
+    "en": "The swing of her emotions turns matches into drama",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "熱が乗ったときの爆発力が桁違い",
+    "en": "When she gets fired up, her explosiveness is on another level",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
   }
 ]

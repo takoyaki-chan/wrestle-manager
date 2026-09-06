@@ -1338,11 +1338,12 @@ P6-15 `ARTICLE_COMPOSE_TEMPLATES.join` / P6-16 章クラウスと同型)。本�
 `renderRanking`(ui-render.js:4426〜5071)の `_build*`/`_org*` 系を機械列挙した結果、**生JAの断片連結は残っていない**。
 ただし**呼び出し元のない死蔵ヘルパー**が4つある(出力に出ないためEN露出ではない):
 
-- `_aceFlavorByPersona` — archetype 7分岐 × personality 5分岐の**生JA文プール約30本**。定義のみで参照0
+- `_aceFlavorByPersona` — archetype 7分岐 × personality 5分岐の**生JA文プール約30本**(実数28本)。定義のみで参照0 → **✅解決(P7-45・§46)**
 - `_isContestedBelt` / `_titleWinCount` / `_hasTrait` — ロジックのみ(セリフなし)。参照0
 
 `_aceFlavorByPersona` は「書いてあるのに出ていない」型なので、**配線して活かすか削るか**をKeisukeの判断で決める
 (配線する場合は文プールの台帳化が同時に要る)。P7-14では出力を変えないため無改修。
+→ **裁定C-3=①「配線して出す」。P7-45(§46)でエース欄へ1文足し、28本を台帳化・英訳した。**
 - **✅解決(P7-11)** — **団体比較号の `d.opportunity` / `actionDescs` 等(management.js:26300付近)** — Engine内の関数に直書きされた紹介文プール(§10-2型)。
   `_npRenderPage2` の紙面に出るが、テーブル化+dict糸通しが要る別枠 → §30
 
@@ -2322,8 +2323,8 @@ EN走破のJA露出一覧を分類し直すこと**(EN走破 157件・ignite chr
 
 | 死骸 | 場所 | 根拠 |
 |---|---|---|
-| `STYLE_META[*].desc`(**6件**) | ui-render.js:818-823(旗揚げドラフト画面) | 同関数内の `sm.` 参照は `.cream` だけ。`sm.desc` は `src/` 全体で0件。他2つの `STYLE_META` 定義(ui-common.js:4037・ui-render.js:6451)には `desc` プロパティ自体が無い |
-| `_aceFlavorByPersona` の `archMap`/`persMap`(**28件**・アーキタイプ7種18本+性格5種10本) | ui-render.js:4771-4793(団体紹介の講評) | **関数そのものが `src/` から1度も呼ばれていない**(定義1件のみ)。同スコープの `_pickSeed` を使う他の講評文プール(`_orgContextSentences` ほか)は全部 P7-6/P7-14 で `t()` 配線済みなので、この1本だけが取り残されている |
+| `STYLE_META[*].desc`(**6件**) | ui-render.js:818-823(旗揚げドラフト画面) | 同関数内の `sm.` 参照は `.cream` だけ。`sm.desc` は `src/` 全体で0件。他2つの `STYLE_META` 定義(ui-common.js:4037・ui-render.js:6451)には `desc` プロパティ自体が無い → **✅削除(P7-45・§46-1。裁定C-4と同族)** |
+| `_aceFlavorByPersona` の `archMap`/`persMap`(**28件**・アーキタイプ7種18本+性格5種10本) | ui-render.js:4771-4793(団体紹介の講評) | **関数そのものが `src/` から1度も呼ばれていない**(定義1件のみ)。同スコープの `_pickSeed` を使う他の講評文プール(`_orgContextSentences` ほか)は全部 P7-6/P7-14 で `t()` 配線済みなので、この1本だけが取り残されている → **✅配線+英訳(P7-45・§46。裁定C-3=①)** |
 
 論理比較(`_normalizeFinanceLabel` の `startsWith('チケット収入')` 等、`renderLog` のカテゴリ
 `match: l => l.includes('引き抜き')` 等)は**構造規約2「ロジックキーは日本語のまま」**の適用対象で、
@@ -2384,3 +2385,85 @@ DOMに入るが描画されないので同じく除外。
 | EN UI走破(`--ja-exposure-log`) | ✅ PASS・i18n-miss 0・`screen-newspaper`露出0・`screen-week`のF07派閥名露出も解消 |
 | `npm run test:ui:ignite -- --scenario newspaper-mvprace`(JA/EN) | ✅ 両方PASS・EN側のJA露出は16→12(退行なし、AI団体名3件が副次的に解消) |
 | `node test/ui-walkthrough/opening-scene-i18n-check.js` | ✅ **ALL CHECKS PASS**(JA 4幕が基準と完全一致 / EN 4幕に日本語0 / i18n-miss 0 / 段の一致3件) |
+
+## 46. Stage B P7-45 — 死蔵ヘルパー `_aceFlavorByPersona`(28本)の配線・英訳と `STYLE_META[*].desc` の削除(2026-09-06追加)
+
+§33-4(P7-14)と§44-5(P7-31)が「死骸」として報告し、Keisuke裁定 C-3=①「配線して出す」/ C-4同族「死骸なら削除」を受けた回。**新しい i18n パターンは増えていない**——§33(P7-14)の連結様式テンプレ(`_concatParts`/`_joinSentences`)と、§39/§40 で確立した「走査対象外プールは kept:true で手追加」をそのまま適用しただけである。記録する価値があるのは**死骸の2つの結末が対称ではない**という判断のほうにある。
+
+### 46-1. 死骸の処遇は「文が書かれているか」ではなく「その文がキャラを運ぶか」で分かれる
+
+| 死骸 | 処遇 | 判断根拠 |
+|---|---|---|
+| `_aceFlavorByPersona` の `archMap`/`persMap`(28本) | **配線**(裁定C-3=①) | アーキタイプ×性格で書き分けられた**キャラの描写文**が既にある。CLAUDE.md 三本柱「キャラクターの人生を覗き見る」に直接効く資産で、捨てるほうが損失 |
+| `STYLE_META[*].desc`(6件) | **削除**(裁定C-4と同族) | スタイル(Grappler/Striker…)の**一般的な説明文**で、キャラ固有の情報を1バイトも持たない。しかもドラフトカードは `sm.cream` と生の `c.style` しか描画しておらず、出す場所を作るところから設計が要る。台帳にも載っていない(未英訳)ので削除しても JA/EN どちらの出力も変わらない |
+
+つまり「呼ばれていない=消す」でも「書いてある=出す」でもない。**その文がキャラのドラマを運ぶか**を基準にした(CLAUDE.md 機能追加の判断基準1)。
+
+### 46-2. 配線先はエース欄の `<p>` ——リード文(団体)ではなく**個人**を語る欄
+
+画面仕様(`docs/ui/03-screens/ranking.md` §3.2)は03団体プロフィールの講評を「団体説明 / エース欄 / 主力層欄」の3層に割り、**エース欄だけが個人を語る**と定めている。人物描写はここ以外に置き場がない。実装は `_buildAceCopy`(戦績)の戻り値へ `_concatParts([record, _joinSentences([flavor])])` で1文足す形にした:
+
+- `_buildAceCopy` の中へ混ぜない。あちらは王座/防衛数/年齢の**分岐が既に9本**あり、そこへ直交する軸(archetype×personality)を足すと分岐が掛け算になる
+- 断片は句点を持たないので、句点を打つのは `_joinSentences`、繋ぐのは `_concatParts`。**JAの句点を画面側に直書きしない**(§33の規約)。EN ではピリオド+半角スペースになる
+- `featured` が居ない団体(「看板を担う選手がまだ定まっていない。」)では足さない
+
+### 46-3. シードに選手idを混ぜる理由
+
+既存の `_orgSeed = (season*100) + strHash(orgId)` をそのまま使うと、**同じ団体はエースが交代しても同じ人物描写のまま**になる(団体しか見ていないシードなので当然)。`(_orgSeed >> 5) + featured.id` にして「誰がエースか」に追随させた。`>> 5` は `_buildAceCopy`(seed 直値)・`_buildLeadSentences`(`>> 3`/`>> 6`/`>> 9`)と引き当てがぶつからないようにするため。`Math.random()` は使わない——**同一シーズン中は固定**(週送りで文面だけがちらつかない)という性質が `_seedBase` から継がれるので、裁定C-2の「表示専用なら Math.random 可」に頼る必要がない。
+
+### 46-4. 台帳は「末尾追記」で足す(extract-ui を回さない)
+
+プール要素は `WM_I18N.t()` の**静的第1引数ではない**(`WM_I18N.t(_pickSeed(pool, seed))`)ので `test/i18n-extract-ui.js` には原理的に載らない。§39/§40と同じく `kept:true` + `note` で ui-ledger へ手追加する。
+
+**ただし `node test/i18n-extract-ui.js` は回さないこと**。過去バッチが末尾へ手追加した約130行が未ソートのまま残っており、再実行するとそれらがソートで一斉に動いて **1,472行の移動差分**が出る(並行タスクとのコンフリクト源。意味的な差は0で、実害はコンフリクトだけ)。今回は「HEADの並び + 末尾に28行」で書き、差分を **+336行 / −0行** に閉じた。台帳の並びを直すなら、それだけを目的にした単独コミットで行う。
+
+### 46-5. `personality` の `shy` にはプールが無い(仕様として据え置き)
+
+`persMap` は bold/quiet/easygoing/earnest/emotional/normal の6キーで、**`shy`(5名)が最初から無い**。`persMap[pers] || []` に吸われてアーキタイプ側のプールだけで引くので実害はない(`normal` 34名も同じ経路)。**JA原文を1文字も足さない**のが本タスクの前提なので、新規の `shy` 用文面は書いていない。増補するならセリフ委譲(Opus)の枠で、JA→EN を同時に起こす。
+
+### 46-6. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check src/ui-render.js` | ✅ |
+| `node test/ja-golden.js` | ✅ 完全一致(`3466a6ff…` 不変。UIのDOM文字列は元々対象外だが、削除がエンジン側へ波及していないことの確認) |
+| `node test/i18n-build-dict.js` | ✅ ui **4,715**・**未訳0**(4,687→4,715、+28) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 重複17件・訳文一致 |
+| `npm test` | ✅ **265/265** |
+| `node test/i18n-ratchet.js` | ✅ 増加なし。ui-render.js **974→968(−6)** = `STYLE_META.desc` 削除分ちょうど。`--update` で基準を焼き直した |
+| JA UI走破 | ✅ PASS・**336手**・digest **`b3b7a2c05a7e6016`**(基準と一致。操作列なので不変) |
+| EN UI走破 | ✅ PASS・399手・**i18n-miss 0** |
+| ランキング画面の実UI検査(Playwright `page.evaluate`) | ✅ JA/EN とも4カード全てのエース欄に人物描写1文あり・EN に日本語0・末尾が句点/ピリオド・`.rp-ace` の `scrollHeight===clientHeight`(はみ出し0) |
+
+### 46-7. 訳出した28本(記者の地の文。感嘆符なし・格言化なし・具体表現)
+
+| # | 分岐 | JA(原文・不変) | EN |
+|---|---|---|---|
+| 1 | composed(鷹揚) | 鷹揚な物腰で団体を束ねる | She holds the organization together with an unhurried bearing |
+| 2 | 〃 | 常に落ち着いた佇まいが格を生む | Her unbroken composure is what gives her stature |
+| 3 | 〃 | 泰然とした空気で対戦相手を呑む | Her unshaken calm swallows opponents whole |
+| 4 | ojousama(お嬢様) | 気品ある立ち振る舞いで観客を魅了する | Her graceful bearing captivates the crowd |
+| 5 | 〃 | お嬢様然とした華が興行に色を添える | Her ladylike glamour adds color to the shows |
+| 6 | 〃 | 上品な所作の奥に勝負師の牙を隠す | Behind her refined manners she hides a gambler's fangs |
+| 7 | polite(丁寧) | 礼節を重んじる姿勢で敵すら味方につける | Her regard for courtesy wins over even her opponents |
+| 8 | 〃 | 丁寧で清廉な人柄が団体の品位を作る | Her courteous, upright character is what gives the organization its dignity |
+| 9 | cool(クール) | クールな佇まいで観客を引き寄せる | Her cool bearing pulls the crowd in |
+| 10 | 〃 | 冷ややかな眼差しが対戦相手を凍らせる | Her cold gaze freezes opponents where they stand |
+| 11 | 〃 | 感情を見せない戦い方が逆に怖い | The way she fights without showing emotion is what makes her frightening |
+| 12 | delinquent(ヤンキー) | 不良性感度の塊で観客を煽り続ける | She is all outlaw charisma, and she works the crowd with it without letup |
+| 13 | 〃 | 荒っぽい振る舞いが団体の毒気を担う | Her rough conduct is where the organization gets its venom |
+| 14 | 〃 | ルールの外側で観客を熱狂させる | She sends the crowd into a frenzy from outside the rules |
+| 15 | seductive(蠱惑) | 妖艶な魅せ方で他団体にはない色を添える | Her sultry showmanship adds a color no other organization has |
+| 16 | 〃 | 艶のある立ち姿が独自のファン層を呼ぶ | Her alluring stage presence draws a fanbase all her own |
+| 17 | standard(標準) | 素直な人柄が選手会の核になっている | Her honest, unguarded character is the heart of the locker room |
+| 18 | 〃 | 飾らない佇まいが逆に絵になる | Her unadorned presence is precisely what makes her a picture |
+| 19 | bold(強気) | 物怖じしない発言で常に火種を撒く | Her fearless remarks are forever scattering sparks |
+| 20 | 〃 | 気の強さでカードを引っ張る | She carries the card on sheer nerve |
+| 21 | quiet(寡黙) | 多くを語らず試合で全てを示す | She says little and shows everything in the ring |
+| 22 | 〃 | 寡黙さの裏に確かな圧がある | There is real pressure behind her silence |
+| 23 | easygoing(お気楽) | ゆるい空気で控室の緊張を解く側 | She is the one whose easy mood loosens up the locker room |
+| 24 | 〃 | 飄々とした雰囲気が独特の間合いを作る | Her breezy detachment creates a spacing all her own |
+| 25 | earnest(真面目) | 真面目さがそのまま強さに直結している | Her diligence translates straight into strength |
+| 26 | 〃 | 愚直な姿勢でチームを牽引する | She leads the team by plain, dogged effort |
+| 27 | emotional(感情的) | 感情の振れ幅で試合をドラマに変える | The swing of her emotions turns matches into drama |
+| 28 | 〃 | 熱が乗ったときの爆発力が桁違い | When she gets fired up, her explosiveness is on another level |

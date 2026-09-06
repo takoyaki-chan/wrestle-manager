@@ -1,5 +1,105 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-45 — 死蔵ヘルパー `_aceFlavorByPersona`(28本)をエース欄へ配線・英訳／`STYLE_META[*].desc` 6件を削除(2026-09-06・worktree agent-a63c88cea1fb83159)
+
+Keisuke裁定 **C-3=①「配線して出す」** と **C-4同族「死骸なら削除」**(`docs/i18n-keisuke-rulings-pending-v0.1.md`)の消化。着手前に worktree を main 先端(ab7bb554)へ fast-forward 済み。
+
+### 何が死んでいたか
+
+`src/ui-render.js` の `_aceFlavorByPersona(f, seed)` は、アーキタイプ7分岐(`archMap` 18本)×性格5分岐(`persMap` 10本)で**エースの人物描写を1文返す**関数だが、**実装当初から `src/` のどこからも呼ばれていなかった**(P7-14 §33-4 で発見 → P7-31 §44-5 で死骸34件のうちの28件として確定)。同スコープの他の講評文プール(`_orgContextSentences` / `_buildLeadSentences` / `_buildDepthNoteV2`)は P7-6/P7-14 で全部 `t()` 配線済みで、この1本だけが取り残されていた。
+
+### 死骸2種の処遇が割れた理由
+
+| 死骸 | 処遇 | 根拠 |
+|---|---|---|
+| `_aceFlavorByPersona` の28本 | **配線** | アーキタイプ×性格で書き分けられた**キャラの描写文**。CLAUDE.md 三本柱「キャラクターの人生を覗き見る」に直接効く資産で、捨てるほうが損失 |
+| `STYLE_META[*].desc` 6件(ui-render.js:818-823) | **削除** | スタイル(Grappler/Striker…)の**一般的な説明文**でキャラ固有情報を持たない。ドラフトカードは `sm.cream` と生の `c.style` しか描画しておらず、出す場所を作るところから設計が要る。台帳にも載っていない(未英訳)ので **JA/EN どちらの出力も不変** |
+
+「呼ばれていない=消す」でも「書いてある=出す」でもなく、**その文がキャラのドラマを運ぶか**で分けた(CLAUDE.md 機能追加の判断基準1)。
+
+### 配線先の判断 — エース欄の `<p>`
+
+画面仕様 `docs/ui/03-screens/ranking.md` §3.2 は 03 団体プロフィールの講評を「団体説明(`rp-info`)/エース欄(`rp-ace`)/主力層欄(`rp-depth`)」の3層に割り、**エース欄だけが個人を語る**と定めている。人物描写はここ以外に置き場がない。
+
+- **`_buildAceCopy` の中には混ぜない**。あちらは王座/防衛数/年齢で既に9分岐あり、直交する軸(archetype×personality)を足すと分岐が掛け算になる。呼び出し側で `aceRecordCopy`(戦績)と `aceFlavor`(人物描写)を別々に作り、`_concatParts([record, _joinSentences([flavor])])` で1本に繋ぐ
+- 断片は句点を持たないので、**句点を打つのは `_joinSentences`、繋ぐのは `_concatParts`**(`ARTICLE_COMPOSE_TEMPLATES`)。JA=句点直結 / EN=`". "`。**画面側でJAの句点を直書きしない**(§33/P7-14 の規約)
+- `featured` が居ない団体(「看板を担う選手がまだ定まっていない。」)には足さない
+- **順序は戦績が先、人物描写が後**。記者が肩書きを書いてから人物評へ移る順
+
+### シードに選手idを混ぜた理由
+
+既存の `_orgSeed = (season*100) + _strHash(orgId)` をそのまま使うと、**同じ団体はエースが交代しても同じ人物描写のまま**になる(団体しか見ていないシードなので当然)。`(_orgSeed >> 5) + featured.id` にして「誰がエースか」に追随させた。`>> 5` は `_buildAceCopy`(seed 直値)・`_buildLeadSentences`(`>> 3`/`>> 6`/`>> 9`)と引き当てがぶつからないようにするため。`Math.random()` は不使用 — **同一シーズン中は固定**(週送りで文面だけがちらつかない)という性質が `_seedBase` から継がれるので、裁定C-2の「表示専用なら Math.random 可」に頼る必要がなかった。
+
+### 台帳は「末尾追記」で足した(extract-ui は回していない)
+
+プール要素は `WM_I18N.t()` の**静的第1引数ではない**(`WM_I18N.t(_pickSeed(pool, seed))`)ので `test/i18n-extract-ui.js` には原理的に載らない。§39/§40 と同じく `kept:true` + `note` で ui-ledger へ手追加した。
+
+**ただし `node test/i18n-extract-ui.js` は回さないこと**(検証中に一度回して気付いた副作用)。過去バッチが末尾へ手追加した約130行が未ソートのまま残っており、再実行するとそれらがソートで一斉に動いて **1,472行の移動差分**が出る(意味的な差は0。実害は並行タスクとのコンフリクトだけ)。今回は「HEADの並び + 末尾に28行」で書き、差分を **+336行 / −0行** に閉じた。台帳の並びを直すなら、それだけを目的にした単独コミットで行うべき。
+
+### 発見
+
+1. **`personality` の `shy`(5名)には最初から専用プールが無い**。`persMap` は bold/quiet/easygoing/earnest/emotional/normal の6キーで、`persMap[pers] || []` に吸われてアーキタイプ側だけで引く(`normal` 34名も同じ経路)。プールが空になることはないので実害はないが、**JA原文を1文字も足さない**方針なので新規文面は書いていない。増補するならセリフ委譲(Opus)の枠で JA→EN 同時に
+2. **`STYLE_META[*].desc` の6件は src のどこにも複製が無かった**。「別経路で同じ説明文が出ているのでは」を疑って全文 grep したが0件で、選手ポップアップ側の `STYLE_META`(ui-common.js:4037・ui-render.js:6490)には `desc` プロパティ自体が無い。削除で失われる表示は無い
+3. **JA走破のdigestは操作列なので不変**(336手 `b3b7a2c05a7e6016`)だが、これは「講評文が変わっても操作は変わらない」ことの確認であって**表示の確認ではない**。表示側は Playwright の `page.evaluate` で `renderRanking()` を直接叩き、4カード全部のエース欄テキストを取って機械確認した(JA/EN 別々に)
+
+### 英訳した28本(記者の地の文。感嘆符なし・格言化なし・具体表現)
+
+| # | 分岐 | JA(原文・不変) | EN |
+|---|---|---|---|
+| 1 | composed(鷹揚) | 鷹揚な物腰で団体を束ねる | She holds the organization together with an unhurried bearing |
+| 2 | 〃 | 常に落ち着いた佇まいが格を生む | Her unbroken composure is what gives her stature |
+| 3 | 〃 | 泰然とした空気で対戦相手を呑む | Her unshaken calm swallows opponents whole |
+| 4 | ojousama(お嬢様) | 気品ある立ち振る舞いで観客を魅了する | Her graceful bearing captivates the crowd |
+| 5 | 〃 | お嬢様然とした華が興行に色を添える | Her ladylike glamour adds color to the shows |
+| 6 | 〃 | 上品な所作の奥に勝負師の牙を隠す | Behind her refined manners she hides a gambler's fangs |
+| 7 | polite(丁寧) | 礼節を重んじる姿勢で敵すら味方につける | Her regard for courtesy wins over even her opponents |
+| 8 | 〃 | 丁寧で清廉な人柄が団体の品位を作る | Her courteous, upright character is what gives the organization its dignity |
+| 9 | cool(クール) | クールな佇まいで観客を引き寄せる | Her cool bearing pulls the crowd in |
+| 10 | 〃 | 冷ややかな眼差しが対戦相手を凍らせる | Her cold gaze freezes opponents where they stand |
+| 11 | 〃 | 感情を見せない戦い方が逆に怖い | The way she fights without showing emotion is what makes her frightening |
+| 12 | delinquent(ヤンキー) | 不良性感度の塊で観客を煽り続ける | She is all outlaw charisma, and she works the crowd with it without letup |
+| 13 | 〃 | 荒っぽい振る舞いが団体の毒気を担う | Her rough conduct is where the organization gets its venom |
+| 14 | 〃 | ルールの外側で観客を熱狂させる | She sends the crowd into a frenzy from outside the rules |
+| 15 | seductive(蠱惑) | 妖艶な魅せ方で他団体にはない色を添える | Her sultry showmanship adds a color no other organization has |
+| 16 | 〃 | 艶のある立ち姿が独自のファン層を呼ぶ | Her alluring stage presence draws a fanbase all her own |
+| 17 | standard(標準) | 素直な人柄が選手会の核になっている | Her honest, unguarded character is the heart of the locker room |
+| 18 | 〃 | 飾らない佇まいが逆に絵になる | Her unadorned presence is precisely what makes her a picture |
+| 19 | bold(強気) | 物怖じしない発言で常に火種を撒く | Her fearless remarks are forever scattering sparks |
+| 20 | 〃 | 気の強さでカードを引っ張る | She carries the card on sheer nerve |
+| 21 | quiet(寡黙) | 多くを語らず試合で全てを示す | She says little and shows everything in the ring |
+| 22 | 〃 | 寡黙さの裏に確かな圧がある | There is real pressure behind her silence |
+| 23 | easygoing(お気楽) | ゆるい空気で控室の緊張を解く側 | She is the one whose easy mood loosens up the locker room |
+| 24 | 〃 | 飄々とした雰囲気が独特の間合いを作る | Her breezy detachment creates a spacing all her own |
+| 25 | earnest(真面目) | 真面目さがそのまま強さに直結している | Her diligence translates straight into strength |
+| 26 | 〃 | 愚直な姿勢でチームを牽引する | She leads the team by plain, dogged effort |
+| 27 | emotional(感情的) | 感情の振れ幅で試合をドラマに変える | The swing of her emotions turns matches into drama |
+| 28 | 〃 | 熱が乗ったときの爆発力が桁違い | When she gets fired up, her explosiveness is on another level |
+
+**訳の方針メモ**: 断片(JA)は主語を持たないが、EN では前の戦績文が「She's still measuring the weight of the title.」のように `She` で書かれているため、**人物描写も `She` / `Her` で始まる完全文**に揃えた(既存の団体リード文は `Running away with the top of the industry` のような分詞句だが、あちらの主語は団体で、人物には合わない)。用語は既訳に合わせた — 控室/選手会=`locker room`、火種=`spark`、間合い=`spacing`。「不良性感度」は英語に対応語が無いので `outlaw charisma`、「勝負師の牙」は `a gambler's fangs` を当てた。
+
+### 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check src/ui-render.js` | ✅ |
+| `node test/ja-golden.js` | ✅ 完全一致(`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b` 不変) |
+| `node test/i18n-build-dict.js` | ✅ ui **4,715**・**未訳0**(4,687→4,715、+28) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 重複17件・訳文一致 |
+| `npm test` | ✅ **265/265** |
+| `node test/i18n-ratchet.js` | ✅ 増加なし。ui-render.js **974→968(−6)** = `STYLE_META.desc` 削除分ちょうど。`--update` で基準を焼き直した(減少のみ・他ファイル不変) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・**336手**・digest **`b3b7a2c05a7e6016`**(基準と一致) |
+| `npm run test:ui:walkthrough:en` | ✅ PASS・399手・**i18n-miss 0** |
+| ランキング画面の実UI検査(Playwright `page.evaluate` + `renderRanking()`) | ✅ JA/EN とも**4カード全部**のエース欄に人物描写1文あり / EN に日本語0 / 末尾が「。」・「.」 / `.rp-ace` の `scrollHeight===clientHeight`・講評の bottom がエース欄内(はみ出し0) |
+
+**auto-sim は回していない**(CLAUDE.md「app.js や UI のみの変更 → 不要」。今回の変更は `src/ui-render.js` の描画層のみ)。
+
+### ドキュメント
+
+- `specs/i18n-runtime-spec-v1.0.md` §46 を新設(§33-4・§44-5 の死骸行にも解決リンクを追記)
+- `docs/ui/03-screens/ranking.md` を v1.2 へ。§3.3「エース欄の2文構成」を追加
+- `docs/i18n-keisuke-rulings-pending-v0.1.md` C-3 / C-4 に実装済みリンク、`docs/i18n-coverage-report-v0.1.md` の ui-render.js 行と §7-3 を更新
+- `docs/実機確認バックログ.md` 先頭に P7-45 の節(**人物描写がキャラに合っているかの目視だけは Keisuke にしかできない**)
+
 ## 2026-09-06 P7-38 マージ(015d92ac)— auto-sim 指紋 e96444c1→96492883 の理由
 
 - P7-38(年代記の姓化)を main へマージ。ja-golden 完全一致(3466a6ff…、年代記は基準外)/ npm test 265 / auto-sim 20季 ALL CLEAR。

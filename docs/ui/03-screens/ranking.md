@@ -1,8 +1,8 @@
 # 画面：団体ランキング（v1.1 — Office標準・Depth連動）
 
 **ファイル**：`docs/ui/03-screens/ranking.md`
-**最終更新**：2026-07-31 / v1.1
-**実装状況**：完了（`renderRanking()`、`Engine.ranking.updateRankings(G)`、ランキングCSSに実装済み。v2.1のDepth業界水準連動と講評の母集団同期を反映）
+**最終更新**：2026-09-06 / v1.2
+**実装状況**：完了（`renderRanking()`、`Engine.ranking.updateRankings(G)`、ランキングCSSに実装済み。v2.1のDepth業界水準連動と講評の母集団同期を反映。2026-09-06 P7-45 でエース欄に人物描写1文を追加＝§3.3）
 **モックアップ正本**：`docs/ui/mockups/ranking-final-v1.3.html`（Baseline v0.8準拠、逸脱理由を同ファイル末尾に記載）
 
 ---
@@ -60,6 +60,32 @@
 「実戦級」は `r.depthReadyOvr`、すなわち `getDepthBenchmark(state).reserveTarget` を使う。
 文章では必ず `OVR85以上が3人` のように実数で閾値と人数を出し、顔のOVR表示と照合可能にする。
 欠場者数も同じsupportから数える。レンタルについて触れる場合だけ、別のレンタルロスターから在籍レンタルを取得する。
+
+### 3.3 エース欄の2文構成 — 戦績の1文 ＋ 人物描写の1文（v1.2 / P7-45で追加）
+
+**実装状況**：完了（2026-09-06。`_buildAceCopy` ＋ `_aceFlavorByPersona`）
+
+エース欄（`rp-ace`）の講評は**必ず2つの層**でできている。前半は数字が語る立場、後半はその子がどう見えるか。
+
+| 層 | 生成元 | 語る対象 | 例（JA） |
+|---|---|---|---|
+| 戦績の1文 | `_buildAceCopy` | 王座・防衛数・年齢・次点との差 | 「戴冠したばかりの新王者。王座の重みをまだ測りかねている。」 |
+| 人物描写の1文 | `_aceFlavorByPersona` | アーキタイプ（第一分岐）× 性格（第二分岐） | 「鷹揚な物腰で団体を束ねる。」 |
+
+- **順序は戦績が先、人物描写が後**。記者が肩書きを書いてから人物評へ移る順で、逆にしない。
+- 人物描写は**1文だけ**。プールは archMap 18本＋persMap 10本＝28本で、
+  `(archMap[archetype] ?? archMap.standard).concat(persMap[personality] ?? [])` を
+  合わせた中から `_pickSeed` で1本引く。`personality` が `normal` / `shy` のときは
+  アーキタイプ側だけになる（プールが空になることはない）。
+- **数値は人物描写に持ち込まない**。OVR・防衛数・年齢は前半の戦績文だけが背負う
+  （§3.2 の「エース欄は個人を語る」を、数字の層と見た目の層に割ったもの）。
+- 文の連結はどちらも `_concatParts` / `_joinSentences`（`ARTICLE_COMPOSE_TEMPLATES`）に委ねる。
+  JA は句点直結、EN は `". "` 区切り。**画面側で「。」を直書きしない**（§33/P7-14 の規約）。
+- シードは `(_orgSeed >> 5) + featured.id`。`_orgSeed` はシーズン由来なので
+  **同一シーズン中は文が固定**され、週送りで文面だけがちらつかない。
+  エースが交代したときだけ引き直る。`Math.random()` は使わない。
+- 縦の伸びは `.rp-ace` のグリッド（`1fr / 108px`）が吸収する。行数固定・line-clamp は掛けない
+  （JA/EN いずれも実測で `scrollHeight === clientHeight`）。
 
 ## 4. サイズ・文字の実装値
 

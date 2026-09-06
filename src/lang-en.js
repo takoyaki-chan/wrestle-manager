@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4687件、訳文あり4687件)
+//  生成元: i18n/ui-ledger.json (総キー4715件、訳文あり4715件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -4700,7 +4700,35 @@
     "🥀 引退の置き土産": "🥀 A Retirement's Parting Gift",
     "🥋 師弟": "🥋 Mentor and Protege",
     "🩸 嫉妬": "🩸 Jealousy",
-    "🪦 共闘ペアの裏切り": "🪦 A Tag Partner's Betrayal"
+    "🪦 共闘ペアの裏切り": "🪦 A Tag Partner's Betrayal",
+    "鷹揚な物腰で団体を束ねる": "She holds the organization together with an unhurried bearing",
+    "常に落ち着いた佇まいが格を生む": "Her unbroken composure is what gives her stature",
+    "泰然とした空気で対戦相手を呑む": "Her unshaken calm swallows opponents whole",
+    "気品ある立ち振る舞いで観客を魅了する": "Her graceful bearing captivates the crowd",
+    "お嬢様然とした華が興行に色を添える": "Her ladylike glamour adds color to the shows",
+    "上品な所作の奥に勝負師の牙を隠す": "Behind her refined manners she hides a gambler's fangs",
+    "礼節を重んじる姿勢で敵すら味方につける": "Her regard for courtesy wins over even her opponents",
+    "丁寧で清廉な人柄が団体の品位を作る": "Her courteous, upright character is what gives the organization its dignity",
+    "クールな佇まいで観客を引き寄せる": "Her cool bearing pulls the crowd in",
+    "冷ややかな眼差しが対戦相手を凍らせる": "Her cold gaze freezes opponents where they stand",
+    "感情を見せない戦い方が逆に怖い": "The way she fights without showing emotion is what makes her frightening",
+    "不良性感度の塊で観客を煽り続ける": "She is all outlaw charisma, and she works the crowd with it without letup",
+    "荒っぽい振る舞いが団体の毒気を担う": "Her rough conduct is where the organization gets its venom",
+    "ルールの外側で観客を熱狂させる": "She sends the crowd into a frenzy from outside the rules",
+    "妖艶な魅せ方で他団体にはない色を添える": "Her sultry showmanship adds a color no other organization has",
+    "艶のある立ち姿が独自のファン層を呼ぶ": "Her alluring stage presence draws a fanbase all her own",
+    "素直な人柄が選手会の核になっている": "Her honest, unguarded character is the heart of the locker room",
+    "飾らない佇まいが逆に絵になる": "Her unadorned presence is precisely what makes her a picture",
+    "物怖じしない発言で常に火種を撒く": "Her fearless remarks are forever scattering sparks",
+    "気の強さでカードを引っ張る": "She carries the card on sheer nerve",
+    "多くを語らず試合で全てを示す": "She says little and shows everything in the ring",
+    "寡黙さの裏に確かな圧がある": "There is real pressure behind her silence",
+    "ゆるい空気で控室の緊張を解く側": "She is the one whose easy mood loosens up the locker room",
+    "飄々とした雰囲気が独特の間合いを作る": "Her breezy detachment creates a spacing all her own",
+    "真面目さがそのまま強さに直結している": "Her diligence translates straight into strength",
+    "愚直な姿勢でチームを牽引する": "She leads the team by plain, dogged effort",
+    "感情の振れ幅で試合をドラマに変える": "The swing of her emotions turns matches into drama",
+    "熱が乗ったときの爆発力が桁違い": "When she gets fired up, her explosiveness is on another level"
   }
   );
 })();
