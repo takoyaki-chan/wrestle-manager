@@ -13117,7 +13117,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 7,
+    "count": 8,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -46482,7 +46482,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -50038,5 +50038,15 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "ui-render.js:_aceFlavorByPersona()(ランキング画面 03 団体プロフィールのエース欄「人物描写」1文)。P7-45で配線(裁定C-3①)。アーキタイプ×性格のプールから _pickSeed で1本選び WM_I18N.t へ通すため、WM_I18N.t() の静的第1引数にならず走査対象外。手追加。"
+  },
+  {
+    "key": "挑戦は見送られた。{org}との関係は冷える。",
+    "en": "The challenge went unanswered. Relations with {org} cool.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   }
 ]

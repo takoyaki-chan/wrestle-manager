@@ -805,6 +805,7 @@ function showWarChallenge() {
     ? `background-image:url('${upperUrl}')`
     : `background:linear-gradient(135deg,#3a2820,#1a1208)`;
   const seasonMeta = `FROM ${WM_I18N.pn(ev.opponentName || '').toUpperCase()} ・ ${WM_I18N.t('{n}試合', { n: ev.matchCount })}`;
+  const reporterHtml = _mdlAReporterStrip(G, WM_I18N.t('{org}から正式な対抗戦の申し入れが届きました', { org: ev.opponentName }), true);
 
   const html =
     `<div class="mdl-a-header danger">
@@ -812,7 +813,7 @@ function showWarChallenge() {
       <div class="mdl-a-header-meta">${seasonMeta}</div>
     </div>
     ${/* P6-5配線修正: 旧実装は${ev.opponentName}を先に埋め込んでからt()していたため未訳のまま出ていた */ ''}
-    ${_mdlAReporterStrip(G, WM_I18N.t('{org}から正式な対抗戦の申し入れが届きました', { org: ev.opponentName }), true)}
+    ${reporterHtml}
     <div class="mdl-a-subject-stage danger" style="padding-top:30px">
       ${_mdlAFlowPortraitHtml({
         line: dialogue,
@@ -843,18 +844,80 @@ function showWarChallenge() {
 
   _mdlAOpen(html, { dark: true, narrow: true });
 
-  const overlay = document.getElementById('mdlAOverlay');
-  const card    = document.getElementById('mdlACard');
+  const card = document.getElementById('mdlACard');
+  let choiceMade = false;
 
   card.addEventListener('click', (e) => {
+    if (choiceMade) return;
     const btn = e.target.closest('[data-war-choice]');
     if (!btn) return;
-    _mdlAClose();
-    if (btn.dataset.warChoice === 'accept') acceptWarChallenge();
-    else skipEvent();
+    choiceMade = true;
+    if (btn.dataset.warChoice === 'accept') {
+      _mdlAClose();
+      acceptWarChallenge();
+      return;
+    }
+    // P7-41(死蔵セリフ配線 A-1): 辞退した瞬間に閉じず、相手エースの反応をこの場で一幕見せる。
+    // skipEvent自体は変更しない(一幕はTAP後に呼ぶ)。
+    _showWarDeclineReaction({ ev, enemyAce, portraitStyle, seasonMeta, reporterHtml });
   });
   };
   _enqueuePopup(run);
+}
+
+// ── P7-41: 対抗戦・挑戦状の辞退時、相手エースの反応をその場で見せる一幕 ──
+// 死蔵セリフ WAR_DECLINE_DIALOGUE(Keisuke裁定A-1「配線して出す」)の唯一の表示点。
+// 同じ mdl-a カードの innerHTML を差し替えるだけで、_mdlAClose は呼ばない(閉じ直しにしない)。
+
+// 二重起動防止フラグ(§5-D 鉄則1)。_showWarDeclineReaction がカードを開き直すたびにリセットする。
+// onclick属性の外側に置く必要があるためモジュールスコープに置く(この一幕はカード全体クリックの
+// 単一導線しか持たないため、_mdlAOpenを呼ぶ関数が排他的にフラグを管理すれば足りる)。
+let _warDeclineAdvancing = false;
+function _warDeclineContinue() {
+  if (_warDeclineAdvancing) return;
+  _warDeclineAdvancing = true;
+  _mdlAClose();
+  skipEvent();
+}
+
+function _showWarDeclineReaction(ctx) {
+  const { ev, enemyAce, portraitStyle, seasonMeta, reporterHtml } = ctx;
+  // fail-open: 表がまるごと無ければ一幕をスキップして従来どおり即閉じる
+  if (typeof WAR_DECLINE_DIALOGUE === 'undefined') { _mdlAClose(); skipEvent(); return; }
+
+  const declineRng = Engine.rng.create(Engine.rng.derive(
+    G.rngSeed || 0, G.season || 1, G.week || 1, enemyAce.id || 0, 0x57444543
+  ));
+  const declinePool = getDialoguePool(WAR_DECLINE_DIALOGUE, enemyAce);
+  const reactionLine = declinePool && declinePool.length ? Engine.rng.pick(declineRng, declinePool) : null;
+  if (!reactionLine) { _mdlAClose(); skipEvent(); return; }
+
+  _warDeclineAdvancing = false;
+  // カード全体が1つのタップ面(.tcwn-wrap 等、既存の全画面タップ規約と同じ発想)。
+  // 決断トレイは描画自体をやめる(=非表示)。TAP TO CONTINUE のみで先へ進む。
+  const html =
+    `<div class="mdl-a-war-decline-surface" onclick="_warDeclineContinue()" data-walk-role="war-decline-continue">
+      <div class="mdl-a-header danger">
+        <div class="mdl-a-header-title">${WM_I18N.t('📜 対 抗 戦 ・ 挑 戦 状')}</div>
+        <div class="mdl-a-header-meta">${seasonMeta}</div>
+      </div>
+      ${reporterHtml}
+      <div class="mdl-a-subject-stage danger" style="padding-top:30px">
+        ${_mdlAFlowPortraitHtml({
+          line: reactionLine,
+          toneClass: 'danger',
+          portraitClass: 'mdl-a-subject-portrait big danger',
+          portraitStyle,
+        })}
+        <div class="mdl-a-subject-name danger">${WM_I18N.pn(enemyAce.name)}</div>
+        <div class="mdl-a-subject-org danger">${WM_I18N.pn(ev.opponentName)} ・ ACE</div>
+        <div class="mdl-a-subject-divider"></div>
+        <div class="mdl-a-observation">${WM_I18N.t('挑戦は見送られた。{org}との関係は冷える。', { org: ev.opponentName })}</div>
+      </div>
+      <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
+    </div>`;
+
+  _mdlAOpen(html, { dark: true, narrow: true });
 }
 
 // ── S3 War entry: B3の「受諾→代表選択」と大型大会の複数選出を同じA型モーダルで接続 ──

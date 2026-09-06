@@ -1949,6 +1949,8 @@ function _renderRosterDojoHeader() {
   const coachForBubble = report
     ? ALL_COACHES.find(c => c.id === report.coachId)
     : (hired.length > 0 ? hired[0] : null);
+  // P7-40: コーチが今週その選手の熱量を語ったら、本人セリフ吹き出しは同じ選手を避ける(草案§7-5)。
+  let coachHeatFighterId = null;
 
   if (coachForBubble || atmo) {
     html += '<div class="dojo-scene-coach">';
@@ -1982,6 +1984,7 @@ function _renderRosterDojoHeader() {
         // i18n Stage B P5-1: t()は{name}のreplaceより前(辞書キーはプレースホルダ入りの原文)。
         speechText = WM_I18N.t(heatPool[Engine.rng.int(heatRng, 0, heatPool.length - 1)])
           .replace('{name}', WM_I18N.pn(heatFighter.name) || WM_I18N.t('この子'));
+        coachHeatFighterId = heatFighter.id;
       }
       html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble">${_quoteLine(speechText)}</div></div>
         <div class="dojo-scene-coach-avatar" onclick="showCoachTooltip(${coachForBubble.id})" style="cursor:pointer">
@@ -1994,6 +1997,19 @@ function _renderRosterDojoHeader() {
     html += '</div>';
   }
 
+  // --- P7-40: 熱量の本人セリフ吹き出し(選手側)の対象を先に決める ---
+  // heavy がいれば必ずその1人(最も_heatが高い1人)。列に居なければ後段で列の先頭へ割り込ませる。
+  // コーチが今週その選手の熱量を語っている場合は候補から除外する(草案§7-5、上のcoachHeatFighterId)。
+  const heatSelfEligible = f => f && !f.injury && !f.onLeave && f.id !== coachHeatFighterId;
+  let heatSelfFighter = null;
+  let heatSelfState = null;
+  const heatSelfHeavyPool = (G.roster || []).filter(f => heatSelfEligible(f) && getTrainingState(f) === 'heavy');
+  if (heatSelfHeavyPool.length > 0) {
+    heatSelfHeavyPool.sort((a, b) => (Number(b._heat) || 0) - (Number(a._heat) || 0));
+    heatSelfFighter = heatSelfHeavyPool[0];
+    heatSelfState = 'heavy';
+  }
+
   // --- 選手アイコン（中央・練習中） ---
   // 雰囲気レベルに応じた人数: level1=0, level2=0-1, level3=1, level4=1-2, level5=2-3
   const levelMaxMap = [0, 0, 1, 1, 2, 3]; // index = atmo.level (1-5)
@@ -2002,7 +2018,8 @@ function _renderRosterDojoHeader() {
   const minFighters = levelMinMap[atmo.level] || 0;
   const practicingIds = new Set();
 
-  if (maxFighters > 0 && G.roster && G.roster.length > 0) {
+  // heavy対象がいる週は、雰囲気レベルが0人枠でもその1人のためだけに列を作る(仕様書の「割り込み」)。
+  if ((maxFighters > 0 || heatSelfState === 'heavy') && G.roster && G.roster.length > 0) {
     const fRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, 777));
     const available = G.roster.filter(c => !c.injury && !c.onLeave);
     // シャッフル
@@ -2014,6 +2031,44 @@ function _renderRosterDojoHeader() {
     const count = minFighters + Engine.rng.int(fRng, 0, maxFighters - minFighters);
     const picked = shuffled.slice(0, Math.min(count, shuffled.length));
 
+    // P7-40: heavy対象がこの週の列にいなければ、列の先頭へ強制的に割り込ませる(上限人数は超えてよい)
+    if (heatSelfState === 'heavy' && heatSelfFighter && !picked.some(c => c.id === heatSelfFighter.id)) {
+      picked.unshift(heatSelfFighter);
+    }
+
+    // P7-40: heavy対象がいなければ、この週の列(picked)の中から warm→fresh の順で確率選出する
+    if (!heatSelfFighter) {
+      const warmInPicked = picked.filter(f => heatSelfEligible(f) && getTrainingState(f) === 'warm');
+      if (warmInPicked.length > 0) {
+        warmInPicked.sort((a, b) => (Number(b._heat) || 0) - (Number(a._heat) || 0));
+        const cand = warmInPicked[0];
+        const rollRng = Engine.rng.create(Engine.rng.derive(
+          G.rngSeed || 0, G.season || 1, G.week || 1, cand.id || 0, 0x48534C46
+        ));
+        if (Engine.rng.float(rollRng) < 0.30) { heatSelfFighter = cand; heatSelfState = 'warm'; }
+      } else if (!Engine.util.isShowWeek(G.week)) {
+        // fresh は追い込み可能な練習週のみ対象(仕様書「fresh のみ・興行週」は出さない)
+        const freshInPicked = picked.filter(f => heatSelfEligible(f) && getTrainingState(f) === 'fresh');
+        if (freshInPicked.length > 0) {
+          const cand = freshInPicked[0];
+          const rollRng = Engine.rng.create(Engine.rng.derive(
+            G.rngSeed || 0, G.season || 1, G.week || 1, cand.id || 0, 0x48534C46
+          ));
+          if (Engine.rng.float(rollRng) < 0.20) { heatSelfFighter = cand; heatSelfState = 'fresh'; }
+        }
+      }
+    }
+
+    // P7-40: 選ばれたセリフ本文を確定(週固定・リロードで変わらない専用RNG。表示直前にt()を通す)
+    let heatSelfLineText = '';
+    if (heatSelfFighter && heatSelfState && typeof HEAT_STATE_SELF_LINES !== 'undefined') {
+      const pool = getDialoguePool(HEAT_STATE_SELF_LINES[heatSelfState], heatSelfFighter);
+      const lineRng = Engine.rng.create(Engine.rng.derive(
+        G.rngSeed || 0, G.season || 1, G.week || 1, heatSelfFighter.id || 0, 0x48534C46
+      ));
+      heatSelfLineText = pool && pool.length ? WM_I18N.t(Engine.rng.pick(lineRng, pool)) : '';
+    }
+
     if (picked.length > 0) {
       html += '<div class="dojo-scene-fighters">';
       picked.forEach((c, idx) => {
@@ -2021,8 +2076,14 @@ function _renderRosterDojoHeader() {
         const offsetY = Engine.rng.int(fRng, -5, 5);
         const delay = Engine.rng.int(fRng, 0, 8);
         const cycle = 13 + Engine.rng.int(fRng, 0, 6); // 13-19sでバラけさせる
-        html += `<div class="dojo-scene-fighter-wrap" style="margin-bottom:${offsetY}px" title="${WM_I18N.pn(c.name)}" onclick="showFighterPopup(${c.id},'roster')">`;
-        html += `<div class="dojo-scene-shout" style="--shout-cycle:${cycle}s;--shout-delay:${delay}s"></div>`;
+        // P7-40: 本人セリフの相手には掛け声(.dojo-scene-shout)を出さず吹き出しに差し替える(1週に1つだけ)
+        const isHeatSelf = !!(heatSelfFighter && heatSelfLineText && c.id === heatSelfFighter.id);
+        html += `<div class="dojo-scene-fighter-wrap${isHeatSelf ? ' has-heat-bubble' : ''}" style="margin-bottom:${offsetY}px" title="${WM_I18N.pn(c.name)}" onclick="showFighterPopup(${c.id},'roster')">`;
+        if (isHeatSelf) {
+          html += `<div class="dojo-heat-bubble">${_quoteLine(heatSelfLineText)}</div>`;
+        } else {
+          html += `<div class="dojo-scene-shout" style="--shout-cycle:${cycle}s;--shout-delay:${delay}s"></div>`;
+        }
         html += `<div class="dojo-scene-fighter">${portraitImg(c.id, 40)}</div>`;
         // care-rework2 P1-2: 立ち姿にも同じ低調サインを添える(道場で気づけるように)
         if (isQuietSignLit(c)) html += '<span class="dojo-scene-quiet" aria-hidden="true">🌫</span>';

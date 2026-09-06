@@ -291,6 +291,37 @@ const MVPRACE_PROBE = `(() => {
   };
 })()`;
 
+// ── R14(P7-41): 対抗戦・挑戦状(死蔵セリフ WAR_DECLINE_DIALOGUE)の前提づくり ──
+// checkRivalryWarは週10/22/34限定+抽選+隣接ランクという複合条件で自然発火が非常に稀。
+// 他のB3系igniteと同じ発想で、複雑な発生条件は再現せずpendingEventへ直接
+// type:'war'を置いて「挑戦状モーダルが出た状態」だけをfixture化する。
+function _engineerWarChallengePending(G) {
+  const rankings = G.rankings || [];
+  const pIdx = rankings.findIndex(r => r.orgId === 'player');
+  if (pIdx < 0) throw new Error('プレイヤー団体のランキングが見つからない。fixtureの停止週を変えて生成し直すこと');
+  const adjacent = [];
+  if (pIdx > 0) adjacent.push(rankings[pIdx - 1]);
+  if (pIdx < rankings.length - 1) adjacent.push(rankings[pIdx + 1]);
+  const opponent = adjacent.find(r => r && Engine.rival.getOrgInfo(G.aiOrgs, r.orgId));
+  if (!opponent) throw new Error('隣接ランクのAI団体が見つからない。別シード/停止週で生成し直すこと');
+  const aiOrg = Engine.rival.getOrgInfo(G.aiOrgs, opponent.orgId);
+  const availableCount = Math.min(
+    Engine.event.getWarEntryCandidates(G).length,
+    Engine.event.getWarOpponentCandidates(G, aiOrg.orgId).length
+  );
+  if (availableCount < 3) throw new Error('対抗戦を組める人数(3人)が揃わない。別シード/停止週で生成し直すこと');
+  const matchCount = availableCount >= 5 ? 5 : 3;
+  // weekPhase:'event' も一緒に置く(checkRivalryWar発火時の本番と同じ形。ui-render.jsの
+  // イベント表示分岐はweekPhaseで見ており、pendingEventだけでは挑戦状画面に入らない)
+  return {
+    ...G,
+    pendingEvent: { type: 'war', opponentOrgId: aiOrg.orgId, opponentName: aiOrg.name, matchCount },
+    weekPhase: 'event',
+    warThisSeason: true,
+    lastWarSeason: G.season,
+  };
+}
+
 module.exports = {
   chronicle: {
     description: '年代記/序章の点火: 十数季進めたセーブ(序章=進行中+確定章6本)から、実UIでデータベース→年代記タブ→序章/各章/再構築を巡回し、章題・副題・ハイライト・章末・エース/同期カード・外敵・通算タイルの表示を検査する(ENでは日本語残り0をゲートにする)',
@@ -793,6 +824,45 @@ module.exports = {
       const fails = [];
       if (probe && probe.pendingLeft) fails.push('factionPendingIgnite が残留している(発火予約が消費されていない)');
       if (!probe || probe.maxHostility < 60) fails.push(`hostilityが開戦後の水準に達していない(max=${probe && probe.maxHostility})`);
+      return fails;
+    },
+  },
+
+  'war-decline': {
+    description: '対抗戦・挑戦状(死蔵セリフ配線P7-41)の点火: 挑戦状モーダルで辞退を選び、相手エースの反応の一幕(WAR_DECLINE_DIALOGUE)→決断トレイ非表示→TAPで閉じてskipEvent',
+    fixture: {
+      seed: 42,
+      until: G => G.season === 2 && G.week === 6 && !G.offSeason,
+      engineer: _engineerWarChallengePending,
+      assert: G => {
+        const fails = [];
+        if (!G.pendingEvent || G.pendingEvent.type !== 'war') fails.push('pendingEvent(war)が置けていない');
+        return fails;
+      },
+    },
+    walk: { seasons: 1, maxSteps: 40 },
+    until: s => !!(s.state && (s.state.season > 2 || s.state.week >= 7)),
+    // 挑戦状モーダルでは常に「辞退」を選ばせる(死蔵セリフの表示点を点けるのが目的)。
+    // 反応の一幕は決断トレイを持たない(data-war-choiceが無い)ため、以降は通常スコアへ委ねる
+    // ("TAP TO CONTINUE"の文字列一致=score10000で.mdl-a-war-decline-surfaceが最優先になる)
+    boost: candidate => {
+      if (candidate.dataChoice === 'decline') return 9990;
+      if (candidate.dataChoice === 'accept') return -Infinity;
+      return null;
+    },
+    ignition: [
+      { name: 'war-decline-reaction', required: true, match: s => overlayHit(s, 'mdl-a-war-decline-surface') },
+    ],
+    finalProbe: `(() => ({
+      pendingEventLeft: !!(typeof G !== 'undefined' && G.pendingEvent && G.pendingEvent.type === 'war'),
+      declinedCount: (typeof G !== 'undefined' && Array.isArray(G.gameLog))
+        ? G.gameLog.filter(e => e && e.type === 'war_challenge_declined').length : -1,
+    }))()`,
+    finalAssert: probe => {
+      const fails = [];
+      if (!probe) { fails.push('finalProbeが取得できない'); return fails; }
+      if (probe.pendingEventLeft) fails.push('pendingEvent(war)が残留している(辞退が消化されていない)');
+      if (probe.declinedCount !== 1) fails.push(`war_challenge_declined の記録件数が1件ではない(実測${probe.declinedCount}件=二重起動または未発火の疑い)`);
       return fails;
     },
   },
