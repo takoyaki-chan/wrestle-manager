@@ -133,9 +133,8 @@ function _engineerFactionIgnite(G) {
 // 両者が収まるまで興行開催を封じる
 function _makeFactionIgniteBoost(fixture) {
   const pi = fixture.factionPendingIgnite || {};
-  const nameOf = id => ((fixture.roster || []).find(c => c.id === id) || {}).name || '';
-  const leaderA = { id: pi.leaderAId, name: nameOf(pi.leaderAId) };
-  const leaderB = { id: pi.leaderBId, name: nameOf(pi.leaderBId) };
+  const leaderA = { id: pi.leaderAId };
+  const leaderB = { id: pi.leaderBId };
   const rowRegex = (side, id) => new RegExp(`_spSelectFighter\\(0,\\s*'${side}',\\s*${id}\\)`);
   const openRegex = side => new RegExp(`_spOpenPicker\\(0,\\s*'${side}'\\)`);
   return (candidate, all) => {
@@ -144,8 +143,14 @@ function _makeFactionIgniteBoost(fixture) {
     if (!openL && !openR) return null; // 編成画面以外は通常スコア
     const rowA = all.find(c => rowRegex('left', leaderA.id).test(c.onclick));
     const rowB = all.find(c => rowRegex('right', leaderB.id).test(c.onclick));
-    const leftDone = !!(openL && leaderA.name && openL.text.includes(leaderA.name));
-    const rightDone = !!(openR && leaderB.name && openR.text.includes(leaderB.name));
+    // P7-51: 表示名(WM_I18N.pn()でEN化される)ではなく _spFighterInfo が付与する
+    // data-sp-fighter-id(driver.jsのspFighterId)で判定する(言語非依存)。
+    // 既存のdata-fighter-id/actionScore 8250(「この選手を選ぶ」汎用ピッカー規約)とは
+    // 別名にしてあるため、一般走破(test:ui:walkthrough)のスコアリングには波及しない。
+    // openL/openRは空スロットではその属性を持たない(_spFighterInfoのempty分岐には
+    // data-sp-fighter-idが無い)ためString('')の不一致で自然にfalseになる
+    const leftDone = !!(openL && String(openL.spFighterId) === String(leaderA.id));
+    const rightDone = !!(openR && String(openR.spFighterId) === String(leaderB.id));
     if (!leftDone && rowA) return candidate.index === rowA.index ? 9992 : null;
     if (leftDone && !rightDone && rowB) return candidate.index === rowB.index ? 9992 : null;
     if (!leftDone) return openL && candidate.index === openL.index ? 9991 : (/興行開催|おまかせ|おすすめ|OVR順|集客力順|全クリア/.test(candidate.text) ? -Infinity : null);

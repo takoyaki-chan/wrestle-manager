@@ -3747,7 +3747,7 @@ function renderShowPrep() {
     return `<div class="sp-fighter-info ${side}">
       ${isChamp ? `<div class="sp-champ">${WM_I18N.t('👑 王者')}</div>` : ''}
       ${isUnifiedChamp ? `<div class="sp-champ" style="color:var(--unified)">${WM_I18N.t('🌐 統一王者')}</div>` : ''}
-      <div class="sp-fighter-name" onclick="_spOpenPicker(${slotIdx},'${side}')">${WM_I18N.pn(f.name)}</div>
+      <div class="sp-fighter-name" data-sp-fighter-id="${f.id}" onclick="_spOpenPicker(${slotIdx},'${side}')">${WM_I18N.pn(f.name)}</div>
       <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">${WM_I18N.t('体調')} <span style="${_scale6Style(_condColor(Math.round(f.condition || 100)))}">${Math.round(f.condition || 100)}</span></span></div>
       ${drawHtml}
     </div>`;
