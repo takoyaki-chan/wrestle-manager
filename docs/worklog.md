@@ -1,5 +1,11 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-06 固有名詞の読み49件 — Keisuke 裁定を名前台帳へ反映(変更7件・他は第1案で確定)
+
+- 変更: 3 澤出みずき Sawade→**Sawaide** / 11 橘玲美 Remi→**Reimi** / 21 木ノ内幸音 Yukine→**Sachine** / 32 双里明日香 Futasato→**Sori** / 68 大庭愛菜 Mana→**Aina** / 94 須藤美月 Mizuki→**Mitsuki**(ID3 との同名衝突も解消)/ 119 岩小路志摩子 Iwakoji→**Iwanokoji**。6 副沢=Fukuzawa、8 林真尋=Mahiro は第1案のまま。コーチ14名は全員第1案。
+- 長音: Keisuke の表記「souri」「iwanokouji」は、09-02 裁定(マクロンなし・おう→o)に従い Sori / Iwanokoji で綴った(Ookouchi→Okochi と同じ扱い)。
+- 反映先: `i18n/names-ledger.json`(en/enSurname、`confirmed` を49名 true)/ `i18n/template-ledger.json`(Remi→Reimi の訳文)/ `src/lang-en-names.js`・`src/lang-en-templates.js` 再生成 / `docs/en-proper-nouns-draft-v0.1.md`・`docs/en-anchor-samples-draft-v0.1.md` の綴り。JA は不変。
+
 ## 2026-09-06 P7-53（裁定 C-6）— 観戦モードの試合実況ログ52本をテンプレ化・英訳・演出分類の言語非依存化
 
 ### 背景

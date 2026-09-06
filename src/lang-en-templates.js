@@ -2778,7 +2778,7 @@
     "楽屋ですれ違っても、目を合わせない": "Passing backstage, their eyes do not meet",
     "横一線。ここから頭一つ抜けるには、何か仕掛けが要る": "Shoulder to shoulder. Getting a head clear from here takes something engineered.",
     "横浜": "Yokohama",
-    "橘玲美に憧れてヒールを目指す天然娘。声が大きくてうるさい。技術は拙いがタフネスは侮れない。ヒールを名乗るわりには素の明るさが抑えられず、観客を楽しませるムードメーカー的存在。華のある振る舞いで独自のファン層を獲得しつつある。": "An airhead who wants to be a heel because she admires Remi Tachibana. Loud, and hard to ignore. Her technique is poor; her toughness is not. For someone calling herself a heel she cannot keep her natural brightness down, and she ends up entertaining the crowd instead. There is flair in how she carries herself, and a following of her own is forming.",
+    "橘玲美に憧れてヒールを目指す天然娘。声が大きくてうるさい。技術は拙いがタフネスは侮れない。ヒールを名乗るわりには素の明るさが抑えられず、観客を楽しませるムードメーカー的存在。華のある振る舞いで独自のファン層を獲得しつつある。": "An airhead who wants to be a heel because she admires Reimi Tachibana. Loud, and hard to ignore. Her technique is poor; her toughness is not. For someone calling herself a heel she cannot keep her natural brightness down, and she ends up entertaining the crowd instead. There is flair in how she carries herself, and a following of her own is forming.",
     "次のタイトルマッチ。{championName} vs {challengerName}が実現すれば、相当な好カードになる": "The next title match. If {championName} vs {challengerName} comes together, that is a considerable card.",
     "次の一手が勝敗を分ける": "The next move decides it",
     "次の刺客はおよそ3か月後に来る。どの団体が挑戦権を取るか、業界の上位陣から目が離せない。": "The next challenger arrives in roughly three months. Which promotion takes the shot is worth watching across the whole upper card.",

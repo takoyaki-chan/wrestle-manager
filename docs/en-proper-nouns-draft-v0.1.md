@@ -1,6 +1,7 @@
 # 固有名詞 英語表記ドラフト v0.1（Keisuke 承認用）
 
 > **✅ 裁定確定(2026-09-02 Keisuke)**: ①人名=名→姓(Western order) ①-b=マクロンなし ②Joshiは団体名の中だけ(普通名詞はwomen's pro wrestling) ③大会名=意訳基本・天頂戦のみ音写Tenchosen — **全て推奨案どおり採用**。
+> **✅ 読み確認 裁定確定(2026-09-06 Keisuke)**: 要読み確認49名(選手35・コーチ14)は**基本第1案で確定**。変更7件=澤出みずき→**Sawaide** / 橘玲美→**Reimi** / 木ノ内幸音→**Sachine**(サチネ) / 双里明日香→**Sori**(そうり。長音落とし方針で Souri ではなく Sori) / 大庭愛菜→**Aina** / 須藤美月→**Mitsuki** / 岩小路志摩子→**Iwanokoji**(いわのこうじ、同方針)。副沢=Fukuzawa・林真尋=Mahiro は第1案どおり。名前台帳の `confirmed` を全員 true に。
 > 付随処置(Fable): 堂前ユキ/結城玲奈の同綴り衝突は**結城=Rena Yuuki**(uを重ねる)で回避(マクロンなし裁定下の唯一の実用解)。
 > **未決で残るもの**: 要読み確認49件(選手35+コーチ14)——暫定読みで辞書化を先行し、Keisukeの訂正をいつでも反映できる形にする(表記修正は辞書1行の差し替えで済む)。
 
@@ -204,7 +205,7 @@
 | 77 | 新見ゆり | Yuri **Niimi** | Shinmi / Nimi | 「新見」ニイミ(岡山の地名)/シンミ |
 | 84 | 南谷杏 | **An Minamitani** | Anzu Minamiya / An Nantani | 姓・名とも二択。「南谷」ミナミタニ/ミナミヤ、「杏」アン/アンズ |
 | 87 | レオナ・O・シュタインフェルト | **Leona O. Steinfeld** | Steinfeldt / Steinfelt、Leona/Reona | **原語綴りの推定**。ドイツ語系として Steinfeld を第一案。ミドルネーム "O." が何の頭文字かを決めると綴りが安定する |
-| 94 | 須藤美月 | **Mizuki** Sudo | Mitsuki | 「美月」ミヅキ/ミツキ。ID3 Mizuki Sawade と同名になる点も判断材料 |
+| 94 | 須藤美月 | **Mizuki** Sudo | Mitsuki | 「美月」ミヅキ/ミツキ。ID3 Mizuki Sawaide と同名になる点も判断材料 |
 | 100 | 土岐山乃ノ佳 | **Nonoka** Tokiyama | Nonoyoshi / Nonoka Dokiyama | 「乃ノ佳」は当て字。ノノカ第一案 |
 | 115 | 豊田いすず | Isuzu **Toyoda** | Toyota | 姓としてはトヨダが優勢。トヨタだと自動車メーカーの連想が強い |
 | 116 | リナ・モーガン | **Rina Morgan** | Lina Morgan / Lena Morgan | **原語綴りの推定**。外国人キャラ。R/L のどちらか、日系設定かどうかで決まる |

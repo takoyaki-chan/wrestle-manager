@@ -27,9 +27,9 @@
       "id": 3,
       "ja": "澤出みずき",
       "jaSurname": "澤出",
-      "en": "Mizuki Sawade",
-      "enSurname": "Sawade",
-      "confirmed": false
+      "en": "Mizuki Sawaide",
+      "enSurname": "Sawaide",
+      "confirmed": true
     },
     {
       "id": 4,
@@ -53,7 +53,7 @@
       "jaSurname": "副沢",
       "en": "Tamaki Fukuzawa",
       "enSurname": "Fukuzawa",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 7,
@@ -69,7 +69,7 @@
       "jaSurname": "林",
       "en": "Mahiro Hayashi",
       "enSurname": "Hayashi",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 9,
@@ -83,9 +83,9 @@
       "id": 11,
       "ja": "橘玲美",
       "jaSurname": "橘",
-      "en": "Remi Tachibana",
+      "en": "Reimi Tachibana",
       "enSurname": "Tachibana",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 12,
@@ -125,7 +125,7 @@
       "jaSurname": "大河内",
       "en": "Sayoko Okochi",
       "enSurname": "Okochi",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 17,
@@ -163,9 +163,9 @@
       "id": 21,
       "ja": "木ノ内幸音",
       "jaSurname": "木ノ内",
-      "en": "Yukine Kinouchi",
+      "en": "Sachine Kinouchi",
       "enSurname": "Kinouchi",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 22,
@@ -197,7 +197,7 @@
       "jaSurname": "石戸谷",
       "en": "Natsuki Ishitoya",
       "enSurname": "Ishitoya",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 26,
@@ -229,7 +229,7 @@
       "jaSurname": "相沢",
       "en": "Mirai Aizawa",
       "enSurname": "Aizawa",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 30,
@@ -237,7 +237,7 @@
       "jaSurname": "松川",
       "en": "Anju Matsukawa",
       "enSurname": "Matsukawa",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 31,
@@ -251,9 +251,9 @@
       "id": 32,
       "ja": "双里明日香",
       "jaSurname": "双里",
-      "en": "Asuka Futasato",
-      "enSurname": "Futasato",
-      "confirmed": false
+      "en": "Asuka Sori",
+      "enSurname": "Sori",
+      "confirmed": true
     },
     {
       "id": 33,
@@ -293,7 +293,7 @@
       "jaSurname": "白銀",
       "en": "Reiko Shirogane",
       "enSurname": "Shirogane",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 38,
@@ -301,7 +301,7 @@
       "jaSurname": "芝",
       "en": "Ayane Shiba",
       "enSurname": "Shiba",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 39,
@@ -341,7 +341,7 @@
       "jaSurname": "金沢",
       "en": "Aya Kanazawa",
       "enSurname": "Kanazawa",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 44,
@@ -461,7 +461,7 @@
       "jaSurname": "丹羽",
       "en": "Hotaru Niwa",
       "enSurname": "Niwa",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 59,
@@ -469,7 +469,7 @@
       "jaSurname": "池辺",
       "en": "Mari Ikebe",
       "enSurname": "Ikebe",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 60,
@@ -477,7 +477,7 @@
       "jaSurname": "馬入橋",
       "en": "Hotori Banyubashi",
       "enSurname": "Banyubashi",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 61,
@@ -501,7 +501,7 @@
       "jaSurname": "伊勢原",
       "en": "Fumina Isehara",
       "enSurname": "Isehara",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 64,
@@ -525,7 +525,7 @@
       "jaSurname": "長谷川",
       "en": "Reona Hasegawa",
       "enSurname": "Hasegawa",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 67,
@@ -539,9 +539,9 @@
       "id": 68,
       "ja": "大庭愛菜",
       "jaSurname": "大庭",
-      "en": "Mana Oba",
+      "en": "Aina Oba",
       "enSurname": "Oba",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 69,
@@ -557,7 +557,7 @@
       "jaSurname": "浜竹",
       "en": "Misaki Hamatake",
       "enSurname": "Hamatake",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 71,
@@ -581,7 +581,7 @@
       "jaSurname": "大馬越",
       "en": "Yoshiko Omagoshi",
       "enSurname": "Omagoshi",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 74,
@@ -613,7 +613,7 @@
       "jaSurname": "新見",
       "en": "Yuri Niimi",
       "enSurname": "Niimi",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 78,
@@ -669,7 +669,7 @@
       "jaSurname": "南谷",
       "en": "An Minamitani",
       "enSurname": "Minamitani",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 85,
@@ -693,7 +693,7 @@
       "jaSurname": "シュタインフェルト",
       "en": "Leona O. Steinfeld",
       "enSurname": "Steinfeld",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 88,
@@ -747,9 +747,9 @@
       "id": 94,
       "ja": "須藤美月",
       "jaSurname": "須藤",
-      "en": "Mizuki Sudo",
+      "en": "Mitsuki Sudo",
       "enSurname": "Sudo",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 95,
@@ -797,7 +797,7 @@
       "jaSurname": "土岐山",
       "en": "Nonoka Tokiyama",
       "enSurname": "Tokiyama",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 101,
@@ -917,7 +917,7 @@
       "jaSurname": "豊田",
       "en": "Isuzu Toyoda",
       "enSurname": "Toyoda",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 116,
@@ -925,7 +925,7 @@
       "jaSurname": "モーガン",
       "en": "Rina Morgan",
       "enSurname": "Morgan",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 117,
@@ -933,7 +933,7 @@
       "jaSurname": "毒島",
       "en": "Crusher Busujima",
       "enSurname": "Busujima",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 118,
@@ -941,15 +941,15 @@
       "jaSurname": "割田",
       "en": "Kumi Warita",
       "enSurname": "Warita",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 119,
       "ja": "岩小路志摩子",
       "jaSurname": "岩小路",
-      "en": "Shimako Iwakoji",
-      "enSurname": "Iwakoji",
-      "confirmed": false
+      "en": "Shimako Iwanokoji",
+      "enSurname": "Iwanokoji",
+      "confirmed": true
     },
     {
       "id": 120,
@@ -989,7 +989,7 @@
       "jaSurname": "清川",
       "en": "Rei Kiyokawa",
       "enSurname": "Kiyokawa",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 125,
@@ -997,7 +997,7 @@
       "jaSurname": "藤代",
       "en": "Ema Fujishiro",
       "enSurname": "Fujishiro",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 126,
@@ -1005,7 +1005,7 @@
       "jaSurname": "西園",
       "en": "Yurika Nishizono",
       "enSurname": "Nishizono",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 127,
@@ -1021,7 +1021,7 @@
       "jaSurname": "巳沼",
       "en": "Sagiri Minuma",
       "enSurname": "Minuma",
-      "confirmed": false
+      "confirmed": true
     }
   ],
   "coaches": [
@@ -1031,7 +1031,7 @@
       "jaSurname": "鬼塚",
       "en": "Takeshi Onizuka",
       "enSurname": "Onizuka",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 2,
@@ -1047,7 +1047,7 @@
       "jaSurname": "鶴見",
       "en": "Masatsugu Tsurumi",
       "enSurname": "Tsurumi",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 4,
@@ -1079,7 +1079,7 @@
       "jaSurname": "紅林",
       "en": "Taichi Kurebayashi",
       "enSurname": "Kurebayashi",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 8,
@@ -1103,7 +1103,7 @@
       "jaSurname": "宮本",
       "en": "Kana Miyamoto",
       "enSurname": "Miyamoto",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 11,
@@ -1175,7 +1175,7 @@
       "jaSurname": "西岡",
       "en": "Manabu Nishioka",
       "enSurname": "Nishioka",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 20,
@@ -1191,7 +1191,7 @@
       "jaSurname": "熊谷",
       "en": "Tetsuya Kumagai",
       "enSurname": "Kumagai",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 22,
@@ -1215,7 +1215,7 @@
       "jaSurname": "中村",
       "en": "Sayumi Nakamura",
       "enSurname": "Nakamura",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 25,
@@ -1231,7 +1231,7 @@
       "jaSurname": "カルロス",
       "en": "Mari Carlos",
       "enSurname": "Carlos",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 27,
@@ -1239,7 +1239,7 @@
       "jaSurname": "大河原",
       "en": "Takeshi Okawara",
       "enSurname": "Okawara",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 28,
@@ -1247,7 +1247,7 @@
       "jaSurname": "羽田",
       "en": "Sayuri Hata",
       "enSurname": "Hata",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 29,
@@ -1255,7 +1255,7 @@
       "jaSurname": "陳",
       "en": "Chen Wei-ming",
       "enSurname": "Chen",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 30,
@@ -1271,7 +1271,7 @@
       "jaSurname": "神崎",
       "en": "Koko Kanzaki",
       "enSurname": "Kanzaki",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 32,
@@ -1279,7 +1279,7 @@
       "jaSurname": "巌流",
       "en": "Masamichi Ganryu",
       "enSurname": "Ganryu",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 33,
@@ -1295,7 +1295,7 @@
       "jaSurname": "御堂",
       "en": "Seishiro Mido",
       "enSurname": "Mido",
-      "confirmed": false
+      "confirmed": true
     },
     {
       "id": 35,

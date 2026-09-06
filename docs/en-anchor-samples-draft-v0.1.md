@@ -175,7 +175,7 @@
 
 > **ブロックで意識したレシピ**: 完全文+緩衝表現(I think / somehow / if that's all right)。あたたかく礼を失わない。**「丁寧=敬語」ではない**(アンカー川野辺はタメ口) — 英語では相手への敬意と自分への正直さで出す。お嬢様帯との差は **courtesy without deference の逆**で、こちらは謙譲・感謝・詫びを入れてよい。
 
-### 5-1. 丁寧×ノーマル — 澤出みずき(Mizuki Sawade †)
+### 5-1. 丁寧×ノーマル — 澤出みずき(Mizuki Sawaide †)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
@@ -207,7 +207,7 @@
 | コツコツ磨いた関節技…やっと実を結んだわ。 | All those hours on my submission work... it showed today. | 新規(川野辺の "it finally paid off" と英語を重ねない) |
 | 身体能力じゃ勝てない。だから頭を使うの。 | I can't win on athleticism. So I use my head. | A/B収束(#21・寡黙帯として短い側を採用) |
 
-### 5-5. 丁寧×お気楽 — 木ノ内幸音(Yukine Kinouchi †)
+### 5-5. 丁寧×お気楽 — 木ノ内幸音(Sachine Kinouchi †)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
@@ -229,7 +229,7 @@
 
 > **ブロックで意識したレシピ**: 喉を鳴らす低温(Oh my / Mm)+味わう動詞(savor / watch / enjoy)+余韻の "..."。**声を荒げない**。露骨な性的語彙と "darling" 乱発のキャンプ芝居は禁止で、色気は**温度の低さと余裕**で出す。友達口調の馴れ馴れしさと混同しない。
 
-### 6-1. 蠱惑×ノーマル — 橘玲美(Remi Tachibana †)
+### 6-1. 蠱惑×ノーマル — 橘玲美(Reimi Tachibana †)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
