@@ -13101,11 +13101,14 @@ function _dfcRenderCard(faction, state, opts = {}) {
     t.push(`<span class="dfc-tag">${flavor}</span>`);
     return t.join('');
   })();
+  // i18n P7-48: faction.nameは「{surname}派」の生JA。pn()は人名辞書しか見ないため変換されず
+  // 露出する(同じファイル内の_dfcRenderNarrativeは_factionDisplayName()で正しく処理済みだが、
+  // このheroMetaだけpn()誤用のまま残っていた)。
   const heroMeta = `
     <div class="meta">
       ${isLeftSide
-        ? `<div class="name-row"><span class="count">${WM_I18N.t('{n}名', { n: faction.memberIds.length })}</span><span class="name">${WM_I18N.pn(faction.name)}</span></div>`
-        : `<div class="name-row"><span class="name">${WM_I18N.pn(faction.name)}</span><span class="count">${WM_I18N.t('{n}名', { n: faction.memberIds.length })}</span></div>`}
+        ? `<div class="name-row"><span class="count">${WM_I18N.t('{n}名', { n: faction.memberIds.length })}</span><span class="name">${_factionDisplayName(faction.name)}</span></div>`
+        : `<div class="name-row"><span class="name">${_factionDisplayName(faction.name)}</span><span class="count">${WM_I18N.t('{n}名', { n: faction.memberIds.length })}</span></div>`}
       <div class="leader-name">${isLeftSide
         ? `${WM_I18N.pn(leader.name)}<span class="role-mark">CAP</span>`
         : `<span class="role-mark">CAP</span>${WM_I18N.pn(leader.name)}`}</div>
@@ -13393,7 +13396,9 @@ function _renderDbFactions() {
   // 抗争中ペアセクション
   if (feudPairs.length) {
     feudPairs.forEach(pair => {
-      html += `<div class="dfx-layer-label feud">⚔ ${WM_I18N.t('抗争中')} — ${WM_I18N.pn(pair.factionA.name)} ╳ ${WM_I18N.pn(pair.factionB.name)}</div>`;
+      // i18n P7-48: pair.factionA/B.nameは「{surname}派」の生JA。pn()は人名辞書しか見ないため
+      // 変換されず、データベース「派閥」タブの抗争中見出しでEN走破に露出していた。
+      html += `<div class="dfx-layer-label feud">⚔ ${WM_I18N.t('抗争中')} — ${_factionDisplayName(pair.factionA.name)} ╳ ${_factionDisplayName(pair.factionB.name)}</div>`;
       html += _dfcRenderFeudDuel(G, pair.factionA, pair.factionB, pair.entry);
     });
   }
@@ -13435,9 +13440,12 @@ function _relmapPrepareMobileData(allChars) {
 }
 
 function _relmapMobileFactionNames(charId) {
+  // i18n P7-48: f.nameは「{surname}派」の生JA。この戻り値は_relmapMobileRelationCardの
+  // factionText(🎭バッジ)へ_escapeHtmlのみ通して直接埋まるため、ここで一括して
+  // _factionDisplayName()を通す(呼び出し元3箇所すべてに波及)。
   return (G.factions || [])
     .filter(f => (f.memberIds || []).some(id => String(id) === String(charId)))
-    .map(f => f.name)
+    .map(f => _factionDisplayName(f.name))
     .filter(Boolean);
 }
 
@@ -14374,7 +14382,9 @@ function _relmapDrawFactionLayer() {
     const colorVar = `var(--accent-faction-${cd.colorIdx})`;
     layer.innerHTML += `<circle cx="${cd.cx.toFixed(1)}" cy="${cd.cy.toFixed(1)}" r="${cd.r.toFixed(1)}" fill="none" stroke="${colorVar}" stroke-width="2.5" stroke-opacity="0.55"/>`;
     const labelY = cd.cy - cd.r - 12;
-    const name = (cd.faction.name || '').replace(/</g, '&lt;');
+    // i18n P7-48: cd.faction.nameは「{surname}派」の生JA。相関図(デスクトップ版)の派閥円
+    // ラベルがHTMLエスケープのみでpn()/_factionDisplayName()を通していなかった。
+    const name = _factionDisplayName(cd.faction.name || '').replace(/</g, '&lt;');
     layer.innerHTML += `<text x="${cd.cx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="16" font-weight="700" fill="${colorVar}" opacity="0.85">${name}</text>`;
   });
 

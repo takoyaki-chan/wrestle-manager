@@ -10698,16 +10698,20 @@ function showFactionEventResult(arg, onClose) {
     // ときだけtrue)をそのまま_mdlASubjectStageへ渡し、二重t()を避ける
     subjectHtml = _mdlASubjectStage(heroFighter, stageBody, { small: true, speech: opts.charLine || '', speechTranslated: !!opts.charLineTranslated });
   } else if (factionPair.length === 2) {
+    // i18n P7-48: entry.factionNameは呼び出し元がpayloadから素で渡す「{surname}派」の生JAの
+    // ことがある(呼び出し元の対策漏れに備えた防御)。entry.leaderNameは選手個人名なのでpn()、
+    // factionNameは_factionDisplayName()と使い分ける(汎用レンダラ自身で一括して塞ぐ —
+    // §45-3の教訓「使用箇所ごとに包むと分岐追加のたびに再発する」をここでも踏襲)。
     const factionSideHtml = (entry) => {
       const leader = entry.leaderId != null ? roster.find(c => c.id === entry.leaderId) : null;
       const portraitUrl = leader ? _factionUpperUrl(leader.id) : '';
-      const leaderName = entry.leaderName || (leader ? leader.name : '') || WM_I18N.t('代表選手');
+      const leaderName = WM_I18N.pn(entry.leaderName || (leader ? leader.name : '')) || WM_I18N.t('代表選手');
       const portraitStyle = portraitUrl ? ` style="background-image:url('${portraitUrl}')"` : '';
       const portraitFallback = portraitUrl ? '' : '<span>LEADER</span>';
       return `<div class="mdl-a-faction-clash-side">
         <div class="mdl-a-faction-clash-side-label">${entry.sideLabel || 'FACTION'}</div>
         <div class="mdl-a-faction-clash-portrait"${portraitStyle}>${portraitFallback}</div>
-        <div class="mdl-a-faction-clash-faction">${entry.factionName || WM_I18N.t('派閥')}</div>
+        <div class="mdl-a-faction-clash-faction">${_factionDisplayName(entry.factionName) || WM_I18N.t('派閥')}</div>
         <div class="mdl-a-faction-clash-leader">${leaderName}</div>
       </div>`;
     };
@@ -10728,9 +10732,12 @@ function showFactionEventResult(arg, onClose) {
       : tone === 'allied'
       ? 'linear-gradient(135deg,#7a85a8,#2a3550)'
       : 'linear-gradient(135deg,#8a7550,#3a2d18)';
+    // i18n P7-48: opts.factionNameは呼び出し元(F03/F06/F08/COMMON_1/4/5/7)がpayloadから
+    // 素で渡すことがある「{surname}派」の生JA。.mdl-a-subject-nameへ直接埋まるためここで
+    // 一括して_factionDisplayName()を通す(汎用モーダル自身での対策=呼び出し元を数えなくてよい)。
     subjectHtml = `<div class="mdl-a-subject-stage">
       <div class="mdl-a-subject-portrait-wrap" style="width:120px;height:160px;background:${toneBg};display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.85);font-family:var(--font-label);font-size:11px;letter-spacing:2px;text-align:center;padding:8px;box-sizing:border-box">FACTION</div>
-      <div class="mdl-a-subject-name">${opts.factionName}</div>
+      <div class="mdl-a-subject-name">${_factionDisplayName(opts.factionName)}</div>
       <div class="mdl-a-subject-org">FACTION</div>
       <div class="mdl-a-subject-divider"></div>
       ${stageBody}
@@ -10928,8 +10935,10 @@ function showFactionF06Modal(payload, state, onChoice) {
   const leaderBSurname = leaderB ? _factionSurname(leaderB) : leaderBName;
   const leaderAUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
   const leaderBUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
-  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
-  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
+  // i18n P7-48: payload.factionAName/BNameは「{surname}派」の生JA。roleラベル(u3bSideHtml)へ
+  // 直読みだとEN走破で露出する(F02/F08と同型)。_factionDisplayName()を通してから使う。
+  const factionAName = _factionDisplayName(payload.factionAName) || WM_I18N.t('派閥A');
+  const factionBName = _factionDisplayName(payload.factionBName) || WM_I18N.t('派閥B');
 
   // 敵対度平均（表示用）
   let hostAvg = '—';
@@ -11535,7 +11544,9 @@ function showInternalChallengePreModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.challenger.name, line: data.lineChallenger, imgUrl: cPortraitUrl,
-                role: `${WM_I18N.pn(data.faction.name)} ・ CHALLENGER`, statLabel: 'OVR', statValue: data.challenger.ovr,
+                // i18n P7-48: data.faction.nameは「{surname}派」の生JA。pn()は人名辞書しか
+                // 見ないため変換されず露出する(F09と同型のpn()誤用)。_factionDisplayName()へ差し替え。
+                role: `${_factionDisplayName(data.faction.name)} ・ CHALLENGER`, statLabel: 'OVR', statValue: data.challenger.ovr,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11543,7 +11554,7 @@ function showInternalChallengePreModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.leader.name, line: data.lineLeader, imgUrl: lPortraitUrl,
-                role: `${WM_I18N.pn(data.faction.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.leader.ovr,
+                role: `${_factionDisplayName(data.faction.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.leader.ovr,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11603,7 +11614,7 @@ function showInternalChallengePostModal(data, state, onContinue) {
     AUTHORITY: WM_I18N.t('権威型'),
   });
   const transitionHtml = data.archetypeTransition
-    ? `<div class="fevt-arena-narration close" style="margin-top:8px;color:var(--stage-text-main)">${WM_I18N.t('― {faction}は《{from}》から《{to}》へ気風を変えた ―', { faction: escHtml(WM_I18N.pn(data.faction.name)), from: escHtml(transitionLabel[data.archetypeTransition.from] || data.archetypeTransition.from), to: escHtml(transitionLabel[data.archetypeTransition.to] || data.archetypeTransition.to) })}</div>`
+    ? `<div class="fevt-arena-narration close" style="margin-top:8px;color:var(--stage-text-main)">${WM_I18N.t('― {faction}は《{from}》から《{to}》へ気風を変えた ―', { faction: escHtml(_factionDisplayName(data.faction.name)), from: escHtml(transitionLabel[data.archetypeTransition.from] || data.archetypeTransition.from), to: escHtml(transitionLabel[data.archetypeTransition.to] || data.archetypeTransition.to) })}</div>`
     : '';
 
   // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。1人ずつ順に見せる決着画面のため
@@ -11620,7 +11631,7 @@ function showInternalChallengePostModal(data, state, onContinue) {
         <div class="fevt-arena-stage u3b-theme-stage is-internal">
           ${_u3bSideHtml({
             name: data.winner.name, line: data.winnerLine, imgUrl: wPortraitUrl, isBig: true,
-            role: `${WM_I18N.pn(data.faction.name)} ・ ${data.leaderWon ? 'LEADER (DEFENDED)' : 'NEW LEADER'}`,
+            role: `${_factionDisplayName(data.faction.name)} ・ ${data.leaderWon ? 'LEADER (DEFENDED)' : 'NEW LEADER'}`,
             bubbleClass: 'fevt-arena-bubble winner-big', portraitClass: 'fevt-arena-portrait winner-big',
           })}
           <div class="fevt-arena-divider"></div>
@@ -11714,7 +11725,9 @@ function showFactionF09OpeningModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.factionA.leaderName, line: data.lineA, imgUrl: aPp,
-                role: `${WM_I18N.pn(data.factionA.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
+                // i18n P7-48: data.factionA/B.nameは「{surname}派」の生JA。pn()は人名辞書しか
+                // 見ないため変換されず露出する(F09の同型バグ)。_factionDisplayName()へ差し替え。
+                role: `${_factionDisplayName(data.factionA.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
                 extraHtml: memberRow(data.factionA.members),
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
@@ -11723,7 +11736,7 @@ function showFactionF09OpeningModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.factionB.leaderName, line: data.lineB, imgUrl: bPp,
-                role: `${WM_I18N.pn(data.factionB.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
+                role: `${_factionDisplayName(data.factionB.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
                 extraHtml: memberRow(data.factionB.members),
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
@@ -11770,7 +11783,10 @@ function showFactionF09MatchPreModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.fighterA.name, line: data.lineA, imgUrl: aPp,
-                role: data.fighterA.factionName || null,
+                // i18n P7-48: data.fighterX.factionNameは「{surname}派」の生JA(app.js
+                // _buildF09MatchPreDataがfA.name/fB.nameをそのまま渡す)。roleへ直読みだと
+                // EN走破で露出する。
+                role: _factionDisplayName(data.fighterA.factionName) || null,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11778,7 +11794,7 @@ function showFactionF09MatchPreModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.fighterB.name, line: data.lineB, imgUrl: bPp,
-                role: data.fighterB.factionName || null,
+                role: _factionDisplayName(data.fighterB.factionName) || null,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11818,18 +11834,21 @@ function showFactionF09MatchPostModal(data, state, onContinue) {
         <div class="fevt-arena-stage u3b-theme-stage is-hostility">
           ${_u3bSideHtml({
             name: data.winner.name, line: data.winnerLine, imgUrl: wPp, isBig: true,
-            role: `${data.winner.factionName || ''} ・ WINNER`,
+            // i18n P7-48: data.winner/loser.factionNameとscore.aName/bName(app.js
+            // _buildF09MatchPostDataがwinnerF.name/loserF.name/aName/bNameをそのまま渡す)は
+            // 「{surname}派」の生JA。roleラベル・スコア表示ともに直読みだとEN走破で露出する。
+            role: `${_factionDisplayName(data.winner.factionName) || ''} ・ WINNER`,
             bubbleClass: 'fevt-arena-bubble winner-big', portraitClass: 'fevt-arena-portrait winner-big',
           })}
           <div class="fevt-arena-divider"></div>
           ${_u3bSideHtml({
             name: data.loser.name, line: data.loserLine, imgUrl: lPp, isLoser: true,
-            role: `${data.loser.factionName || ''} ・ LOSER`,
+            role: `${_factionDisplayName(data.loser.factionName) || ''} ・ LOSER`,
             bubbleClass: 'fevt-arena-bubble loser', portraitClass: 'fevt-arena-portrait loser',
           })}
         </div>
         <div style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold-light, #f0d078);letter-spacing:2px;margin:12px 0">
-          ${score.aName || ''} <span style="color:#fff">${score.a || 0}</span> — <span style="color:#fff">${score.b || 0}</span> ${score.bName || ''}
+          ${_factionDisplayName(score.aName) || ''} <span style="color:#fff">${score.a || 0}</span> — <span style="color:#fff">${score.b || 0}</span> ${_factionDisplayName(score.bName) || ''}
         </div>
         <div class="fevt-arena-actions">
           <button class="fevt-arena-btn" id="fevtF09PostBtn">${WM_I18N.t('次の試合へ →')}</button>
@@ -11868,18 +11887,21 @@ function showFactionF09EndingModal(data, state, onContinue) {
         <div class="fevt-arena-stage u3b-theme-stage is-hostility">
           ${_u3bSideHtml({
             name: data.winnerFaction.leaderName, line: data.winnerLine, imgUrl: wPp, isBig: true,
-            role: `${WM_I18N.pn(data.winnerFaction.name)} ・ ${WM_I18N.t('勝ち越し派閥')}`,
+            // i18n P7-48: data.winnerFaction/loserFaction.nameは「{surname}派」の生JA。
+            // pn()は人名辞書しか見ないため変換されず、roleラベル・スコア見出しの両方で
+            // EN走破に露出する(F09の同型バグ)。_factionDisplayName()へ差し替え。
+            role: `${_factionDisplayName(data.winnerFaction.name)} ・ ${WM_I18N.t('勝ち越し派閥')}`,
             bubbleClass: 'fevt-arena-bubble winner-big', portraitClass: 'fevt-arena-portrait winner-big',
           })}
           <div class="fevt-arena-divider"></div>
           ${_u3bSideHtml({
             name: data.loserFaction.leaderName, line: data.loserLine, imgUrl: lPp, isLoser: true,
-            role: `${WM_I18N.pn(data.loserFaction.name)} ・ ${WM_I18N.t('敗退派閥')}`,
+            role: `${_factionDisplayName(data.loserFaction.name)} ・ ${WM_I18N.t('敗退派閥')}`,
             bubbleClass: 'fevt-arena-bubble loser', portraitClass: 'fevt-arena-portrait loser',
           })}
         </div>
         <div style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold-light, #f0d078);letter-spacing:2px;margin:14px 0">
-          ${String(data.winnerFaction.name)} <span style="color:#fff">${data.scoreA}</span> — <span style="color:#fff">${data.scoreB}</span> ${String(data.loserFaction.name)}
+          ${_factionDisplayName(String(data.winnerFaction.name))} <span style="color:#fff">${data.scoreA}</span> — <span style="color:#fff">${data.scoreB}</span> ${_factionDisplayName(String(data.loserFaction.name))}
         </div>
         ${data.swept ? `<div style="text-align:center;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:3px;color:var(--accent-hostility);margin-bottom:12px">${WM_I18N.t('勝ち越しボーナス +15PT')}</div>` : ''}
         <div class="fevt-arena-actions">
@@ -12639,7 +12661,9 @@ function showFactionCommon5Modal(payload, state, onChoice) {
         ${_factionReporterStrip(state, coachLine, true)}
         <div class="fevt-subject-stage">
           <div style="display:flex;justify-content:center;margin-bottom:8px">${portrait}</div>
-          <div class="fevt-subject-name">${leaderName}（${factionName}）</div>
+          <!-- i18n P7-48: leaderNameはfactionNameと違いt()/pn()を通さず直読みだった(EN走破で
+               リーダー個人名が露出)。同じ画面内のfactionNameは既に_factionDisplayName()済み -->
+          <div class="fevt-subject-name">${WM_I18N.pn(leaderName)}（${factionName}）</div>
           <div class="fevt-subject-divider"></div>
           <div style="color:#5d4a30;line-height:1.7;margin:8px 4px;font-size:14px">${WM_I18N.t('取材オファーが届いた。誰がどう答えるかで、誌面の色が変わる。')}</div>
         </div>

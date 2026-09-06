@@ -128,7 +128,10 @@ assert.ok(modalRoot.innerHTML.includes('両派リーダー ・ 一騎打ち'), '
 assert.ok(modalRoot.innerHTML.includes('両派の対立は、後戻りできない段階に入った'), '定性事実を表示する');
 
 function buildF09Modal(name, dependencies) {
-  return Function(...Object.keys(dependencies), `${functionSource(ui, name)};return ${name};`)(...Object.values(dependencies));
+  // i18n P7-48: F09の各モーダルは同ファイル内トップレベル関数 _factionDisplayName を呼ぶ
+  // (派閥名「{surname}派」をpn()誤用ではなく正しく変換するため)。isolated evalなので
+  // 依存関数のソースも一緒に評価対象へ含める。
+  return Function(...Object.keys(dependencies), `${functionSource(ui, '_factionDisplayName')};${functionSource(ui, name)};return ${name};`)(...Object.values(dependencies));
 }
 
 function renderF09(name, payload) {

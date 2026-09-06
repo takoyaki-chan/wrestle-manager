@@ -30776,8 +30776,33 @@ function _wmResolvePreviewParagraph(data, dict) {
   return { ...data, preview: Engine.newspaper._composePreviewParagraph(data.previewRaw, dict) };
 }
 
+// i18n P7-48: 派閥イベント系の業界ニュース(factionEscalation/factionPeace/factionEndless/
+// factionDissolution/factionSuccession/factionCoup/factionDefection/factionSplit/
+// factionHiatus/factionReconcile/factionShowdown/factionWarSettled/factionMediaFeature/
+// factionJointProject/factionCamp)は、push側(app.js/factions.js)が「{surname}派」という
+// D-P6-4方針の生JAをdataへそのまま積む。t()のconvertNamesは名前辞書(names)の完全一致
+// でしか変換しないためこの複合文字列は素通りし、EN走破でNEWS_HEADLINE_TEMPLATESの
+// {factionAName}/{winFaction}等が生JAのまま露出する(ui-common.js/factions.jsの
+// _factionDisplayNameと同じ構造穴)。個々のcaseへ足すと新種追加のたびに再発するため
+// (§45-3の教訓)、switchへ入る前に既知のフィールド名を一括変換する。
+var _WM_INDUSTRY_FACTION_NAME_FIELDS = [
+  'factionName', 'factionAName', 'factionBName', 'newFactionName',
+  'winFaction', 'loseFaction', 'fromFaction', 'toFaction',
+];
+function _wmResolveFactionNameFields(data) {
+  if (typeof Engine === 'undefined' || !Engine.factions || !Engine.factions._factionDisplayName) return data;
+  let out = data;
+  _WM_INDUSTRY_FACTION_NAME_FIELDS.forEach((k) => {
+    const v = out[k];
+    if (typeof v !== 'string' || !v) return;
+    const disp = Engine.factions._factionDisplayName(v);
+    if (disp !== v) out = { ...out, [k]: disp };
+  });
+  return out;
+}
+
 function _wmResolvePreformattedIndustryData(ev, dict) {
-  const data = _wmResolvePreviewParagraph(_wmResolvePlayerOrgFallback(ev.data || {}, dict), dict);
+  const data = _wmResolveFactionNameFields(_wmResolvePreviewParagraph(_wmResolvePlayerOrgFallback(ev.data || {}, dict), dict));
   const T = (typeof dict === 'function') ? dict : (s) => s;
   switch (ev.type) {
     case 'topChampionInjury':

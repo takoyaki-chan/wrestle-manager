@@ -2490,3 +2490,50 @@ P7-31発見5(§13-2型2/型5)は「`dict`を渡さない呼び出し元から来
 | 26 | 〃 | 愚直な姿勢でチームを牽引する | She leads the team by plain, dogged effort |
 | 27 | emotional(感情的) | 感情の振れ幅で試合をドラマに変える | The swing of her emotions turns matches into drama |
 | 28 | 〃 | 熱が乗ったときの爆発力が桁違い | When she gets fired up, her explosiveness is on another level |
+
+## 48. Stage B P7-48 — 派閥名EN露出「最後の族」: F06/F09/showFactionEventResult汎用経路+internalChallenge+DB派閥タブ+相関図+業界ニュース15種(2026-09-06追加)
+
+§45-4・§46が「範囲外」として残していた最後の族を解消した回。`grep -n "factionName|faction\.name|\.factionName|leaderName" src/ui-common.js src/factions.js src/app.js src/ui-render.js`(305行)を全数分類し、約30箇所を`_factionDisplayName()`(または人名箇所は`pn()`/`pnSurname()`)へ差し替えた。内訳はdocs/worklog.md冒頭のP7-48エントリの表を参照。**新しいi18nパターンは2つ増えた**(48-1・48-2)。
+
+### 48-1. `showFactionEventResult`(汎用結果モーダル)自身で塞ぐと、呼び出し元を数えなくてよい
+
+§45-3は「使用箇所ごとに包むと分岐追加のたびに再発する」教訓を`applyF07Choice`(destructuring直後の一括変換)で示したが、今回はさらに一段上——**表示関数自身(`showFactionEventResult`)が`opts.factionName`/`entry.factionName`を受け取った直後に`_factionDisplayName()`を通す**ことで、F03/F06/F08/COMMON_1/4/5/7という**7つの呼び出し元すべて**を1箇所の修正で救った。呼び出し元(`app.js`の`handleFactionEvent`)は生JAの`payload.factionName`をそのまま渡し続けてよい——「表示直前の変換は表示関数の責任」という分担が明確になる。ただし全ての生成元(payload構築側)まで免除されるわけではなく、`resultText`のように**表示関数に渡る前に文字列として完成してしまう値**(次項48-2)は生成元(`factions.js`の`apply*`関数)側で変換するしかない。
+
+### 48-2. `resultText`は完成文なので生成元(`apply*Choice`)側で変換するしかない。ただし保存対象の`factionName`自体は生JAのまま返す
+
+`Engine.factions.apply{F01,F03,F04,F05,F06,F08,Common1,Common4,Common5}Choice`系はpayloadから`factionName`/`factionAName`/`factionBName`を分割代入し、`resultText`/`impactSummary`という**その場で完成する文字列**へ`WM_I18N.t()`のパラメータとして埋め込む。表示関数側でいくら塞いでも、この文字列はもう「派閥名」という構造を持たないただの完成文なので後から変換できない——生成元での変換が必須。
+
+2つのサブパターンがある:
+- **戻り値に`factionName`自体を含まない関数**(`applyF04/F05/F06/F08Choice`、`applyCommon4/Common5Result`): destructuring時に`factionName: _xxxRaw`とリネームし、`const factionName = this._factionDisplayName(_xxxRaw)`で同名変数に上書きする(`applyF07Choice`と同型)。以降の全使用箇所が自動的に変換済みになる
+- **戻り値の`factionName`自体がG(セーブ)へ焼き込まれる関数**(`applyCommon1Choice`の`bookedCommon1.factionName`、`applyCommon1MatchResult`の`G._pendingCommon1Result.applyResult.factionName`): D-P6-4「セーブ内の名前はJAのまま」を守るため`factionName`自体は生JAで返しつつ、`const factionDisp = this._factionDisplayName(factionName)`という**別名の表示専用変数**を用意し、`resultText`/`impactSummary`の完成文だけそちらを使う。1つの関数の中で「保存用の生値」と「表示用の変換値」を明確に分ける
+
+### 48-3. `pn()`誤用の再発パターン(F09・internalChallenge)は依然として多い
+
+`_factionDisplayName`が存在するのに`WM_I18N.pn(faction.name)`(人名辞書引き、「{surname}派」形式には無効)を書いてしまう誤用が、F09の4モーダル(`showFactionF09OpeningModal`/`EndingModal`)・internalChallenge(下剋上)の2モーダル・`_dfcRenderCard`(データベース派閥タブ)・`_renderDbFactions`で計8箇所見つかった。**F08系(`getF08PreMatchData`)は同じ誤用をP7-44で対策済み**だったため、「兄弟モーダル(F09/internalChallenge)は同じ罠に落ちたまま」という構図——新モーダルを書くときは「派閥名は`_factionDisplayName`、個人名は`pn`」を機械的にチェックリスト化する価値がある。
+
+### 48-4. `showFactionEventResult`の`opts.impactSummary`は元から画面表示されない(発見・実装変更なし)
+
+関数自身のJSDoc(「impactSummary は受け取るが画面表示しない」)どおり、`opts.impactSummary`はどこにも描画されていないことをコード読解で確認した。表示されるのは`opts.resultText`のみ。今回は`resultText`と同じ変換済み変数を`impactSummary`のラベルにも使い回したため実質差分は無いが、**`impactSummary`だけの露出は画面には出ないため優先度を上げる理由にならない**(`applyF02Choice`のB/C分岐に残る同型の生JAラベルを今回あえて放置した根拠)。`_renderCommon1MatchResult`(Common-1試合結果画面)だけは例外的に`applyResult.impactSummary`を実描画するので、そちらは実害があった。
+
+### 48-5. 業界ニュース(newspaper)の派閥名露出は表示関数群と別の穴で、`_wmResolvePreformattedIndustryData`に一括変換ヘルパーを新設
+
+§45-2(P7-43)は`Engine.newspaper.generate()`の汎用記事化経路(`_wmFillWithDict`)を直したが、**値そのもの**(`data.winFaction`等)が「{surname}派」の生JAだと、`_wmFillWithDict`のconvertNamesは名前辞書の完全一致しか見ないため変換されない——`_wmDictLabel`/`_wmTitleName`が既に対処した「成形済み値の構造穴」(§6)と同じ形。今回は`app.js`/`factions.js`の`push`側(15種の`type`)を1つずつ直さず、**`management.js`の`_wmResolvePreformattedIndustryData`にswitch文の手前で一括変換する`_wmResolveFactionNameFields(data)`を新設**し、既知のフィールド名(`factionName`/`factionAName`/`factionBName`/`newFactionName`/`winFaction`/`loseFaction`/`fromFaction`/`toFaction`)を`Engine.factions._factionDisplayName()`で変換する形にした。`Engine.factions._factionDisplayName`はグローバル`WM_I18N`を直接参照する設計(§10で確立済み)なので、`dict`引数を経由しない——JAではdict未指定と同じ経路(fail-open)を通るため1バイト不変。
+
+### 48-6. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(app.js/ui-common.js/ui-render.js/factions.js/management.js) | 全OK |
+| `node test/ja-golden.js` | 完全一致(`3466a6ff…`不変) |
+| `node test/i18n-ledger-consistency-test.js` | ok(重複17件、訳文一致) |
+| `node test/i18n-ratchet.js` | 増加なし(31ファイル・27,929行) |
+| `npm test` | 265/265(isolated eval方式のF09関連テスト2本が`_factionDisplayName`未注入で失敗→依存関数のソースを一緒に評価対象へ含める1行修正で解消) |
+| `node test/auto-sim.js 20 42` | ALL CLEAR・**指紋96492883不変** |
+| JA UI走破 | PASS・367手・digest `7b3faff2792abc0f` |
+| EN UI走破(`--ja-exposure-log`) | PASS・399手・digest `a21c9e961ea228ed`(操作列不変)・i18n-miss 0・**JA露出142件のうち「派」を含むもの0件**(全画面横断で機械確認) |
+| ignite `faction-ignite`(JA) | PASS |
+| ignite `faction-ignite`(EN) | 既存FAIL(P7-30)。digest `62a61bb9eb424fd8`が前後で完全一致=退行なし。原因は48-7参照 |
+
+### 48-7. faction-ignite EN igniteの既存FAILの原因(直していない)
+
+`test/ui-walkthrough/scenarios.js`の`_makeFactionIgniteBoost`が、興行準備の選手ピッカースロット(`_spOpenPicker`)の**表示テキスト**とfixtureの**生JAリーダー名**を`.includes()`で比較して編成完了を判定している。EN実行時はスロット表示が`WM_I18N.pn(f.name)`でEN変換されるため一致せず、無限に`_spOpenPicker`をクリックし続ける。直すには`src/ui-render.js`の`.sp-fighter-name`へ識別属性を足し、`test/ui-walkthrough/driver.js`の`listCandidates()`にそれを読む新規メタデータフィールドを追加する必要がある。**既存の`data-fighter-id`属性は使えない**——`driver.js`の`actionScore()`がこの属性を持つ要素へ無条件で8250点を与える(P7-22)ため、show-prepの編成済みスロット全部に足すとJA/EN共通の通常走破でも最優先候補になりうる、digestを変える恐れがある。安全な実装には`actionScore()`が参照しない新規属性名が要り、これは`test/ui-walkthrough/driver.js`/`scenarios.js`という他バッチが専任するtest/配下への変更になるため、今回は原因特定のみに留めた。
