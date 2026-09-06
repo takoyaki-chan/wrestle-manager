@@ -8604,8 +8604,10 @@ const App = {
             // i18n P7-33: 断片連結(JS三項+文字列結合)をやめ、フルテンプレ+t()へ。app.jsはUI層
             // としてWM_I18Nを直接呼んでよい(§6)。_pendingF09Endingは同ティック内で
             // drain・表示され保存されないため、生成時点のt()適用でJA不変が保てる。
+            // i18n P7-48: winF.name/losF.nameは「{surname}派」の生JA。pn()は人名辞書しか
+            // 見ないため変換されず、結末ナレーションで生JAのまま露出していた。_factionDisplayName()へ。
             narration: WM_I18N.t('{winner}が{winScore}勝{loseScore}敗で{loser}を制した――対抗戦は決着した。', {
-              winner: WM_I18N.pn(winF.name), winScore: winnerScore, loseScore: loserScore, loser: WM_I18N.pn(losF.name),
+              winner: _factionDisplayName(winF.name), winScore: winnerScore, loseScore: loserScore, loser: _factionDisplayName(losF.name),
             }),
           }};
         }
@@ -9647,8 +9649,11 @@ const App = {
       lineB: App._f09PickLine(linesB, leaderB),
       // i18n P7-33: 断片連結をやめフルテンプレ+t()へ。_buildF09OpeningDataは同ティック内で
       // 生成・表示され保存されないため、生成時点のt()適用でJA不変が保てる。
+      // i18n P7-48: fA.name/fB.nameは「{surname}派」の生JA。pn()は人名辞書しか見ないため
+      // 変換されず、EN走破のオープニング演出文で派閥名が生JAのまま露出していた。
+      // _factionDisplayName()(ui-common.js、global scope)へ差し替え。
       narration: WM_I18N.t('{a}と{b}――両派閥の積年の抗争が、ついに対抗戦という形で全面決着の夜を迎える。', {
-        a: WM_I18N.pn(fA.name), b: WM_I18N.pn(fB.name),
+        a: _factionDisplayName(fA.name), b: _factionDisplayName(fB.name),
       }),
     };
   },

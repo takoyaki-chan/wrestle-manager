@@ -1,5 +1,88 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-48 — 派閥名のEN露出「最後の族」F06/F09/showFactionEventResult汎用経路+業界ニュース全種を一括で塞ぐ(2026-09-06・worktree agent-afe140a8002234654)
+
+specs/i18n-runtime-spec-v1.0.md §45-4・§46が「範囲外」として残していたF06/F02サブ画面/F09/`showFactionEventResult`の`opts.factionPair`/`opts.factionName`汎用経路を解消した回。着手前にworktreeをmain先端(df5dee9f)へfast-forward。
+
+### 1. 棚卸しと修正(表)
+
+`grep -n "factionName\|faction\.name\|\.factionName\|leaderName" src/ui-common.js src/factions.js src/app.js src/ui-render.js`(305行)を全数分類し、表示に至る経路で`_factionDisplayName()`(または人名なら`pn()`/`pnSurname()`)を通っていない箇所を洗い出した。P7-43/44で既に対策済みの箇所(F07/F02act1/F08各画面/Common-7/F02進展4種)は除外。
+
+| # | 箇所 | 症状 | 対応 |
+|---|---|---|---|
+| 1 | `ui-common.js` `showFactionF06Modal` | payload.factionAName/BName直読み(role) | `_factionDisplayName()` |
+| 2 | `ui-common.js` `showFactionEventResult`(汎用結果モーダル本体) | `opts.factionName`/`entry.factionName`を汎用レンダラ自身が直読み(F03/F06/F08/COMMON_1/4/5/7の呼び出し元が個別に対策していなかった) | レンダラ自身で`_factionDisplayName()`(呼び出し元を数え上げなくてよい根治) |
+| 3 | 同上 | `entry.leaderName`(factionPair側)も個人名なのに直読み | `WM_I18N.pn()` |
+| 4 | `ui-common.js` `showFactionF09OpeningModal` | `WM_I18N.pn(data.factionA/B.name)`のpn()誤用(role×2) | `_factionDisplayName()` |
+| 5 | `ui-common.js` `showFactionF09MatchPreModal` | `data.fighterA/B.factionName`直読み(role×2) | 同上 |
+| 6 | `ui-common.js` `showFactionF09MatchPostModal` | `data.winner/loser.factionName`(role×2)+`score.aName/bName`(スコア見出し) | 同上 |
+| 7 | `ui-common.js` `showFactionF09EndingModal` | `WM_I18N.pn(data.winnerFaction/loserFaction.name)`のpn()誤用(role×2)+スコア見出し | 同上 |
+| 8 | `ui-common.js` `showInternalChallengePreModal`(下剋上・試合前) | `WM_I18N.pn(data.faction.name)`のpn()誤用(role×2、F09と同型) | 同上 |
+| 9 | `ui-common.js` `showInternalChallengePostModal`(下剋上・決着) | 同上(narrationOpen/role)+`oldName`/`newName`(看板書き換え文) | 同上 |
+| 10 | `ui-common.js` `showFactionCommon5Modal` | `leaderName`(個人名)がfactionNameと違いt()/pn()を通さず直読み | `WM_I18N.pn()` |
+| 11 | `app.js` F09対抗戦決着(sweep bonus)の`_pendingF09Ending.narration` | `WM_I18N.pn(winF.name/losF.name)`のpn()誤用 | `_factionDisplayName()` |
+| 12 | `app.js` `_buildF09OpeningData`のnarration | `WM_I18N.pn(fA.name/fB.name)`のpn()誤用 | 同上 |
+| 13 | `factions.js` `applyF05HResult`(F05H活動休止) | `faction.name`直読み(resultText/impactSummary) | `_factionDisplayName()` |
+| 14 | `factions.js` `applyF01Choice` | `leaderSurname`(`.surname`フィールドの生JA姓)が`t()`のconvertNames(フルネーム完全一致の名前辞書しか見ない)対象外で「派閥成立」impactSummaryに露出 | `WM_I18N.lang==='en'`分岐で`pnSurname(フルネーム)`、jaは従来どおり(§4参照) |
+| 15 | `factions.js` `applyF03Result`(dissolution×2・turmoilの`rival.name`) | `faction.name`/`rival.name`直読み | `_factionDisplayName()` |
+| 16 | `factions.js` `applyCommon4Result` | `factionName`直読み | destructuring直後に一括変換(戻り値に含まれず保存対象でもない) |
+| 17 | `factions.js` `applyCommon1Choice` | `factionName`直読み(resultText/impactSummary)。`bookedCommon1.factionName`は生JAのまま保存する必要がある(D-P6-4) | `factionDisp`という別変数を追加し使い分け |
+| 18 | `factions.js` `applyCommon1MatchResult` | `factionName`直読み(resultText×3+archFlavorのフォールバック文)。戻り値の`factionName`自体も`G._pendingCommon1Result`へ生JAで焼かれる | 同上(`factionDisp`使い分け) |
+| 19 | `factions.js` `applyCommon5Choice` | `factionName`直読み | destructuring直後に一括変換 |
+| 20 | `factions.js` `applyF04Choice` | `fromFactionName`/`toFactionName`直読み | 同上 |
+| 21 | `factions.js` `applyF05Choice` | `factionName`直読み | 同上 |
+| 22 | `factions.js` `applyF06Choice` | `factionAName`/`factionBName`直読み | 同上 |
+| 23 | `factions.js` `applyF08Choice` | `factionAName`/`factionBName`直読み | 同上 |
+| 24 | `factions.js` `getInternalChallengePreData`のnarration | `f.name`直読み(F08 `getF08PreMatchData`の同型バグ、あちらはP7-44で対策済みだった) | `_factionDisplayName()` |
+| 25 | `factions.js` `getInternalChallengePostData`のnarrationOpen/Close | `f.name`直読み+`oldName`/`newName`(`` `${surname}派` ``の生成直後) | 同上 |
+| 26 | `ui-render.js` `_dfcRenderCard`(データベース「派閥」タブ・カードheroMeta) | `WM_I18N.pn(faction.name)`のpn()誤用(同ファイルの`_dfcRenderNarrative`は`_factionDisplayName()`で正しく処理済みだった) | `_factionDisplayName()` |
+| 27 | `ui-render.js` `_renderDbFactions`(抗争中ペア見出し) | `WM_I18N.pn(pair.factionA/B.name)`のpn()誤用 | 同上 |
+| 28 | `ui-render.js` `_relmapMobileFactionNames`(相関図モバイル版🎭バッジ) | `f.name`直読み | 同上 |
+| 29 | `ui-render.js` `_relmapDrawFactionLayer`(相関図デスクトップ版SVGラベル) | `cd.faction.name`直読み(HTMLエスケープのみ) | 同上 |
+| 30 | `management.js` `_wmResolvePreformattedIndustryData` | 業界ニュース15種(factionEscalation/factionPeace/factionEndless/factionDissolution/factionSuccession/factionCoup/factionDefection/factionSplit/factionHiatus/factionReconcile/factionShowdown/factionWarSettled/factionMediaFeature/factionJointProject/factionCamp)が新聞記事の`{factionAName}`/`{winFaction}`等プレースホルダへ生JAのまま渡っていた(`_wmFillWithDict`のconvertNamesは名前辞書の完全一致しか見ないため素通り) | 新設`_wmResolveFactionNameFields(data)`をswitch手前に挿入し、既知フィールド名(factionName/factionAName/factionBName/newFactionName/winFaction/loseFaction/fromFaction/toFaction)を一括変換(個々のcaseへ足すと新種追加のたびに再発するため§45-3の教訓どおり一箇所化) |
+
+### 2. `showFactionEventResult`の`opts.impactSummary`は画面表示に使われない(発見)
+
+`showFactionEventResult`は自身のJSDocに「impactSummary は受け取るが画面表示しない（数値はナレーション側で吸収する方針）」と明記されており、実装を読んでも`opts.impactSummary`はどこにも描画されていない。表示されるのは`opts.resultText`(ナレーション本文)のみ。今回のfactions.js側の修正では`resultText`を最優先で直したが、同じ関数内の`impactSummary`のラベルも同じ変換済み変数(`factionDisp`等)で埋め、将来配線されたときの保険とした(実害はないが手間も増えないため)。`_renderCommon1MatchResult`(Common-1の試合結果画面)だけは`applyResult.impactSummary`を実際に描画するので、Common-1関連の`impactSummary`修正はそちらでは実害があった。
+
+### 3. `_factionDisplayName`と`pnSurname`の使い分け(F01の新パターン)
+
+`applyF01Choice`の`leaderSurname`はキャラクターオブジェクトの`.surname`フィールド(生JA、例:「根岸」)をそのまま`{surname}派`テンプレへ渡していた。`WM_I18N.pnSurname()`は契約上「フルネームJAを受け取り姓のみEN辞書を引く」ため、bareな`.surname`値をそのまま渡すと辞書キーに一致せず素通りする。`ui-common.js`の`_factionSurname()`が使っている「en: `pnSurname(フルネーム)` / ja: 従来どおり`.surname`フィールド」の二分岐を`factions.js`側にも用意した(`WM_I18N.lang`は`i18n.js`の`get lang(){return currentLang}`で読める。auto-sim/ja-golden等のスタブには`.lang`が無いため`undefined==='en'`はfalseとなり、jaと同じフォールバック経路を通る=安全)。
+
+### 4. faction-ignite EN ignite FAILの原因調査(直さなかった・報告のみ)
+
+`npm run test:ui:ignite -- --scenario faction-ignite --lang en`はP7-30(2026-09-05)から既知のFAILで、今回**digest `62a61bb9eb424fd8`まで完全一致**を確認した(=本バッチの変更による退行ではない)。原因を特定した: `test/ui-walkthrough/scenarios.js`の`_makeFactionIgniteBoost`が、興行準備の選手ピッカー(`_spOpenPicker`)スロットの**表示テキスト**と`fixture.roster`から引いた**生JAのリーダー名**を`.includes()`で比較して「両リーダーが編成済みか」を判定している。ENでは`_spOpenPicker`のスロットラベルが`WM_I18N.pn(f.name)`でEN変換されるため、比較対象(生JA名)と一致せず`leftDone`/`rightDone`が永久にfalseのまま→`div:_spOpenPicker`を繰り返しクリックし続けD5_WATCHDOGで停止する。
+
+直すには(a) `src/ui-render.js`の`.sp-fighter-name`スロットへ識別属性を足す、(b) `test/ui-walkthrough/driver.js`の`listCandidates()`へその属性を読むメタデータフィールドを追加する、の両方が要る。**既存の`data-fighter-id`属性は使えない**——`driver.js`の`actionScore()`が`data-fighter-id`持ちの要素へ無条件で8250点を与えるため(P7-22)、show-prepの「編成済みスロット」全部にこの属性を足すと**JA/EN共通の通常走破でも編成済みスロットが最優先候補になり得て、digestが変わるリスク**があった(実測はしていないが、実装前の設計検討でこのリスクを特定し断念)。安全にやるなら`actionScore()`が参照しない新規属性名(例:`data-slot-fighter-id`)を使う必要があり、これは`test/ui-walkthrough/driver.js`/`scenarios.js`という**P7-47が専任するtest/配下**への変更になるため、衝突回避のため今回は実装を見送り、原因の特定までに留めた。次にこのignite scenarioへ触るバッチへ引き継ぐ。
+
+### 5. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(app.js/ui-common.js/ui-render.js/factions.js/management.js) | 全OK |
+| `node test/ja-golden.js` | 完全一致(`3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b`不変) |
+| `node test/i18n-ledger-consistency-test.js` | ok(2台帳以上に存在するキー17件、すべて訳文一致) |
+| `node test/i18n-ratchet.js` | 増加なし(31ファイル・27,929行) |
+| `node test/i18n-build-dict.js`/`i18n-build-template-dict.js`/`i18n-build-dialogue-dict.js` | 全て未訳0。生成された`lang-en*.js`3本はcontentが既存とバイト同一(diff 0行、CRLF検知のみ)だったため`git checkout`で復元しコミット対象から除外 |
+| `npm test` | ✅ **265/265**(初回263/265で`faction-f09-ending-score-order-test.js`/`faction-ignite-rework-test.js`が`_factionDisplayName is not defined`で失敗——isolated eval関数がFunction()コンストラクタで対象関数のソースだけを抽出評価する方式のため、新規に呼ぶようになった`_factionDisplayName`のソースも一緒に注入する1行修正で解消) |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR・violations 0・**Semantic fingerprint = 96492883(変更前と同一)**。台帳検査3種(給与連続性/更改約束/資金恒等式)も違反0 |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・**367手・digest `7b3faff2792abc0f`**(main計測の暫定基準と一致) |
+| `npm run test:ui:walkthrough:en --ja-exposure-log`(EN) | ✅ PASS・**399手・digest `a21c9e961ea228ed`**(P7-44時点と同一=操作列・RNG消費不変)・**i18n-miss 0**・JA露出142件中「派」を含むもの**0件**(全画面・全screen横断で確認。派閥名EN露出が本当にゼロになったことをスクリプトで機械確認) |
+| `npm run test:ui:ignite -- --scenario faction-ignite`(JA) | ✅ PASS・marker `ignite-ceremony` HIT・25手・digest `2a64a899644b6547` |
+| `npm run test:ui:ignite -- --scenario faction-ignite --lang en` | ⚠ 既存FAIL(§4参照)。digest `62a61bb9eb424fd8`が本バッチ前後で完全一致=退行なし |
+
+### 6. 触ったファイル
+
+src: app.js(F09ナレーション2箇所) / factions.js(F01/F03/F04/F05/F05H/F06/F08/Common1/Common4/Common5/internalChallenge、計約20箇所) / management.js(`_wmResolveFactionNameFields`新設) / ui-common.js(showFactionF06/F09×4/internalChallenge×2/Common5/showFactionEventResult本体) / ui-render.js(`_dfcRenderCard`/`_renderDbFactions`/`_relmapMobileFactionNames`/`_relmapDrawFactionLayer`)
+test: faction-f09-ending-score-order-test.js・faction-ignite-rework-test.js(isolated eval依存関数の注入漏れ修正、機能追加に伴う必須修正)
+docs/specs: 本項 / game-system-roadmap.md(🌐行) / 実機確認バックログ.md
+
+### 7. 見つけたが対象外(次バッチ・別ドメイン)
+
+- `showFactionHiatusModal`(F05H専用モーダル)の`leaderName`/`survivor.name`直読み — 派閥名ではなく**選手個人名**のpn()未使用。同モーダルの`factionName`は既に`_factionDisplayName()`済みで対称性が崩れている。別種のバグ(キャラクター名i18nの取りこぼし)なので今回は対象外
+- `_renderCommon1MatchResult`(ui-common.js、Common-1試合結果画面)の`personHtml`内`fighter.name`直読み(選手個人名、複数箇所) — 同上、対象外
+- factions.js全域には他にも`resultText`を持たない`impactSummary`単体の`factionAName`/`factionBName`直読みが残る(`applyF02Choice`のB/C分岐等)が、§2の発見どおり`impactSummary`は`showFactionEventResult`では画面表示されないため実害なし(意図的に未修正)
+
 ## 🌐 英語対応 P7-49 — 旗揚げドラフト画面のコーチ評価「Upside: …」EN未訳を修正(2026-09-06・worktree agent-a1469d9574f1b153f)
 
 ### 背景

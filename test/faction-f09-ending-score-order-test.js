@@ -41,7 +41,11 @@ function buildEndingModal(mocks) {
     '_u3bSideHtml',
     'escHtml',
     'WM_I18N',
-    `${functionSource('showFactionF09EndingModal')}; return showFactionF09EndingModal;`
+    // i18n P7-48: showFactionF09EndingModal は同ファイル内トップレベル関数 _factionDisplayName
+    // を呼ぶようになった(派閥名「{surname}派」をpn()誤用ではなく正しく変換するため)。
+    // isolated eval なので依存関数のソースも一緒に評価対象へ含める(_factionIgniteLine +
+    // showFactionF02IgniteModal を連結する faction-ignite-rework-test.js と同じ作法)。
+    `${functionSource('_factionDisplayName')}; ${functionSource('showFactionF09EndingModal')}; return showFactionF09EndingModal;`
   )(
     mocks._isPopupActive,
     mocks._popupQueue,

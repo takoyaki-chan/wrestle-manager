@@ -1444,11 +1444,15 @@ Engine.factions = {
       return { ...f, status: 'hiatus', inHostility: false, momentum: 0 };
     });
     wmDiag(`[WM Faction] ${faction.name} entered hiatus (leader absent ${payload.estimatedWeeks || 8}w+)`);
+    // i18n P7-48: faction.nameは「{surname}派」の生JA。t()のconvertNamesは名前辞書の完全
+    // 一致でしか変換しないため素通りし、showFactionEventResultの結果ナレーションにEN走破で
+    // 露出する。_factionDisplayName()を通す。
+    const facHiatusName = this._factionDisplayName(faction.name);
     return {
       state: { ...state, factions: newFactions },
-      resultText: WM_I18N.t('派閥「{name}」は旗を畳み、活動を一時休止した。', { name: faction.name }),
+      resultText: WM_I18N.t('派閥「{name}」は旗を畳み、活動を一時休止した。', { name: facHiatusName }),
       impactSummary: [
-        { label: WM_I18N.t('派閥「{name}」', { name: faction.name }), delta: WM_I18N.t('活動休止') },
+        { label: WM_I18N.t('派閥「{name}」', { name: facHiatusName }), delta: WM_I18N.t('活動休止') },
         { label: WM_I18N.t('リーダー離脱見込み'), delta: WM_I18N.t('{n}週+', { n: payload.estimatedWeeks || 8 }) },
         { label: WM_I18N.t('抗争状態 / 勢い'), delta: WM_I18N.t('リセット') },
       ],
@@ -1795,7 +1799,14 @@ Engine.factions = {
     let s = state;
     const members = [leaderId, ...followerIds];
     const _f01Leader = (state.roster || []).find(c => c.id === leaderId);
-    const leaderSurname = (_f01Leader && _f01Leader.surname) || leaderName;
+    // i18n P7-48: leaderSurnameは「{surname}派」テンプレへ渡るJA姓の生値。t()のconvertNamesは
+    // フルネーム完全一致の名前辞書(names)しか見ないため、姓だけの文字列は変換されず
+    // EN走破で「派閥成立」impactSummaryに生JA姓が露出する。ui-common.jsの_factionSurname()
+    // と同じ二分岐(en: pnSurname(フルネーム) / ja: 従来どおり.surnameフィールド)をここでも
+    // 用意する(pnSurnameはフルネームJA入力が契約なので、bareな.surnameを直接渡さない)。
+    const leaderSurname = (WM_I18N.lang === 'en' && _f01Leader)
+      ? WM_I18N.pnSurname(_f01Leader.name)
+      : ((_f01Leader && _f01Leader.surname) || leaderName);
     // v0.2: payload.archetype が無ければ後方互換で authoritarian にフォールバック（旧挙動）
     const arch = archetype || 'authoritarian';
 
@@ -2034,11 +2045,15 @@ Engine.factions = {
         s = { ...s, factionInternalPoints: ip };
       }
       s = this._dissolveFaction(s, factionId, 'F03_low_ratio');
+      // i18n P7-48: faction.nameは「{surname}派」の生JA。t()のconvertNamesは名前辞書の
+      // 完全一致でしか変換しないため、この複合文字列は素通りしてshowFactionEventResultの
+      // resultText/impactSummaryにEN走破で露出する。_factionDisplayName()を通す。
+      const facDissName = this._factionDisplayName(faction.name);
       return {
         state: s,
-        resultText: WM_I18N.t('派閥「{name}」は、{leader}の喪失とともに求心力を失い、消滅した。', { name: faction.name, leader: oldLeaderName }),
+        resultText: WM_I18N.t('派閥「{name}」は、{leader}の喪失とともに求心力を失い、消滅した。', { name: facDissName, leader: oldLeaderName }),
         impactSummary: [
-          { label: WM_I18N.t('派閥「{name}」', { name: faction.name }), delta: WM_I18N.t('消滅') },
+          { label: WM_I18N.t('派閥「{name}」', { name: facDissName }), delta: WM_I18N.t('消滅') },
           { label: WM_I18N.t('対立関係'), delta: WM_I18N.t('すべて解除') },
         ],
       };
@@ -2055,11 +2070,12 @@ Engine.factions = {
         s = { ...s, factionInternalPoints: ip };
       }
       s = this._dissolveFaction(s, factionId, 'F03_no_successor');
+      const facNoSuccName = this._factionDisplayName(faction.name);
       return {
         state: s,
-        resultText: WM_I18N.t('派閥「{name}」は後継を得られず消滅した。', { name: faction.name }),
+        resultText: WM_I18N.t('派閥「{name}」は後継を得られず消滅した。', { name: facNoSuccName }),
         impactSummary: [
-          { label: WM_I18N.t('派閥「{name}」', { name: faction.name }), delta: WM_I18N.t('後継なく消滅') },
+          { label: WM_I18N.t('派閥「{name}」', { name: facNoSuccName }), delta: WM_I18N.t('後継なく消滅') },
         ],
       };
     }
@@ -2138,7 +2154,7 @@ Engine.factions = {
       { label: WM_I18N.t('メンバー間 絆'), delta: `${bondDelta}` },
       { label: WM_I18N.t('{a} → {b} bond', { a: successor.name, b: oldLeaderName }), delta: `+${idol}` },
     ];
-    if (rival) turmoilImpact.push({ label: WM_I18N.t('対立派閥 {name} 勢い', { name: rival.name }), delta: `+${bump}` });
+    if (rival) turmoilImpact.push({ label: WM_I18N.t('対立派閥 {name} 勢い', { name: this._factionDisplayName(rival.name) }), delta: `+${bump}` });
     return {
       state: s,
       resultText: WM_I18N.t('{name}は後を継いだが、派閥内の動揺は深く、一度大きく揺らいだ。', { name: successor.name }),
@@ -2875,7 +2891,11 @@ Engine.factions = {
 
   // Common-4 効果適用: bond +1〜+2 / condition +3〜+5 / アーキタイプ別 morale 微変動
   applyCommon4Result(state, payload, rng) {
-    const { factionId, factionName, archetypeId, memberIds } = payload;
+    const { factionId, factionName: _c4FactionNameRaw, archetypeId, memberIds } = payload;
+    // i18n P7-48: factionNameは「{surname}派」の生JA。この関数の戻り値にfactionNameは
+    // 含まれず(resultText/impactSummaryへ完成文として畳み込まれるだけ)保存対象でもないため、
+    // destructuring直後に一括変換してよい。
+    const factionName = this._factionDisplayName(_c4FactionNameRaw);
     let s = state;
     const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
 
@@ -3019,6 +3039,9 @@ Engine.factions = {
 
   applyCommon1Choice(state, payload, choiceId, rng) {
     const { factionId, factionName, fighterAId, fighterBId, fighterAName, fighterBName, archetypeId, leaderId } = payload;
+    // i18n P7-48: factionNameは「セーブ内の名前はJAのまま」(D-P6-4)を守るためbookedCommon1
+    // へ生JAのまま焼き込む。resultText/impactSummaryの完成文へ埋め込むときだけfactionDispを使う。
+    const factionDisp = this._factionDisplayName(factionName);
     let s = state;
     const impactSummary = [];
     let resultText = '';
@@ -3036,15 +3059,15 @@ Engine.factions = {
           createdAbsWeek: this._absWeek(state),
         },
       };
-      resultText = WM_I18N.t('{name}内の対決を組む方針を固めた。次の興行のカード編成で、どこに置くかは社長次第だ。', { name: factionName });
-      impactSummary.push({ label: WM_I18N.t('{name} 内部対立', { name: factionName }), delta: WM_I18N.t('興行予約') });
+      resultText = WM_I18N.t('{name}内の対決を組む方針を固めた。次の興行のカード編成で、どこに置くかは社長次第だ。', { name: factionDisp });
+      impactSummary.push({ label: WM_I18N.t('{name} 内部対立', { name: factionDisp }), delta: WM_I18N.t('興行予約') });
       return { state: s, booked: true, resultText, impactSummary, winnerId: null, loserId: null, winnerName: '', loserName: '' };
     } else if (choiceId === 'B') {
-      resultText = WM_I18N.t('{name}内の対決は別カードに振り替えた。火種はそのまま残った。', { name: factionName });
-      impactSummary.push({ label: WM_I18N.t('{name} 内部対立', { name: factionName }), delta: WM_I18N.t('継続') });
+      resultText = WM_I18N.t('{name}内の対決は別カードに振り替えた。火種はそのまま残った。', { name: factionDisp });
+      impactSummary.push({ label: WM_I18N.t('{name} 内部対立', { name: factionDisp }), delta: WM_I18N.t('継続') });
     } else {
-      resultText = WM_I18N.t('{name}の内紛は自然に任せた。火種は燻ったまま。', { name: factionName });
-      impactSummary.push({ label: WM_I18N.t('{name} 内部対立', { name: factionName }), delta: WM_I18N.t('燻り続ける') });
+      resultText = WM_I18N.t('{name}の内紛は自然に任せた。火種は燻ったまま。', { name: factionDisp });
+      impactSummary.push({ label: WM_I18N.t('{name} 内部対立', { name: factionDisp }), delta: WM_I18N.t('燻り続ける') });
     }
 
     s = this._markCommonEventTrigger(s, factionId, 'COMMON_1');
@@ -3070,6 +3093,11 @@ Engine.factions = {
     const fighterAName = (fighterA && fighterA.name) || bookedFighterAName || WM_I18N.t('選手A');
     const fighterBName = (fighterB && fighterB.name) || bookedFighterBName || WM_I18N.t('選手B');
     const factionName = (currentFaction && currentFaction.name) || bookedFactionName || WM_I18N.t('派閥');
+    // i18n P7-48: factionNameは「セーブ内の名前はJAのまま」(D-P6-4)を守るため生JAのまま
+    // 返す(下流のG._pendingCommon1Result.applyResult.factionNameに焼き込まれる)。この関数
+    // 内でresultText/impactSummary/archFlavor等の完成文へ埋め込むときだけ、表示直前の
+    // factionDispを使う(_factionDisplayNameは「派」で終わらない値には素通しなので冪等)。
+    const factionDisp = this._factionDisplayName(factionName);
     let s = state;
     const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
     const winnerName = sameId(winnerId, fighterAId) ? fighterAName : fighterBName;
@@ -3158,18 +3186,18 @@ Engine.factions = {
         COMBAT:    WM_I18N.t('強い者が前に出た。それだけのことだ'),
         BOND:      WM_I18N.t('仲間の絆に小さな亀裂が走った'),
         FACE:      WM_I18N.t('切磋琢磨の果てに、序列が動いた'),
-      })[archetypeId] || WM_I18N.t('{name}の序列が揺らいだ', { name: factionName });
-      resultText = WM_I18N.t('下克上 ―― {winner}が{faction}リーダー{loser}を下した。{flavor}。', { winner: winnerName, faction: factionName, loser: loserName, flavor: archFlavor });
+      })[archetypeId] || WM_I18N.t('{name}の序列が揺らいだ', { name: factionDisp });
+      resultText = WM_I18N.t('下克上 ―― {winner}が{faction}リーダー{loser}を下した。{flavor}。', { winner: winnerName, faction: factionDisp, loser: loserName, flavor: archFlavor });
       upsetTag = 'leader_lost';
     } else if (isLeaderWin) {
       // ── リーダー順当勝ち ─────────────────────────────
       const momentumGain = ri(2, 5);
       s = this._adjustFactionMomentum(s, facId, momentumGain);
       impactSummary.push({ label: WM_I18N.t('派閥 勢い'), delta: `+${momentumGain}` });
-      resultText = WM_I18N.t('{winner}が{loser}を下し、リーダーの威信は保たれた。{faction}内の火種は試合で清算された。', { winner: winnerName, loser: loserName, faction: factionName });
+      resultText = WM_I18N.t('{winner}が{loser}を下し、リーダーの威信は保たれた。{faction}内の火種は試合で清算された。', { winner: winnerName, loser: loserName, faction: factionDisp });
     } else {
       // ── 非リーダー同士 ───────────────────────────────
-      resultText = WM_I18N.t('{winner}が{loser}を下した。{faction}内の火種は試合で清算された。', { winner: winnerName, loser: loserName, faction: factionName });
+      resultText = WM_I18N.t('{winner}が{loser}を下した。{faction}内の火種は試合で清算された。', { winner: winnerName, loser: loserName, faction: factionDisp });
     }
 
     // 派閥内ポイント加算（spec: faction-internal-rank-spec-v0.2 §3.1）
@@ -3426,7 +3454,11 @@ Engine.factions = {
   },
 
   applyCommon5Choice(state, payload, choiceId, rng) {
-    const { factionId, factionName, archetypeId, leaderId, leaderName, memberIds } = payload;
+    const { factionId, factionName: _c5FactionNameRaw, archetypeId, leaderId, leaderName, memberIds } = payload;
+    // i18n P7-48: factionNameは「{surname}派」の生JA。resultText/impactSummaryはこの関数内で
+    // 完成し保存されない(戻り値にfactionNameを含まない)ため、destructuring直後に一括変換して
+    // よい(§45-3の教訓「使用箇所ごとに包むと再発する」を踏襲)。
+    const factionName = this._factionDisplayName(_c5FactionNameRaw);
     let s = state;
     const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
     const impactSummary = [];
@@ -3863,7 +3895,12 @@ Engine.factions = {
   // ── §9.4 F04 寝返り 選択適用 ──
   // A: 放置（転籍）/ B: 面談 / C: 告げ口
   applyF04Choice(state, payload, choiceId, rng) {
-    const { targetId, targetName, fromFactionId, toFactionId, fromLeaderId, fromFactionName, toFactionName } = payload;
+    const { targetId, targetName, fromFactionId, toFactionId, fromLeaderId, fromFactionName: _f04FromFactionNameRaw, toFactionName: _f04ToFactionNameRaw } = payload;
+    // i18n P7-48: fromFactionName/toFactionNameは「{surname}派」の生JA。resultText/
+    // impactSummaryの完成文へ埋め込むだけで戻り値に含めない(保存対象でもない)ため、
+    // destructuring直後に一括変換する。
+    const fromFactionName = this._factionDisplayName(_f04FromFactionNameRaw);
+    const toFactionName = this._factionDisplayName(_f04ToFactionNameRaw);
     let s = state;
     const cdKey = this._f04Key(targetId, toFactionId);
     s = this._markCooldown(s, cdKey);
@@ -3997,7 +4034,10 @@ Engine.factions = {
   // UI 側は選択肢なしの「見守る」1 ボタンのみ。ここでは choiceId を無視し、
   // 旧 'C 静観' の挙動（70% 自然分裂 / 30% 据え置き）を単一パスとして適用する。
   applyF05Choice(state, payload, choiceId, rng) {
-    const { factionId, factionName, dissidentIds, ringleaderId, ringleaderName } = payload;
+    const { factionId, factionName: _f05FactionNameRaw, dissidentIds, ringleaderId, ringleaderName } = payload;
+    // i18n P7-48: factionNameは「{surname}派」の生JA。resultText/impactSummaryへ完成文として
+    // 畳み込むだけで戻り値には含めない(保存対象でもない)ため、destructuring直後に一括変換する。
+    const factionName = this._factionDisplayName(_f05FactionNameRaw);
     let s = state;
     const cdKey = this._f05Key(factionId);
     s = this._markCooldown(s, cdKey);
@@ -4061,7 +4101,12 @@ Engine.factions = {
   // B: 何もしない（介入なし、自然減衰に任せる）
   // 旧 C「煽る」は廃止。旧 A の「和解興行コスト100万」も廃止。
   applyF06Choice(state, payload, choiceId, rng) {
-    const { factionAId, factionBId, factionAName, factionBName } = payload;
+    const { factionAId, factionBId, factionAName: _f06FactionAName, factionBName: _f06FactionBName } = payload;
+    // i18n P7-48: factionAName/BNameは「{surname}派」の生JA。resultText/impactSummaryは
+    // この関数内で完成し戻り値にfactionAName/BName自体は含まれない(保存対象でもない)ため、
+    // destructuring直後に一括変換する(applyF07Choiceと同じ作法、§45-3の教訓)。
+    const factionAName = this._factionDisplayName(_f06FactionAName);
+    const factionBName = this._factionDisplayName(_f06FactionBName);
     let s = state;
     const cdKey = this._f06Key(factionAId, factionBId);
     s = this._markCooldown(s, cdKey);
@@ -4530,7 +4575,12 @@ Engine.factions = {
   // B: 仲裁する（敵対度 80 超では条件未達、UI 側で disabled。到達してもここでは何もしない）
   // C: 煽らず、組まず（熱は持続・CD は立てない → 再判定継続）
   applyF08Choice(state, payload, choiceId, rng) {
-    const { factionAId, factionBId, factionAName, factionBName, leaderAId, leaderBId } = payload;
+    const { factionAId, factionBId, factionAName: _f08FactionAName, factionBName: _f08FactionBName, leaderAId, leaderBId } = payload;
+    // i18n P7-48: factionAName/BNameは「{surname}派」の生JA。resultText/impactSummaryへ
+    // 完成文として畳み込むだけで戻り値には含めない(保存対象でもない)ため、destructuring
+    // 直後に一括変換する。
+    const factionAName = this._factionDisplayName(_f08FactionAName);
+    const factionBName = this._factionDisplayName(_f08FactionBName);
     let s = state;
 
     if (choiceId === 'A') {
@@ -4859,7 +4909,10 @@ Engine.factions = {
       leader:     { id: leader.id,     name: leader.name,     ovr: Engine.util.ov(leader) },
       lineChallenger: lineC,
       lineLeader: lineL,
-      narration: WM_I18N.t('{name}――派閥内の力学が今夜、リング上で決着する。', { name: f.name }),
+      // i18n P7-48: f.nameは「{surname}派」の生JA。t()のconvertNamesは名前辞書の完全一致
+      // でしか変換しないため素通りし、showInternalChallengePreModalのナレーションにEN走破で
+      // 露出する(F08 getF08PreMatchDataの同型バグと同じ穴)。_factionDisplayName()を通す。
+      narration: WM_I18N.t('{name}――派閥内の力学が今夜、リング上で決着する。', { name: this._factionDisplayName(f.name) }),
     };
   },
 
@@ -4886,12 +4939,17 @@ Engine.factions = {
     const winnerLine = tableW ? this._getF08LineByBand(tableW, winner, 'high', rngW) : '';
     const loserLine  = tableL ? this._getF08LineByBand(tableL, loser, hpBand, rngL) : '';
     let narrationOpen, narrationClose;
+    // i18n P7-48: f.name/oldName/newNameはいずれも「{surname}派」の生JA。t()のconvertNamesは
+    // 名前辞書の完全一致でしか変換しないため素通りし、showInternalChallengePostModalの
+    // ナレーションにEN走破で露出する(getF08AftermathDataの同型バグと同じ穴)。
+    // _factionDisplayName()を通す(oldName/newNameは既に「{surname}派」の完成形なので
+    // 正規表現で姓を抜き出して変換する既存の仕組みがそのまま効く)。
     if (leaderWon) {
-      narrationOpen  = WM_I18N.t('{name}のリーダーは座を守った。', { name: f.name });
+      narrationOpen  = WM_I18N.t('{name}のリーダーは座を守った。', { name: this._factionDisplayName(f.name) });
       narrationClose = WM_I18N.t('権威の確認――今夜の挑戦は、力で押し戻された。');
     } else {
-      const oldName = `${oldLeader.surname || oldLeader.name}派`;
-      const newName = `${newLeader.surname || newLeader.name}派`;
+      const oldName = this._factionDisplayName(`${oldLeader.surname || oldLeader.name}派`);
+      const newName = this._factionDisplayName(`${newLeader.surname || newLeader.name}派`);
       narrationOpen  = WM_I18N.t('決着。新たなリーダーが立った。');
       narrationClose = WM_I18N.t('{old} ―― {new}。看板が、今夜書き換わった。', { old: oldName, new: newName });
     }
