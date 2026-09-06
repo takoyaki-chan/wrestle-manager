@@ -187,7 +187,7 @@ seed 7 の再現性確認: (下記 3-3)
 4. `node test/auto-sim.js 40 42` を1本(フックが回す)。`test/balance-baseline.js` は試合エンジン専用なので不変のはず。
 5. worklog 追記・ローカルコミット。push はしない。
 
-## 6. 実装(P7-54, 2026-09-06)
+## 6. 実装(P7-54, 2026-09-06, コミット a819ca8f)
 
 Keisuke 裁定「直しておいて」= 推奨どおり3件とも対処(`docs/i18n-keisuke-rulings-pending-v0.1.md` C-5)。#1 (a) / #2 (a、暫定・(d)は別途) / #3 (a') をそのまま実装した。詳細な効果量の再計測・検証結果・ja-golden差分の証明は `docs/worklog.md` の P7-54 エントリを参照。要点のみここに残す。
 
