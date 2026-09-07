@@ -1,5 +1,154 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-07 P7-57 内部レビュー第5弾 — ネイティブ検品未着の3帯(丁寧/蠱惑/鷹揚)を検品①〜④の目で仕上げ
+
+Keisuke裁定(2026-09-07)「検品が全部届く可能性は薄い。後で差し替えられる構造なので、完成まで持っていく」に基づく。
+アンカー `docs/en-anchor-samples-draft-v0.1.md` §5(丁寧6セル)/§6(蠱惑6セル)/§7(鷹揚6セル)= **各18行・計54行**を、
+ネイティブ検品①(標準)②(お嬢様)③(クール)④(ヤンキー)で確立した規則で読み直した。**JAは1バイトも触っていない。**
+**これは検品ではないので、ネイティブ稿が届いたら差し替える**(アンカー見出しにその旨を明記)。
+
+### 1. アンカー改稿 — 54行中 **28行を改稿**、26行は変更なし
+
+#### §5 丁寧(polite) — 18行中10行を改稿
+
+| セル | JA | 旧EN | 新EN | 理由 |
+|---|---|---|---|---|
+| 5-1 澤出 | あっ…勝てたかぁ…油断は禁物だね | Oh... I got the win. Can't let my guard down, though. | Ah... so I won. I can't afford to get careless now. | 後置の "though" は**鷹揚帯のシグネチャ**(§2-6)。丁寧帯に使うと声が混線する(§4-3)。主語を戻して完全文へ |
+| 5-1 澤出 | どんな相手だって、自分の強みを生かせば勝てるんだよ | Anyone can be beaten, as long as you play to what you're good at. | No matter who you're up against, you can win if you play to your strengths. | 受動態が原文の主体「勝てる」を相手側に転置していた。原文の順序(どんな相手→強みを生かせば→勝てる)へ戻し能動で言う(検品④) |
+| 5-1 澤出 | どんな勝ち方でも勝ちは勝ち。…ごめんなさいね | A win is a win, however it comes. ...Sorry about that. | However you get it, a win is a win. ...Sorry about that. | 原文の順序へ(検品④)。"however it comes" は書き言葉寄りで、口語は "however you get it" |
+| 5-3 高島 | ひ弱だけど…諦めたくないから…！ | I'm not strong, I know... but I don't want to give up...! | I know I'm frail... but I don't want to give up...! | 「ひ弱」= 体の弱さ。"not strong" では岸ゆみえの "can't win on athleticism" と像が重なる。自己中断を後置の言い訳から文中へ(§3 shy) |
+| 5-4 岸 | 冷静に分析して、弱点を突く。それだけのことよ。 | Study them calmly. Go at the weak spot. That's all there is to it. | I analyze calmly and go for the weak point. That's all there is to it. | **丁寧帯のNG「命令形」に正面から違反**(命令形2連はクール帯のregister)。原文の落ちた主語は「私」。弱点は新見の weak spot と分けて weak point |
+| 5-4 岸 | コツコツ磨いた関節技…やっと実を結んだわ。 | All those hours on my submission work... it showed today. | All those hours on my submission work... it finally came together. | 「やっと」が丸ごと落ちていた。finally を戻し、川野辺の "it finally paid off!" とは came together で分ける |
+| 5-5 木ノ内 | この試合、ヒールっぽかった？　えっ、そんな事無い？ | Was I being a heel out there? Huh — you don't think so? | Was I kind of a heel out there? Huh, you don't think so? | 「っぽかった」の含み(-ish)が消えていた。emダッシュは§3 emotional の道具なのでお気楽帯からコンマへ |
+| 5-6 大久保 | 仕事もプロレスも、全力で！ | The day job, the ring — I go all out at both! | I go all out at work, and all out in the ring! | 東金沙織(§6-5)と**同じ構文(名詞列+emダッシュ+both)**で2セルの声が均質化していた(§4-3)。並列反復で「〜も〜も」を運ぶ |
+| 5-6 大久保 | ふぅ……観客のみんなに実力を見せれたかな？ | Phew... Think everyone out there got to see what I can do? | Phew... I wonder if the crowd got to see what I'm made of. | 「かな？」の自問を主語落ちの問いかけで訳しており丁寧帯の完全文から外れていた。実力の訳も東金の "what I can do" と分ける |
+| 5-6 大久保 | いい試合だったわ。また一つ経験になった…… | That was a good match. Another one to grow from... | That was a good match. That's one more bit of experience for me... | 「経験になった」を "to grow from" に振ると原文にない前向きさが乗る。素朴に experience で受け完全文へ |
+
+**変更なし8行**: 5-2 川野辺の3行(A/B判定済。1本目はKeisuke「この形でパーフェクト」)/ 5-3「わ…わたし、勝てたの…？」(A/B収束・内気の「疑う」成分が生きている)/ 5-3「明日も生きてたい…」(A/B判定済 focus #20・「今日**も**」のtoo直訳を退けた出所行)/ 5-4「身体能力じゃ勝てない。」(A/B収束・丁寧の完全文と寡黙の短さが両立)/ 5-5「勝った！楽しい！いい感じ！」(原文の三連「！」を三文で受け、お気楽は感嘆符許可帯。過去/現在の使い分けも§1-12適合)/ 5-5「見てましたか！？」(A/B判定済 focus #17・反復を落とした確定形)。
+
+#### §6 蠱惑(seductive) — 18行中9行を改稿
+
+| セル | JA | 旧EN | 新EN | 理由 |
+|---|---|---|---|---|
+| 6-2 高槻 | 力づくで分からせるのも、意外と悪くないものよね♪ | Making someone understand by force... not bad at all ♪ | Making someone understand by force is not bad at all, actually ♪ | 落ちの語**「意外と」が丸ごと落ちていた**(意外と悪くない ≠ not bad at all)。文末 actually で復元し、原文にコンマしかない位置への "..."(溜め)の追加をやめる(検品②の裏返し) |
+| 6-3 倉見 | いい試合だったね♪ …あ、本音？ もっとやれたんじゃない？ | Good match ♪ ...Oh, honestly? You had more in you than that. | Good match ♪ ...Oh, honestly? You could have done more than that, don't you think? | 「〜じゃない？」の問い返しが平叙に潰れていた(§1-11)。毒の刺し方が「断定」でなく「同意を求める問い」なのがこのセルの芯 |
+| 6-3 倉見 | 人当たりいいのは仕事のスキル。毒舌はオフの特権♪ | Being pleasant is a job skill. The sharp tongue is what I keep for off hours ♪ | Being pleasant is a job skill. The sharp tongue is an off-the-clock privilege ♪ | 落ちの語「特権」が薄まっていた。原文の対句と privilege を戻す(検品④「原文の構造に戻す」) |
+| 6-4 浅見 | 元マドンナの座、必ず取り戻すわ…！ | That Madonna spot used to be mine. I will take it back...! | The Madonna spot was mine once. I will be taking it back...! | 指示語 "That" に先行詞がなく浮いていた。「必ず」の確信を未来進行で運ぶ |
+| 6-4 浅見 | このまま積み上げていけば、いずれ私が…… | Keep stacking wins like this, and sooner or later it will be me... | If I keep piling up wins like this, sooner or later it will be me... | 英語の命令形慣用("Keep X, and Y")が、自分についての条件節を**他者への指示**に読み替えていた。一人称の条件文へ |
+| 6-5 東金 | モデルの仕事もプロレスも、華やかにこなすわ♪ | Modeling, wrestling — I make both of them look good ♪ | Modeling, wrestling — I look good doing both ♪ | "make both of them look good" は「仕事の方を良く見せる」の意になり、「(自分が)華やかにこなす」からずれる |
+| 6-5 東金 | 堅実な実力が私の強み。派手さだけじゃないの。 | Solid skill is what I'm built on. There's more to me than the sparkle. | Steady ability is my real strength. There's more to me than the sparkle. | 落ちの語「強み」が消え、"built on" は建築の抽象メタファー(§1-5)。素直に my real strength へ |
+| 6-6 新見 | 大人びてるって言われるけど…それが私の武器かしら。 | People say I seem older than I am... I suppose that's my weapon. | People say I seem older than I am... I suppose that's my edge. | **検品④「『武器』は訳さない(weapon は翻訳調)」に真正面から当たる行**。英語の生きた語 edge へ |
+| 6-6 新見 | 知性で戦う。それが新見ゆりのスタイル。 | I fight with my head. That is the Yuri Niimi style. | I fight with my mind. That is the Yuri Niimi style. | 岸ゆみえの "So I use my head."(A/B収束の採用形)と像が重なっていたため mind に振り分け(§4-3) |
+
+**変更なし9行**: 6-1 橘玲美の3行(A/B判定済・低温/味わう動詞/余韻がそのまま出ており検品の指摘型に触れない)/ 6-2「ふふ…計画通り」= "Mm... just as planned."(**帯別の使い分けを新規則化**: 検品②の「ふふ = Hehe...」はお嬢様の文脈の裁定。蠱惑で "Hehe" は§2-7 NG の「少女的感嘆」に寄るのでレシピ語彙の "Mm" を維持)/ 6-2「支配する側と、される側。」(A/B判定済)/ 6-3「勝った勝った♪」(A/B判定済 focus #24)/ 6-4「策略を巡らせるのは得意なの。」(A/B収束・"happens to be" が「〜なの」の含みを運ぶ)/ 6-5「私の実力、相手に見せつけてあげたわ。」(「〜してあげた」の恩着せを made sure が運び§1-12適合。大久保側を what I'm made of に変えたので語の重複も解消)/ 6-6「…観察していれば、弱点は見えてくるものよ。」(原文が「〜ものよ」の一般論なので非人称の条件文が自然)。
+
+#### §7 鷹揚(composed) — 18行中9行を改稿
+
+| セル | JA | 旧EN | 新EN | 理由 |
+|---|---|---|---|---|
+| 7-2 副沢 | あ～疲れた。でもまぁ勝ったからいっか♪ | Ugh, I'm beat. Well, I won, so I'll call it good ♪ | Ahh, I'm beat. Well, I won, so I'll call it good ♪ | 「あ～」は息を吐く脱力で、"Ugh"(嫌悪・うんざり)は温度が違う。鷹揚帯に不機嫌さを足さない(§4-1) |
+| 7-3 北畠 | ……わたしの実力、さすがに伝わった？ | ...You know what I can do now, don't you? | ...You understand what I'm capable of now, don't you? | 東金沙織の "what I can do" と実力の訳が重なっていたため what I'm capable of に振り分け(§4-3) |
+| 7-3 北畠 | …みんなに迷惑はかけられない。…結果は出さないと。 | ...I can't let everyone down. ...I have to bring results. | ...I can't let everyone down. ...I have to get results. | "bring results" はビジネス直訳の匂い。英語の共起は get / deliver results(§1-5 翻訳調) |
+| 7-4 菊池 | 外では厳しく、家では陽気♪ …リングの上は？ もちろん全力よ！ | ...In the ring? Everything I've got! | ...In the ring? Everything I've got, of course! | 「もちろん」(強気の自明さ)が落ちていた |
+| 7-4 菊池 | ふぅ…調子上がってきたかな？ | Phew... starting to hit my stride, maybe? | Phew... I'm starting to hit my stride, I think. | **検品①「文末の『かも/かな』= "... I think."。"maybe" は文頭専用で文末に置かない」への正面違反**。新セル検査15で機械検出できる形にした |
+| 7-5 林 | プライドにかけて、負けるわけにはいかない！ | I've got my pride on the line. Losing isn't an option! | I've got my pride riding on this. I'm not losing this one! | "Losing isn't an option!" は英語の定型句(failure is not an option)で§1-5(翻訳調定型)・§4-5(maxim化)に触れる |
+| 7-6 馬入橋 | この体格とパワー…特殊な血筋のおかげかな。 | The size, the power... that's the bloodline I was born with, I suppose. | The size, the power... I have an unusual bloodline to thank, I suppose. | 「特殊な」「おかげ」がともに落ちていた。unusual / to thank で戻す |
+| 7-6 馬入橋 | 精神的な強さが一番の武器。何があっても折れない！ | Mental strength is my best weapon. No matter what happens, I won't break! | Mental toughness is my strongest suit. No matter what happens, I won't break! | **検品④「『武器』は訳さない」**。sports英語の共起 mental toughness + strongest suit へ。「何があっても」を残す判断(A/B収束#30)は維持 |
+| 7-6 馬入橋 | まだまだ成長途中。もっと強くなってみせる！ | Still a work in progress. I'm going to get stronger than this! | Still a work in progress. Just watch me get stronger! | "stronger than this" は「もっと」の直訳で英語として据わりが悪い。「〜してみせる」の宣言性を "Just watch me" で運ぶ |
+
+**変更なし9行**: 7-1 阿武隈の3行(A/B判定済。「相手を立ててから自分の話をする」+後置though がこの帯の見本そのもの。3本目は過去形裁定の出所行)/ 7-2「楽して勝てるのが一番！」(A/B収束・「〜ってやつ？」が英語として自然に出ている稀な形)/ 7-2「この副ちゃんさんを、舐めないでよね～」(A/B判定済 focus #27)/ 7-3「グラウンドは得意なの。」(A/B判定済 focus #28。JAは「よ？」だがENは平叙形なので§1-11の禁じ手には当たらない)/ 7-4「わたしこれでも実力者扱いされてるのよ？」(「これでも」を do 強調で受け、「舐めないで」は西川と重ねない形が既に選ばれている)/ 7-5「バスケで鍛えたフットワーク」(「〜でも」をtooで運ばない形が選ばれている)/ 7-5「技術とかよくわかんないけど、打撃なら任せて！」(A/B収束)。
+
+### 2. セル検査に追加した規則 9〜17(`test/i18n-build-dialogue-dict.js`)
+
+既存17,096行に対して**先に違反数を数えてから**採否を決めた。合計12行が違反しており、全数を本タスクで改稿して**現在0件**。
+
+| # | 帯 | 規則 | 根拠 | 追加前の違反 | 対応 |
+|---|---|---|---|---|---|
+| 9 | delinquent確定以外 | g落とし(-in')禁止 | 検品④「ヤンキー限定。標準・丁寧・お嬢様では使わない」 | **0件**(delinquent内は4件で正当) | 回帰ガードとして追加 |
+| 10 | delinquent確定以外 | `ain't` 禁止 | §2-4 NG「ギャング方言の記号(ain'tの乱用等)」 | **0件**(delinquent内は3件で正当) | 同上 |
+| 11 | seductive | 少女的感嘆詞(yay/hooray/woohoo等)禁止 | §2-7 NG「少女的感嘆」 | **1件** | 改稿(下記) |
+| 12 | seductive | キャンプな呼びかけ(darling/dearie等)禁止 | §2-7 NG「キャンプな芝居がかり("darling"乱発)」 | **0件** | 回帰ガード |
+| 13 | seductive | 露骨な性的語彙禁止 | §2-7 NG「露骨な性的語彙」 | **0件** | 回帰ガード |
+| 14 | composed | 若者スラング禁止 | §2-6 NG「若者スラング」 | **0件** | 回帰ガード |
+| 15 | 全帯 | 文末の "maybe" 禁止 | 検品①「文末の『かも』= "... I think."。maybeは文頭専用」 | **9件**(+アンカー菊池1) | 全数改稿 |
+| 16 | 全帯 | 比喩の「武器」= weapon 禁止 | 検品④「『武器』は訳さない」 | **2件**(+アンカー新見・馬入橋2) | 全数改稿 |
+| 17 | 全帯 | 翻訳調定型句禁止("It can't be helped"/"As expected of"/"I'll do my best") | §1-5 | **0件** | 回帰ガード |
+
+規則15は**独立した1文としての "...Maybe." を許可**する(文頭扱い・英語として自然な後置のためらい)。
+規則16は**比喩の武器だけ**を捕まえ、リング上の実物の凶器を weapon と書く道は残してある(現時点で該当行なし)。
+9・10は既存規則7(hell/damn)と同じ厳格運用で、cell不明の行も禁止側に倒す。
+新規則9〜17は**32ケースのスモークテスト**(違反形で発火する/採用済みの正しい形で誤検出しない)で両方向を確認した。
+
+#### 規則違反として改稿した12行(アンカー外)
+
+| 規則 | JA | 旧EN | 新EN |
+|---|---|---|---|
+| 15 | ……そう…。…分かりました。…少し、残念かな。 | ...A little disappointing, maybe. | ...A little disappointing, I think. |
+| 15 | ……言い出しにくくて、ずっと黙ってた。{record}…もう少しだけ、考えてくれない…かな。 | Would you think about it a little... maybe? | Would you think about it a little more...? |
+| 15 | …ありがとうございます。…下の子、限界近かったかも。 | ...The younger ones were close to done, maybe. | ...The younger ones were close to done, I think. |
+| 15 | …はい、わかりました。…やりすぎたかな。 | ...Went a bit far, maybe. | ...Went a bit far, I think. |
+| 15 | …他所が私を欲しいってさ。…ちょっと嬉しいかもね | ...A little flattering, maybe. | ...A little flattering, I suppose.(「かもね」のねを I suppose で) |
+| 15 | 最近…あいつのこと、前ほど気にならなくなった…かも | ...she doesn't get to me like she did... maybe... | ...she doesn't get to me like she did... I think. |
+| 15 | 最近…あの方のこと、前ほど気にならなくなった…かもしれません… | Lately... I don't think about her as much... maybe... | Lately... she's not on my mind the way she was... I think.(think の重複を避けて言い換え) |
+| 15 | 距離…少し開いたかも | There's a gap now. A small one, maybe. | There's a gap now. A small one, I think. |
+| 15 | 長かったなー！ でもあっという間だったかもね | And gone in a blink, maybe! | And gone in a blink, tho'!(ヤンキー帯なので検品④の tho' を使う) |
+| 16 | 謙虚さは武器になる。あとは星を取ってこい。 | Humility is a weapon. | Humility works in your favor. |
+| 16 | 負けたくない…この気持ちが一番の武器！ | that's the best weapon I've got! | that feeling is the strongest thing I've got! |
+| 11 | やったー♡ さすが社長、太っ腹～♪ | Yay ♡ Generous as ever, Boss ♪ | Lovely ♡ Generous as ever, Boss ♪ |
+
+### 3. 計測して**採用しなかった**規則(件数と代表例)
+
+| 候補 | 違反数 | 見送りの理由 |
+|---|---|---|
+| 蠱惑: "..." は1行1回まで | **559件**(2回以上)/ 287件(3回以上) | §2-7 のレシピが**「余韻の "..."」を帯の道具として指定している**。規則の方が間違っている |
+| 蠱惑: 感嘆符の絶対閾値(1行2個以上を違反) | **21件** | 大半が蠱惑×感情的セルで、**JA原文にも「！」が2〜3個ある**行(例「まだ立ってる…！ この身体、まだ終わってないの…！ 次、来なさい…！」)。温度を上げているのではなく写しているだけ |
+| 鷹揚: 感嘆符の絶対閾値 | **20件** | 同上(例「はっはっは！ パワーで押し潰すのが一番気持ちいいぜ！」) |
+| 全帯: EN の "!" 数 > JA の「！」数(比較則) | **107件**(ojousama18/polite25/standard24/seductive14/delinquent26) | 原理としては§4-1(温度の引き上げ)そのものだが、**大半が JA の「…っ」(詰まった息)を "...!" で受けた正当な処理**。英語に「っ」の句読点等価物がない以上、この写し方は正しい。閾値では切り分けられないので**規則化を見送り、計測結果のみ記録**する |
+| 全帯: ALL CAPS語(4文字以上)禁止 | 8件 | 検品①が「1語の大文字化まで可」を認めており("with THIS leg strength")、残りは新聞見出し("EXTRA —" / "GRAND FINAL")。誤検出が多く不採用 |
+
+### 4. 台帳90行の無作為監査(丁寧/蠱惑/鷹揚 各30行・seed 20260907 固定)
+
+**8行を修正**(90行中8.9%)。残り82行に改稿を要する所見はなし。
+
+| 帯 | JA | 旧EN | 新EN | 理由 |
+|---|---|---|---|---|
+| 丁寧 | 負けてしまいましたねえ。……相手の方が、少しだけ上でした | ...She was just slightly above me. | ...She was just a little better than me. | **検品①「格上・格下=better/worse。上下語(above/below)は傲慢の含意で、傲慢を意図する帯だけ」**。丁寧の敗戦の弁に above は不適 |
+| 丁寧 | ……相容れません。……以上です | ...We don't get along. ...That's all. | ...There is no common ground. ...That is all. | 「相容れない」が "don't get along"(仲が悪い)まで軽くなり、天頂戦決勝の対峙の重さが消えていた |
+| 蠱惑 | …そこまで。あなたの癖、全部見えていたわ | Every habit of yours was visible to me. | Every habit of yours was in plain sight. | "was visible to me" は受動の翻訳調。原文の「あなたの癖」前置は保つ |
+| 蠱惑 | ふふ、うちの団体の魅力、わかっていただけたかしら | Mm, I trust you see the appeal of this promotion now? | Mm, so you can see the appeal of this promotion now? | **"I trust ...?" は芝彩音のアンカー(お嬢様)で使っている道具**。蠱惑に貼るとregisterが混線する(§4-3) |
+| 蠱惑 | 無冠でいいの……っ……ふふ、やりきった気がするから…… | It feels like I did all of it... | It feels like I saw it through... | 「やりきった」が "did all of it"(何を?)で伝わらない |
+| 鷹揚 | …残っていいのかな。…ありがとう | ...Am I really allowed to stay. ...Thank you. | ...I wonder if I can really stay. ...Thank you. | **倒置疑問+ピリオドは§1-11が退けた技巧そのもの**。「かな」の自問は I wonder の平叙で受ける |
+| 鷹揚 | …っ…一年間、苦しかったけど…ま、報われたかな。…うん | ...well, it came back to me. ...Yeah. | ...well, it was worth it, I think. ...Yeah. | "it came back to me" は「思い出した」と読める。「かな」は検品①どおり文末の I think へ |
+| 鷹揚 | …体が終わった。…次は、そこから直すよ | ...That's what I fix first. | ...Next time, that's where I start. | 「次は」が落ちていた |
+
+**誤検出だったので直さなかった所見**: CONTRACT_NEGOTIATION_LINES の EN 76行に**先頭スペース**があるが、これは `{tenure}` / `{record}` / `{rivalry}` の断片が親文へ差し込まれる値で、JA は句点の直後に繋がるのに対し**英語は語間スペースが要る**ため**意図的**。消すと文がくっつく。
+
+### 5. 検証(すべてフォアグラウンド・実結果)
+
+- `node test/i18n-build-dialogue-dict.js` → 総キー17,096 / 訳文あり17,096 / **未訳0** / セル検査違反**0**(新規則9〜17込み)
+- 新規則スモークテスト 32/32 PASS(発火side・誤検出side 両方向)
+- `node test/i18n-ledger-consistency-test.js` → ok(2台帳以上に存在するキー17件、すべて訳文一致)
+- `npm test` → **total 267 / passed 267 / failed 0**
+- `node test/ja-golden.js` → **完全一致**(lines=7558, hash=`e43b8ed4a1e1c641b00e2a675e7305f4a9a8564c1fc5a8e5cf078ad202165cd3`)
+- `node test/i18n-ratchet.js` → 直書き日本語文字列の**増加なし**(files=31 totalJaStrings=27640)
+- `node test/ui-walkthrough/run.js --lang en` → **PASS(exit 0)・i18n-miss 0 occurrences / 0 unique keys**。overflow 45要素・JA露出は informational 扱いで既知(前回と同傾向)
+
+### 6. 反映先
+
+- `i18n/dialogue-ledger.json` の `en` 列 **48行**(アンカー28+規則違反12+監査8)。**JAは1バイトも変更していない**
+- `src/lang-en-dialogue.js` 再生成
+- `test/i18n-build-dialogue-dict.js` セル検査 9〜17 を追加(ヘッダのルール表も更新)
+- `docs/en-anchor-samples-draft-v0.1.md` §5〜§7: 改稿行の差し替え+出所欄に理由を記載、見出しに「🔍 内部レビュー済み 2026-09-07・**ネイティブ検品未着。届き次第差し替え**」。あわせて **†(要読み確認)を全撤去**(2026-09-06 の読み裁定で49名確定済み。本稿の綴りは裁定後のもの=澤出 Sawaide / 橘玲美 Reimi / 木ノ内 Sachine と一致していた)。§8主筆メモ3に副沢たまき("good ol' Fuku-chan")を「§1-2と衝突するが個別セリフなので保持」の2本目として追記
+- `docs/en-tone-bible-draft-v0.1.md` §4-6 に**内部レビュー第5弾**として11項目を追記(帯の道具の使い回し/同じ日本語の語を帯ごとに割り振る/「武器」禁止の一般化/落ちの語を落とさない/丁寧帯の命令形/「ふふ」の帯別使い分け/"..."を増やさない/英語の定型句/上下語/疑問形+ピリオド/意味を運ばない英語)
+
+### 7. 残り
+
+- **ネイティブ検品⑤丁寧・⑥蠱惑・⑦鷹揚は依然未着**。届いたら本稿の内部レビュー結果を差し替える(アンカーの見出しに明記済み・1語差し替えで済む形)
+- 「ふふ」の帯別使い分け(お嬢様=Hehe / 蠱惑=Mm)は**内部判断**。検品が来たら確認したい第一候補
+- 感嘆符の温度検査は**規則化を見送った**(§3参照)。JAの「っ」を除外できる形を思いつけば再挑戦の余地あり
+
+---
+
 ## 2026-09-07 ネイティブ検品④(ヤンキー 9行)を反映 — 改稿6本(40/43/45/46/47/48)、変更なし3本(41/42/44)
 
 | # | JA | 旧EN | 新EN |

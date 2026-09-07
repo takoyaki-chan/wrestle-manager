@@ -32570,7 +32570,7 @@
   },
   {
     "key": "……相容れません。……以上です",
-    "en": "...We don't get along. ...That's all.",
+    "en": "...There is no common ground. ...That is all.",
     "files": [
       "tenchosen-final-lines.js:TENCHOSEN_FINAL_LINES"
     ],
@@ -50993,7 +50993,7 @@
   },
   {
     "key": "…そこまで。あなたの癖、全部見えていたわ",
-    "en": "...That is far enough. Every habit of yours was visible to me.",
+    "en": "...That is far enough. Every habit of yours was in plain sight.",
     "files": [
       "data.js:POST_MATCH_FLAVOR_LINES"
     ],
@@ -52459,7 +52459,7 @@
   },
   {
     "key": "…っ…一年間、苦しかったけど…ま、報われたかな。…うん",
-    "en": "...ah... It was a hard year, but... well, it came back to me. ...Yeah.",
+    "en": "...ah... It was a hard year, but... well, it was worth it, I think. ...Yeah.",
     "files": [
       "data.js:AWARD_LINES"
     ],
@@ -65786,7 +65786,7 @@
   },
   {
     "key": "…体が終わった。…次は、そこから直すよ",
-    "en": "...The body gave out. ...That's what I fix first.",
+    "en": "...The body gave out. ...Next time, that's where I start.",
     "files": [
       "tenchosen-final-lines.js:TENCHOSEN_FINAL_LINES"
     ],
@@ -75552,7 +75552,7 @@
   },
   {
     "key": "…残っていいのかな。…ありがとう",
-    "en": "...Am I really allowed to stay. ...Thank you.",
+    "en": "...I wonder if I can really stay. ...Thank you.",
     "files": [
       "data.js:POACH_REACTION_DIALOGUES"
     ],
@@ -139041,7 +139041,7 @@
   },
   {
     "key": "ふふ、うちの団体の魅力、わかっていただけたかしら",
-    "en": "Mm, I trust you see the appeal of this promotion now?",
+    "en": "Mm, so you can see the appeal of this promotion now?",
     "files": [
       "data.js:WAR_VICTORY_LINES"
     ],
@@ -205134,7 +205134,7 @@
   },
   {
     "key": "無冠でいいの……っ……ふふ、やりきった気がするから……",
-    "en": "No title, and that's fine... Mm. It feels like I did all of it...",
+    "en": "No title, and that's fine... Mm. It feels like I saw it through...",
     "files": [
       "data.js:RETIRE_ACCEPT_LINES"
     ],
@@ -224472,7 +224472,7 @@
   },
   {
     "key": "負けてしまいましたねえ。……相手の方が、少しだけ上でした",
-    "en": "I've gone and lost. ...She was just slightly above me.",
+    "en": "I've gone and lost. ...She was just a little better than me.",
     "files": [
       "tenchosen-final-lines.js:TENCHOSEN_FINAL_LINES"
     ],
