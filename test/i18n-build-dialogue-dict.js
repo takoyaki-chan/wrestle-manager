@@ -48,6 +48,31 @@
 //       §6裁定2「hell/damnをヤンキー骨格内のみ」。cell不明の行も本検査の対象——上記注記参照)
 //    8. 全帯: f/sワード禁止(§6裁定2「f/sワード全帯禁止」。日本語原文に卑語が無いため)
 //
+//    ── P7-57(内部レビュー第5弾・2026-09-07)で追加 ────────────────────────────
+//    ネイティブ検品が届いていない3帯(丁寧/蠱惑/鷹揚)を内部レビューするにあたり、
+//    トーンバイブル §2-5/§2-6/§2-7 の「NG」と §4-6 検品①④のルールのうち、
+//    grepで判定できるものをセル検査へ昇格させた。**追加時点で台帳17,096行に対する
+//    違反は全規則0件**(9〜13は元から0件、14〜16は本タスクで12行を改稿して0件にした)。
+//    9〜10 は7(hell/damn)と同じ厳格運用(delinquent確定でない行=cell不明も禁止側に倒す)。
+//     9. delinquent帯確定以外は禁止: g落とし(-in')禁止(§4-6 検品④「荒っぽさはg落としで作る…
+//        ヤンキー限定。標準・丁寧・お嬢様では使わない」)。丁寧帯の規則その1
+//    10. delinquent帯確定以外は禁止: ain't禁止(§2-4 NG「ギャング方言の記号(ain'tの乱用等)」。
+//        ヤンキー骨格内の道具であり他帯へ貼らない)。丁寧帯の規則その2
+//    11. seductive帯: 少女的感嘆詞(yay/hooray/woohoo等)禁止(§2-7 NG「少女的感嘆」)
+//    12. seductive帯: キャンプな呼びかけ(darling/dearie等)禁止(§2-7 NG「キャンプな
+//        芝居がかり("darling"乱発)」。色気は温度の低さと余裕で出す)
+//    13. seductive帯: 露骨な性的語彙禁止(§2-7 NG「露骨な性的語彙」)
+//    14. composed帯: 若者スラング禁止(§2-6 NG「若者スラング」。鷹揚=大人の余裕=急がない英語)
+//    15. 全帯: 文末の "maybe" 禁止(§4-6 検品①「文末の『かも』= "... I think."。
+//        **"maybe"は文頭専用**。"... maybe."と文末に置かない」)。コンマ+maybe と
+//        「…」+小文字maybe が行末に来る形だけを違反とし、独立した1文としての "...Maybe."
+//        (文頭扱い・英語として自然な後置のためらい)は許可する
+//    16. 全帯: 「武器」をweaponと直訳しない(§4-6 検品④「『武器』は訳さない」)。比喩の武器
+//        (my weapon / the best weapon / is a weapon)だけを捕まえ、リング上の実物の凶器を
+//        weapon と書く用法は残す(現時点で該当行は無いが将来のために逃がしてある)
+//    17. 全帯: 翻訳調定型句禁止(§1-5「"It can't be helped" / "I'll do my best" /
+//        "As expected of..." 型の直訳英語は使わない」)
+//
 //  ■ 使い方
 //    node test/i18n-build-dialogue-dict.js       src/lang-en-dialogue.js を(再)生成
 //
@@ -107,6 +132,29 @@ const HELL_DAMN_RE = /\b(hell|hells|hellish|damn|damns|damned|damning|goddamn|da
 const F_WORD_RE = /\b(fuck|fucks|fucked|fucking|fucker|fuckers)\b/i;
 const S_WORD_RE = /\b(shit|shits|shitty|shitting)\b/i;
 
+// ── P7-57(内部レビュー第5弾)で追加した検査 9〜17 ─────────────────────────────
+// 9. g落とし(-in')。「所有格の 's」「'em」等を拾わないよう、アポストロフィの直後に
+//    英字が続かない場合だけを違反とする(Kevin's / origin's は否定先読みで除外される)。
+//    先頭の大文字("Nothin'")も拾うため文字クラスは [A-Za-z]。
+const G_DROPPING_RE = /\b[A-Za-z]{2,}in'(?![A-Za-z])/;
+// 10. ain't(ギャング方言の記号)。
+const AINT_RE = /\bain'?t\b/i;
+// 11. 少女的感嘆詞(蠱惑帯)。
+const GIRLISH_INTERJECTION_RE = /\b(yay+|hooray|hurray|yippee|woo-?hoo|whee)\b/i;
+// 12. キャンプな呼びかけ(蠱惑帯)。
+const CAMP_ENDEARMENT_RE = /\b(darling|dearie|sweetie|sweetheart|my dear)\b/i;
+// 13. 露骨な性的語彙(蠱惑帯)。
+const EXPLICIT_VOCAB_RE = /\b(orgasm\w*|horny|aroused|arousal|climax\w*|nipples?|panties|lewd)\b/i;
+// 14. 若者スラング(鷹揚帯)。
+const YOUTH_SLANG_RE = /\b(lol|lmao|omg|omfg|bruh|sus|totes|fam|bae|yeet|deadass|vibes|dude|gurl)\b/i;
+// 15. 文末の "maybe"。大文字始まりの独立文 "...Maybe." は許可するため、
+//     第2枝はあえて小文字 maybe のみに限定している(全体に /i を付けない)。
+const TRAILING_MAYBE_RE = /(,\s*[Mm]aybe\b[.?!…]*\s*$)|(\.{2,}\s*maybe\b[.?!…]*\s*$)/;
+// 16. 比喩の「武器」= weapon。限定詞+(最大2語の修飾)+weapon、または be/become + 冠詞 + weapon。
+const METAPHORICAL_WEAPON_RE = /\b(?:my|your|her|his|our|their|the)\s+(?:[A-Za-z]+\s+){0,2}weapons?\b|\b(?:is|are|was|were|becomes?|became)\s+(?:a|an|my|the)\s+(?:[A-Za-z]+\s+){0,2}weapons?\b/i;
+// 17. 翻訳調定型句(§1-5に列挙されている型)。
+const TRANSLATIONESE_RE = /\b(it can'?t be helped|it cannot be helped|as expected of|i'?ll do my best|i will do my best)\b/i;
+
 // 「3文超」判定用のセンテンスカウンタ。"..."(または連続するピリオド)は文区切りとして
 // 数えない — 溜めの"..."自体はcool帯の定番記号(§0対応表)であり、これを文区切りに
 // 数えると短い断片文の連続が誤って「複数文」判定されてしまうため。
@@ -145,6 +193,55 @@ function checkCellRules(entry, en, violations) {
   // 全帯: f/sワード禁止
   if (F_WORD_RE.test(en) || S_WORD_RE.test(en)) {
     violations.push(`[全帯]f/sワード禁止: ${JSON.stringify(entry.key)} → ${JSON.stringify(en)}`);
+  }
+
+  // ── P7-57 追加(9〜17) ──────────────────────────────────────────────────
+  const archLabel = cell ? cell.archetype : '不明';
+  // 9〜10. delinquent帯の道具を他帯へ貼らない(7と同じ厳格運用: cell不明も禁止側)
+  if (!cell || cell.archetype !== 'delinquent') {
+    const gm = en.match(G_DROPPING_RE);
+    if (gm) {
+      violations.push(`[cell:${archLabel}]g落とし(-in')禁止(delinquent帯以外): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${gm[0]}")`);
+    }
+    const am = en.match(AINT_RE);
+    if (am) {
+      violations.push(`[cell:${archLabel}]ain't禁止(delinquent帯以外): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${am[0]}")`);
+    }
+  }
+  // 11〜13. seductive帯
+  if (cell && cell.archetype === 'seductive') {
+    const im = en.match(GIRLISH_INTERJECTION_RE);
+    if (im) {
+      violations.push(`[cell:seductive]少女的感嘆詞禁止: ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${im[0]}")`);
+    }
+    const cm = en.match(CAMP_ENDEARMENT_RE);
+    if (cm) {
+      violations.push(`[cell:seductive]キャンプな呼びかけ禁止: ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${cm[0]}")`);
+    }
+    const xm = en.match(EXPLICIT_VOCAB_RE);
+    if (xm) {
+      violations.push(`[cell:seductive]露骨な性的語彙禁止: ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${xm[0]}")`);
+    }
+  }
+  // 14. composed帯
+  if (cell && cell.archetype === 'composed') {
+    const sm = en.match(YOUTH_SLANG_RE);
+    if (sm) {
+      violations.push(`[cell:composed]若者スラング禁止: ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${sm[0]}")`);
+    }
+  }
+  // 15〜17. 全帯
+  const mm = en.match(TRAILING_MAYBE_RE);
+  if (mm) {
+    violations.push(`[全帯]文末の"maybe"禁止(検品①: 文末の「かも」は "... I think."。maybeは文頭専用): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${mm[0].trim()}")`);
+  }
+  const wm = en.match(METAPHORICAL_WEAPON_RE);
+  if (wm) {
+    violations.push(`[全帯]比喩の「武器」をweaponと訳さない(検品④): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${wm[0]}")`);
+  }
+  const tm = en.match(TRANSLATIONESE_RE);
+  if (tm) {
+    violations.push(`[全帯]翻訳調定型句禁止(§1-5): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${tm[0]}")`);
   }
 }
 
