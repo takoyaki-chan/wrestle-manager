@@ -1,5 +1,22 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-07 BA-0907 デプロイ前全バグチェック — origin/main以降396コミット差分の`bug:audit`精査、実バグ0件・デプロイ可
+
+Keisuke指示「全部終わったなら全バグチェックを行い、問題がなければデプロイ」を受け、`origin/main`(30952f5c、v1.34デプロイ時点)〜`main`(57a6b429、396コミット先)の全差分に対して`tools/bug-audit.ps1 -Mode Diff -BaseRef origin/main`を実行。
+
+- **スキャン手法の補足**: Diffモードは「変更のあったファイル」を全文スキャンするため、396コミット差分では生ヒットが2,368件(roster-movement単独で2,100件超)になり大半が「ファイルは変わったがそのヒット行自体は今回のdiffで不変」の既存コードだった。`git diff origin/main..HEAD`から**追加行のみ**を再抽出して同じ6ルールでフィルタし直し、実質436件(うち英語対応辞書ファイルの対訳追加が約215件)に絞って1件ずつ精査した
+- **判定**: 精査した約221件(辞書ファイル除く)のロジック/テンプレ/表示コードのヒットはすべて**無害**。大半は英語対応(Stage B)に伴うJA完成文の`WM_I18N.t()`/`_wmFillWithDict()`翻訳ラップ・テーブル化で、分岐条件やカウンタ単位の変更は伴っていない
+- **重点確認(a)〜(e)**:
+  - (a) 追加フィールド方式(specs §14-3: `detailTpl`/`narrativeParts`/`headlineTpl`/`_recompose`)は全経路で「新フィールド無ければ旧完成文をそのまま返す」fail-open実装を確認
+  - (b) P7-50 挑戦状/派閥イベントディスパッチ(`closeShowResult`新設分岐 vs `processWeek`既存分岐)は両方とも発火直前にG最新状態を再読みし合流しても二重発火しない設計。実バグなし
+  - (c) P7-36 ティッカー撤去は実行経路の残参照ゼロ(コメントのみ)。旧セーブの`_tickerItems`は`saveDoctor`が検出・除去
+  - (d) P7-54 特性修正後、`Traits.has()`の誤字キー('ファンサ'/'ヒール'/'人脈')呼び出しは全ファイル突合で0件。**参考(バグではない)**: `management.js`に2箇所、`'ファンサービス'`/`'ヒール適性'`をJSのユニコードエスケープ表記(`フ...`)で書いた箇所を発見したが`git blame`で2026-03-13(旧`src/engine.js`時代)由来と判明——今回のデプロイ差分に含まれない・キー自体は元から正しい・実行時文字列は通常表記と完全同一のため対応不要
+  - (e) P7-58 新聞`_recompose`/Tplは静的確認に加え、実際に旧セーブ2本(`legacy-saves/mobile_S22W47_2026-04-06.json`=P7-58以前発行の新聞24号を保持、`legacy-saves/v1.0x_S2W23_2026-03-21.json`=`newspaperArchive`フィールド自体が無い最古世代)を`test/ui-walkthrough/run.js`で実UI走破し、新聞画面(`screen-newspaper`)を開いて例外・Issuesが0件であることを直接確認
+- **動的検証(すべて再実行して確認)**: `npm test` 267/267 PASS / `node test/ja-golden.js` 完全一致(`e43b8ed4a1e1c641b00e2a675e7305f4a9a8564c1fc5a8e5cf078ad202165cd3`、タスク指定値と一致) / `node test/auto-sim.js 20 42` ALL CLEAR(fingerprint `5a09bc6e`一致、台帳検査3種とも違反0) / `node test/save-regression.js`(Phase1・実セーブ6本) ALL CLEAR / 実セーブ2本のPhase2(実UI1季走破)PASS×2
+- **結論: 実バグ0件、デプロイ可**。既知の未解決事項(`faction-ignite`のJA/EN D5、fixture生成が「リーダー健在の派閥2つ」前提を満たせない件)は本タスクのスコープ外(指揮官が別途対応中)、デプロイ判断に影響なし
+- 報告書: `docs/archive/bug-audit-BA0907-origin-main-diff.md`(生スキャン)、`docs/archive/bug-audit-BA0907-review.md`(精査結果・本エントリの詳細版)
+- 触ったファイル: `docs/archive/`に2ファイル新規のみ。src/は一切変更していない(修正が必要な実バグが見つからなかったため)
+- 残課題: なし(実機確認はKeisuke判断でデプロイ後も可)
 ## 2026-09-07 デプロイ前フルスイート — 全項目結果と faction-ignite の fixture シード切替(P7-59)
 
 - **結果**: npm test 267/267 / ja-golden 完全一致 e43b8ed4… / 辞書4本 未訳0 / 台帳整合 ok / ratchet 27,645 不変 / balance-baseline 逸脱なし / version-consistency ok(v1.34) / save-regression ALL CLEAR / detectors ALIVE / auto-sim 40季(seed42) ALL CLEAR 指紋 dead5bde・台帳検査3種 0違反 / auto-sim 40季 `--care` ALL CLEAR 指紋 d5ec2181・0違反 / 出荷ゲート 30 PASS / 走破 ja PASS(336手・Issues 0。単独再実行でも 336 / `66852e9fac14325b` を再現=新基準。0dabd094 時点の操作列との突合では初興行後のイベントポップアップが1つ減り節目モーダルの選択肢が変わっている=P7-54 の集客変化で興行後イベントの組が変わった帰結、Recovered-by-retry 0)・EN PASS(412手・miss 0・露出は仕様除外のみ)/ ignite 12シナリオ×JA/EN: **11本 PASS、faction-ignite のみ FAIL(D5)** / bug:audit 実行(docs/archive/bug-audit-20260907-193853.md、HEAD~1 基準のため差分ほぼ空→origin/main 基準の精査を BA-0907 として別途実施)。
