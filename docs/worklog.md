@@ -1,5 +1,12 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-07 v1.35 リリース — 版更新・再デプロイ・製品版梱包・検証
+
+- **版更新**(Edit ツール): `release/manifest.json` 1.34→1.35 / `src/app.js` `_saveVersion` / `src/index.html` タイトル `VERSION 1.35`。`version-consistency-test` ok(v1.35)、npm test 267、ja-golden 不変。コミット 966caf29 → push(再デプロイ、Cloudflare Pages)。
+- **梱包**: `release/package-release.ps1`(製品版、manifest から 1.35 を読む)。出荷ゲート 30 PASS、39ファイル+2ディレクトリ、1,211ファイル・73.8MB → `release/dist/WrestleManager_1.35.zip`(64.3MB)。rc2 は削除。
+- **検証**: `verify-package.ps1` は非対話環境で Read-Host 停止のため、展開物を直接検査: 1,211ファイル / src 36(i18n.js+辞書4本を含む)/ タイトル `VERSION 1.35` / dev-tools・dev-event-catalog 参照0 / セーブ版 1.35 / ルートに START.html・README.txt・ガイド3本。HTTP 配信で Playwright スモーク(JA/EN タイトル・`<html lang>`・新規ゲーム開始・コンソールエラー0)**11/11 PASS**。
+- **引き渡し**: DLsite/BOOTH への差し替えは Keisuke の作業。ストア用の更新情報の下書き `release/dist/DLsite更新情報_v1.35.txt`(gitignore 領域)。体験版が要るなら `package-release.ps1 -Trial`。
+
 ## 2026-09-07 デプロイ — main cd78e53b を origin へ push(57a6b429..cd78e53b、400コミット)。Cloudflare Pages 自動デプロイ
 
 - Keisuke 指示「全バグチェック→問題なければデプロイ」。フルスイート全緑(前エントリ)+ faction-ignite の fixture シード切替(P7-59)+ BA-0907 bug:audit 精査(origin/main 以降の全差分、実バグ0)を経て push。push 直前の再確認: npm test 267 / ja-golden 完全一致。
