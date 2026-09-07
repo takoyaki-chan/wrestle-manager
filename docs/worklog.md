@@ -1,5 +1,12 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-07 英語対応 完成工程 — P7-57 マージ、アンカーPDF再生成、配布RC zip の生成と検証
+
+- **P7-57 マージ**(d15c76a2): 検品未着の⑤丁寧⑥蠱惑⑦鷹揚を内部レビュー(アンカー54行中28行改稿・セル検査規則9〜17追加・既存違反12行修正・抜き取り90行で8行修正)。検品が届いたら台帳の該当行を差し替えるだけで反映できる。
+- **アンカーPDF再生成**: `docs/en-anchor-samples-draft-v0.1.md`(検品①〜④反映+⑤〜⑦内部レビュー、読み裁定後の綴り)を Playwright/Chromium で A4・12ページの PDF に(scratchpad `md2pdf.js`、Noto Sans JP/Meiryo)。`~/Downloads/WM_EN_anchor_samples_v0.2_2026-09-07.pdf` に配置(リポジトリには入れない)。
+- **配布RC**: `release/package-release.ps1 -Version 1.35rc1`(manifest の 1.34 は据え置き、検証済みの 1.34 zip を上書きしない)。進行不能出荷ゲート 30 PASS、39ファイル+2ディレクトリ確認、`release/dist/WrestleManager_1.35rc1.zip`(64.3MB)。`verify-package.ps1` はファイル完全性 OK(非対話環境のため手動チェックリストは Playwright で代行: JA/EN でタイトル表示・`<html lang>`・新規ゲーム開始・コンソールエラー0 = 11/11 PASS。第1週→第2週の進行はリポジトリ側の ignite `opening-flow` JA/EN PASS で担保)。検証用サーバー停止・verify-tmp 削除済み。
+- **完成状態**: 4台帳 未訳0(UI 4,750 / テンプレ 3,533 / セリフ 17,096 / 名前646+技242)、EN 走破 miss 0・露出は仕様除外のみ、ignite 12シナリオ JA/EN PASS、ja-golden e43b8ed4…、npm test 267、auto-sim ALL CLEAR。**版上げ・push・DLsite/BOOTH 差し替えは Keisuke の判断**。
+
 ## 2026-09-07 P7-57 内部レビュー第5弾 — ネイティブ検品未着の3帯(丁寧/蠱惑/鷹揚)を検品①〜④の目で仕上げ
 
 Keisuke裁定(2026-09-07)「検品が全部届く可能性は薄い。後で差し替えられる構造なので、完成まで持っていく」に基づく。
