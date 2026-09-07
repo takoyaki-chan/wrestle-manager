@@ -16529,7 +16529,7 @@
   },
   {
     "key": "……そう…。…分かりました。…少し、残念かな。",
-    "en": "...I see... ...Understood. ...A little disappointing, maybe.",
+    "en": "...I see... ...Understood. ...A little disappointing, I think.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -22415,7 +22415,7 @@
   },
   {
     "key": "……わたしの実力、さすがに伝わった？",
-    "en": "...You know what I can do now, don't you?",
+    "en": "...You understand what I'm capable of now, don't you?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -34659,7 +34659,7 @@
   },
   {
     "key": "……言い出しにくくて、ずっと黙ってた。{record}…もう少しだけ、考えてくれない…かな。",
-    "en": "...It was hard to bring up, so I sat on it.{record} Would you think about it a little... maybe?",
+    "en": "...It was hard to bring up, so I sat on it.{record} Would you think about it a little more...?",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -40515,7 +40515,7 @@
   },
   {
     "key": "…ありがとうございます。…下の子、限界近かったかも。",
-    "en": "...Thank you. ...The younger ones were close to done, maybe.",
+    "en": "...Thank you. ...The younger ones were close to done, I think.",
     "files": [
       "data.js:F07_LINES"
     ],
@@ -56464,7 +56464,7 @@
   },
   {
     "key": "…はい、わかりました。…やりすぎたかな。",
-    "en": "...Yes, understood. ...Went a bit far, maybe.",
+    "en": "...Yes, understood. ...Went a bit far, I think.",
     "files": [
       "data.js:F07_LINES"
     ],
@@ -59145,7 +59145,7 @@
   },
   {
     "key": "…みんなに迷惑はかけられない。…結果は出さないと。",
-    "en": "...I can't let everyone down. ...I have to bring results.",
+    "en": "...I can't let everyone down. ...I have to get results.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -65499,7 +65499,7 @@
   },
   {
     "key": "…他所が私を欲しいってさ。…ちょっと嬉しいかもね",
-    "en": "...Somewhere else wants me, they say. ...A little flattering, maybe.",
+    "en": "...Somewhere else wants me, they say. ...A little flattering, I suppose.",
     "files": [
       "data.js:CHOICE_EVENT_DIALOGUES"
     ],
@@ -92781,7 +92781,7 @@
   },
   {
     "key": "あっ…勝てたかぁ…油断は禁物だね",
-    "en": "Oh... I got the win. Can't let my guard down, though.",
+    "en": "Ah... so I won. I can't afford to get careless now.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -103697,7 +103697,7 @@
   },
   {
     "key": "あ～疲れた。でもまぁ勝ったからいっか♪",
-    "en": "Ugh, I'm beat. Well, I won, so I'll call it good ♪",
+    "en": "Ahh, I'm beat. Well, I won, so I'll call it good ♪",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -104778,7 +104778,7 @@
   },
   {
     "key": "いい試合だったね♪ …あ、本音？ もっとやれたんじゃない？",
-    "en": "Good match ♪ ...Oh, honestly? You had more in you than that.",
+    "en": "Good match ♪ ...Oh, honestly? You could have done more than that, don't you think?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -104792,7 +104792,7 @@
   },
   {
     "key": "いい試合だったわ。また一つ経験になった……",
-    "en": "That was a good match. Another one to grow from...",
+    "en": "That was a good match. That's one more bit of experience for me...",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -121165,7 +121165,7 @@
   },
   {
     "key": "このまま積み上げていけば、いずれ私が……",
-    "en": "Keep stacking wins like this, and sooner or later it will be me...",
+    "en": "If I keep piling up wins like this, sooner or later it will be me...",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -122184,7 +122184,7 @@
   },
   {
     "key": "この体格とパワー…特殊な血筋のおかげかな。",
-    "en": "The size, the power... that's the bloodline I was born with, I suppose.",
+    "en": "The size, the power... I have an unusual bloodline to thank, I suppose.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -125167,7 +125167,7 @@
   },
   {
     "key": "この試合、ヒールっぽかった？　えっ、そんな事無い？",
-    "en": "Was I being a heel out there? Huh — you don't think so?",
+    "en": "Was I kind of a heel out there? Huh, you don't think so?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -134744,7 +134744,7 @@
   },
   {
     "key": "どんな勝ち方でも勝ちは勝ち。…ごめんなさいね",
-    "en": "A win is a win, however it comes. ...Sorry about that.",
+    "en": "However you get it, a win is a win. ...Sorry about that.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -134800,7 +134800,7 @@
   },
   {
     "key": "どんな相手だって、自分の強みを生かせば勝てるんだよ",
-    "en": "Anyone can be beaten, as long as you play to what you're good at.",
+    "en": "No matter who you're up against, you can win if you play to your strengths.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -137654,7 +137654,7 @@
   },
   {
     "key": "ひ弱だけど…諦めたくないから…！",
-    "en": "I'm not strong, I know... but I don't want to give up...!",
+    "en": "I know I'm frail... but I don't want to give up...!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -137849,7 +137849,7 @@
   },
   {
     "key": "ふぅ……観客のみんなに実力を見せれたかな？",
-    "en": "Phew... Think everyone out there got to see what I can do?",
+    "en": "Phew... I wonder if the crowd got to see what I'm made of.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -137905,7 +137905,7 @@
   },
   {
     "key": "ふぅ…調子上がってきたかな？",
-    "en": "Phew... starting to hit my stride, maybe?",
+    "en": "Phew... I'm starting to hit my stride, I think.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -143840,7 +143840,7 @@
   },
   {
     "key": "まだまだ成長途中。もっと強くなってみせる！",
-    "en": "Still a work in progress. I'm going to get stronger than this!",
+    "en": "Still a work in progress. Just watch me get stronger!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -150051,7 +150051,7 @@
   },
   {
     "key": "やったー♡ さすが社長、太っ腹～♪",
-    "en": "Yay ♡ Generous as ever, Boss ♪",
+    "en": "Lovely ♡ Generous as ever, Boss ♪",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -156621,7 +156621,7 @@
   },
   {
     "key": "コツコツ磨いた関節技…やっと実を結んだわ。",
-    "en": "All those hours on my submission work... it showed today.",
+    "en": "All those hours on my submission work... it finally came together.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -160683,7 +160683,7 @@
   },
   {
     "key": "プライドにかけて、負けるわけにはいかない！",
-    "en": "I've got my pride on the line. Losing isn't an option!",
+    "en": "I've got my pride riding on this. I'm not losing this one!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -161962,7 +161962,7 @@
   },
   {
     "key": "モデルの仕事もプロレスも、華やかにこなすわ♪",
-    "en": "Modeling, wrestling — I make both of them look good ♪",
+    "en": "Modeling, wrestling — I look good doing both ♪",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -168134,7 +168134,7 @@
   },
   {
     "key": "人当たりいいのは仕事のスキル。毒舌はオフの特権♪",
-    "en": "Being pleasant is a job skill. The sharp tongue is what I keep for off hours ♪",
+    "en": "Being pleasant is a job skill. The sharp tongue is an off-the-clock privilege ♪",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -169968,7 +169968,7 @@
   },
   {
     "key": "仕事もプロレスも、全力で！",
-    "en": "The day job, the ring — I go all out at both!",
+    "en": "I go all out at work, and all out in the ring!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -173639,7 +173639,7 @@
   },
   {
     "key": "元マドンナの座、必ず取り戻すわ…！",
-    "en": "That Madonna spot used to be mine. I will take it back...!",
+    "en": "The Madonna spot was mine once. I will be taking it back...!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -175171,7 +175171,7 @@
   },
   {
     "key": "冷静に分析して、弱点を突く。それだけのことよ。",
-    "en": "Study them calmly. Go at the weak spot. That's all there is to it.",
+    "en": "I analyze calmly and go for the weak point. That's all there is to it.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -176242,7 +176242,7 @@
   },
   {
     "key": "力づくで分からせるのも、意外と悪くないものよね♪",
-    "en": "Making someone understand by force... not bad at all ♪",
+    "en": "Making someone understand by force is not bad at all, actually ♪",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -184354,7 +184354,7 @@
   },
   {
     "key": "堅実な実力が私の強み。派手さだけじゃないの。",
-    "en": "Solid skill is what I'm built on. There's more to me than the sparkle.",
+    "en": "Steady ability is my real strength. There's more to me than the sparkle.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -184714,7 +184714,7 @@
   },
   {
     "key": "外では厳しく、家では陽気♪ …リングの上は？ もちろん全力よ！",
-    "en": "Strict in public, cheerful at home ♪ ...In the ring? Everything I've got!",
+    "en": "Strict in public, cheerful at home ♪ ...In the ring? Everything I've got, of course!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -185124,7 +185124,7 @@
   },
   {
     "key": "大人びてるって言われるけど…それが私の武器かしら。",
-    "en": "People say I seem older than I am... I suppose that's my weapon.",
+    "en": "People say I seem older than I am... I suppose that's my edge.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -196911,7 +196911,7 @@
   },
   {
     "key": "最近…あいつのこと、前ほど気にならなくなった…かも",
-    "en": "Lately... she doesn't get to me like she did... maybe...",
+    "en": "Lately... she doesn't get to me like she did... I think.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -196953,7 +196953,7 @@
   },
   {
     "key": "最近…あの方のこと、前ほど気にならなくなった…かもしれません…",
-    "en": "Lately... I don't think about her as much... maybe...",
+    "en": "Lately... she's not on my mind the way she was... I think.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -207987,7 +207987,7 @@
   },
   {
     "key": "知性で戦う。それが新見ゆりのスタイル。",
-    "en": "I fight with my head. That is the Yuri Niimi style.",
+    "en": "I fight with my mind. That is the Yuri Niimi style.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -215618,7 +215618,7 @@
   },
   {
     "key": "精神的な強さが一番の武器。何があっても折れない！",
-    "en": "Mental strength is my best weapon. No matter what happens, I won't break!",
+    "en": "Mental toughness is my strongest suit. No matter what happens, I won't break!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -222830,7 +222830,7 @@
   },
   {
     "key": "謙虚さは武器になる。あとは星を取ってこい。",
-    "en": "Humility is a weapon. Now go and bring back wins.",
+    "en": "Humility works in your favor. Now go and bring back wins.",
     "files": [
       "data.js:COMMON3_LINES"
     ],
@@ -223332,7 +223332,7 @@
   },
   {
     "key": "負けたくない…この気持ちが一番の武器！",
-    "en": "I hate losing... and that's the best weapon I've got!",
+    "en": "I hate losing... and that feeling is the strongest thing I've got!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -226054,7 +226054,7 @@
   },
   {
     "key": "距離…少し開いたかも",
-    "en": "There's a gap now. A small one, maybe.",
+    "en": "There's a gap now. A small one, I think.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -228982,7 +228982,7 @@
   },
   {
     "key": "長かったなー！ でもあっという間だったかもね",
-    "en": "Man, that was long! And gone in a blink, maybe!",
+    "en": "Man, that was long! And gone in a blink, tho'!",
     "files": [
       "data.js:RETIREMENT_LINES"
     ],
