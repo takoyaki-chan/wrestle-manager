@@ -991,7 +991,7 @@ module.exports = {
   'faction-ignite': {
     description: '派閥開戦(F02_IGNITE・task-86セレモニー)の点火: 発火予約+リーダー対決入り予約カード→興行開催→開戦セレモニー→結果→hostility反映',
     fixture: {
-      seed: 42,
+      seed: 7 /* P7-59: seed42はP7-54(集客)以降の軌道で「リーダー健在の派閥が2つ」を満たさなくなったため7へ */,
       until: G => G.season === 2 && G.week === 6 && !G.offSeason,
       engineer: _engineerFactionIgnite,
       assert: G => {

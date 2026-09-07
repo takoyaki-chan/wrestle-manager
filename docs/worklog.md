@@ -1,5 +1,10 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-07 デプロイ前フルスイート — 全項目結果と faction-ignite の fixture シード切替(P7-59)
+
+- **結果**: npm test 267/267 / ja-golden 完全一致 e43b8ed4… / 辞書4本 未訳0 / 台帳整合 ok / ratchet 27,645 不変 / balance-baseline 逸脱なし / version-consistency ok(v1.34) / save-regression ALL CLEAR / detectors ALIVE / auto-sim 40季(seed42) ALL CLEAR 指紋 dead5bde・台帳検査3種 0違反 / auto-sim 40季 `--care` ALL CLEAR 指紋 d5ec2181・0違反 / 出荷ゲート 30 PASS / 走破 ja PASS(336手・Issues 0、digest は別途確定)・EN PASS(412手・miss 0・露出は仕様除外のみ)/ ignite 12シナリオ×JA/EN: **11本 PASS、faction-ignite のみ FAIL(D5)** / bug:audit 実行(docs/archive/bug-audit-20260907-193853.md、HEAD~1 基準のため差分ほぼ空→origin/main 基準の精査を BA-0907 として別途実施)。
+- **faction-ignite の FAIL の原因**: fixture 生成(`generate-scenario-fixture.js faction-ignite 42`)が「リーダー健在の派閥が2つ無い」で失敗し、キャッシュ済みの古い seed42 fixture で走って D5。P7-54(集客ボーナス発動)以降の seed42 の軌道では S2W6 時点の派閥構成が条件を満たさない=ゲームのバグではなく fixture の前提崩れ。seed 7 / 1234 は生成可。**シナリオの既定シードを 42→7 に変更(P7-59)**し、JA/EN とも PASS(maxHostility 65.8、EN miss 0)。生成 fixture は gitignore(必要時に再生成)。
+
 ## 2026-09-07 P7-58 マージ(8a59c4f8)+ 配布RC 1.35rc2 — 既存セーブの言語切替で新聞が英語になることの実UI確認
 
 - Keisuke の実機報告「既存セーブを EN に切り替えたら新聞が全然翻訳されていない」→ 原因は発行済みの号が生成時言語の完成文で永続していたこと。P7-58 で1〜3面+バックナンバーの記事を「テンプレ+材料(または再構成引数)」併記にし、表示時に現在の言語で組み立てる方式へ。**本更新前に発行された号は材料を持たないので元の言語のまま**(週送りでバックナンバーから押し出される)。
