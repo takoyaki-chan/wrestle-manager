@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3533件、訳文あり3533件)
+//  生成元: i18n/template-ledger.json (総キー3534件、訳文あり3534件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -688,6 +688,7 @@
     "{name}（{org}）": "{name} ({org})",
     "{name}（{org}）が{runnerUp}を下し、ジュニアトーナメント優勝を飾った。{tone}。優勝賞金1,000万円。": "{name} ({org}) beat {runnerUp} to take the Junior Tournament. It was {tone}. Winner's purse: ¥10M.",
     "{name}（{reason}）": "{name} ({reason})",
+    "{name}（{tier}）": "{name} ({tier})",
     "{newLeaderName}、「{factionName}」を継承——{org}の火は消えず": "{newLeaderName} inherits {factionName}, {org}",
     "{nextChapterTopSurname}が前に出るとき、その背後には{surname}の積み上げた{styleJa}があった。": "When {nextChapterTopSurname} stepped forward, behind her was the {styleJa} {surname} had stacked up.",
     "{nextChapterTopSurname}が王座を獲るとき、{surname}が残した「無冠の重み」が背後に静かに横たわっていた。": "When {nextChapterTopSurname} took the title, the weight of the uncrowned that {surname} left behind lay quietly at her back.",

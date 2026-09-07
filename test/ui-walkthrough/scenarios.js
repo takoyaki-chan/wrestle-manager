@@ -296,6 +296,24 @@ const MVPRACE_PROBE = `(() => {
   };
 })()`;
 
+// ── P7-58: 新聞1面(topStory/subStories+自団体興行結果)の画面ツアーprobe ──
+// `#newspaperContent` 全体を読み、jaExposureScreens ゲート(run.js)が自動でJA露出0を
+// 検査するのでここではjaLeavesは持たない — present/textLength(不発検出)と、
+// バックナンバー送りが実際に効いたかの目印(np-archive-latestボタンの出現)だけを見る。
+const NEWSPAPER_PAGE1_PROBE = `(() => {
+  const root = document.getElementById('newspaperContent');
+  if (!root) return { present: false };
+  const norm = el => (el.textContent || '').replace(/\\s+/g, ' ').trim();
+  const paper = root.querySelector('.np-paper');
+  return {
+    present: !!paper,
+    text: norm(root).slice(0, 400),
+    textLength: norm(root).length,
+    hasOlderBtn: !!root.querySelector('[data-walk-role="np-archive-older"]'),
+    hasLatestResetBtn: !!root.querySelector('[data-walk-role="np-archive-latest"]'),
+  };
+})()`;
+
 // ── R14(P7-41): 対抗戦・挑戦状(死蔵セリフ WAR_DECLINE_DIALOGUE)の前提づくり ──
 // checkRivalryWarは週10/22/34限定+抽選+隣接ランクという複合条件で自然発火が非常に稀。
 // 他のB3系igniteと同じ発想で、複雑な発生条件は再現せずpendingEventへ直接
@@ -698,6 +716,122 @@ module.exports = {
         fails.push('計測器(window.__mvpFallback)が見つからない — MVP_INSTRUMENT_PROBEが刺さっていない');
       } else if (probe.mvpFallback.length === 0) {
         fails.push('_npMvpI18n のフォールバック(regen-mismatch)が0件(差し替えた旧文が現行プールと一致してしまっている=fixtureが機能していない)');
+      }
+      return fails;
+    },
+  },
+
+  // ── P7-58: 新聞1〜3面の言語切替点火 ──
+  // headless-simはapp.js(UI層)を読み込まないため、自団体興行結果(playerShowTitle/Normal。
+  // App._generateNewspaperTexts が Math.random() で選ぶ経路)は自然生成のfixtureには
+  // 一度も現れない。engineerでその形の記事(headlineTpl/headlineVars・bodyTpl/bodyVars・
+  // bodyDerive[finishLabel]付き)を最新号と直近バックナンバー1件へ直接差し込み、
+  // 自然発生する業界ニュース各型(生成時にheadlineTpl/bodyTplを併記済み)と合わせて
+  // 「JAで発行された号をENで開く」を検査する。
+  'newspaper-lang-switch': {
+    description: '新聞1面の言語切替点火(P7-58): JAで進めた業界ニュース各種の自然発生セーブに、Math.random()経由(App._generateNewspaperTexts)の自団体興行結果1件をengineerで最新号+バックナンバー1件へ注入し、実UIでEN表示に切り替えて最新号+バックナンバー3件を巡回、日本語露出0(jaExposureScreens)を検査する。JAでは注入した記事の見出し/本文が1バイト不変で出ることを確認する',
+    fixture: {
+      seed: 42,
+      // 週8まで進めれば新聞は7号分バックナンバーが溜まる(assertで3号以上を要求)
+      until: G => G.season === 1 && G.week === 8 && !G.offSeason,
+      engineer: G => {
+        const wp = G.weeklyNewspaper;
+        const archive = G.newspaperArchive || [];
+        if (!wp) throw new Error('weeklyNewspaperが無い。停止週を後ろへずらして生成し直すこと');
+        const winner = (G.roster || [])[0];
+        const loser = (G.roster || [])[1];
+        if (!winner || !loser) throw new Error('自団体ロスターが2名未満。別シード/停止週で生成し直すこと');
+        // App._NEWSPAPER_HEADLINES.normal[0] / _NEWSPAPER_ARTICLES.normal[1] を手で
+        // 展開した形(headless-simはkuroda-text.js/app.jsを読み込まないため、実関数は
+        // 呼べない)。テンプレ文字列はi18n/template-ledger.json(app.js:_NEWSPAPER_HEADLINES/
+        // _NEWSPAPER_ARTICLES)に実在し、英訳済み(node test/i18n-build-template-dict.jsで確認済み)。
+        const finType = 'フォール', finMove = 'ストンピング';
+        const finishLabel = `${finMove} → 3カウント`; // Engine.formatFinish(finType, finMove, false)と同じ組み立て
+        const headlineTpl = '{winnerName}がメインイベントを制す';
+        const headlineVars = { winnerName: winner.name };
+        const bodyTpl = '{winnerName}がメインの大舞台で堂々たる勝利を飾った。{loserName}も要所で見せ場を作ったが、最終的には{winnerName}の{finishLabel}に沈んだ。{attendanceToLocaleString}人の観客が見守った{turns}ターンの一戦。';
+        const bodyVars = { winnerName: winner.name, loserName: loser.name, finishLabel, attendanceToLocaleString: '3,200', turns: 14 };
+        const bodyDerive = [{ key: 'finishLabel', kind: 'formatFinish', finType, finMove, fallback: finishLabel }];
+        const stampSuffixJa = '定期興行';
+        const situation = `第${G.season}年度・第${Math.max(1, G.week - 1)}週 ${stampSuffixJa}`;
+        const headline = headlineVars.winnerName + 'がメインイベントを制す';
+        const body = `${winner.name}がメインの大舞台で堂々たる勝利を飾った。${loser.name}も要所で見せ場を作ったが、最終的には${winner.name}の${finishLabel}に沈んだ。3,200人の観客が見守った14ターンの一戦。`;
+        const playerShowStory = {
+          type: 'playerShowNormal', priority: 150,
+          headline, headlineTpl, headlineVars, headlineDerive: null,
+          body, bodyTpl, bodyVars, bodyDerive,
+          characterId: winner.id, situation, situationSuffixJa: stampSuffixJa,
+        };
+        const playerShowData = {
+          headline, subheadline: '', article: body,
+          headlineTpl, headlineVars, headlineDerive: null,
+          articleTpl: bodyTpl, articleVars: bodyVars, articleDerive: bodyDerive,
+          winner: { id: winner.id, name: winner.name }, loser: { id: loser.id, name: loser.name },
+          left: { id: winner.id, name: winner.name }, right: { id: loser.id, name: loser.name },
+          isDraw: false, isTag: false, finishLabel, finType, finMove, turns: 14, mq: 62,
+          // matchLabel: null はApp._buildShowResultNewspaperDataの現行実装と同じ形
+          // (シングルのメインは表示側の`d.matchLabel || WM_I18N.t('メインイベント')`
+          // フォールバックへ委ねる。§P7-58で「メインイベント」の生成時焼き込みを撤去した)。
+          matchLabel: null, attendance: 3200,
+        };
+        const newWp = { ...wp, topStory: playerShowStory, playerShowData };
+        const newArchive = archive.length
+          ? [{ ...archive[0], topStory: playerShowStory, playerShowData }, ...archive.slice(1)]
+          : archive;
+        return { ...G, weeklyNewspaper: newWp, newspaperArchive: newArchive };
+      },
+      assert: G => {
+        const fails = [];
+        if (!G.weeklyNewspaper || G.weeklyNewspaper.layout !== 'v3') fails.push('weeklyNewspaper.layout が v3 でない(旧レイアウトは検査対象外)');
+        if (!G.weeklyNewspaper.topStory || G.weeklyNewspaper.topStory.type !== 'playerShowNormal') {
+          fails.push('engineerの差し込みが効いていない(weeklyNewspaper.topStory)');
+        }
+        const archive = G.newspaperArchive || [];
+        if (archive.length < 3) fails.push(`newspaperArchiveが${archive.length}件(3件以上必要 — バックナンバー巡回を検査するため)`);
+        if (!archive[0] || archive[0].topStory?.type !== 'playerShowNormal') {
+          fails.push('engineerの差し込みが効いていない(newspaperArchive[0].topStory)');
+        }
+        return fails;
+      },
+    },
+    walk: { seasons: 1, maxSteps: 5 },
+    until: s => !!(s.state),
+    ignition: [
+      { name: 'newspaper-screen', required: true, match: s => s.activeScreen === 'screen-newspaper' },
+    ],
+    tour: {
+      // ENモードのときだけ、この画面ツアーで踏んだ全ての停車点(最新号+バックナンバー3件)の
+      // 可視要素をJA露出0のゲートにする(run.js)。JAモードでは情報集計のみ。
+      jaExposureScreens: ['screen-newspaper'],
+      steps: [
+        { label: '新聞を開く(最新号)', selector: `.nav-btn[onclick^="showScreen('newspaper'"]`, expectScreen: 'screen-newspaper', probe: NEWSPAPER_PAGE1_PROBE },
+        { label: 'バックナンバー1(engineerの差し込み号)', selector: '[data-walk-role="np-archive-older"]', expectScreen: 'screen-newspaper', probe: NEWSPAPER_PAGE1_PROBE },
+        { label: 'バックナンバー2', selector: '[data-walk-role="np-archive-older"]', expectScreen: 'screen-newspaper', probe: NEWSPAPER_PAGE1_PROBE },
+        { label: 'バックナンバー3', selector: '[data-walk-role="np-archive-older"]', expectScreen: 'screen-newspaper', probe: NEWSPAPER_PAGE1_PROBE },
+      ],
+    },
+    tourAssert: (probes, lang) => {
+      const fails = [];
+      const stops = Object.entries(probes);
+      if (stops.length === 0) return ['画面ツアーのprobeが1つも取れていない'];
+      for (const [label, p] of stops) {
+        if (!p || p.probeError) { fails.push(`${label}: probe失敗 ${p && p.probeError}`); continue; }
+        if (!p.present) { fails.push(`${label}: .np-paper が描画されていない(不発)`); continue; }
+        if (!p.textLength || p.textLength < 50) fails.push(`${label}: 紙面のテキストが${p.textLength || 0}字しかない(不発の疑い)`);
+      }
+      const backnumber1 = probes['バックナンバー1(engineerの差し込み号)'];
+      if (backnumber1 && !backnumber1.probeError) {
+        if (!backnumber1.hasLatestResetBtn) fails.push('バックナンバー1: 最新号ボタンが出ていない(バックナンバー送りが効いていない)');
+        // engineerが差し込んだplayerShowNormal記事(見出し「がメインイベントを制す」を含む)が
+        // 実際に一面へ出ていること。JAでは原文のまま、ENでは訳文(takes the main event)が出る
+        const hasJaMarker = /メインイベントを制す/.test(backnumber1.text || '');
+        const hasEnMarker = /takes the main event/.test(backnumber1.text || '');
+        if (lang === 'en') {
+          if (!hasEnMarker) fails.push('バックナンバー1: EN訳文(takes the main event)が一面に出ていない(headlineTplの表示時再生成が働いていない)');
+          if (hasJaMarker) fails.push('バックナンバー1: ENなのにJA原文(メインイベントを制す)が残っている');
+        } else if (!hasJaMarker) {
+          fails.push('バックナンバー1: JAなのに原文(メインイベントを制す)が出ていない');
+        }
       }
       return fails;
     },

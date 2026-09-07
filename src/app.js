@@ -9876,7 +9876,14 @@ const App = {
     // i18n Stage B P4-5(D-P4-2): 見出し/本文は自団体新聞としてGに焼かれるため、
     // 生成時点のWM_I18N.tを直接通す(kurodaText経由。src/kuroda-text.jsのヘルパーを
     // app.js側からも再利用 — kuroda-text.jsはindex.htmlでapp.jsより先に読み込まれる)。
-    const headline = kurodaText(pick(HL[cat] || HL.normal), d, WM_I18N.t);
+    // i18n P7-58: pick()はMath.random()で選ぶため、この号を跨いで言語を切り替えても
+    // どのテンプレが選ばれたか再現できない(specs §14-3と同じ制約)。kurodaTextParts()で
+    // 完成文の隣に{tpl, vars}(=WM_I18N.tへ渡せるJA原文+差し込み値)も作っておき、
+    // App._buildShowResultNewspaperData経由でG.currentNewspaperへheadlineTpl/headlineVars
+    // 等として併記する(表示側はEngine.newspaper.generateが作るplayerShowTitle/Normal記事の
+    // headlineTpl/bodyTplへそのまま引き継ぐ)。
+    const headlinePick = pick(HL[cat] || HL.normal);
+    const { text: headline, tpl: headlineTpl, vars: headlineVars } = kurodaTextParts(headlinePick, d, WM_I18N.t);
 
     // サブヘッドライン：常にカードと数値情報
     // i18n Stage A P3a-2: NEWSPAPER_SUB_TEMPLATES(data.js・監査3-3)。3分岐→3テンプレ。
@@ -9886,7 +9893,8 @@ const App = {
     if (d.isDraw) subKey = 'draw';
     else if (d.otherHighMQ.length > 0) subKey = 'otherHighMQ';
     else subKey = 'default';
-    const subheadline = fillTemplateVars(WM_I18N.t(NEWSPAPER_SUB_TEMPLATES[subKey]), {
+    const subheadlineTpl = NEWSPAPER_SUB_TEMPLATES[subKey];
+    const subheadlineVars = {
       showName: d.showName,
       venue: d.venue.name,
       attendance: d.attendance.toLocaleString(),
@@ -9894,20 +9902,43 @@ const App = {
       totalMatches: d.totalMatches,
       avgMQ: d.avgMQ,
       mq: d.mq,
-    });
+    };
+    const subheadline = fillTemplateVars(WM_I18N.t(subheadlineTpl), subheadlineVars);
 
     // 記事本文
     let articleCat = cat;
     if (d.isGoodRival && !d.isDraw && cat !== 'superMQ') articleCat = 'goodRival';
     const articlePool = AR[articleCat] || AR.normal;
-    let article = kurodaText(pick(articlePool), d, WM_I18N.t);
+    let articlePick = pick(articlePool);
 
     // 低MQ追記
     if (d.isLowMQ && cat !== 'draw') {
-      article = kurodaText(pick(AR.lowMQ), d, WM_I18N.t);
+      articlePick = pick(AR.lowMQ);
     }
+    const { text: article, tpl: articleTpl, vars: articleVars } = kurodaTextParts(articlePick, d, WM_I18N.t);
 
-    return { headline, subheadline, article };
+    // i18n P7-58: finishLabel/rivalLabelはdへ渡す前に既に翻訳済みの「成形済み値」
+    // (§6の構造穴)なので、kurodaTextPartsが抽出したvarsにそのまま入っても表示時の
+    // 再翻訳では古い言語のまま残る。テンプレが実際にこれらのキーを使ったときだけ、
+    // 元になった生キー(finType/finMove・rivalLabelJa)からの再計算指示(derive)を添える
+    // (ui-render.js _npMaterializeVars の 'formatFinish'/'dictLabel' kindが読む)。
+    const _buildDerive = (vars) => {
+      if (!vars) return null;
+      const derive = [];
+      if ('finishLabel' in vars) {
+        derive.push({ key: 'finishLabel', kind: 'formatFinish', finType: d.finType || null, finMove: d.finMove || null, fallback: vars.finishLabel });
+      }
+      if ('rivalLabel' in vars && d.rivalLabelJa) {
+        derive.push({ key: 'rivalLabel', kind: 'dictLabel', raw: d.rivalLabelJa });
+      }
+      return derive.length ? derive : null;
+    };
+
+    return {
+      headline, subheadline, article,
+      headlineTpl, headlineVars, subheadlineTpl, subheadlineVars, articleTpl, articleVars,
+      headlineDerive: _buildDerive(headlineVars), articleDerive: _buildDerive(articleVars),
+    };
   },
   _buildShowResultNewspaperData() {
     const results = G.lastShowResults || [];
@@ -10052,6 +10083,12 @@ const App = {
     }
 
     // ─── テキスト生成 ───
+    // i18n P7-58: finishLabel/rivalLabelはこのdを組み立てる時点のWM_I18N.tで既に
+    // 訳された「成形済み値」(§6の構造穴)。kurodaTextParts が抽出するvarsへそのまま
+    // 入ると、号を跨いで言語を切り替えたときに生成時点の言語のまま残る。表示側
+    // (_npResolvePlayerShowData→_npMaterializeVars)が再翻訳できるよう、値の元になった
+    // 生キー(finType/finMove・rivalLabelJa)も一緒に渡す — _generateNewspaperTexts側で
+    // 「varsにfinishLabel/rivalLabelが実際に登場したときだけ」derive指示を組み立てる。
     const np = App._generateNewspaperTexts({
       isDraw, winner, loser, left: main.left, right: main.right,
       isTitleMatch: !!main.isTitleMatch, isTitleDefense, finishLabel, turns, mq,
@@ -10059,7 +10096,9 @@ const App = {
       isHighMQ, isSuperMQ, isLowMQ, isPPVShow, isSpecial,
       hasRivalry, isGoodRival, rivalLabel, isHighBond,
       ovrGap, isUpset, venue, attendance, showName, avgMQ,
-      otherHighMQ, totalMatches, orgName: G.orgName
+      otherHighMQ, totalMatches, orgName: G.orgName,
+      finType: main.finType, finMove: main.finMove,
+      rivalLabelJa: rivalLvl ? rivalLvl.label : null,
     });
 
     // ── allMatches: メイン以外の全試合ダイジェスト ──
@@ -10165,10 +10204,27 @@ const App = {
     return {
       showName, venueName: venue.name, venueIdx: G.showVenue, attendance, avgMQ,
       headline: np.headline, subheadline: np.subheadline, article: np.article,
+      // i18n P7-58: 完成文の隣に「表示時再生成」用のテンプレ+差し込み値を併記する
+      // (specs §14-3)。Engine.newspaper.generate がplayerShowTitle/Normal記事の
+      // headlineTpl/bodyTplへそのまま引き継ぎ、旧セーブ(このフィールドが無い号)は
+      // 完成文のまま表示される。
+      headlineTpl: np.headlineTpl, headlineVars: np.headlineVars, headlineDerive: np.headlineDerive,
+      subheadlineTpl: np.subheadlineTpl, subheadlineVars: np.subheadlineVars,
+      articleTpl: np.articleTpl, articleVars: np.articleVars, articleDerive: np.articleDerive,
       winner, loser, left: main.left, right: main.right, isDraw, finishLabel,
+      // i18n P7-58: finType/finMoveはfinishLabel(Engine.formatFinishの成形済み値)の
+      // 元になった生キー。finishLabel自体は生成時点の言語で焼かれる(_npRenderPlayerShowが
+      // d.finishLabelを直接読む3箇所で使う)ため、表示側(_npResolvePlayerShowData)が
+      // Engine.formatFinish(finType, finMove, ...)を呼び直せるよう併記する。
+      finType: main.finType || null, finMove: main.finMove || null,
       turns, mq, hpLeft: hpL, hpRight: hpR, isTitleMatch: !!main.isTitleMatch,
       isTag: !!main.isTag, teamA: main.teamA || null, teamB: main.teamB || null,
-      matchNumber: main.matchNumber || totalMatches, matchLabel: main.matchLabel || WM_I18N.t('メインイベント'),
+      // i18n P7-58: 「メインイベント」をここで訳して焼くと号を跨いだ言語切替で古い言語の
+      // まま残る(_npRenderPlayerShowが持つ`d.matchLabel || WM_I18N.t('メインイベント')`
+      // という表示時フォールバックが、常にmatchLabelが埋まっているせいで一度も働いていなかった)。
+      // main.matchLabelが無いとき(シングルのメイン。最も多いケース)はnullのまま渡し、
+      // 表示時フォールバックに委ねる。
+      matchNumber: main.matchNumber || totalMatches, matchLabel: main.matchLabel || null,
       injuries: (App._lastInjuries || []).filter(ir => ir && ir.injury && !ir.retireType).map(ir => ({
         name: ir.name,
         type: ir.injury.type,

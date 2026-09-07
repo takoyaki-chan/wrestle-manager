@@ -6720,17 +6720,18 @@ function _queueDraftIndustryNews(state, draftNewsPage, summary) {
       picked.sort((a, b) => (TIER_ORDER[a.tier] ?? 9) - (TIER_ORDER[b.tier] ?? 9) || a.id - b.id);
       const top = picked.slice(0, 5).filter(p => p.name);
       if (top.length >= 2) {
+        // i18n P7-58: 以前はここでWM_I18N.lang分岐により「名前（ティア）」の完成文を
+        // 直接焼いていた(§8の穴と同型。載る号まで最大INDUSTRY_CARRY_MAX_AGE週キューに
+        // 滞留するため、滞留中に言語を切り替えるとJAのまま出ていた)。
+        // 生のnamesRaw({name, tier}配列)だけを積み、実際に紙面へ載る瞬間
+        // (_wmResolvePreformattedIndustryData の'draftRoundup'ケース)に組み直す。
         s = Engine.industryNews.push(s, {
           type: 'draftRoundup',
           characterId: top[0].id,
           characterIds: top.map(p => p.id),
           data: {
             total: picked.length,
-            // i18n Stage B P4-4(P4-3b発見分): tierが日本語のまま値に混入していた。
-            // 全角括弧+読点はJA書式なので、EN側は半角括弧+カンマ区切りへ形も合わせる。
-            names: (WM_I18N.lang === 'en')
-              ? top.map(p => `${WM_I18N.pn(p.name)} (${WM_I18N.t(TIER_LABEL[p.tier] || '素材')})`).join(', ')
-              : top.map(p => `${WM_I18N.pn(p.name)}（${TIER_LABEL[p.tier] || '素材'}）`).join('、'),
+            namesRaw: top.map(p => ({ name: p.name, tier: p.tier })),
             headName: top[0].name,
           },
         });

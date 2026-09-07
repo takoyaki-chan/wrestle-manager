@@ -2645,3 +2645,72 @@ P7-31 §44-5-発見1が起票した「財務タブの明細ラベルが6箇所�
 `node --check`(4ファイル)/ `ja-golden` 完全一致(`3466a6ff…1037b`)/ `npm test` **266/266** / `balance-baseline` 逸脱なし / `auto-sim 20 42` ALL CLEAR・指紋 96492883 不変 / `i18n-ratchet`(data.js +51・match-engine.js −51 の移設、総数27,932不変。`--update` 済)/ `i18n-build-template-dict` 3,533キー未訳0 / `i18n-ledger-consistency-test` ok / `spectator-move-i18n-check` **ALL CHECKS PASS(77項目)** / JA走破 PASS 336手 digest `940bcd9d0515d8d0` / EN走破 PASS 401手 i18n-miss 0。
 
 `spectator-move-i18n-check` には P7-9 からの繰り越し「試合ログ行の実況ストリップ落ち込みは判定から除く」があったが、本タスクで**撤廃**した。あわせて、実DOM `#battleLog` は再生の進み方(アニメ完了後に追記される)でサンプルが揺れるため、**描画関数 `_logLineHtml` へ全フレームを通した決定的な採取**を併置している。
+
+## 52. Stage B P7-58 — 新聞1〜3面の「テンプレ+材料」表示時再構築(言語切替対応、2026-09-07追加)
+
+`Engine.newspaper.generate()` は `opts.dict`(=生成時点の `WM_I18N.t`)で headline/body の完成文を `weeklyNewspaper`/`newspaperArchive` へ焼く(§14-3の背景と同じ)。これは生成時点の言語では正しいが、**発行済みの号を後から別言語で開く**(JAで進めたセーブをENへ切り替える、または逆)と、完成文が生成時点の言語のまま出る。4面(年間MVPレース)は P7-23/P7-39 で `_npMvpI18n`(表示時再生成+自己検証)により解決済みだったが、1〜3面の記事(1面トップ/業界ニュース約65種/王座交代/引退/AI団体イベント/PPV/自団体興行結果/ジュニアトーナメント特集ページ等)は未対応だった。本タスクはこれを全種類へ広げる。
+
+### 52-1. 記事の生成メカニズムは3系統に分かれ、それぞれ別の対処が要る
+
+| 系統 | 例 | 対処 |
+|---|---|---|
+| A. rngで選んだ完成文の1テンプレ+差し込み値 | 業界ニュース約65種(`NEWS_HEADLINE_TEMPLATES`)・AI団体イベント各種・引退variant・follow-up記事 | **§14-3の追加フィールド方式**。`headlineTpl`/`headlineVars`(・`bodyTpl`/`bodyVars`)を完成文の隣に併記。表示側は`WM_I18N.t(tpl, vars)`で組み直す |
+| B. 季/週/選手ID/併記データだけに依存する決定的な純関数(乱数を消費しない) | `composeChampionChangeBody`・`composeUnifiedTitleArticle`・`composeHallOfFameRetirement`(新設 `composeNpcHallOfFame` を含む)・`_buildPpvSummitStory` | **`_recompose`方式**(§18-1のMVPレース自己検証パターンの発展形。ただし検証なしで直接呼び直せる — 素材が完成文ではなく生値なので、常に「今の言語で正しい」)。`story._recompose = { kind, ...元の引数 }` を併記し、表示側が同じ関数を`WM_I18N.t`で呼び直す |
+| C. `Math.random()`で選ぶ(§14-3が「表示時再生成が使えない」と特定した型と同じ) | 自団体興行結果の見出し/本文(`App._generateNewspaperTexts`。`App._NEWSPAPER_HEADLINES`/`_NEWSPAPER_ARTICLES`から`Math.random()`で選ぶ) | **kurodaText系の抽出ヘルパーを拡張**。新設 `kurodaTextParts(entry, d, dict)`(kuroda-text.js)が完成文の隣に`{tpl, vars}`(=`kurodaTemplateOf`の正規化結果)も返す。生成側(app.js)はA/Bと同じ追加フィールド方式でheadlineTpl/headlineVars等を併記するだけでよい |
+
+系統Bの `_recompose` kindは5種: `championChangeBody`(王座交代の本文のみ) / `unifiedTitleArticle`(統一王座、headline+body) / `hofRetirement`(殿堂入り引退特別号、headline+body+subhead+situation+captionExtra) / `npcHallOfFame`(NPC殿堂入り、headline+body。generate()から抽出して新設した`Engine.newspaper.composeNpcHallOfFame(h, dict)`を使う) / `ppvSummitStory`(PPV頂上決戦、headline+body+situation。`summitData`に元のsrがそのまま永続しているので追加の引数保存が要らない)。
+
+### 52-2. 「JA成形ラベル」「季/週スタンプ」「派生値」は追加フィールドだけでは足りない
+
+系統Aのtplは`{key}`プレースホルダへ**生の材料**を渡す設計だが、旧実装の一部は差し込む直前に**既に翻訳済みの値**(勝ち越し/決着つかず・名勝負/好勝負などのトーン語、「第N年度・第M週 ○○」のスタンプ、`Engine.formatFinish`の決着文、`injuryLabel`の負傷ラベル、「{wins}勝」のネストしたテンプレ完成値)を積んでいた。これらをそのままVarsへ持ち回ると、表示時に別言語で組み直しても**値自体は生成時点の言語のまま**残る(§6「成形済み値の構造穴」と同型)。
+
+表示側(ui-render.js)に3つの補助フィールドを導入した:
+
+- **`headlineLabelVars`/`bodyLabelVars`**(値が1語のJA成形ラベルで、値としても辞書を引き直す必要があるキー名の配列。§14-2の`_wmDictLabel`と同趣旨・`labelVars`は§16-1の先例と同名)。Varsには**rawのJA語**(勝ち越し/決着つかず/敗北・名勝負/好勝負/…)を積み、表示側の`_npMaterializeVars`が`_wmDictLabel(WM_I18N.t, raw)`で引き直す
+- **`headlineDerive`/`bodyDerive`**(派生値の再計算指示の配列。`{key, kind, ...}`)。`kind`は4種: `injuryLabel`(`injuryLabel(raw, dict)`を呼び直す)/ `formatFinish`(`Engine.formatFinish(finType, finMove, false, dict)`を呼び直す)/ `milestoneWins`(`WM_I18N.t('{wins}勝', {wins})`のネストしたテンプレを組み直す)/ `dictLabel`(`_wmDictLabel`の汎用版。rivalLabel等)
+- **`situationSuffixJa`**(「定期興行」「対抗戦」「挑戦状」「PPV GRAND FINAL」等の種別ラベル。`_wmNewsStamp`の第4引数と同じ語彙)。`story.situation`(完成文のスタンプ)の隣に併記し、表示側が号(wp)の`season`/`week`と組み合わせて`_wmNewsStamp(WM_I18N.t, wp.season, wp.week, suffixJa)`を呼び直す。スタンプの数字自体は号を跨いでも変わらない(号の季/週=そのバックナンバーの季/週)ので、記事ごとにseason/weekを複製する必要は無い
+- 系統Aのうち「NEWS_HEADLINE_TEMPLATES約65種共有」経路は**生成時点の言語で一部フィールドを解決済みのdata**(`_wmResolvePreformattedIndustryData`が`injuryType`/`round`/`stage`/`championWatch`等を導出)を持つため、Vars自体をそのまま持ち回れない。story側に**未加工の`_industryRawData`**(`ev.data`)を併記し、表示側が同じ`_wmResolvePreformattedIndustryData({type, characterId, data: raw}, WM_I18N.t)`を呼び直してからテンプレへ充填する(§8「render時点再構築」を表示点でも使う形)
+
+名前の列挙(業界ニュースのまとめ記事等)は既存の`bodyNames`(P7-30、選手名の生配列を`Engine.newspaper.joinNameList`で表示時に畳む)をそのまま踏襲。可変本数のパーツ連結(対抗戦のベストバウト追記・ジュニアトーナメント展望の断片)は`bodyParts`(`{tpl, vars, labelVars}`の配列)+ `bodyJoinTpl`(2スロットreduce)。1行ずつの合成本文(全試合詳報)は`bodyLineTpl`/`bodyLineVars`(配列)/`bodyLineLabelVars`/`bodyLineJoin`。名前+ラベルを個々にテンプレ充填してから列挙する型(準決勝敗退者一覧)は`bodyNameTplItems: {tpl, items}`。
+
+### 52-3. 表示側の集約点 `_npResolveStory`(ui-render.js)
+
+記事1本(`{headline, body, situation, subhead, captionExtra}`)を現在の言語で組み直す共通関数。優先順位は各フィールド独立(**バグ修正の教訓、§52-5参照**):
+
+1. `_recompose`があり、かつそのkindの戻り値が**そのフィールドを提供していれば**それを使う
+2. 無ければ Tpl系フィールド(§52-2の全種)から`WM_I18N.t`で組み直す
+3. どちらも無ければ保存値のまま(旧セーブ・未対応種のfail-open)
+
+`_npResolveWpStories(wp)`が`wp.topStory`/`wp.subStories`をまとめて解決し、`_npRenderPage1`が1面描画(`_npFrontLegacy`/`_npFrontV3`両方)へ渡す前に1回だけ呼ぶ。特集ページ(`wp.pages[1]`、ジュニアトーナメント/ドラフト総括)を描く`_renderNewspaperExtraPage`も同じ`_npResolveStory`へ委譲するよう置き換えた(旧P7-30時代の専用インライン処理は廃止)。**バックナンバー(`newspaperArchive`)も同じ`_npRenderPage1`→`_npResolveWpStories`経路を通る**ので、新旧の号を区別する特別なコードは無い。
+
+自団体興行結果(`wp.playerShowData` = `state.currentNewspaper`)は記事ではなく専用の詳細カードを持つため、別関数`_npResolvePlayerShowData(psd)`で headline/article に加え、**独立フィールドとして直接読まれる`finishLabel`**(`_npRenderPlayerShow`が`.np-vs-finish`等3箇所で`d.finishLabel`を直読みする)も`finType`/`finMove`から再計算する。
+
+### 52-4. `draftRoundup`(業界紙のドラフト総評)は新聞generate()の外にも同型の穴があった
+
+`ui-common.js` `_queueDraftIndustryNews`が`draftRoundup`イベントを`_industryNewsEvents`へ積む際、`WM_I18N.lang === 'en'`を直接見て「名前（ティア）」の完成文(`data.names`)を**キューへ積む時点**で焼いていた(全角括弧+読点=JA / 半角括弧+カンマ=EN)。このイベントは最大`INDUSTRY_CARRY_MAX_AGE`週(3週)キューに滞留しうるため、滞留中に言語を切り替えると`generate()`側のdict糸通しを迂回してJAのまま出る(§8と同型の穴。新聞generate()の外で起きていたので§52-1の3系統整理には現れない第4の穴)。
+
+修正: `namesRaw`(`{name, tier}`の生配列)だけをキューへ積み、`_wmResolvePreformattedIndustryData`に新設した`case 'draftRoundup'`が実際に紙面へ載る瞬間に`ARTICLE_COMPOSE_TEMPLATES.tierParen`(新設、`'{name}（{tier}）'`→`'{name} ({tier})'`)+`Engine.newspaper.joinNameList`で組み直す。ティアラベルのJA原文は管理.js側の`_NP_TIER_LABEL_JA`(既存の`_NP_HOF_INDUCTED_JA`等と同じ流儀)に1本だけ置く。
+
+### 52-5. 実装中に見つけた既存メカニズムの穴3件(ignite回帰テストが検出)
+
+新設したignite シナリオ `newspaper-lang-switch`(§52-6)が実UI検証で以下を検出し、その場で修正した:
+
+1. **`_npResolveStory`の「recomposeがあるかどうか」二択分岐バグ** — `_recompose`が`body`しか返さない種別(`championChangeBody`)で、`recomposed`が truthy であることを理由に`headlineTpl`の適用が丸ごとスキップされていた(headlineが生JAのまま出る)。修正: headline/body/situationを個別にfail-open(§52-3)
+2. **`_npRenderPlayerShow`の繰り上げ判定順序** — `topStory.type`が自団体興行結果のとき`_npSwapMainToSecondCard`を先に呼んでいたが、この関数は対象試合が1試合しかない(`allMatches`が空)と早期returnで**未翻訳の`playerShowData`をそのまま返す**。修正: 先に`_npResolvePlayerShowData`で翻訳し、その結果を繰り上げ関数へ渡す
+3. **`situationSuffixJa`を多くの記事に併記していたのに、`_npResolveStory`が一度も消費していなかった** — `situation`(スタンプ)フィールドの表示時再構築コードが単純に抜けていた。修正: §52-3の優先順位へ追加
+
+あわせて、`_buildShowResultNewspaperData`(app.js)の`matchLabel`(`main.matchLabel || WM_I18N.t('メインイベント')`)が**表示側の同名フォールバックを常に無効化していた**(生成時点で埋めてしまうため、`_npRenderPlayerShow`の`d.matchLabel || WM_I18N.t('メインイベント')`が一度も働かない)ことも発見・修正した。シングルのメイン(`main.matchLabel`が元々undefined)は`null`のまま渡し、表示側フォールバックに委ねる。**タッグのメイン(`buildTagNewsMatch`が`matchLabel`を生成時に焼く経路)は未修正のまま残っている**(§52-7)。
+
+### 52-6. 新設igniteシナリオ `newspaper-lang-switch`
+
+`test/ui-walkthrough/scenarios.js`。headless-simはapp.js(UI層)を読み込まないため自団体興行結果は自然生成されない — `fixture.engineer`で系統C相当の記事(headlineTpl/bodyTpl/bodyDerive付き)を最新号+バックナンバー1件へ直接注入し、自然発生する系統A/Bの記事(業界ニュース・AI王座交代等)と合わせて検査する。`tour.jaExposureScreens: ['screen-newspaper']`で最新号+バックナンバー3件を巡回し、ENモードのJA露出0を自動ゲートにする(run.jsの既存機構)。バックナンバー送りボタンは表示文言がJA/ENで変わるため、言語非依存の`data-walk-role="np-archive-older"`属性(ui-render.js、新設。表示テキストへの影響なし=ja-golden完全一致で確認済み)で掴む。
+
+### 52-7. 未着手の残穴(次バッチ検討事項)
+
+1. **タッグのメイン試合の`matchLabel`**(§52-5末尾)。`buildTagNewsMatch`が生成時点で`WM_I18N.t('メインイベント')`を焼く。シングルより出現頻度が低いため今回は据え置き
+2. **`story.newsData`(業界ニュースの生値スナップショット)を直接読む表示点**(週頭ポップアップの号外リード文言展開等、`generate()`のコメントに残る用途)は、`newsData`自体が生成時点の言語で解決済みの値を持つため、`_industryRawData`と同じ再解決をしていない。号外ポップアップは新聞生成と同じ週にほぼ同時に出る導線なので実害は小さいと判断し、本タスクの範囲(1〜3面+バックナンバーの表示)からは外した
+3. **`subhead`/`captionExtra`**は`_recompose`(hofRetirement)経由の記事にしか無い(他の系統は元々このフィールドを使わない)ため追加のTpl化はしていない
+
+### 52-8. 検証(すべてフォアグラウンド実行)
+
+`node --check`(app.js/data.js/kuroda-text.js/management.js/ui-common.js/ui-render.js)/ `ja-golden` **完全一致**(`e43b8ed4a1e1c641b00e2a675e7305f4a9a8564c1fc5a8e5cf078ad202165cd3`、タスク指定基準と一致)/ `npm test` **267/267**/ `i18n-ratchet`(`_NP_TIER_LABEL_JA`新規5語・重複literal2件削除、27,646→**27,645**、`--update`済)/ `i18n-build-template-dict` 3,534キー未訳0(`ARTICLE_COMPOSE_TEMPLATES.tierParen`を新規英訳)/ `i18n-ledger-consistency-test` ok/ `auto-sim 20 42` **ALL CLEAR**・指紋 **5a09bc6e**(タスク指定基準と一致。`test/auto-sim.js`のfingerprint replacerへ§52-2の追加フィールド群を除外登録)/ ignite `newspaper-mvprace`/`newspaper-mvprace-legacy`/`opening-flow` JA/EN計6本 **PASS**(退行なし)/ 新設`newspaper-lang-switch` JA/EN **PASS**(EN: JA露出0・i18n-miss 0)/ JA走破 **PASS** 336手 digest `66852e9fac14325b`・Issues 0(タスク指定基準337手/`1b18e49b…`とは手数・digestが不一致。P7-55のworklogが記録した「336⇔337はコード差分と無関係の既知flake」と同型とみられるが、本タスクでは変更前後の同一条件比較までは行っておらず断定はできない。Issues 0=無例外・フリーズ・undefined露出0という本質的なPASS条件は満たしている)/ EN走破 **PASS** 412手 digest `645860f8ac0814f3`・Issues 0・i18n-miss **0**・screen-newspaperのJA露出**0**(2026-09-06夜メモの既存基準EN 412/645860f8と完全一致)。

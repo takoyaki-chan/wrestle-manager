@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06T08:55:11.176Z",
+  "generatedAt": "2026-09-07T07:49:44.983Z",
   "files": {
     "data.js": {
       "jaCount": 17439,
@@ -18,8 +18,8 @@
       "jaChars": 14589
     },
     "management.js": {
-      "jaCount": 1348,
-      "jaChars": 10038
+      "jaCount": 1353,
+      "jaChars": 10049
     },
     "coach-lines.js": {
       "jaCount": 483,
@@ -30,8 +30,8 @@
       "jaChars": 9301
     },
     "ui-render.js": {
-      "jaCount": 968,
-      "jaChars": 8515
+      "jaCount": 969,
+      "jaChars": 8516
     },
     "flag-dialogue.js": {
       "jaCount": 449,
@@ -42,8 +42,8 @@
       "jaChars": 7482
     },
     "app.js": {
-      "jaCount": 530,
-      "jaChars": 6435
+      "jaCount": 529,
+      "jaChars": 6428
     },
     "battle-lines.js": {
       "jaCount": 594,

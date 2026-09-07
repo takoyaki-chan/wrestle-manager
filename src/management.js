@@ -30705,6 +30705,10 @@ const _NP_JT_ROUND_JA = {
 };
 const _NP_JT_RUNNERUP_FALLBACK_JA = '決勝の相手';
 const _NP_HOF_INDUCTED_JA = '殿堂入り';
+// i18n P7-58: draftRoundup(業界紙のドラフト総評)の評価ティアラベル。
+// ui-common.js _buildDraftSummaryPage 手前のローカル定数(TIER_LABEL)と同じJA原文・同じ
+// raw:'素材'(他画面のTIER_LABELSは原石を使うがdraftRoundupはこの語で確定済み・値を変えない)。
+const _NP_TIER_LABEL_JA = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '素材', material: '素材' };
 const _NP_MATCH_WINNER_FALLBACK_JA = '勝者';
 // scanRosterNews が積む「団体名が空のときだけ出る」フォールバック。push側はdictを持たない
 // ので、値そのものではなく `*Missing` フラグを併記して載る瞬間に引き直す(§8)。
@@ -30921,6 +30925,17 @@ function _wmResolvePreformattedIndustryData(ev, dict) {
       }
       return out;
     }
+    case 'draftRoundup': {
+      // i18n P7-58: _queueDraftIndustryNews(ui-common.js)は以前 data.names へ
+      // 「名前（ティア）」の完成文をWM_I18N.lang分岐で直接焼いていた(§8の穴と同型)。
+      // namesRaw(生の{name, tier}配列)が無い旧セーブのキューはfail-open(焼かれた値のまま)。
+      if (!Array.isArray(data.namesRaw)) return data;
+      const JOIN = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
+      const items = data.namesRaw.map(p => JOIN
+        ? _wmFillWithDict(dict, JOIN.tierParen, { name: p.name, tier: _wmDictLabel(dict, _NP_TIER_LABEL_JA[p.tier] || _NP_TIER_LABEL_JA.material) })
+        : p.name);
+      return { ...data, names: Engine.newspaper.joinNameList(items, dict) };
+    }
     default:
       return data;
   }
@@ -31108,7 +31123,12 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
     body,
     characterId: sr.winnerId || (sr.won ? sr.playerId : sr.aiId),
     summitData: sr,
-    situation: stamp,
+    situation: stamp, situationSuffixJa: 'PPV GRAND FINAL',
+    // i18n P7-58: このrelayは(sr, season, week, P, dict)だけの純関数(乱数を消費しない)。
+    // summitDataに素材(sr)が既に永続しているので、表示側は
+    // _buildPpvSummitStory(story.summitData, wp.season, wp.week, Engine.newspaper.PRIORITY, dict)
+    // を呼び直すだけで新しい言語のheadline/bodyを再現できる(kind名だけ併記すればよい)。
+    _recompose: { kind: 'ppvSummitStory' },
   };
 }
 
@@ -31347,6 +31367,30 @@ Engine.newspaper = {
         activeYears: hofEntry.activeYears || '',
         epithet: hofEntry.epithet || '',
       },
+    };
+  },
+
+  /** NPC(AI団体所属選手)殿堂入り記事。h = { orgName, name, retireAge, hofLevel, titleReigns,
+   *  totalDefenses, activeYears, hofPoints }。dictだけに依存する純関数(季/週/乱数を使わない)
+   *  なので、表示時にhをそのまま渡し直せば言語を切り替えて再構築できる(i18n P7-58)。
+   *  generate()から抽出しただけで、JA出力は1バイト不変。 */
+  composeNpcHallOfFame(h, dict) {
+    const T = (tpl, params) => _wmFillWithDict(dict, tpl, params);
+    const L = (jaLabel) => _wmDictLabel(dict, jaLabel);
+    const NAI = (typeof NEWS_AI_ORG_TEXTS !== 'undefined') ? NEWS_AI_ORG_TEXTS : {};
+    const starText = h.hofLevel >= 3 ? L(NAI.hofStarLegend)
+      : h.hofLevel >= 2 ? L(NAI.hofStarGold) : L(_NP_HOF_INDUCTED_JA);
+    const statsText = [];
+    if (h.titleReigns > 0) statsText.push(T(NAI.hofReigns, { count: h.titleReigns }));
+    if (h.totalDefenses > 0) statsText.push(T(NAI.hofDefenses, { count: h.totalDefenses }));
+    const careerDesc = statsText.length > 0
+      ? T(NAI.hofCareerWithStats, {
+        stats: statsText.reduce((a, b) => T(NAI.hofStatsJoin, { a, b })),
+      })
+      : L(NAI.hofCareerNoStats);
+    return {
+      headline: T(NAI.hofHeadline, { org: h.orgName, name: h.name, age: h.retireAge, star: starText }),
+      body: T(NAI.hofBody, { org: h.orgName, name: h.name, years: h.activeYears, career: careerDesc, points: h.hofPoints }),
     };
   },
 
@@ -32185,18 +32229,25 @@ Engine.newspaper = {
         return null;
       };
       const bt = last(['breakthrough']);
+      // i18n P7-58: stat/how/whatはこの時点のdictで既に訳した「成形済み値」なので、
+      // 号を跨いで言語を切り替えると古い言語のまま残る(§8と同じ穴)。表示側が
+      // _wmDictLabel(WM_I18N.t, raw)で引き直せるよう、rawのJAラベルを併記する
+      // (data自体は下流のnewsData/週頭ポップアップが読むため既存の値のまま変えない)。
+      const btStatJa = (typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[bt && bt.stat]) || 'メンタル';
       if (bt) cands.push({ type: 'followUpBreakthrough', f, w: 4,
-        data: { name: f.name, stat: T((typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[bt.stat]) || 'メンタル') } });
+        data: { name: f.name, stat: T(btStatJa) }, rawData: { name: f.name, stat: btStatJa } });
       const nw = last(['debut', 'transfer']);
+      const nwHowJa = nw && nw.type === 'debut' ? 'デビュー' : '移籍';
       if (nw) cands.push({ type: 'followUpNewcomer', f, w: 2,
-        data: { name: f.name, how: T(nw.type === 'debut' ? 'デビュー' : '移籍') } });
+        data: { name: f.name, how: T(nwHowJa) }, rawData: { name: f.name, how: nwHowJa } });
       const rec = last(['mqAllTimeRecord', 'tenchosenBestBout', 'juniorTournamentBestBout', 'titleWin']);
+      const recWhatJa = rec && rec.type === 'titleWin' ? '戴冠' : '歴代に残る一戦';
       if (rec) cands.push({ type: 'followUpRecord', f, w: 3,
-        data: { name: f.name, what: T(rec.type === 'titleWin' ? '戴冠' : '歴代に残る一戦') } });
+        data: { name: f.name, what: T(recWhatJa) }, rawData: { name: f.name, what: recWhatJa } });
       // 進行中の連勝。節目そのものは winStreakMilestone が既に出しているので、
       // ここは「まだ続いている」ことを取り上げる特集
       if ((f.streak || 0) >= 5) cands.push({ type: 'followUpStreak', f, w: 1,
-        data: { name: f.name, count: f.streak } });
+        data: { name: f.name, count: f.streak }, rawData: { name: f.name, count: f.streak } });
     });
     if (!cands.length) return null; // **無理に作らない**
     // 一度取り上げた選手は当分外す。連勝は「継続状態」なので、これが無いと
@@ -32211,7 +32262,7 @@ Engine.newspaper = {
     const pick = top[(state.week || 1) % top.length];
     return {
       type: pick.type, priority: Engine.newspaper.PRIORITY[pick.type] || 110,
-      characterId: pick.f.id, newsData: pick.data, _followUp: true,
+      characterId: pick.f.id, newsData: pick.data, rawData: pick.rawData, _followUp: true,
     };
   },
 
@@ -32239,6 +32290,21 @@ Engine.newspaper = {
     // 表が読めない環境(data.js未ロード)では従来どおり空文字へ落ちる。
     const T = (tpl, params) => _wmFillWithDict(dict, tpl || '', params);
     const L = (jaLabel) => _wmDictLabel(dict, jaLabel);
+    // i18n P7-58: T()/L() は「その時点のdict」で完成文を作るだけなので、号を跨いで
+    // 保存されたあと言語を切り替えても再翻訳できない(セーブに焼くのは完成文のみ)。
+    // TT() は完成文の隣に「翻訳前のJAテンプレ原文」と「差し込んだ生の値」を併記した
+    // { text, tpl, vars } を返す — 表示側(ui-render.js)が story.headlineTpl/headlineVars
+    // (または bodyTpl/bodyVars)を見つけたら WM_I18N.t(tpl, vars) で組み直す(specs §14-3/§16-1
+    // と同じ「追加フィールド方式」)。tpl/varsが無い(=このコミットより前に発行された号)の
+    // 記事は従来どおり保存済みの完成文をそのまま表示する(fail-open)。
+    const TT = (tpl, params) => ({ text: T(tpl, params), tpl: tpl || null, vars: params || null });
+    // 生の材料オブジェクト(ev.data等)をheadlineVars/bodyVarsとして持ち回るとき、null/undefined
+    // のキーは _wmFillWithDict と同じ「空文字」に正規化しておく(§14-4と同じ理由)。
+    const NN = (obj) => { const o = {}; Object.keys(obj || {}).forEach(k => { o[k] = obj[k] != null ? obj[k] : ''; }); return o; };
+    // 「第N年度・第M週 ○○」スタンプも同じ理由で再翻訳できないため、完成文(stamp)に加えて
+    // 種別ラベルのJA原文(suffixJa)を併記する。season/weekは号(wp)側に既にあるので個々の
+    // 記事へ複製しない — 表示側は wp.season/wp.week を使って _wmNewsStamp を呼び直す。
+    const TStamp = (suffixJa) => ({ text: _wmNewsStamp(dict, state.season, state.week, suffixJa), suffixJa });
     const NJT = (typeof NEWS_JUNIOR_TOURNAMENT_TEXTS !== 'undefined') ? NEWS_JUNIOR_TOURNAMENT_TEXTS : {};
     const NAI = (typeof NEWS_AI_ORG_TEXTS !== 'undefined') ? NEWS_AI_ORG_TEXTS : {};
     const NFB = (typeof NEWS_FALLBACK_TEMPLATES !== 'undefined') ? NEWS_FALLBACK_TEMPLATES : {};
@@ -32261,11 +32327,19 @@ Engine.newspaper = {
       const bodySeed = (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.characterId || 0);
       const composedBody = ev.data && ev.data.age != null
         ? Engine.newspaper.composeChampionChangeBody(ev.data, bodySeed, dict) : null;
+      // i18n P7-58: headlineは常にNEWS_HEADLINE_TEMPLATES.titleChangeの単文テンプレなので
+      // 素直にheadlineTpl/Varsを併記できる。bodyはcomposeChampionChangeBody(=季/週/選手IDだけの
+      // 決定的な純関数。乱数を消費しない)で組んだときだけ、表示側がev.dataを渡して同じ関数を
+      // 呼び直せるよう_recomposeへ入力を残す(組み立て済みの断片配列を持ち回るより単純)。
+      // 単文フォールバックのときはbodyTpl/Varsだけで足りる。
       stories.push({
         type: 'playerTitleChange',
         priority: P.playerTitleChange,
         headline: fill(dict(t.headline)),
+        headlineTpl: t.headline, headlineVars: NN(ev.data),
         body: composedBody || fill(dict(t.body)),
+        bodyTpl: t.body, bodyVars: NN(ev.data),
+        _recompose: composedBody ? { kind: 'championChangeBody', data: ev.data } : null,
         characterId: ev.characterId || null,
       });
     });
@@ -32274,11 +32348,14 @@ Engine.newspaper = {
     if (state.leagueElevated && state.endingClearedSeason != null &&
         state.season === state.endingClearedSeason + 1 && state.week <= 2) {
       // i18n Stage A P3a-2: LEAGUE_ELEVATION_TEXT(data.js・監査3-5「同法」)。
+      const leagueElevationVars = { orgName: state.orgName || '団体' };
       stories.push({
         type: 'leagueElevation',
         priority: P.leagueElevation,
         headline: dict(LEAGUE_ELEVATION_TEXT.headline),
-        body: fillTemplateVars(dict(LEAGUE_ELEVATION_TEXT.body), { orgName: state.orgName || '団体' }),
+        headlineTpl: LEAGUE_ELEVATION_TEXT.headline, headlineVars: null,
+        body: fillTemplateVars(dict(LEAGUE_ELEVATION_TEXT.body), leagueElevationVars),
+        bodyTpl: LEAGUE_ELEVATION_TEXT.body, bodyVars: leagueElevationVars,
         characterId: null,
       });
     }
@@ -32287,14 +32364,25 @@ Engine.newspaper = {
     if (state.currentNewspaper) {
       const cn = state.currentNewspaper;
       const isTitleShow = !!cn.isTitleMatch;
-      const stamp = _wmNewsStamp(dict, state.season, state.week, isTitleShow ? 'タイトル戦' : '定期興行');
+      const stampSuffixJa = isTitleShow ? 'タイトル戦' : '定期興行';
+      const stamp = _wmNewsStamp(dict, state.season, state.week, stampSuffixJa);
+      // i18n P7-58: cn.headline/cn.article(自団体の興行結果)はapp.js側の
+      // App._generateNewspaperTexts が Math.random() で選ぶため、この号を跨いだ表示時再生成が
+      // 使えない(§14-3と同じ制約)。cn自身にheadlineTpl/headlineVars/articleTpl/articleVars
+      // (kurodaTextParts経由。App._buildShowResultNewspaperData参照)が併記されていれば、
+      // それをそのままこの記事のheadlineTpl/bodyTplへ引き継ぐ。無い(旧セーブ)場合は
+      // 完成文のまま(fail-open)。
       stories.push({
         type: isTitleShow ? 'playerShowTitle' : 'playerShowNormal',
         priority: isTitleShow ? P.playerShowTitle : P.playerShowNormal,
         headline: cn.headline || L(NFB.playerShowHeadline),
+        headlineTpl: cn.headline ? cn.headlineTpl : null, headlineVars: cn.headlineVars || null,
+        headlineDerive: cn.headline ? cn.headlineDerive : null,
         body: cn.article || cn.subheadline || '',
+        bodyTpl: cn.article ? cn.articleTpl : cn.subheadlineTpl, bodyVars: cn.article ? cn.articleVars : cn.subheadlineVars,
+        bodyDerive: cn.article ? cn.articleDerive : null,
         characterId: cn.winner?.id || cn.left?.id || null,
-        situation: stamp,
+        situation: stamp, situationSuffixJa: stampSuffixJa,
       });
     }
 
@@ -32304,17 +32392,21 @@ Engine.newspaper = {
       if (jtr.champion) {
         const finalMatch = jtr.rounds[jtr.rounds.length - 1].matches[0];
         const mq = finalMatch.mq;
-        const tone = L(mq >= 80 ? NJT.resultToneMasterpiece : mq >= 60 ? NJT.resultToneGood
-          : mq >= 40 ? NJT.resultToneOneSided : NJT.resultTonePoor);
+        const toneJa = mq >= 80 ? NJT.resultToneMasterpiece : mq >= 60 ? NJT.resultToneGood
+          : mq >= 40 ? NJT.resultToneOneSided : NJT.resultTonePoor;
+        const tone = L(toneJa);
+        const runnerUpVal = jtr.runnerUp ? jtr.runnerUp.name : _NP_JT_RUNNERUP_FALLBACK_JA;
+        const headlineVars = { name: jtr.champion.name, season: state.season };
+        const bodyVars = { name: jtr.champion.name, org: jtr.champion._orgName, runnerUp: runnerUpVal, tone: toneJa };
         stories.push({
           type: 'juniorTournamentResult',
           priority: P.juniorTournamentResult,
-          headline: T(NJT.resultHeadline, { name: jtr.champion.name, season: state.season }),
-          body: T(NJT.resultBody, {
-            name: jtr.champion.name, org: jtr.champion._orgName,
-            runnerUp: jtr.runnerUp ? jtr.runnerUp.name : L(_NP_JT_RUNNERUP_FALLBACK_JA),
-            tone,
-          }),
+          headline: T(NJT.resultHeadline, headlineVars),
+          headlineTpl: NJT.resultHeadline, headlineVars,
+          body: T(NJT.resultBody, { ...bodyVars, tone }),
+          bodyTpl: NJT.resultBody, bodyVars,
+          // runnerUp/tone は名前ではなくJA成形ラベルなので表示時に _wmDictLabel で引き直す
+          bodyLabelVars: jtr.runnerUp ? ['tone'] : ['runnerUp', 'tone'],
           characterId: jtr.champion.id,
         });
       }
@@ -32323,23 +32415,32 @@ Engine.newspaper = {
     // === 対抗戦結果 ===
     if (state._newsWarResult) {
       const wr = state._newsWarResult;
-      const resultLabel = dict(wr.won ? '勝ち越し' : wr.draw ? '決着つかず' : '敗北');
+      const resultJa = wr.won ? '勝ち越し' : wr.draw ? '決着つかず' : '敗北';
+      const resultLabel = dict(resultJa);
       const bestMatch = wr.matches.reduce((best, m) => m.mq > (best?.mq || 0) ? m : best, null);
-      const stamp = _wmNewsStamp(dict, state.season, state.week, '対抗戦');
+      const stampSuffixJa = '対抗戦';
+      const stamp = _wmNewsStamp(dict, state.season, state.week, stampSuffixJa);
       // i18n Stage A P3a-2: CROSS_WAR_RESULT_TEXT(data.js・監査3-5「同法」)。
       // ベストバウト追記文は「。」境界の直後に続く独立文なので基部+追記の2段合成。
       const warVars = { opponent: wr.opponentName, playerWins: wr.playerWins, aiWins: wr.aiWins, result: resultLabel };
-      const bestMatchText = bestMatch ? fillTemplateVars(dict(CROSS_WAR_RESULT_TEXT.bestMatchSuffix), {
-        player: bestMatch.playerName, ai: bestMatch.aiName, mq: bestMatch.mq,
-      }) : '';
+      // resultはJA成形ラベル(勝ち越し/決着つかず/敗北)なので、Tpl併記側にはraw値を持たせて
+      // 表示時に_wmDictLabelで引き直す(§14-2と同型。名前ではないためpn()の自動変換は効かない)。
+      const warVarsRaw = { ...warVars, result: resultJa };
+      const bestMatchVars = bestMatch ? { player: bestMatch.playerName, ai: bestMatch.aiName, mq: bestMatch.mq } : null;
+      const bestMatchText = bestMatch ? fillTemplateVars(dict(CROSS_WAR_RESULT_TEXT.bestMatchSuffix), bestMatchVars) : '';
       stories.push({
         type: 'crossWarResult',
         priority: P.crossWarResult,
         headline: fillTemplateVars(dict(CROSS_WAR_RESULT_TEXT.headline), warVars),
+        headlineTpl: CROSS_WAR_RESULT_TEXT.headline, headlineVars: warVarsRaw, headlineLabelVars: ['result'],
         body: fillTemplateVars(dict(CROSS_WAR_RESULT_TEXT.bodyBase), { ...warVars, stamp }) + bestMatchText,
+        bodyParts: [
+          { tpl: CROSS_WAR_RESULT_TEXT.bodyBase, vars: { ...warVarsRaw, stamp }, labelVars: ['result'] },
+          bestMatch ? { tpl: CROSS_WAR_RESULT_TEXT.bestMatchSuffix, vars: bestMatchVars } : null,
+        ],
         characterId: bestMatch ? (bestMatch.playerWon ? bestMatch.playerId : bestMatch.aiId) : null,
         warData: wr,
-        situation: stamp,
+        situation: stamp, situationSuffixJa: stampSuffixJa,
       });
     }
 
@@ -32351,11 +32452,18 @@ Engine.newspaper = {
       if (templates.length > 0) {
         const tpl = templates[Engine.rng.int(rng, 0, templates.length - 1)];
         const rep = (s) => s.replace(/\{orgName\}/g, wm.orgName).replace(/\{wins\}/g, wm.wins).replace(/\{milestone\}/g, milestone);
+        // milestoneは"{wins}勝"というネストしたテンプレの完成値なので、表示時再生成では
+        // rawの{orgName, wins}を持たせ、derive(kind:'milestoneWins')で再度組み直す
+        // (render側の共通resolver。ui-render.jsの_npMaterializeVars参照)。
+        const rawVars = { orgName: wm.orgName, wins: wm.wins };
+        const milestoneDerive = [{ key: 'milestone', kind: 'milestoneWins', winsKey: 'wins' }];
         stories.push({
           type: 'warMilestone',
           priority: P.warMilestone,
           headline: rep(dict(tpl.headline)),
+          headlineTpl: tpl.headline, headlineVars: rawVars, headlineDerive: milestoneDerive,
           body: rep(dict(tpl.body)),
+          bodyTpl: tpl.body, bodyVars: rawVars, bodyDerive: milestoneDerive,
           characterId: null,
         });
       }
@@ -32369,14 +32477,16 @@ Engine.newspaper = {
 
     // === PPVアンダーカード結果（業界ニュース欄向け、上位MQ最大3件）===
     if (state._newsPpvUndercards && state._newsPpvUndercards.length > 0) {
-      const stamp = _wmNewsStamp(dict, state.season, state.week, 'PPV GRAND FINAL');
+      const undercardStampSuffixJa = 'PPV GRAND FINAL';
+      const stamp = _wmNewsStamp(dict, state.season, state.week, undercardStampSuffixJa);
       state._newsPpvUndercards.forEach(uc => {
         // i18n Stage B P7-11: _buildPpvSummitStory と同型(上のコメント参照)。時間切れ決着の
         // アンダーカードで『HP判定』が素で出ていたので、決着情報があれば formatFinish を通す。
         const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && (uc.finMove || uc.finType))
           ? Engine.formatFinish(uc.finType, uc.finMove, false, dict)
           : (uc.finMove || _wmDictLabel(dict, FINISH_TEXT_FALLBACK));
-        const tone = dict(uc.mq >= 80 ? '名勝負' : uc.mq >= 65 ? '好勝負' : uc.mq >= 50 ? '熱戦' : (uc.mq <= 30 ? '一方的な展開' : '見応えある一戦'));
+        const toneJa = uc.mq >= 80 ? '名勝負' : uc.mq >= 65 ? '好勝負' : uc.mq >= 50 ? '熱戦' : (uc.mq <= 30 ? '一方的な展開' : '見応えある一戦');
+        const tone = dict(toneJa);
         // i18n Stage A P3a-2: PPV_UNDERCARD_HEADLINE_TEMPLATES/PPV_UNDERCARD_BODY_TEMPLATES
         // (data.js・監査3-2)。所属の有無は元コードの分岐に合わせてテンプレを分ける
         // (見出しはisTitleMatch/highMqの2分岐が元々所属名を無条件連結・elseのみ「の」の
@@ -32385,32 +32495,32 @@ Engine.newspaper = {
         if (uc.isTitleMatch) headlineKey = 'title';
         else if (uc.mq >= 75) headlineKey = 'highMq';
         else headlineKey = uc.winnerOrgName ? 'elseWithOrg' : 'elseNoOrg';
-        const headline = fillTemplateVars(dict(PPV_UNDERCARD_HEADLINE_TEMPLATES[headlineKey]), {
-          winnerOrg: uc.winnerOrgName,
-          winner: uc.winnerName,
-          loserOrg: uc.loserOrgName,
-          loser: uc.loserName,
-          mq: uc.mq,
-          tone,
-        });
+        const headlineVarsBase = {
+          winnerOrg: uc.winnerOrgName, winner: uc.winnerName,
+          loserOrg: uc.loserOrgName, loser: uc.loserName, mq: uc.mq,
+        };
+        const headline = fillTemplateVars(dict(PPV_UNDERCARD_HEADLINE_TEMPLATES[headlineKey]), { ...headlineVarsBase, tone });
         const bodyKey = (uc.turns ? 'turns' : 'noTurns') + '_'
           + (uc.winnerOrgName ? 'wOrg' : 'noOrg') + '_'
           + (uc.loserOrgName ? 'lOrg' : 'noOrg');
-        const body = fillTemplateVars(dict(PPV_UNDERCARD_BODY_TEMPLATES[bodyKey]), {
-          stamp,
-          turns: uc.turns,
-          tone,
-          winner: uc.winnerName,
-          winnerOrg: uc.winnerOrgName,
-          finish: finishStr,
-          loser: uc.loserName,
-          loserOrg: uc.loserOrgName,
-          mq: uc.mq,
-        });
+        const bodyVarsBase = {
+          stamp, turns: uc.turns, winner: uc.winnerName, winnerOrg: uc.winnerOrgName,
+          loser: uc.loserName, loserOrg: uc.loserOrgName, mq: uc.mq,
+        };
+        const body = fillTemplateVars(dict(PPV_UNDERCARD_BODY_TEMPLATES[bodyKey]), { ...bodyVarsBase, tone, finish: finishStr });
         stories.push({
           type: uc.isTitleMatch ? 'ppvUndercardTitle' : 'ppvUndercard',
           priority: (uc.isTitleMatch ? P.ppvUndercardTitle : P.ppvUndercard) + Math.min(20, Math.floor(uc.mq / 5)),
           headline,
+          headlineTpl: PPV_UNDERCARD_HEADLINE_TEMPLATES[headlineKey],
+          headlineVars: { ...headlineVarsBase, tone: toneJa }, headlineLabelVars: ['tone'],
+          bodyTpl: PPV_UNDERCARD_BODY_TEMPLATES[bodyKey],
+          // finishはEngine.formatFinishの再計算が要る派生値、stampは号の再翻訳が要る派生値
+          // なので、共に生の材料(finType/finMove, situationSuffixJa)を併記して表示側で作り直す。
+          bodyVars: { ...bodyVarsBase, tone: toneJa, finish: uc.finMove || '' },
+          bodyLabelVars: ['tone'],
+          bodyDerive: [{ key: 'finish', kind: 'formatFinish', finType: uc.finType || null, finMove: uc.finMove || null, fallback: uc.finMove || '' }],
+          situationSuffixJa: undercardStampSuffixJa,
           body,
           characterId: uc.winnerId,
           situation: stamp,
@@ -32436,15 +32546,23 @@ Engine.newspaper = {
           // literal は NEWS_FALLBACK_TEMPLATES(data.js)へ集約し、PH置換前にdictへ通す。
           const FB = NEWS_FALLBACK_TEMPLATES;
           const _JOIN = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
+          const ccHeadlineVars = { org: ev.orgName, name: ev.newChampName };
+          const ccBodyVars = {
+            org: ev.orgName, name: ev.newChampName,
+            prevChamp: ev.prevChampName || (_JOIN ? _JOIN.prevChampFallback : ''),
+          };
           stories.push({
             type: 'aiChampionChange',
             priority: P.aiChampionChange + (isAce ? 20 : 0),
-            headline: _wmFillWithDict(dict, FB.aiChampionChangeHeadline, { org: ev.orgName, name: ev.newChampName }),
+            headline: _wmFillWithDict(dict, FB.aiChampionChangeHeadline, ccHeadlineVars),
+            headlineTpl: FB.aiChampionChangeHeadline, headlineVars: ccHeadlineVars,
             body: composedBody || _wmFillWithDict(dict, FB.aiChampionChangeBody, {
-              org: ev.orgName,
-              name: ev.newChampName,
-              prevChamp: ev.prevChampName || (_JOIN ? _wmDictLabel(dict, _JOIN.prevChampFallback) : ''),
+              ...ccBodyVars, prevChamp: ev.prevChampName || (_JOIN ? _wmDictLabel(dict, _JOIN.prevChampFallback) : ''),
             }),
+            bodyTpl: FB.aiChampionChangeBody, bodyVars: ccBodyVars,
+            // prevChampはev.prevChampNameが無いときだけJA成形ラベル(prevChampFallback)になる
+            bodyLabelVars: ev.prevChampName ? null : ['prevChamp'],
+            _recompose: composedBody ? { kind: 'championChangeBody', data: ev } : null,
             characterId: ev.newChampId,
           });
         }
@@ -32467,10 +32585,26 @@ Engine.newspaper = {
                 org: ev.orgName, name: ev.name, age: ev.age,
                 seasons: ev.seasons || L(NAI.retirementSeasonsUnknown),
               });
+            // i18n P7-58: 3経路とも表示時再構築できる。hofFeatureはcomposeHallOfFameRetirement
+            // (季/週非依存の純関数)なので入力(ev, hofEntry)をそのまま_recomposeへ、
+            // variant/フォールバックは選ばれたJAテンプレそのものをheadlineTpl/bodyTplへ併記する
+            // (_fillRetirementTemplateはdict(t,vars)相当なのでWM_I18N.t(tpl,vars)で再現できる)。
+            const retireVars = {
+              org: ev.orgName || '', name: ev.name || '',
+              age: ev.age != null ? ev.age : '', seasons: ev.seasons != null ? ev.seasons : '',
+              reigns: ev.reigns != null ? ev.reigns : '',
+            };
+            const fallbackBodyVars = { org: ev.orgName, name: ev.name, age: ev.age, seasons: ev.seasons || NAI.retirementSeasonsUnknown };
             stories.push({
               type: isAce ? 'aiAceRetirement' : 'aiRetirement',
               priority: isAce ? P.aiAceRetirement : P.aiRetirement,
               headline, body,
+              headlineTpl: hofFeature ? null : (variant ? variant.headline : NAI.retirementHeadline),
+              headlineVars: hofFeature ? null : (variant ? retireVars : { org: ev.orgName, name: ev.name }),
+              bodyTpl: hofFeature ? null : (variant ? variant.body : NAI.retirementBody),
+              bodyVars: hofFeature ? null : (variant ? retireVars : fallbackBodyVars),
+              bodyLabelVars: (!hofFeature && !variant && !ev.seasons) ? ['seasons'] : null,
+              _recompose: hofFeature ? { kind: 'hofRetirement', d: ev, hofEntry } : null,
               characterId: ev.id,
               subhead: hofFeature?.subhead,
               situation: hofFeature?.situation,
@@ -32493,20 +32627,23 @@ Engine.newspaper = {
             const isAce = ev.ovr >= 75;
             // i18n Stage A P3a-2: AI_INJURY_RETIREMENT_TEMPLATES(data.js・監査3-5「同法」)。
             const injVars = { org: ev.orgName, name: ev.fighterName, age: ev.age, seasons: ev.careerSeasons, reigns: ev.titleReigns };
-            let headline, body;
+            let headline, body, headlineTpl, bodyTpl;
             if (ev.injuryType === 'careerEnding') {
               const T = AI_INJURY_RETIREMENT_TEMPLATES.careerEnding;
-              headline = fillTemplateVars(dict(T.headline), injVars);
-              body = fillTemplateVars(dict(isAce ? T.bodyAce : T.bodyNotAce), injVars);
+              headline = fillTemplateVars(dict(T.headline), injVars); headlineTpl = T.headline;
+              bodyTpl = isAce ? T.bodyAce : T.bodyNotAce;
+              body = fillTemplateVars(dict(bodyTpl), injVars);
             } else {
               const T = AI_INJURY_RETIREMENT_TEMPLATES.default;
-              headline = fillTemplateVars(dict(T.headline), injVars);
-              body = fillTemplateVars(dict(ev.titleReigns > 0 ? T.bodyHasReigns : T.bodyNoReigns), injVars);
+              headline = fillTemplateVars(dict(T.headline), injVars); headlineTpl = T.headline;
+              bodyTpl = ev.titleReigns > 0 ? T.bodyHasReigns : T.bodyNoReigns;
+              body = fillTemplateVars(dict(bodyTpl), injVars);
             }
             stories.push({
               type: 'aiInjuryRetirement',
               priority: P.aiInjuryRetirement + (isAce ? 20 : 0),
               headline, body,
+              headlineTpl, headlineVars: injVars, bodyTpl, bodyVars: injVars,
               characterId: ev.fighterId,
               newsData: { reigns: ev.titleReigns || 0, peakOVR: ev.peakOVR || 0, wasChampion: !!ev.wasChampion, seasons: ev.careerSeasons || 0 },
             });
@@ -32519,15 +32656,18 @@ Engine.newspaper = {
           // 同一団体で複数退団の場合はまとめ記事
           if (deps.length >= 3) {
             const orgName = deps[0].orgName;
+            // i18n P7-58: 名前列挙(joinNameList)はEN句読点畳み込みが要るため、表示側は
+            // 選手名の生配列(names配列)を持ち回り、Engine.newspaper.joinNameListを呼び直す
+            // (畳み込み結果の文字列だけを持つとENの", "区切りへ組み直せない)。
+            const massNames = deps.map(d => d.fighterName);
+            const massVars = { org: orgName, count: deps.length, names: Engine.newspaper.joinNameList(massNames, dict) };
             stories.push({
               type: 'aiContractDeparture',
               priority: P.aiContractDeparture + 30,
-              headline: T(NAI.massDepartureHeadline, { org: orgName, count: deps.length }),
-              body: T(NAI.massDepartureBody, {
-                org: orgName, count: deps.length,
-                // 名前の列挙(JA=読点 / EN=", ")は共通ヘルパーの畳み込みへ寄せる
-                names: Engine.newspaper.joinNameList(deps.map(d => d.fighterName), dict),
-              }),
+              headline: T(NAI.massDepartureHeadline, massVars),
+              headlineTpl: NAI.massDepartureHeadline, headlineVars: { org: orgName, count: deps.length },
+              body: T(NAI.massDepartureBody, massVars),
+              bodyTpl: NAI.massDepartureBody, bodyVars: { org: orgName, count: deps.length }, bodyNames: massNames,
               characterId: deps[0].fighterId,
             });
           } else {
@@ -32547,6 +32687,7 @@ Engine.newspaper = {
                 type: 'aiContractDeparture',
                 priority: P.aiContractDeparture + (isAce ? 20 : 0),
                 headline, body,
+                headlineTpl: T.headline, headlineVars: depVars, bodyTpl: T.body, bodyVars: depVars,
                 characterId: ev.fighterId,
               });
             });
@@ -32560,24 +32701,13 @@ Engine.newspaper = {
             // 同じ号に引退記事がある選手は、そちらを「殿堂入り引退特別号」へ統合する。
             // 独立した殿堂記事まで並べると、同一人物が一面とサブで二重掲載になる。
             if (retirementIds.has(String(h.id))) return;
-            const starText = h.hofLevel >= 3 ? L(NAI.hofStarLegend)
-              : h.hofLevel >= 2 ? L(NAI.hofStarGold) : L(_NP_HOF_INDUCTED_JA);
-            const statsText = [];
-            if (h.titleReigns > 0) statsText.push(T(NAI.hofReigns, { count: h.titleReigns }));
-            if (h.totalDefenses > 0) statsText.push(T(NAI.hofDefenses, { count: h.totalDefenses }));
-            const careerDesc = statsText.length > 0
-              ? T(NAI.hofCareerWithStats, {
-                stats: statsText.reduce((a, b) => T(NAI.hofStatsJoin, { a, b })),
-              })
-              : L(NAI.hofCareerNoStats);
+            const npcHof = Engine.newspaper.composeNpcHallOfFame(h, dict);
             stories.push({
               type: 'npcHallOfFame',
               priority: P.npcHallOfFame,
-              headline: T(NAI.hofHeadline, { org: h.orgName, name: h.name, age: h.retireAge, star: starText }),
-              body: T(NAI.hofBody, {
-                org: h.orgName, name: h.name, years: h.activeYears,
-                career: careerDesc, points: h.hofPoints,
-              }),
+              headline: npcHof.headline,
+              body: npcHof.body,
+              _recompose: { kind: 'npcHallOfFame', h },
               characterId: h.id,
             });
           });
@@ -32586,33 +32716,38 @@ Engine.newspaper = {
         // AI興行ハイライト（高MQ試合）
         if (aiData._newsShowHighlight) {
           const ev = aiData._newsShowHighlight;
-          const stamp = _wmNewsStamp(dict, state.season, state.week, '定期興行');
+          const showHighlightSuffixJa = '定期興行';
+          const stamp = _wmNewsStamp(dict, state.season, state.week, showHighlightSuffixJa);
+          const shHeadlineVars = { org: ev.orgName, winner: ev.winnerName, loser: ev.loserName };
+          const shBodyVars = { stamp, org: ev.orgName, winner: ev.winnerName, loser: ev.loserName, mq: ev.mq };
           stories.push({
             type: 'aiShowHighlight',
             priority: P.aiShowHighlight,
-            headline: T(NAI.showHighlightHeadline, { org: ev.orgName, winner: ev.winnerName, loser: ev.loserName }),
-            body: T(NAI.showHighlightBody, {
-              stamp, org: ev.orgName, winner: ev.winnerName, loser: ev.loserName, mq: ev.mq,
-            }),
+            headline: T(NAI.showHighlightHeadline, shHeadlineVars),
+            headlineTpl: NAI.showHighlightHeadline, headlineVars: shHeadlineVars,
+            body: T(NAI.showHighlightBody, shBodyVars),
+            bodyTpl: NAI.showHighlightBody, bodyVars: shBodyVars,
             characterId: ev.winnerId,
-            situation: stamp,
+            situation: stamp, situationSuffixJa: showHighlightSuffixJa,
           });
         }
 
         // AIブレイクスルー
         if (aiData._newsBreakthroughs) {
           aiData._newsBreakthroughs.forEach(ev => {
+            const statJa = (typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[ev.stat]) || 'メンタル';
+            const btHeadlineVars = { org: ev.orgName, name: ev.name };
+            const btBodyVars = { org: ev.orgName, name: ev.name, stat: statJa };
             stories.push({
               type: 'aiBreakthrough',
               priority: P.aiBreakthrough,
-              headline: T(NAI.breakthroughHeadline, { org: ev.orgName, name: ev.name }),
+              headline: T(NAI.breakthroughHeadline, btHeadlineVars),
+              headlineTpl: NAI.breakthroughHeadline, headlineVars: btHeadlineVars,
               // i18n P7-19: {stat} が内部キー(pw/te等)のまま出ていたバグ修正。
               // buildFollowUp(followUpBreakthrough)と同じ経路(STAT_LABELS_JPでJAラベル化→
               // _wmDictLabelで引き直す)へ揃える。'mn'はSTAT_LABELS_JPに無いのでフォールバックも同じにする
-              body: T(NAI.breakthroughBody, {
-                org: ev.orgName, name: ev.name,
-                stat: L((typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[ev.stat]) || 'メンタル'),
-              }),
+              body: T(NAI.breakthroughBody, { ...btBodyVars, stat: L(statJa) }),
+              bodyTpl: NAI.breakthroughBody, bodyVars: btBodyVars, bodyLabelVars: ['stat'],
               characterId: ev.id,
             });
           });
@@ -32621,27 +32756,29 @@ Engine.newspaper = {
         // AI選手間対立
         if (aiData._newsTeamConflict) {
           aiData._newsTeamConflict.forEach(ev => {
-            let headline, body;
+            let headline, body, headlineTpl, bodyTpl, headlineVars, bodyVars, bodyLabelVars = null;
             const cVars = { org: ev.orgName, name1: ev.fighter1Name, name2: ev.fighter2Name };
             if (ev.resolution === 'talk') {
-              headline = T(NAI.conflictTalkHeadline, cVars);
-              body = T(NAI.conflictTalkBody, cVars);
+              headline = T(NAI.conflictTalkHeadline, cVars); headlineTpl = NAI.conflictTalkHeadline; headlineVars = cVars;
+              body = T(NAI.conflictTalkBody, cVars); bodyTpl = NAI.conflictTalkBody; bodyVars = cVars;
             } else if (ev.resolution === 'match') {
-              const mqTone = ev.matchMQ >= 70 ? L(NAI.conflictMatchTone) : '';
-              headline = T(NAI.conflictMatchHeadline, {
-                ...cVars, winner: ev.matchWinner || '', mq: ev.matchMQ || 0,
-              });
-              body = T(NAI.conflictMatchBody, {
-                ...cVars, tone: mqTone, winner: ev.matchWinner || L(_NP_MATCH_WINNER_FALLBACK_JA),
-              });
+              const mqToneJa = ev.matchMQ >= 70 ? NAI.conflictMatchTone : '';
+              const mqTone = mqToneJa ? L(mqToneJa) : '';
+              headlineVars = { ...cVars, winner: ev.matchWinner || '', mq: ev.matchMQ || 0 };
+              headline = T(NAI.conflictMatchHeadline, headlineVars); headlineTpl = NAI.conflictMatchHeadline;
+              const winnerJa = ev.matchWinner || _NP_MATCH_WINNER_FALLBACK_JA;
+              bodyVars = { ...cVars, tone: mqToneJa, winner: winnerJa };
+              body = T(NAI.conflictMatchBody, { ...cVars, tone: mqTone, winner: ev.matchWinner || L(_NP_MATCH_WINNER_FALLBACK_JA) });
+              bodyTpl = NAI.conflictMatchBody;
+              bodyLabelVars = ['tone', ...(ev.matchWinner ? [] : ['winner'])];
             } else {
-              headline = T(NAI.conflictRiftHeadline, cVars);
-              body = T(NAI.conflictRiftBody, cVars);
+              headline = T(NAI.conflictRiftHeadline, cVars); headlineTpl = NAI.conflictRiftHeadline; headlineVars = cVars;
+              body = T(NAI.conflictRiftBody, cVars); bodyTpl = NAI.conflictRiftBody; bodyVars = cVars;
             }
             stories.push({
               type: 'aiTeamConflict',
               priority: P.aiTeamConflict + (ev.resolution === 'match' && ev.matchMQ >= 70 ? 15 : 0),
-              headline, body,
+              headline, body, headlineTpl, headlineVars, bodyTpl, bodyVars, bodyLabelVars,
               characterId: ev.fighter1Id,
             });
           });
@@ -32651,6 +32788,9 @@ Engine.newspaper = {
         if (aiData._newsPracticeInjury) {
           aiData._newsPracticeInjury.forEach(ev => {
             const isAce = ev.ovr >= 75;
+            const injuryJa = ev.injuryType;
+            const piHeadlineVars = { org: ev.orgName, name: ev.fighterName, injury: injuryJa, weeks: ev.weeksOut };
+            const piBodyVars = { org: ev.orgName, name: ev.fighterName, weeks: ev.weeksOut };
             stories.push({
               type: 'aiPracticeInjury',
               priority: P.aiPracticeInjury + (isAce ? 20 : 0),
@@ -32658,7 +32798,12 @@ Engine.newspaper = {
                 org: ev.orgName, name: ev.fighterName,
                 injury: injuryLabel(ev.injuryType, dict), weeks: ev.weeksOut,
               }),
-              body: T(NAI.practiceInjuryBody, { org: ev.orgName, name: ev.fighterName, weeks: ev.weeksOut }),
+              // injuryは負傷種別の内部キーをinjuryLabel()でJAラベル化した成形済み値なので、
+              // rawの内部キー(ev.injuryType)を持ち回りderive(kind:'injuryLabel')で表示時に引き直す
+              headlineTpl: NAI.practiceInjuryHeadline, headlineVars: piHeadlineVars,
+              headlineDerive: [{ key: 'injury', kind: 'injuryLabel', raw: ev.injuryType }],
+              body: T(NAI.practiceInjuryBody, piBodyVars),
+              bodyTpl: NAI.practiceInjuryBody, bodyVars: piBodyVars,
               characterId: ev.fighterId,
             });
           });
@@ -32667,11 +32812,14 @@ Engine.newspaper = {
         // AIメディア密着開始
         if (aiData._newsMediaStart) {
           const ev = aiData._newsMediaStart;
+          const msVars = { outlet: ev.outletName, org: ev.orgName, name: ev.fighterName };
           stories.push({
             type: 'aiMediaStart',
             priority: P.aiMediaStart,
-            headline: T(NAI.mediaStartHeadline, { outlet: ev.outletName, org: ev.orgName, name: ev.fighterName }),
-            body: T(NAI.mediaStartBody, { outlet: ev.outletName, org: ev.orgName, name: ev.fighterName }),
+            headline: T(NAI.mediaStartHeadline, msVars),
+            headlineTpl: NAI.mediaStartHeadline, headlineVars: msVars,
+            body: T(NAI.mediaStartBody, msVars),
+            bodyTpl: NAI.mediaStartBody, bodyVars: msVars,
             characterId: ev.fighterId,
           });
         }
@@ -32682,31 +32830,38 @@ Engine.newspaper = {
             const basePriority = P.aiWarResult;
             // MQ90+なら最高priority級に格上げ、MQ80+なら名勝負トーン
             const finalPriority = ev.mq >= 90 ? basePriority + 20 : basePriority;
-            const mqTone = ev.mq >= 90 ? L(NAI.mqToneMasterpiece) : ev.mq >= 80 ? L(NAI.mqToneGood) : '';
-            const stamp = _wmNewsStamp(dict, state.season, state.week, '対抗戦');
+            const mqToneJa = ev.mq >= 90 ? NAI.mqToneMasterpiece : ev.mq >= 80 ? NAI.mqToneGood : '';
+            const mqTone = mqToneJa ? L(mqToneJa) : '';
+            const warStampSuffixJa = '対抗戦';
+            const stamp = _wmNewsStamp(dict, state.season, state.week, warStampSuffixJa);
             const wVars = {
               stamp, mq: ev.mq, tone: mqTone,
               challengerOrg: ev.challengerOrg, defenderOrg: ev.defenderOrg,
               challengerName: ev.challengerName, defenderName: ev.defenderName,
               winnerOrg: ev.winnerOrg, winnerName: ev.winnerName,
             };
+            const wVarsRaw = { ...wVars, tone: mqToneJa };
             if (ev.isDraw) {
               stories.push({
                 type: 'aiWarResult',
                 priority: finalPriority,
                 headline: T(NAI.warDrawHeadline, wVars),
+                headlineTpl: NAI.warDrawHeadline, headlineVars: wVarsRaw, headlineLabelVars: ['tone'],
                 body: T(NAI.warDrawBody, wVars),
+                bodyTpl: NAI.warDrawBody, bodyVars: wVarsRaw, bodyLabelVars: ['tone'],
                 characterId: ev.challengerId || null,
-                situation: stamp,
+                situation: stamp, situationSuffixJa: warStampSuffixJa,
               });
             } else {
               stories.push({
                 type: 'aiWarResult',
                 priority: finalPriority,
                 headline: T(NAI.warWinHeadline, wVars),
+                headlineTpl: NAI.warWinHeadline, headlineVars: wVarsRaw, headlineLabelVars: ['tone'],
                 body: T(NAI.warWinBody, wVars),
+                bodyTpl: NAI.warWinBody, bodyVars: wVarsRaw, bodyLabelVars: ['tone'],
                 characterId: ev.winnerId || null,
-                situation: stamp,
+                situation: stamp, situationSuffixJa: warStampSuffixJa,
               });
             }
           });
@@ -32715,7 +32870,8 @@ Engine.newspaper = {
         // AI団体間挑戦状(B3)結果
         if (aiData._newsAIB3Result) {
           aiData._newsAIB3Result.forEach(ev => {
-            const stamp = _wmNewsStamp(dict, state.season, state.week, '挑戦状');
+            const b3StampSuffixJa = '挑戦状';
+            const stamp = _wmNewsStamp(dict, state.season, state.week, b3StampSuffixJa);
             const bVars = {
               stamp, mq: ev.mq,
               challengerOrg: ev.challengerOrg, defenderOrg: ev.defenderOrg,
@@ -32727,9 +32883,11 @@ Engine.newspaper = {
                 type: 'aiB3Decline',
                 priority: P.aiB3Decline,
                 headline: T(NAI.b3DeclineHeadline, bVars),
+                headlineTpl: NAI.b3DeclineHeadline, headlineVars: bVars,
                 body: T(NAI.b3DeclineBody, bVars),
+                bodyTpl: NAI.b3DeclineBody, bodyVars: bVars,
                 characterId: ev.challengerId || null,
-                situation: stamp,
+                situation: stamp, situationSuffixJa: b3StampSuffixJa,
               });
             } else if (ev.isDraw) {
               const finalPriority = ev.mq >= 90 ? P.aiB3Result + 20 : P.aiB3Result;
@@ -32737,20 +32895,25 @@ Engine.newspaper = {
                 type: 'aiB3Result',
                 priority: finalPriority,
                 headline: T(NAI.b3DrawHeadline, bVars),
+                headlineTpl: NAI.b3DrawHeadline, headlineVars: bVars,
                 body: T(NAI.b3DrawBody, bVars),
+                bodyTpl: NAI.b3DrawBody, bodyVars: bVars,
                 characterId: ev.challengerId || null,
-                situation: stamp,
+                situation: stamp, situationSuffixJa: b3StampSuffixJa,
               });
             } else {
               const finalPriority = ev.mq >= 90 ? P.aiB3Result + 20 : P.aiB3Result;
-              const mqTone = ev.mq >= 90 ? L(NAI.mqToneMasterpiece) : ev.mq >= 80 ? L(NAI.mqToneGood) : '';
+              const mqToneJa = ev.mq >= 90 ? NAI.mqToneMasterpiece : ev.mq >= 80 ? NAI.mqToneGood : '';
+              const mqTone = mqToneJa ? L(mqToneJa) : '';
               stories.push({
                 type: 'aiB3Result',
                 priority: finalPriority,
                 headline: T(NAI.b3WinHeadline, bVars),
+                headlineTpl: NAI.b3WinHeadline, headlineVars: bVars,
                 body: T(NAI.b3WinBody, { ...bVars, tone: mqTone }),
+                bodyTpl: NAI.b3WinBody, bodyVars: { ...bVars, tone: mqToneJa }, bodyLabelVars: ['tone'],
                 characterId: ev.winnerId || null,
-                situation: stamp,
+                situation: stamp, situationSuffixJa: b3StampSuffixJa,
               });
             }
           });
@@ -32760,11 +32923,15 @@ Engine.newspaper = {
         if (aiData._newsMediaResult) {
           const ev = aiData._newsMediaResult;
           if (ev.success) {
+            const msHeadlineVars = { org: ev.orgName, name: ev.fighterName };
+            const msBodyVars = { outlet: ev.outletName, name: ev.fighterName, avgMQ: ev.avgMQ };
             stories.push({
               type: 'aiMediaSpotlight',
               priority: P.aiMediaSpotlight,
-              headline: T(NAI.mediaSpotlightHeadline, { org: ev.orgName, name: ev.fighterName }),
-              body: T(NAI.mediaSpotlightBody, { outlet: ev.outletName, name: ev.fighterName, avgMQ: ev.avgMQ }),
+              headline: T(NAI.mediaSpotlightHeadline, msHeadlineVars),
+              headlineTpl: NAI.mediaSpotlightHeadline, headlineVars: msHeadlineVars,
+              body: T(NAI.mediaSpotlightBody, msBodyVars),
+              bodyTpl: NAI.mediaSpotlightBody, bodyVars: msBodyVars,
               characterId: ev.fighterId,
             });
           }
@@ -32781,11 +32948,8 @@ Engine.newspaper = {
         .map(ev => String(ev.characterId)));
       industryEvents.forEach((ev, _evIdx) => {
         if (ev && /^unifiedTitle/.test(ev.type)) {
-          const article = Engine.newspaper.composeUnifiedTitleArticle(
-            ev.type, ev.data || {},
-            (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.characterId || 0) + _evIdx,
-            dict,
-          );
+          const utSeed = (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.characterId || 0) + _evIdx;
+          const article = Engine.newspaper.composeUnifiedTitleArticle(ev.type, ev.data || {}, utSeed, dict);
           if (!article) return;
           stories.push({
             type: ev.type,
@@ -32797,6 +32961,9 @@ Engine.newspaper = {
             characterCount: Array.isArray(ev.characterIds) ? ev.characterIds.length : 0,
             newsData: ev.data || {},
             _industryIdx: _evIdx,
+            // i18n P7-58: composeUnifiedTitleArticleは(type, data, seed, dict)だけの
+            // 純関数(乱数を消費しない)。seedを併記しておけば表示側が呼び直せる。
+            _recompose: { kind: 'unifiedTitleArticle', articleType: ev.type, data: ev.data || {}, seed: utSeed },
           });
           return;
         }
@@ -32825,10 +32992,26 @@ Engine.newspaper = {
             : T(NAI.playerRetirementHeadline, { org: d.org || '', name: d.name || '' });
           const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, d, dict)
             : T(NAI.playerRetirementBody, { name: d.name || '' });
+          // i18n P7-58: AI引退(§上のブロック)と同型の3経路。hofFeatureは純関数なので
+          // (d, hofEntry)を持ち回って再構築、variant/フォールバックは選ばれたJAテンプレ+
+          // dの生値(orgだけはorgMissingフラグのときJAラベルなのでlabelVars扱い)を併記する。
+          const orgMissing = !!(ev.data && ev.data.orgMissing);
+          const retireVars = {
+            org: orgMissing ? _NP_PLAYER_ORG_FALLBACK_JA : (d.org || ''), name: d.name || '',
+            age: d.age != null ? d.age : '', seasons: d.seasons != null ? d.seasons : '',
+            reigns: d.reigns != null ? d.reigns : '',
+          };
           stories.push({
             type: ev.type,
             priority: P[ev.type] || P.general,
             headline, body,
+            headlineTpl: hofFeature ? null : (variant ? variant.headline : NAI.playerRetirementHeadline),
+            headlineVars: hofFeature ? null : (variant ? retireVars : { org: retireVars.org, name: retireVars.name }),
+            headlineLabelVars: orgMissing ? ['org'] : null,
+            bodyTpl: hofFeature ? null : (variant ? variant.body : NAI.playerRetirementBody),
+            bodyVars: hofFeature ? null : (variant ? retireVars : { name: retireVars.name }),
+            bodyLabelVars: (orgMissing && variant) ? ['org'] : null,
+            _recompose: hofFeature ? { kind: 'hofRetirement', d, hofEntry } : null,
             subhead: hofFeature?.subhead,
             situation: hofFeature?.situation,
             captionExtra: hofFeature?.captionExtra,
@@ -32862,7 +33045,19 @@ Engine.newspaper = {
           type: ev.type,
           priority,
           headline: _wmFillWithDict(dict, tpl.headline, params),
+          headlineTpl: tpl.headline,
           body: _wmFillWithDict(dict, tpl.body, params),
+          bodyTpl: tpl.body,
+          // i18n P7-58: このブランチは NEWS_HEADLINE_TEMPLATES の約65種のイベント型が
+          // 共有する経路。dataは_wmResolvePreformattedIndustryDataが**生成時点の言語**で
+          // 導出した値(一部の型はinjuryType/roundKey等の内部キーをJAラベルへ既に解決済み)
+          // なので、そのままheadlineVars/bodyVarsへ焼くと言語切替で古い言語のまま残る。
+          // ev.data(未加工キー)を _industryRawData として併記し、表示側が
+          // _wmResolvePreformattedIndustryData({type, characterId, data: raw}, WM_I18N.t) を
+          // 呼び直してから充填する(§8「render時点再構築」と同じ関数を表示点でも使う)。
+          // 生キーを持たない旧セーブのイベントはfail-openでheadlineVars(=解決済みdata)を使う。
+          headlineVars: params, bodyVars: params,
+          _industryRawData: ev.data || null,
           characterId: ev.characterId || null,
           // task-54: サブ記事の隊列写真は最大3人。元の人数を characterCount に残し、
           // 3人を超えたぶんは「+N」表示に使う(現状の呼び出し元はどれも2人までしか積まないため
@@ -32911,10 +33106,18 @@ Engine.newspaper = {
           // dict(tpl, params) を1回呼ぶだけで「翻訳+PH充填+名前自動変換」を済ませる
           // 既存共通ヘルパー(P6-10)なので、それに乗り換える。JA出力は不変(dict='ja'時は
           // 従来のfill()と同じ正規表現置換ロジックに帰着する)
+          // followUpBreakthrough/Newcomer/Record は stat/how/what というJA成形ラベルを
+          // 積む(buildFollowUpのrawDataに生のJAラベルを併記済み)。followUpStreak はcountの
+          // みで名前ラベルは無い。
+          const fuLabelKey = { followUpBreakthrough: 'stat', followUpNewcomer: 'how', followUpRecord: 'what' }[fu.type];
           const st2 = {
             type: fu.type, priority: fu.priority,
             headline: _wmFillWithDict(dict, pick.headline, fu.newsData),
+            headlineTpl: pick.headline, headlineVars: fu.rawData || fu.newsData,
+            headlineLabelVars: fuLabelKey ? [fuLabelKey] : null,
             body: _wmFillWithDict(dict, pick.body, fu.newsData),
+            bodyTpl: pick.body, bodyVars: fu.rawData || fu.newsData,
+            bodyLabelVars: fuLabelKey ? [fuLabelKey] : null,
             characterId: fu.characterId, newsData: fu.newsData,
           };
           const ctx2 = Engine.newspaper.buildValueContext(state);
@@ -33017,35 +33220,46 @@ Engine.newspaper = {
         const page2Stories = [];
         // 全試合詳報
         const allMatches = [];
-        let bestMQ = 0, bestMatch = null;
+        let bestMQ = 0, bestMatch = null, bestMatchRoundJa = null;
         jtr.rounds.forEach(round => {
           // ラウンド名は ui-ledger の既訳を値として引く(§15-3)
-          const rl = L(_NP_JT_ROUND_JA[round.name] || _NP_JT_ROUND_JA.quarterFinal);
+          const roundJa = _NP_JT_ROUND_JA[round.name] || _NP_JT_ROUND_JA.quarterFinal;
+          const rl = L(roundJa);
           round.matches.forEach(m => {
             const w = m.winnerId === m.left.id ? m.left : m.right;
             const l = m.winnerId === m.left.id ? m.right : m.left;
-            allMatches.push({ round: rl, winner: w.name, winnerId: w.id, winnerOrg: w._orgName, loser: l.name, loserId: l.id, loserOrg: l._orgName, mq: m.mq });
-            if (m.mq > bestMQ) { bestMQ = m.mq; bestMatch = { round: rl, winner: w.name, winnerId: w.id, loser: l.name, loserId: l.id, mq: m.mq }; }
+            allMatches.push({ round: rl, roundJa, winner: w.name, winnerId: w.id, winnerOrg: w._orgName, loser: l.name, loserId: l.id, loserOrg: l._orgName, mq: m.mq });
+            if (m.mq > bestMQ) { bestMQ = m.mq; bestMatchRoundJa = roundJa; bestMatch = { round: rl, winner: w.name, winnerId: w.id, loser: l.name, loserId: l.id, mq: m.mq }; }
           });
         });
         page2Stories.push({
           type: 'juniorTournamentMatchResults',
           headline: T(NJT.allResultsHeadline, { season: state.season }),
+          headlineTpl: NJT.allResultsHeadline, headlineVars: { season: state.season },
           body: allMatches.map(m => T(NJT.allResultsLine, {
             round: m.round, winner: m.winner, winnerOrg: m.winnerOrg,
             loser: m.loser, loserOrg: m.loserOrg, mq: m.mq,
           })).join('\n'),
+          // i18n P7-58: 各行を"\n"で連結した合成本文。表示側はbodyLineTplへ各行のvars
+          // (roundJaはJA成形ラベルなのでbodyLineLabelVarsで引き直す)を通し、"\n"でjoinし直す。
+          bodyLineTpl: NJT.allResultsLine,
+          bodyLineVars: allMatches.map(m => ({ round: m.roundJa, winner: m.winner, winnerOrg: m.winnerOrg, loser: m.loser, loserOrg: m.loserOrg, mq: m.mq })),
+          bodyLineLabelVars: ['round'], bodyLineJoin: '\n',
           matches: allMatches,
         });
         if (bestMatch) {
-          const bmTone = L(bestMQ >= 80 ? NJT.bestBoutToneStrong
-            : bestMQ >= 60 ? NJT.bestBoutToneGood : NJT.bestBoutToneWeak);
+          const bmToneJa = bestMQ >= 80 ? NJT.bestBoutToneStrong : bestMQ >= 60 ? NJT.bestBoutToneGood : NJT.bestBoutToneWeak;
+          const bmTone = L(bmToneJa);
+          const bbHeadlineVars = { winner: bestMatch.winner, loser: bestMatch.loser, mq: bestMatch.mq };
+          const bbBodyVarsRaw = { round: bestMatchRoundJa, winner: bestMatch.winner, loser: bestMatch.loser, tone: bmToneJa };
           page2Stories.push({
             type: 'juniorTournamentBestBout',
-            headline: T(NJT.bestBoutHeadline, { winner: bestMatch.winner, loser: bestMatch.loser, mq: bestMatch.mq }),
+            headline: T(NJT.bestBoutHeadline, bbHeadlineVars),
+            headlineTpl: NJT.bestBoutHeadline, headlineVars: bbHeadlineVars,
             body: T(NJT.bestBoutBody, {
               round: bestMatch.round, winner: bestMatch.winner, loser: bestMatch.loser, tone: bmTone,
             }),
+            bodyTpl: NJT.bestBoutBody, bodyVars: bbBodyVarsRaw, bodyLabelVars: ['round', 'tone'],
           });
         }
         // 敗退選手フォロー（準決勝敗退者）
@@ -33055,7 +33269,12 @@ Engine.newspaper = {
           page2Stories.push({
             type: 'juniorTournamentSemiFinalists',
             headline: L(NJT.semiFinalistsHeadline),
+            headlineTpl: NJT.semiFinalistsHeadline, headlineVars: null,
             body: T(NJT.semiFinalistsBody, { names: sfNames }),
+            // 名前列挙(joinNameList)はEN句読点畳み込みが要るので、表示側はnameTplItems
+            // (各選手のsemiFinalistNameテンプレ+材料)からjoinNameListを呼び直す。
+            bodyTpl: NJT.semiFinalistsBody,
+            bodyNameTplItems: { tpl: NJT.semiFinalistName, items: jtr.semiFinalists.map(sf => ({ name: sf.name, org: sf._orgName })) },
           });
         }
         result.pages = [null, { stories: page2Stories, title: L(NJT.pageTitleResults) }]; // index0=通常面, index1=特集面
@@ -33069,27 +33288,37 @@ Engine.newspaper = {
         const pList = sel.participants;
         const topP = pList[0];
         const page2Stories = [];
+        const previewHeadlineVars = { season: state.season + 1 };
+        const previewBodyVars = { week: Engine.juniorTournament.WEEK, count: pList.length };
         page2Stories.push({
           type: 'juniorTournamentPreviewRoster',
-          headline: T(NJT.previewHeadline, { season: state.season + 1 }),
-          body: T(NJT.previewBody, { week: Engine.juniorTournament.WEEK, count: pList.length }),
+          headline: T(NJT.previewHeadline, previewHeadlineVars),
+          headlineTpl: NJT.previewHeadline, headlineVars: previewHeadlineVars,
+          body: T(NJT.previewBody, previewBodyVars),
+          bodyTpl: NJT.previewBody, bodyVars: previewBodyVars,
           participants: pList.map(p => ({ name: p.name, id: p.id, orgName: p._orgName, ovr: Engine.util.ov(p), age: p.age, style: p.style })),
         });
         // 展望コメント(黒田記者の署名記事。断片は1〜3本なので完成文どうしを畳み込む)
         const darkHorse = pList.length >= 4 ? pList[Math.min(2, pList.length - 1)] : null;
         const _JOINT = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
         const outlookParts = [T(NJT.outlookTop, { name: topP.name, org: topP._orgName, ovr: Engine.util.ov(topP) })];
+        const outlookPartsSpec = [{ tpl: NJT.outlookTop, vars: { name: topP.name, org: topP._orgName, ovr: Engine.util.ov(topP) } }];
         if (darkHorse && darkHorse.id !== topP.id) {
           outlookParts.push(T(NJT.outlookDarkHorse, { name: darkHorse.name, org: darkHorse._orgName }));
+          outlookPartsSpec.push({ tpl: NJT.outlookDarkHorse, vars: { name: darkHorse.name, org: darkHorse._orgName } });
         }
         outlookParts.push(L(NJT.outlookClosing));
+        outlookPartsSpec.push({ tpl: NJT.outlookClosing, vars: null });
         const outlook = _JOINT
           ? outlookParts.reduce((a, b) => T(_JOINT.join, { a, b }))
           : outlookParts.join('');
         page2Stories.push({
           type: 'juniorTournamentOutlook',
           headline: L(NJT.outlookHeadline),
+          headlineTpl: NJT.outlookHeadline, headlineVars: null,
           body: outlook,
+          // 断片(1〜3本)+連結様式(JOIN.join)をパーツ配列として持ち回る(構造規約「連結文はパーツ配列」)
+          bodyParts: outlookPartsSpec, bodyJoinTpl: _JOINT ? _JOINT.join : '{a}{b}',
         });
         result.pages = [null, { stories: page2Stories, title: L(NJT.pageTitlePreview) }];
       }

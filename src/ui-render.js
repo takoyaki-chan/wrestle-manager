@@ -7617,6 +7617,11 @@ function _npRenderPage1() {
     </div>`;
   }
 
+  // i18n P7-58: JAで進めたセーブをENへ切り替えても、発行済みの号(topStory/subStories)が
+  // 併記したheadlineTpl/bodyTplから現在の言語で組み直される(_npFrontLegacy/_npFrontV3
+  // どちらもこの結果を受け取る。バックナンバーもここを通るので同じ扱いになる)。
+  wp = _npResolveWpStories(wp);
+
   const seasonNum = wp.season || G.season || 1;
   const weekNum = wp.week || G.week || 1;
 
@@ -7627,11 +7632,15 @@ function _npRenderPage1() {
   let archiveNav = '';
   if (archiveTotal > 0) {
     const label = isLatest ? WM_I18N.t('最新号') : WM_I18N.t('バックナンバー {n}/{total}', { n: _newspaperArchiveIdx + 1, total: archiveTotal });
+    // i18n P7-58: data-walk-role はUI自動走破(test/ui-walkthrough)がJA/EN両方で同じ
+    // ボタンを掴むための言語非依存フック(ボタン文言はWM_I18N.tで訳されるためテキスト
+    // 一致では選べない)。既存のdraft-pick(_openingFlowDraftBoost)と同じ作法 — 表示テキスト
+    // には一切影響しない(node test/ja-golden.js 完全一致で確認済み)。
     archiveNav = `<div class="np-archive-nav">
-      ${canNewer ? `<button onclick="setNewspaperArchiveIdx(${_newspaperArchiveIdx - 1})">${WM_I18N.t('◀ 次の号')}</button>` : ''}
+      ${canNewer ? `<button data-walk-role="np-archive-newer" onclick="setNewspaperArchiveIdx(${_newspaperArchiveIdx - 1})">${WM_I18N.t('◀ 次の号')}</button>` : ''}
       <span class="label">${label}</span>
-      ${canOlder ? `<button onclick="setNewspaperArchiveIdx(${isLatest ? 0 : _newspaperArchiveIdx + 1})">${WM_I18N.t('前の号 ▶')}</button>` : ''}
-      ${!isLatest ? `<button class="gold" onclick="setNewspaperArchiveIdx(-1)">${WM_I18N.t('最新号')}</button>` : ''}
+      ${canOlder ? `<button data-walk-role="np-archive-older" onclick="setNewspaperArchiveIdx(${isLatest ? 0 : _newspaperArchiveIdx + 1})">${WM_I18N.t('前の号 ▶')}</button>` : ''}
+      ${!isLatest ? `<button class="gold" data-walk-role="np-archive-latest" onclick="setNewspaperArchiveIdx(-1)">${WM_I18N.t('最新号')}</button>` : ''}
     </div>`;
   }
 
@@ -7796,6 +7805,257 @@ function _npKurodaCommentText(type, headline, seasonNum, weekNum, salt) {
   try { return kurodaText(fn, { headline: headline || '', orgName: '' }, WM_I18N.t) || ''; } catch (e) { return ''; }
 }
 
+// ══════════════════════════════════════════════════════════════
+// i18n P7-58: 1〜3面(topStory/subStories/特集ページ)の「テンプレ+材料」表示時再構築
+// ══════════════════════════════════════════════════════════════
+// 背景: Engine.newspaper.generate() は opts.dict(=WM_I18N.t)で完成文をweeklyNewspaper/
+// newspaperArchiveへ焼く。従来はそれで済んでいた(生成時点の言語で正しい)が、JAで進めた
+// セーブをENへ切り替えても**発行済みの号**はセーブに焼かれた完成文のままなので翻訳されない
+// (4面MVPレースは_npMvpI18nで解決済み。P7-58はそれを1〜3面の全記事種へ広げる)。
+// 方式(specs §14-3/§16-1と同型・追加フィールド): headline/bodyの完成文は不変のまま、
+// 隣にheadlineTpl/headlineVars(・bodyTpl/bodyVars)を併記する。表示側はTplがあれば
+// WM_I18N.t(tpl, vars)で組み直し、無ければ保存値をそのまま出す(旧セーブはfail-open)。
+// 素材によっては完成文に「JA成形ラベル」(勝ち越し/名勝負等)や「季/週スタンプ」が
+// 混じるため、下の_npMaterializeVars/_npStampVarsが個別に引き直す。
+
+// labelVars(値そのものがJA成形ラベルで訳し直しが要るキー名の配列)とderive(派生値の
+// 再計算指示)をvarsへ適用する。どちらも無ければvarsをそのまま返す(fail-open)。
+function _npMaterializeVars(vars, opts) {
+  if (!vars) return vars;
+  let out = vars;
+  const labelVars = opts && opts.labelVars;
+  if (Array.isArray(labelVars) && labelVars.length) {
+    out = Object.assign({}, out);
+    labelVars.forEach((k) => {
+      if (out[k] != null && typeof _wmDictLabel === 'function') {
+        try { out[k] = _wmDictLabel(WM_I18N.t, out[k]); } catch (_e) { /* fail-open */ }
+      }
+    });
+  }
+  const derive = opts && opts.derive;
+  if (Array.isArray(derive) && derive.length) {
+    out = Object.assign({}, out);
+    derive.forEach((d) => {
+      if (!d || !d.key) return;
+      try {
+        if (d.kind === 'injuryLabel' && typeof injuryLabel === 'function') {
+          out[d.key] = injuryLabel(d.raw, WM_I18N.t) || out[d.key];
+        } else if (d.kind === 'formatFinish') {
+          out[d.key] = (typeof Engine !== 'undefined' && Engine.formatFinish && (d.finMove || d.finType))
+            ? Engine.formatFinish(d.finType, d.finMove, false, WM_I18N.t)
+            : (d.fallback != null ? d.fallback : out[d.key]);
+        } else if (d.kind === 'milestoneWins') {
+          out[d.key] = WM_I18N.t('{wins}勝', { wins: out[d.winsKey] });
+        } else if (d.kind === 'dictLabel' && typeof _wmDictLabel === 'function') {
+          out[d.key] = _wmDictLabel(WM_I18N.t, d.raw) || out[d.key];
+        }
+      } catch (_e) { /* fail-open: 元の値のまま */ }
+    });
+  }
+  return out;
+}
+
+// varsに`stamp`キーがあり、記事がsituationSuffixJa(「定期興行」等のJA種別ラベル)を
+// 併記していれば、号(wp)のseason/weekで_wmNewsStampを呼び直して現在の言語のスタンプへ
+// 差し替える(スタンプの完成文をそのまま持ち回ると号を跨いだ言語切替で古い言語のまま残る)。
+function _npStampVars(vars, story, wp) {
+  if (!vars || vars.stamp == null || !story || !story.situationSuffixJa) return vars;
+  if (typeof _wmNewsStamp !== 'function') return vars;
+  try {
+    const season = (wp && wp.season) || 0, week = (wp && wp.week) || 0;
+    return Object.assign({}, vars, { stamp: _wmNewsStamp(WM_I18N.t, season, week, story.situationSuffixJa) });
+  } catch (_e) { return vars; }
+}
+
+// generate()の「NEWS_HEADLINE_TEMPLATES約65種共有」経路(_industryRawData併記)専用。
+// dataは生成時点の言語でtopChampionInjury等の一部型がinjuryType/roundKey等を
+// 既に解決済みの値なので、生キー(_industryRawData)から_wmResolvePreformattedIndustryData
+// を呼び直して現在の言語のvarsを作り直す(§8「render時点再構築」と同じ関数を表示点でも使う)。
+function _npResolveIndustryVars(story) {
+  if (!story || !story._industryRawData || typeof _wmResolvePreformattedIndustryData !== 'function') return null;
+  try {
+    const resolved = _wmResolvePreformattedIndustryData(
+      { type: story.type, characterId: story.characterId, data: story._industryRawData }, WM_I18N.t);
+    const vars = {};
+    Object.keys(resolved || {}).forEach((k) => { vars[k] = resolved[k] != null ? resolved[k] : ''; });
+    return vars;
+  } catch (_e) { return null; }
+}
+
+// 決定的な純関数(季/週/選手ID/併記データだけに依存し、乱数を消費しない)で組んだ記事は、
+// 素材をそのまま持ち回って表示時に同じ関数を呼び直すのが最も確実(§18-1のMVPレース
+// 自己検証パターンと同じ発想だが、こちらは検証なしで直接呼び直せる——素材自体が
+// 完成文ではなく生値だから、常に「今の言語で正しい」結果になる)。
+function _npRecomposeStory(story, wp) {
+  const r = story && story._recompose;
+  if (!r || typeof Engine === 'undefined' || !Engine.newspaper) return null;
+  const season = (wp && wp.season) || 0, week = (wp && wp.week) || 0;
+  try {
+    if (r.kind === 'championChangeBody') {
+      const seed = season * 131 + week * 17 + (story.characterId || 0);
+      const body = Engine.newspaper.composeChampionChangeBody(r.data, seed, WM_I18N.t);
+      return body ? { body } : null;
+    }
+    if (r.kind === 'unifiedTitleArticle') {
+      const article = Engine.newspaper.composeUnifiedTitleArticle(r.articleType, r.data, r.seed, WM_I18N.t);
+      return article ? { headline: article.headline, body: article.body } : null;
+    }
+    if (r.kind === 'hofRetirement') {
+      const feature = Engine.newspaper.composeHallOfFameRetirement(r.d, r.hofEntry, WM_I18N.t);
+      return feature
+        ? { headline: feature.headline, body: feature.body, subhead: feature.subhead, situation: feature.situation, captionExtra: feature.captionExtra }
+        : null;
+    }
+    if (r.kind === 'npcHallOfFame') {
+      const feature = Engine.newspaper.composeNpcHallOfFame(r.h, WM_I18N.t);
+      return feature ? { headline: feature.headline, body: feature.body } : null;
+    }
+    if (r.kind === 'ppvSummitStory' && story.summitData && typeof _buildPpvSummitStory === 'function') {
+      const fresh = _buildPpvSummitStory(story.summitData, season, week, Engine.newspaper.PRIORITY, WM_I18N.t);
+      return fresh ? { headline: fresh.headline, body: fresh.body, situation: fresh.situation } : null;
+    }
+  } catch (_e) { return null; }
+  return null;
+}
+
+// 記事1本の headline/body(+situation/subhead/captionExtra)を現在の言語で組み直す。
+// Tpl系フィールドが無い(=このコミットより前に発行された旧号)記事はそのまま返す(fail-open)。
+function _npResolveStory(story, wp) {
+  if (!story) return story;
+  let headline = story.headline, body = story.body, situation = story.situation,
+    subhead = story.subhead, captionExtra = story.captionExtra;
+  // i18n P7-58バグ修正: _recompose は種別によって headline/body/situation の一部しか
+  // 返さないことがある(例: composeChampionChangeBody は body だけ)。「recomposeがあるか
+  // どうか」で丸ごと分岐すると、recomposeが提供しないフィールド(このケースのheadline)が
+  // headlineTplを持っているのに一切適用されず生JAのまま出てしまう。各フィールドは
+  // 「recomposeがそのフィールドを提供 → Tpl系 → 保存値のまま」と個別にfail-openする。
+  const recomposed = _npRecomposeStory(story, wp);
+  const industryVars = _npResolveIndustryVars(story);
+  if (recomposed && recomposed.headline != null) {
+    headline = recomposed.headline;
+  } else if (story.headlineTpl) {
+    let vars = industryVars || story.headlineVars || undefined;
+    vars = _npMaterializeVars(vars, { labelVars: story.headlineLabelVars, derive: story.headlineDerive });
+    vars = _npStampVars(vars, story, wp);
+    try { headline = WM_I18N.t(story.headlineTpl, vars || undefined); } catch (_e) { /* fail-open */ }
+  }
+  if (recomposed && recomposed.subhead !== undefined) subhead = recomposed.subhead;
+  if (recomposed && recomposed.captionExtra !== undefined) captionExtra = recomposed.captionExtra;
+  if (recomposed && recomposed.situation != null) {
+    situation = recomposed.situation;
+  } else if (story.situationSuffixJa && typeof _wmNewsStamp === 'function') {
+    try { situation = _wmNewsStamp(WM_I18N.t, (wp && wp.season) || 0, (wp && wp.week) || 0, story.situationSuffixJa); } catch (_e) { /* fail-open */ }
+  }
+  if (recomposed && recomposed.body != null) {
+    body = recomposed.body;
+  } else {
+    if (Array.isArray(story.bodyLineVars) && story.bodyLineTpl) {
+      try {
+        const lines = story.bodyLineVars.map((v) => {
+          const vv = _npMaterializeVars(v, { labelVars: story.bodyLineLabelVars });
+          return WM_I18N.t(story.bodyLineTpl, vv || undefined);
+        });
+        body = lines.join(story.bodyLineJoin != null ? story.bodyLineJoin : '\n');
+      } catch (_e) { /* fail-open */ }
+    } else if (Array.isArray(story.bodyParts)) {
+      try {
+        const partTexts = story.bodyParts.map((p) => {
+          if (!p) return '';
+          let vars = _npMaterializeVars(p.vars, { labelVars: p.labelVars });
+          vars = _npStampVars(vars, story, wp);
+          return WM_I18N.t(p.tpl, vars || undefined);
+        });
+        if (story.bodyJoinTpl) {
+          const nonEmpty = partTexts.filter(Boolean);
+          body = nonEmpty.length ? nonEmpty.reduce((a, b) => WM_I18N.t(story.bodyJoinTpl, { a, b })) : '';
+        } else {
+          body = partTexts.join('');
+        }
+      } catch (_e) { /* fail-open */ }
+    } else if (story.bodyNameTplItems && story.bodyNameTplItems.tpl) {
+      try {
+        const spec = story.bodyNameTplItems;
+        const names = (spec.items || []).map((it) => WM_I18N.t(spec.tpl, it));
+        const namesText = (typeof Engine !== 'undefined' && Engine.newspaper && Engine.newspaper.joinNameList)
+          ? Engine.newspaper.joinNameList(names, WM_I18N.t) : names.join('');
+        if (story.bodyTpl) {
+          let vars = Object.assign({}, story.bodyVars || null, { names: namesText });
+          vars = _npStampVars(vars, story, wp);
+          body = WM_I18N.t(story.bodyTpl, vars);
+        }
+      } catch (_e) { /* fail-open */ }
+    } else if (Array.isArray(story.bodyNames) && story.bodyNames.length) {
+      // P7-30と同型: bodyNamesは選手名の生配列。joinNameListを表示時の言語で掛け直す。
+      // bodyTplが無い記事(draftAiResult等)は「名前列挙そのものが本文」なのでそのまま出す。
+      try {
+        const namesText = (typeof Engine !== 'undefined' && Engine.newspaper && Engine.newspaper.joinNameList)
+          ? Engine.newspaper.joinNameList(story.bodyNames, WM_I18N.t) : story.bodyNames.join('');
+        if (story.bodyTpl) {
+          let vars = Object.assign({}, story.bodyVars || null, { names: namesText });
+          vars = _npStampVars(vars, story, wp);
+          body = WM_I18N.t(story.bodyTpl, vars);
+        } else {
+          body = namesText;
+        }
+      } catch (_e) { /* fail-open */ }
+    } else if (story.bodyTpl) {
+      let vars = industryVars || story.bodyVars || undefined;
+      vars = _npMaterializeVars(vars, { labelVars: story.bodyLabelVars, derive: story.bodyDerive });
+      vars = _npStampVars(vars, story, wp);
+      try { body = WM_I18N.t(story.bodyTpl, vars || undefined); } catch (_e) { /* fail-open */ }
+    }
+  }
+  if (headline === story.headline && body === story.body && situation === story.situation
+    && subhead === story.subhead && captionExtra === story.captionExtra) return story;
+  return Object.assign({}, story, { headline, body, situation, subhead, captionExtra });
+}
+
+// wp(最新号 or バックナンバー1件)のtopStory/subStoriesを表示時点の言語で組み直した
+// コピーを返す。_npFrontLegacy/_npFrontV3どちらもこの結果を受け取るので、以降は
+// 従来どおり ts.headline / ss.body のような直読みで書ける。
+function _npResolveWpStories(wp) {
+  if (!wp) return wp;
+  const topStory = _npResolveStory(wp.topStory, wp);
+  const subStories = Array.isArray(wp.subStories) ? wp.subStories.map((s) => _npResolveStory(s, wp)) : wp.subStories;
+  if (topStory === wp.topStory && subStories === wp.subStories) return wp;
+  return Object.assign({}, wp, { topStory, subStories });
+}
+
+// 自団体興行結果(wp.playerShowData = state.currentNewspaper)のheadline/articleを
+// 表示時点の言語で組み直す。App._buildShowResultNewspaperDataが併記したheadlineTpl/
+// articleTpl(Math.random()で選ぶため表示時再生成ができず、kurodaTextPartsで作った
+// {tpl, vars}を併記している。specs §14-3と同型)を使う。旧セーブはTplが無くfail-open。
+function _npResolvePlayerShowData(psd) {
+  if (!psd) return psd;
+  let headline = psd.headline, article = psd.article, finishLabel = psd.finishLabel, matchLabel = psd.matchLabel;
+  if (psd.headlineTpl) {
+    try {
+      const vars = _npMaterializeVars(psd.headlineVars, { derive: psd.headlineDerive });
+      headline = WM_I18N.t(psd.headlineTpl, vars || undefined);
+    } catch (_e) { /* fail-open */ }
+  }
+  if (psd.article && psd.articleTpl) {
+    try {
+      const vars = _npMaterializeVars(psd.articleVars, { derive: psd.articleDerive });
+      article = WM_I18N.t(psd.articleTpl, vars || undefined);
+    } catch (_e) { /* fail-open */ }
+  }
+  // i18n P7-58: finishLabel/matchLabelはheadline/articleのTplパラメータとしてだけでなく、
+  // _npRenderPlayerShow(np-vs-finish/dec-finish等)から**直接**読まれる独立フィールドでも
+  // ある。finType/finMoveがあれば表示時のEngine.formatFinishで組み直す(無ければ保存値の
+  // まま=旧セーブfail-open)。matchLabelは元々null(=シングルのメイン)ならその場で
+  // WM_I18N.t()するのが _npRenderPlayerShow 側の役目なので、ここでは何もしない。
+  if (psd.finType || psd.finMove) {
+    try {
+      finishLabel = (typeof Engine !== 'undefined' && Engine.formatFinish)
+        ? Engine.formatFinish(psd.finType, psd.finMove, false, WM_I18N.t)
+        : finishLabel;
+    } catch (_e) { /* fail-open */ }
+  }
+  if (headline === psd.headline && article === psd.article && finishLabel === psd.finishLabel && matchLabel === psd.matchLabel) return psd;
+  return Object.assign({}, psd, { headline, article, finishLabel, matchLabel });
+}
+
 // ── 一面(旧レイアウト) ───────────────────────────────
 // バックナンバー互換用。新規生成号は _npFrontV3 が描く
 function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
@@ -7858,7 +8118,13 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
   if (wp.playerShowData) {
     const ts = wp.topStory;
     const topIsPlayerShow = ts && (ts.type === 'playerShowTitle' || ts.type === 'playerShowNormal');
-    const psd = topIsPlayerShow ? _npSwapMainToSecondCard(wp.playerShowData, seasonNum, weekNum) : wp.playerShowData;
+    // i18n P7-58: まずheadlineTpl/articleTplから現在の言語で組み直す(_npResolvePlayerShowData)。
+    // 繰り上げ(_npSwapMainToSecondCard)は毎回WM_I18N.tで表示時に組むので言語切替に強いが、
+    // 対象試合が1試合しかない(allMatches が空)ときは何もせず引数をそのまま返す早期returnが
+    // あるため、**先に翻訳してから渡す**必要がある(後から翻訳すると、このreturnで
+    // 素通りした未翻訳のheadline/articleがそのまま残ってしまう)。
+    const resolvedPsd = _npResolvePlayerShowData(wp.playerShowData);
+    const psd = topIsPlayerShow ? _npSwapMainToSecondCard(resolvedPsd, seasonNum, weekNum) : resolvedPsd;
     if (psd) html += _npRenderPlayerShow(psd, seasonNum, weekNum);
   }
 
@@ -8318,7 +8584,13 @@ function _npFrontV3(wp, seasonNum, weekNum, isLatest) {
     const ts = wp.topStory;
     const topIsPlayerShow = ts && (ts.type === 'playerShowTitle' || ts.type === 'playerShowNormal');
     // 一面トップが自団体興行なら、詳報のメインは第2試合へ繰り上げる(同じ試合を二度語らない)
-    const psd = topIsPlayerShow ? _npSwapMainToSecondCard(wp.playerShowData, seasonNum, weekNum) : wp.playerShowData;
+    // i18n P7-58: まずheadlineTpl/articleTplから現在の言語で組み直す(_npResolvePlayerShowData)。
+    // 繰り上げ(_npSwapMainToSecondCard)は毎回WM_I18N.tで表示時に組むので言語切替に強いが、
+    // 対象試合が1試合しかない(allMatches が空)ときは何もせず引数をそのまま返す早期returnが
+    // あるため、**先に翻訳してから渡す**必要がある(後から翻訳すると、このreturnで
+    // 素通りした未翻訳のheadline/articleがそのまま残ってしまう)。
+    const resolvedPsd = _npResolvePlayerShowData(wp.playerShowData);
+    const psd = topIsPlayerShow ? _npSwapMainToSecondCard(resolvedPsd, seasonNum, weekNum) : resolvedPsd;
     if (psd) {
       html += `<div class="np-v3-fold" id="npShowDetail"><span>${WM_I18N.t('本紙つづき')}</span>${WM_I18N.t('自団体興行 詳報')}</div>`;
       html += _npRenderPlayerShow(psd, seasonNum, weekNum);
@@ -9800,19 +10072,12 @@ function _renderNewspaperExtraPage(wp, pageData) {
   </div>`;
 
   pageData.stories.forEach(story => {
-    // i18n P7-30: 見出し/本文がGへ焼かれた完成文の記事(ドラフト3種)は、併記された
-    // テンプレ+差し込み値から表示時に組み直す(specs §14-3/§16-1)。保存値そのものを
-    // t() へ通さないこと — 完成文は辞書キーと一致せず i18n-miss を汚す(§15-1)。
-    // 追加フィールドを持たない旧セーブ・他種の記事は従来どおり保存値を素通しする。
-    const _joinNames = (typeof Engine !== 'undefined' && Engine.newspaper && Engine.newspaper.joinNameList) || null;
-    const _extraNames = (_joinNames && Array.isArray(story.bodyNames) && story.bodyNames.length)
-      ? _joinNames(story.bodyNames, WM_I18N.t) : null;
-    const _headline = story.headlineTpl
-      ? WM_I18N.t(story.headlineTpl, story.headlineVars || undefined) : story.headline;
-    const _body = story.bodyTpl
-      ? WM_I18N.t(story.bodyTpl, Object.assign({}, story.bodyVars || null, _extraNames != null ? { names: _extraNames } : null))
-      : (_extraNames != null ? _extraNames : story.body);
-    story = Object.assign({}, story, { headline: _headline, body: _body });
+    // i18n P7-30/P7-58: 見出し/本文がGへ焼かれた完成文の記事は、併記されたテンプレ+
+    // 差し込み値から表示時に組み直す(specs §14-3/§16-1)。_npResolveStory は1〜3面と
+    // 同じ共通resolver(headlineTpl/bodyTpl/bodyNames/bodyLineTpl/bodyParts全対応)。
+    // 保存値そのものを t() へ通さないこと — 完成文は辞書キーと一致せず i18n-miss を
+    // 汚す(§15-1)。追加フィールドを持たない旧セーブ・他種の記事はfail-openで保存値のまま。
+    story = _npResolveStory(story, wp);
     html += `<div style="padding:12px 20px;border-bottom:1px solid rgba(95,69,35,0.12);">`;
     html += `<div style="font-size:16px;font-weight:900;line-height:1.3;margin-bottom:6px;">${story.headline}</div>`;
 

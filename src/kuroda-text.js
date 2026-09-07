@@ -1661,3 +1661,28 @@ function kurodaText(entry, d, dict) {
   tpl.paths.forEach((path) => { params[kurodaParamName(path)] = kurodaEvalPath(d, path); });
   return dict(tpl.template, params);
 }
+
+// i18n P7-58: kurodaText() の完成文はGへ焼くと言語固定になる(呼び出し元がMath.random()で
+// 選ぶプールが多く、§14-3の「表示時再生成」も「rng seed再現」もどちらも使えない)。
+// この関数は完成文を作りつつ、隣に{ tpl, vars }(=WM_I18N.tへ渡せるJA原文テンプレと差し込み値)
+// も返す。呼び出し元(app.jsの新聞テキスト生成等)がGへ headlineTpl/headlineVars のように
+// 併記しておけば、表示側は保存済みの完成文の代わりに WM_I18N.t(tpl, vars) で組み直せる
+// (specs §14-3の追加フィールド方式と同型)。entryが正規化できない複雑式(三項演算子や
+// Math.abs()などの計算式を含むアロー関数)のときは tpl:null (fail-open — 保存値のまま)。
+function kurodaTextParts(entry, d, dict) {
+  const text = kurodaText(entry, d, dict);
+  if (typeof entry === 'string') return { text, tpl: entry, vars: null };
+  if (typeof entry !== 'function') return { text, tpl: null, vars: null };
+  // 分岐ラッパ(kurodaVariants)はまず条件で枝を決め、その枝を通常のプール要素として正規化する
+  // (kurodaTextの分岐処理と同じ)。
+  if (typeof entry.pickVariant === 'function') {
+    const branch = entry.pickVariant(d);
+    return branch ? kurodaTextParts(branch, d, dict) : { text, tpl: null, vars: null };
+  }
+  const norm = kurodaTemplateOf(entry);
+  if (!norm) return { text, tpl: null, vars: null };
+  if (norm.paths.length === 0) return { text, tpl: norm.template, vars: null };
+  const vars = {};
+  norm.paths.forEach((path) => { vars[kurodaParamName(path)] = kurodaEvalPath(d, path); });
+  return { text, tpl: norm.template, vars };
+}

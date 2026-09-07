@@ -2419,6 +2419,15 @@ function runSimulation(seed, seasons) {
     // detailTpl/detailVars(§14-3の追加フィールド方式)を新設。detail(JA完成文・セーブ値)は
     // 不変だが、この2フィールドの追加分だけ指紋が動くため除外する(P6-16/P7-25と同じ作法)。
     if (key === 'detailTpl' || key === 'detailVars') return undefined;
+    // i18n P7-58: 新聞(1〜3面+特集ページ)の記事へ「テンプレ+材料」の追加フィールド
+    // (specs §14-3)を新設。headline/body の完成文(セーブ値)は不変だが、この一群の
+    // 追加フィールドの分だけ指紋が動くため除外する(P7-28/P6-16と同じ作法)。
+    if (key === 'headlineTpl' || key === 'headlineVars' || key === 'headlineLabelVars' || key === 'headlineDerive'
+      || key === 'bodyTpl' || key === 'bodyVars' || key === 'bodyLabelVars' || key === 'bodyDerive'
+      || key === 'bodyParts' || key === 'bodyJoinTpl'
+      || key === 'bodyLineTpl' || key === 'bodyLineVars' || key === 'bodyLineLabelVars' || key === 'bodyLineJoin'
+      || key === 'bodyNameTplItems' || key === '_recompose' || key === '_industryRawData'
+      || key === 'situationSuffixJa' || key === 'rawData' || key === 'namesRaw') return undefined;
     return value;
   });
   let semanticFingerprint = 2166136261;

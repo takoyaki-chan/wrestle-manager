@@ -6731,6 +6731,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}（{tier}）",
+    "en": "{name} ({tier})",
+    "files": [
+      "ARTICLE_COMPOSE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{newLeaderName}、「{factionName}」を継承——{org}の火は消えず",
     "en": "{newLeaderName} inherits {factionName}, {org}",
     "files": [

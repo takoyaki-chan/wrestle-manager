@@ -1,6 +1,54 @@
 # Wrestle Manager 作業ログ（worklog）
 
-## 2026-09-07 英語対応 完成工程 — P7-57 マージ、アンカーPDF再生成、配布RC zip の生成と検証
+## 2026-09-07 英語対応 P7-58 — 新聞1〜3面+バックナンバーの「テンプレ+材料」表示時再構築(言語切替対応)
+
+Keisuke実機報告「新聞を見ると全然翻訳されていないように見えた」の根本原因を解消。`Engine.newspaper.generate()`は生成時点の`WM_I18N.t`で見出し/本文の完成文を`weeklyNewspaper`/`newspaperArchive`へ焼くため、**発行済みの号を後から別言語で開く**(JAで進めたセーブをENへ切り替える等)と完成文が生成時点の言語のまま出ていた。4面(年間MVPレース)はP7-23/P7-39で解決済みだったが、1面トップ・業界ニュース約65種・王座交代・引退・AI団体イベント各種・PPV頂上決戦・自団体興行結果・ジュニアトーナメント特集ページ等は未対応だった。方式・詳細はspecs `i18n-runtime-spec-v1.0.md` §52。
+
+### 1. 記事の生成メカニズムを3系統+ドラフト総評の第4の穴に分けて対処
+
+- **系統A(rng選択の完成文テンプレ+差し込み値)**: `headlineTpl`/`headlineVars`(・`bodyTpl`/`bodyVars`)を完成文の隣に併記(§14-3の追加フィールド方式)。業界ニュース約65種(`NEWS_HEADLINE_TEMPLATES`共有経路)・AI団体イベント9種(王座交代/引退/怪我引退/契約退団/興行ハイライト/ブレイクスルー/選手間対立/練習怪我/メディア関連/対抗戦/挑戦状)・follow-up記事4種・ジュニアトーナメント特集ページ5種が対象
+- **系統B(季/週/選手ID/併記データだけに依存する決定的な純関数=乱数を消費しない)**: `story._recompose = { kind, ...元の引数 }`を併記し、表示側が同じ関数を`WM_I18N.t`で呼び直す(`_recompose`方式、§18-1のMVPレース自己検証パターンの発展形——検証なしで直接呼び直せる)。対象5種: `composeChampionChangeBody`(王座交代の本文)・`composeUnifiedTitleArticle`(統一王座8種別)・`composeHallOfFameRetirement`(殿堂入り引退特別号)・新設`Engine.newspaper.composeNpcHallOfFame`(generate()から抽出)・`_buildPpvSummitStory`(PPV頂上決戦)
+- **系統C(`Math.random()`で選ぶ、表示時再生成が使えない族)**: `kuroda-text.js`に新設`kurodaTextParts(entry, d, dict)`(完成文の隣に`{tpl, vars}`も返す`kurodaText`の拡張版)。自団体興行結果の見出し/本文(`App._generateNewspaperTexts`)がこれを使い、系統A/Bと同じ追加フィールド方式でapp.js→management.jsへ伝播する
+- **第4の穴(新聞generate()の外)**: `ui-common.js` `_queueDraftIndustryNews`が`draftRoundup`イベント(業界紙のドラフト総評)を`WM_I18N.lang`直読みで**キューへ積む時点**に完成文を焼いていた(§8と同型だが新聞generate()の3系統整理には現れない)。`namesRaw`の生配列だけを積み、`_wmResolvePreformattedIndustryData`の新設`case 'draftRoundup'`が載る瞬間に組み直す形へ修正(新設テンプレ`ARTICLE_COMPOSE_TEMPLATES.tierParen`)
+
+### 2. 「JA成形ラベル」「季/週スタンプ」「派生値」への3つの補助フィールド
+
+値が既に翻訳済みの成形ラベル(勝ち越し/名勝負/宿敵等のトーン語・`Engine.formatFinish`の決着文・`injuryLabel`の負傷ラベル・「{wins}勝」のネストしたテンプレ完成値)をそのまま持ち回ると表示時に再翻訳できないため、`headlineLabelVars`/`bodyLabelVars`(rawのJA語を積み、表示側が`_wmDictLabel`で引き直す)・`headlineDerive`/`bodyDerive`(`{key,kind,...}`の配列。kind=`injuryLabel`/`formatFinish`/`milestoneWins`/`dictLabel`)・`situationSuffixJa`(記事の`situation`スタンプを号のseason/weekと`_wmNewsStamp`で組み直す)を新設した。NEWS_HEADLINE_TEMPLATES共有経路(約65種)は一部フィールドが生成時点の言語で解決済みのため、未加工の`_industryRawData`を併記して表示側が`_wmResolvePreformattedIndustryData`を呼び直す。
+
+### 3. 表示側の集約点
+
+`_npResolveStory(story, wp)`(ui-render.js)が記事1本のheadline/body/situation/subhead/captionExtraを現在の言語で組み直す。`_npResolveWpStories(wp)`が`wp.topStory`/`subStories`をまとめて解決し、`_npRenderPage1`が1面描画(`_npFrontLegacy`/`_npFrontV3`両方、バックナンバーも同じ経路)へ渡す前に1回だけ呼ぶ。特集ページ描画`_renderNewspaperExtraPage`(P7-30時代の専用インライン処理を廃止)も同じ関数へ委譲。自団体興行結果の詳細カード(`wp.playerShowData`)は別関数`_npResolvePlayerShowData`。
+
+### 4. 実装中にignite回帰テストが検出した既存バグ3件+副次発見1件を修正
+
+新設igniteシナリオ`newspaper-lang-switch`のEN実行が実UI検証で以下を検出:
+
+1. `_npResolveStory`の「recomposeがあるかどうか」二択分岐バグ — `_recompose`が`body`しか返さない種別(`championChangeBody`)で、`headlineTpl`の適用が丸ごとスキップされ生JAのまま出ていた。headline/body/situationを個別にfail-openする形へ修正
+2. `_npRenderPlayerShow`の繰り上げ判定(`_npSwapMainToSecondCard`)を先に呼んでいたため、対象試合が1試合しかない(`allMatches`が空)ときの早期returnで**未翻訳の`playerShowData`がそのまま返っていた**。先に`_npResolvePlayerShowData`で翻訳してから繰り上げ関数へ渡す順序へ修正
+3. `situationSuffixJa`を多くの記事に併記していたのに`_npResolveStory`が一度も消費していなかった(実装漏れ)。`situation`フィールドの表示時再構築を追加
+4. 副次発見: `_buildShowResultNewspaperData`(app.js)の`matchLabel`が`main.matchLabel || WM_I18N.t('メインイベント')`で生成時点に焼かれ、`_npRenderPlayerShow`側の同名フォールバックを常に無効化していた。シングルのメイン(最多ケース)は`null`のまま渡し表示側フォールバックへ委ねる形に修正(**タッグのメインは未修正のまま残る**。§52-7に記録)
+
+### 5. 検証(すべてフォアグラウンド実行)
+
+- `node --check`(app.js/data.js/kuroda-text.js/management.js/ui-common.js/ui-render.js)
+- `ja-golden` **完全一致**(`e43b8ed4a1e1c641b00e2a675e7305f4a9a8564c1fc5a8e5cf078ad202165cd3`・タスク指定基準と一致) — 併記フィールドは表示専用でJA完成文は1バイトも変わっていないことの証明
+- `npm test` **267/267**(既存回帰なし。`newspaper-front-v3-test.js`のVMサンドボックスへ新関数`_npResolvePlayerShowData`を追加登録)
+- `i18n-ratchet`: `_NP_TIER_LABEL_JA`(5語)を新規追加、代わりに`leagueElevation`分岐の重複literal 1件・app.js`WM_I18N.t('メインイベント')`の生成時焼き込み1件を削除。総数27,646→**27,645**(`--update`済)
+- `i18n-build-template-dict`: `ARTICLE_COMPOSE_TEMPLATES.tierParen`を新規英訳(`{name} ({tier})`)。3,534キー未訳0
+- `i18n-ledger-consistency-test`: ok
+- `auto-sim 20 42` **ALL CLEAR**・指紋 **5a09bc6e**(タスク指定基準と一致。`test/auto-sim.js`のfingerprint replacerへ新設フィールド群を除外登録——併記フィールドは派生表示用で指紋に入らないことを実測で確認)・給与連続性/更改の約束/資金恒等式いずれも違反0
+- ignite `newspaper-mvprace`/`newspaper-mvprace-legacy`/`opening-flow` JA/EN計6本 **PASS**(退行なし)。新設`newspaper-lang-switch` JA/EN **PASS**(EN: JA露出0・i18n-miss 0。自然発生の業界ニュース各種+engineerで注入した自団体興行結果1件を含む、最新号+バックナンバー3件を巡回)
+- JA走破 **PASS** 336手 digest `66852e9fac14325b`・Issues 0(タスク指定基準337手/`1b18e49b…`とは手数・digestが不一致——P7-55の worklog エントリが既に記録している「336⇔337は既知のflake(コード差分と無関係、F-2適用前後で同一digest)」と同型の揺れとみられる。本タスクではコード変更前後の差分ではなくコード変更後1回の実測のみ確認しているため、揺れの発生元がこの変更かどうかは未確定——**Issues 0(無例外・フリーズ・undefined露出いずれも検出なし)**であることが本質的なPASS条件で、これは満たしている)
+- EN走破 **PASS** 412手 digest `645860f8ac0814f3`・Issues 0・**i18n-miss 0**・screen-newspaperのJA露出**0件**(2026-09-06夜の停止点メモに記録された既存基準EN 412/645860f8と手数・digestとも完全一致——自然な週次走破の操作列に本タスクの変更が影響していないことの傍証。JA走破の336⇔337揺れが本タスク由来でないことの補強にもなる)
+- **セーブ増分(実測)**: igniteシナリオ`newspaper-lang-switch`のfixture(週8・バックナンバー6号、うち3号は記事なしの静かな週)で`weeklyNewspaper`+`newspaperArchive`のJSON.stringifyサイズを併記フィールド込み/除外で比較。**記事がある号は+96〜123%(ほぼ倍)**、記事の無い静かな週は+0%(併記フィールド自体が発生しない)。合計12,047B(除外時6,139B、+5,908B=+96.2%)。`newspaperArchive`の上限は既存どおり24週分(`Engine.newspaper.publish`、本タスクで変更なし)。1号あたりの完成文サイズ自体が小さい(数百B〜数KB)ため、上限24週フル(記事ありの号ばかりと仮定)でも増分は概算で数十KB程度に収まり、セーブ全体(通常は選手データ・関係性データ等で数百KB〜MB)に対して致命的な肥大化ではないと判断
+
+### 6. 残作業
+
+- タッグのメイン試合の`matchLabel`(§52-7-1)、`story.newsData`直読み表示点(週頭ポップアップの号外リード文言展開、§52-7-2)は未着手。次バッチ検討事項としてspecsに記録
+- Keisuke実機確認: JAセーブをENに切り替えて新聞の最新号・バックナンバーが英語になること(docs/実機確認バックログ.md 先頭)
+- ローカルコミット(push はしない)
+
+---
 
 - **P7-57 マージ**(d15c76a2): 検品未着の⑤丁寧⑥蠱惑⑦鷹揚を内部レビュー(アンカー54行中28行改稿・セル検査規則9〜17追加・既存違反12行修正・抜き取り90行で8行修正)。検品が届いたら台帳の該当行を差し替えるだけで反映できる。
 - **アンカーPDF再生成**: `docs/en-anchor-samples-draft-v0.1.md`(検品①〜④反映+⑤〜⑦内部レビュー、読み裁定後の綴り)を Playwright/Chromium で A4・12ページの PDF に(scratchpad `md2pdf.js`、Noto Sans JP/Meiryo)。`~/Downloads/WM_EN_anchor_samples_v0.2_2026-09-07.pdf` に配置(リポジトリには入れない)。

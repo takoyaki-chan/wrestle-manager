@@ -388,7 +388,7 @@ function makeRenderCtx() {
     '_npV3PrimaryId', '_npV3OrgLine', '_npV3Paragraphs', '_npV3IndexBar', '_npV3MvpBox',
     '_npV3KurodaColumn', '_npV3HofEntry', '_npV3IsHofRetirement', '_npV3HallOfFameRetirement',
     '_npV3TopStory', '_npV3Shoulder', '_npV3JunTop', '_npV3Small',
-    '_npV3Briefs', '_npFrontV3',
+    '_npV3Briefs', '_npResolvePlayerShowData', '_npFrontV3',
   ].map(fnBody).join('\n'), ctx);
   return ctx;
 }

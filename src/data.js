@@ -19137,6 +19137,9 @@ const ARTICLE_COMPOSE_TEMPLATES = {
   sentenceJoin: '{a}。{b}',
   sentenceEnd: '{s}。',
   dotJoin: '{a}・{b}',
+  // i18n P7-58: draftRoundup(業界紙のドラフト総評)が「名前（評価ティア）」を選手ごとに
+  // 1個ずつ組んでnameListで畳む(全角括弧はJA書式、ENは半角括弧+スペースへ形も合わせる)。
+  tierParen: '{name}（{tier}）',
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
