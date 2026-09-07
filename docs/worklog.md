@@ -1,5 +1,10 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-07 デプロイ — main cd78e53b を origin へ push(57a6b429..cd78e53b、400コミット)。Cloudflare Pages 自動デプロイ
+
+- Keisuke 指示「全バグチェック→問題なければデプロイ」。フルスイート全緑(前エントリ)+ faction-ignite の fixture シード切替(P7-59)+ BA-0907 bug:audit 精査(origin/main 以降の全差分、実バグ0)を経て push。push 直前の再確認: npm test 267 / ja-golden 完全一致。
+- 内容: v1.34 以降の英語対応 Stage B 全工程(P4〜P7-58)、ティッカー廃止、特性綴り修正(集客ボーナス発動)、挑戦状申し入れの構造修正、年代記の姓、Keisuke 側の節目イベント修正、ほか。配布 zip(DLsite/BOOTH)は 1.34 のまま。RC は `release/dist/WrestleManager_1.35rc2.zip`(版上げ・差し替えは Keisuke 判断)。
+
 ## 2026-09-07 BA-0907 デプロイ前全バグチェック — origin/main以降396コミット差分の`bug:audit`精査、実バグ0件・デプロイ可
 
 Keisuke指示「全部終わったなら全バグチェックを行い、問題がなければデプロイ」を受け、`origin/main`(30952f5c、v1.34デプロイ時点)〜`main`(57a6b429、396コミット先)の全差分に対して`tools/bug-audit.ps1 -Mode Diff -BaseRef origin/main`を実行。
