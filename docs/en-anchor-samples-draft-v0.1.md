@@ -141,7 +141,7 @@
 
 ---
 
-## 4. ヤンキー(delinquent) — 3セル
+## 4. ヤンキー(delinquent) — 3セル(✅ ネイティブ検品④反映 2026-09-07: 40/43/45/46/47/48 を改稿、41/42/44 は変更なし)
 
 > **ブロックで意識したレシピ**: 冠詞・主語の省略("Ring's no different")+挑発の修辞疑問+gonna/wanna。卑語は **hell/damn 上限・低頻度**(本ブロック9行中1回のみ)。f/sワードは全帯禁止。ギャング方言の記号(ain't 乱用)は貼らない。
 
@@ -149,7 +149,7 @@
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| パワーとスピード…両方使えるのが私の武器！ | Power and speed... I've got both. That's my weapon! | 新規 |
+| パワーとスピード…両方使えるのが私の武器！ | Power and speed... I've got both and I can use 'em! | 新規 |
 | 正統派ストロングスタイルが最強ってこと。ストロングってついてるでしょ？ | Real strong style is the strongest. Says so right in the name, doesn't it? | A/B判定済(focus #15・採用稿) |
 | 四天王？そんな風に呼ばれたことも有ったねえ | The Big Four? ...Yeah. People used to call us that. | A/B判定済(focus #16・採用稿)/(固有名詞: 四天王 = The Big Four・辞書待ち) |
 
@@ -157,17 +157,17 @@
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| 喧嘩とおんなじで、リングの上でも強けりゃ勝つんだよ | Ring's no different from a street fight. Strong one wins. Period. | バイブル見本(§2-4)/anchors9 #13は判定終了裁定により現行文維持 |
+| 喧嘩とおんなじで、リングの上でも強けりゃ勝つんだよ | When it comes to fightin', you win if you're strong. Nothin' changes by addin' a ring. | バイブル見本(§2-4)/anchors9 #13は判定終了裁定により現行文維持 |
 | ルール？ 勝てばいいのよ。手段は選ばない。 | Rules? All that matters is winning. Don't care how. | バイブル見本(§2-4)/anchors9 #14 同上 |
-| 実力の違い、わかったかなぁ？ | Well? Got a good look at the difference between us? | バイブル見本(§2-4)/anchors9 #15 同上 |
+| 実力の違い、わかったかなぁ？ | Well? Get how outclassed you were? | バイブル見本(§2-4)/anchors9 #15 同上 |
 
 ### 4-3. ヤンキー×お気楽 — 生駒エリカ(Erika Ikoma)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| 勝った勝った♪まぁ、こんなもんだな | That's a win ♪ Eh — about what I figured. | 新規(倉見菜々の「勝った勝った♪」= "Won it, won it ♪" と英語を重ねない) |
-| これで終わり？根性が足りないんじゃない？ | That's it? Short on guts, aren't you? | A/B収束(#13・修辞疑問=ヤンキーのレシピに適合する側を採用) |
-| ああっ？チビなのにパワーがある？余計なお世話だよ | The hell? "Strong for such a shrimp"? Nobody asked you. | A/B判定済(focus #14・採用稿。本ブロック唯一の卑語) |
+| 勝った勝った♪まぁ、こんなもんだな | That's a win for me ♪ ...Wasn't expectin' any different, tho'. | 新規(倉見菜々の「勝った勝った♪」= "Won it, won it ♪" と英語を重ねない) |
+| これで終わり？根性が足りないんじゃない？ | That's it? Ain't you lackin' in guts here? | A/B収束(#13・修辞疑問=ヤンキーのレシピに適合する側を採用) |
+| ああっ？チビなのにパワーがある？余計なお世話だよ | ...The hell? “Strong for such a shrimp?” Nobody asked you. | A/B判定済(focus #14・採用稿。本ブロック唯一の卑語) |
 
 ---
 

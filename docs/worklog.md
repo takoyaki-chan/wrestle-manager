@@ -1,5 +1,20 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-07 ネイティブ検品④(ヤンキー 9行)を反映 — 改稿6本(40/43/45/46/47/48)、変更なし3本(41/42/44)
+
+| # | JA | 旧EN | 新EN |
+|---|---|---|---|
+| 40 | パワーとスピード…両方使えるのが私の武器！ | Power and speed... I've got both. That's my weapon! | Power and speed... I've got both and I can use 'em! |
+| 43 | 喧嘩とおんなじで、リングの上でも強けりゃ勝つんだよ | Ring's no different from a street fight. Strong one wins. Period. | When it comes to fightin', you win if you're strong. Nothin' changes by addin' a ring. |
+| 45 | 実力の違い、わかったかなぁ？ | Well? Got a good look at the difference between us? | Well? Get how outclassed you were? |
+| 46 | 勝った勝った♪まぁ、こんなもんだな | That's a win ♪ Eh — about what I figured. | That's a win for me ♪ ...Wasn't expectin' any different, tho'. |
+| 47 | これで終わり？根性が足りないんじゃない？ | That's it? Short on guts, aren't you? | That's it? Ain't you lackin' in guts here? |
+| 48 | ああっ？チビなのにパワーがある？余計なお世話だよ | The hell? "Strong for such a shrimp"? Nobody asked you. | ...The hell? “Strong for such a shrimp?” Nobody asked you. |
+
+- 反映先: `i18n/dialogue-ledger.json`(6行)→ `src/lang-en-dialogue.js` 再生成(セル検査OK・未訳0)/ `docs/en-anchor-samples-draft-v0.1.md` §4 / `docs/en-tone-bible-draft-v0.1.md` §4-6 に第4弾ルール(g落とし・武器は訳さない・原文順・先頭"..."・here=今この場で・for me/tho'・outclassed)。
+- 検品側の表記「Mariko Hongou」は 09-02 の綴り方針(マクロンなし・長音落とし)により **Hongo** のまま。
+- 残り: 検品⑤丁寧(6セル)⑥蠱惑(6)⑦鷹揚(6)。
+
 ## 2026-09-07 ★分布の較正判断(Fable)— P7-56 の100季×3シード計測を受けて**据え置き**
 
 - **計測の要約**(P7-56、パラメータ不変): 現 main の ★5 率は 100季全期間で seed42 24.8% / seed7 24.0% / seed7919 20.5%(平均 23.1%)、**成熟期(S51-100)は 21.9% で目標帯 19〜23% の内側**。序盤〜中盤(S1-50)が 26〜29% と高め。特性修正(P7-54)前後の差は +1.9 / 0.0 / −6.7pt と符号が反転し、系統的な偏りではない。シード間の幅 4.3pt、`--care` 有無で 6.3pt、季窓で 6.8pt。

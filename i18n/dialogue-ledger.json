@@ -91789,7 +91789,7 @@
   },
   {
     "key": "ああっ？チビなのにパワーがある？余計なお世話だよ",
-    "en": "The hell? \"Strong for such a shrimp\"? Nobody asked you.",
+    "en": "...The hell? “Strong for such a shrimp?” Nobody asked you.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -126272,7 +126272,7 @@
   },
   {
     "key": "これで終わり？根性が足りないんじゃない？",
-    "en": "That's it? Short on guts, aren't you?",
+    "en": "That's it? Ain't you lackin' in guts here?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -159412,7 +159412,7 @@
   },
   {
     "key": "パワーとスピード…両方使えるのが私の武器！",
-    "en": "Power and speed... I've got both. That's my weapon!",
+    "en": "Power and speed... I've got both and I can use 'em!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -178963,7 +178963,7 @@
   },
   {
     "key": "勝った勝った♪まぁ、こんなもんだな",
-    "en": "That's a win ♪ Eh — about what I figured.",
+    "en": "That's a win for me ♪ ...Wasn't expectin' any different, tho'.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -183091,7 +183091,7 @@
   },
   {
     "key": "喧嘩とおんなじで、リングの上でも強けりゃ勝つんだよ",
-    "en": "Ring's no different from a street fight. Strong one wins. Period.",
+    "en": "When it comes to fightin', you win if you're strong. Nothin' changes by addin' a ring.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -186640,7 +186640,7 @@
   },
   {
     "key": "実力の違い、わかったかなぁ？",
-    "en": "Well? Got a good look at the difference between us?",
+    "en": "Well? Get how outclassed you were?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],

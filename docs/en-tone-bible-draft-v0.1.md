@@ -230,6 +230,14 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
      - 「別に。」= "No big deal." / 「普通に」= "like normal"
      - クールの断片は三語文の連打で良い("Read the flow. Adjust. That's it.")。締めの「それだけ」は説明の締め= "That's it."、結果の断言= "Just like that."("That's all." は不採用)
      - 「そんなに舐めないで」型は主語を落とした命令形一文("Don't take my experience so lightly.")
+   - **ネイティブ検品第4弾(2026-09-07・ヤンキーブロック9行)からの追加ルール**:
+     - **荒っぽさは g 落とし(-in')で作る**: fightin' / nothin' / addin' / expectin' / lackin' のように -ing の g をアポストロフィに置くと、語彙を汚さずに乱暴に聞こえる。hell/damn の頻度を上げるより先にこちら(ヤンキー限定。標準・丁寧・お嬢様では使わない)
+     - **「武器」は訳さない**: 「両方使えるのが私の武器」→ "I've got both and I can use 'em!"。can use both の方が自然で、weapon は翻訳調
+     - **原文の構造に戻す**: 「喧嘩とおんなじで、リングの上でも強けりゃ勝つ」は "Ring's no different" と圧縮するより "When it comes to fightin', you win if you're strong. Nothin' changes by addin' a ring." と原文の順序で言う方が通る
+     - **退屈な返しには先頭の "..."**: "...The hell?" のように三点リーダを頭に置くと、間があってから返す自然さが出る(クール検品の "..." 動作記述とは別用途)
+     - **here = 「今この場で」**: "Ain't you lackin' in guts here?" の here は場所ではなく「この局面で」の意味。挑発の締めに使える
+     - **勝利の自賛は for me / tho' で軽くする**: "That's a win for me ♪ ...Wasn't expectin' any different, tho'."。about what I figured は硬い
+     - **outclassed**: 「実力の違い、わかったかなぁ？」→ "Well? Get how outclassed you were?"。difference between us は説明的
    - はしゃぎの反復・伸ばし表記: "I did iiit!" / "I did it! I really did it!" — 勢いは感嘆符と
      文の短さが背負う。**素直な一回**("I did it!")が正(2026-09-01 Keisuke判定 A/B#17)
 
