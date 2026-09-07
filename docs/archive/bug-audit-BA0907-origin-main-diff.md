@@ -1,0 +1,3190 @@
+﻿# Bug Audit Report
+
+- Generated: 2026-09-07 19:43:41
+- Mode: Diff
+- Base ref: origin/main
+
+## Diff Context
+
+[git status]
+ M .claude/settings.local.json
+
+## Scanned Files
+
+- package.json
+- src\app.js
+- src\battle-anim.js
+- src\battle-engine.html
+- src\battle-engine-main.js
+- src\battle-lines.js
+- src\data.js
+- src\dev-tools.js
+- src\draft-negotiation.js
+- src\factions.js
+- src\i18n.js
+- src\index.html
+- src\kuroda-text.js
+- src\lang-en.js
+- src\lang-en-dialogue.js
+- src\lang-en-names.js
+- src\lang-en-templates.js
+- src\management.js
+- src\match-engine.js
+- src\relationships.js
+- src\tag-battle.html
+- src\tag-battle-lines.js
+- src\tag-battle-main.js
+- src\ui-common.js
+- src\ui-render.js
+
+## [HIGH] Week/Season (week-math)
+
+Mixed time units are a recurring failure source.
+
+- src\app.js:2660  // 旧 seasonsLeft を weeksLeft に変換: seasonsLeft * 12
+- src\app.js:2661  const wl = (r.seasonsLeft || 1) * 12;
+- src\app.js:2670  return { ...rest, rentalWeeksLeft: ct ? ct.weeksLeft : (rentalSeasonsLeft || 1) * 12 };
+- src\app.js:2677  return { ...rest, rentalWeeksLeft: (rentalSeasonsLeft || 1) * 12 };
+- src\management.js:621  return ((season || 1) - 1) * 52 + (week || 1) + (offSeason ? (offWeek || 0) : 0);
+- src\management.js:629  ? (seasonIndex + 1) * 52 + 1
+- src\management.js:630  : seasonIndex * 52 + position;
+- src\management.js:2854  expiresAbsWeek: Engine.util.absWeek(next.season, quarter * 12),
+- src\management.js:12450  const titleProtect = ((fighter.careerRecord?.totalTitleWins || 0) + (fighter.titleReigns || 0)) * 12;
+- src\management.js:16185  const perSeason = Math.max(20, Math.round(baseFee * tierMul * 12 * discount));
+- src\management.js:16257  const weeksLeft = seasons * 12; // 1期=12週
+- src\management.js:18569  if (s.week > 48) {
+- src\management.js:23275  const left = (parseInt(m[2], 10) * 12 + 2) - (state.week || 1);
+- src\management.js:24722  const s4Cost = Math.round(weeklySalary * 12 * costMult * 0.5);  // 市場価値50% (2回目は75%)
+- src\management.js:24753  const e6Cost = Math.round(e6Salary * 12);
+- src\management.js:24845  const s4Cost = Math.round(weeklySalary * 12 * costMult * 0.5);
+- src\management.js:24936  const e6Cost = Math.round(e6Salary * 12);
+- src\management.js:26615  if (!isValidNum(G.week) || G.week < 1 || G.week > 48) {
+- src\ui-common.js:3208  p.style.animationDuration = (8 + Math.random() * 12) + 's';
+- src\ui-common.js:5775  if (normalizedWeek === 48) return { key: 'ppv', emblem: '', liveText: '♛ GRAND FINAL' };
+- src\ui-common.js:8093  <div><b>${WM_I18N.t('期間')}:</b> ${WM_I18N.t('{n}期', { n: seasons })}（${WM_I18N.t('{n}週', { n: seasons * 12 })}）</div>
+- src\ui-common.js:8114  speech: quote, detail:`${srcLabel}${WM_I18N.t('レンタル加入！')}（${WM_I18N.t('{n}期', { n: seasons })} / ${WM_I18N.t('{n}週', { n: seasons * 12 })}）` });
+- src\ui-render.js:14437  const ox = -uy * 12, oy = ux * 12; // perpendicular offset
+
+## [HIGH] Save/Load (state-migration)
+
+State migrations often preserve outdated assumptions.
+
+- src\app.js:82  const note = { type: 'summit_migration_cleared', data: {}, s: state.season, w: state.week };
+- src\app.js:1920  // ║  Save/Load with v0.8 backward compatibility               ║
+- src\app.js:1965  serialize(G, saveNameOverride) {
+- src\app.js:2062  deserialize(json) {
+- src\app.js:2090  // v0.6 backward compat: coaches
+- src\app.js:2101  // v0.8 backward compat: coach assignments
+- src\app.js:2109  // v0.85 backward compat
+- src\app.js:2112  // v0.9 backward compat: rival system
+- src\app.js:2151  // v1.0e: poolIds → dormantPool migration
+- src\app.js:2177  // v0.9b backward compat: offseason system
+- src\app.js:2184  // v0.9c backward compat: transfer
+- src\app.js:2186  // v0.9d backward compat: rental & events
+- src\app.js:2200  // v0.97 backward compat: survival gauge
+- src\app.js:2202  // v1.0 backward compat: rolling net (replaces profit streak)
+- src\app.js:2208  // v1.0 backward compat: title establishment
+- src\app.js:2217  console.log('[Migration] 王者がロスターに不在のため王座を空位に修復しました');
+- src\app.js:2264  // v1.0 migration: fix freeAgents that were created with useNotion:true bug
+- src\app.js:2267  if (!G._migrated_v1_0_fa_notion) {
+- src\app.js:2278  G = { ...G, _migrated_v1_0_fa_notion: true };
+- src\app.js:2281  // v1.2 migration: fix freeAgents stuck at age 16-17 (should be 17-23)
+- src\app.js:2283  if (!G._migrated_v1_2_fa_age) {
+- src\app.js:2292  G = { ...G, _migrated_v1_2_fa_age: true };
+- src\app.js:2297  if (!G._migrated_growth_lifecycle_v1) {
+- src\app.js:2345  _migrated_growth_lifecycle_v1: true
+- src\app.js:2352  // v0.99 migration: assign assessedValue to all characters (pricing-balance-spec §1)
+- src\app.js:2370  // v1.0b migration: popularity/venue redesign
+- src\app.js:2371  if (!G._migrated_v1_0b) {
+- src\app.js:2413  G = { ...G, _migrated_v1_0b: true };
+- src\app.js:2416  // v1.3 migration: add careerRecord to all fighters + retiredFighters/hallOfFame to state
+- src\app.js:2417  if (!G._migrated_v1_3) {
+- src\app.js:2431  G = { ...G, _migrated_v1_3: true };
+- src\app.js:2434  // v1.3-1 migration: add durability and wear to all fighters
+- src\app.js:2435  if (!G._migrated_v1_3_1) {
+- src\app.js:2455  G = { ...G, _migrated_v1_3_1: true };
+- src\app.js:2458  // v1.3-2 migration: add seasonInjuries, careerHistory, growthPenalty to all fighters
+- src\app.js:2459  if (!G._migrated_v1_3_2) {
+- src\app.js:2476  G = { ...G, _migrated_v1_3_2: true };
+- src\app.js:2480  if (!G._migrated_v1_3_3) {
+- src\app.js:2503  G = { ...G, _migrated_v1_3_3: true };
+- src\app.js:2506  // v1.4 migration: AI fighters に careerSeasons 付与 + lastAwards/hallOfFame
+- src\app.js:2507  if (!G._migrated_v1_4) {
+- src\app.js:2524  G = { ...G, _migrated_v1_4: true };
+- src\app.js:2528  if (!G._migrated_growth_events) {
+- src\app.js:2546  G = { ...G, _migrated_growth_events: true };
+- src\app.js:2557  if (!G._migrated_v1_5_rebalance) {
+- src\app.js:2564  G = { ...G, _migrated_v1_5_rebalance: true };
+- src\app.js:2568  if (!G._migrated_milestone) {
+- src\app.js:2576  G = { ...G, milestones: ms, _migrated_milestone: true };
+- src\app.js:2580  if (!G._migrated_trust) {
+- src\app.js:2589  _migrated_trust: true,
+- src\app.js:2594  if (!G._migrated_npc_traits) {
+- src\app.js:2607  G = { ...G, aiOrgs, _migrated_npc_traits: true };
+- src\app.js:2611  if (!G._migrated_ending) {
+- src\app.js:2614  G = { ...G, endingCleared, endingClearedSeason, _migrated_ending: true };
+- src\app.js:2617  if (!G._migrated_large_events) {
+- src\app.js:2618  G = { ...G, lastLargeEventWeek: G.lastLargeEventWeek || 0, lastB3ChallengeWeek: G.lastB3ChallengeWeek || 0, mediaSpotlight: G.mediaSpotlight || null, _migrated_large_events: true };
+- src\app.js:2621  if (!G._migrated_venue_redesign) {
+- src\app.js:2627  _migrated_venue_redesign: true
+- src\app.js:2631  // Rental system migration: G.rental (single object) → G.rentals (array)
+- src\app.js:2632  if (!G._migrated_rental_v2) {
+- src\app.js:2653  G = { ...G, rentals, roster, rental: undefined, _migrated_rental_v2: true };
+- src\app.js:2657  if (!G._migrated_rental_v3) {
+- src\app.js:2672  G = { ...G, rentals, roster, _migrated_rental_v3: true };
+- src\app.js:2683  if (!G._migrated_ranking_v2) {
+- src\app.js:2687  G = { ...G, battlePoints: bp, _migrated_ranking_v2: true };
+- src\app.js:2694  if (!G._migrated_rivalry_v2) {
+- src\app.js:2715  G = { ...G, rivalries: migratedRivalries, matchupLog: migratedLog, _migrated_rivalry_v2: true };
+- src\app.js:2719  if (!G._migrated_matchuplog_v2) {
+- src\app.js:2738  G = { ...G, _migrated_matchuplog_v2: true };
+- src\app.js:2742  if (!G._migrated_ppv_v2) {
+- src\app.js:2748  _migrated_ppv_v2: true,
+- src\app.js:2757  // Repair challenge display guests on every load.  The migration marker
+- src\app.js:2768  if (!G._migrated_roster_cap_away_guest_repair_v1 || removedChallengeGuests) {
+- src\app.js:2775  _migrated_roster_cap_away_guest_repair_v1: true,
+- src\app.js:2780  if (!G._migrated_roster_cap_pop_v2) {
+- src\app.js:2798  _migrated_roster_cap_pop_v2: true,
+- src\app.js:2809  if (!G._migrated_scout_pricing_v2) {
+- src\app.js:2821  G = { ...G, aiOrgs, _migrated_scout_pricing_v2: true };
+- src\app.js:2825  if (!G._migrated_contract_v1) {
+- src\app.js:2827  G = { ...G, _migrated_contract_v1: true };
+- src\app.js:2831  if (!G._migrated_npc_record_v1) {
+- src\app.js:2847  G = { ...G, aiOrgs, _migrated_npc_record_v1: true };
+- src\app.js:2851  if (!G._migrated_relationships_v1) {
+- src\app.js:2858  G = { ...G, _migrated_relationships_v1: true };
+- src\app.js:2862  if (!G._migrated_relationship_history_store_v1) {
+- src\app.js:2866  _migrated_relationship_history_store_v1: true,
+- src\app.js:2871  if (!G._migrated_rivalry_tier_v1) {
+- src\app.js:2892  G = { ...G, rivalries, _migrated_rivalry_tier_v1: true };
+- src\app.js:2895  if (!G._migrated_retired_rivalry_cleanup_v1) {
+- src\app.js:2899  G = { ...G, _migrated_retired_rivalry_cleanup_v1: true };
+- src\app.js:2903  G = { ...G, decisionPoints: 6, decisionPointsMax: 6, _migrated_decisionPoints_v1: true };
+- src\app.js:2945  if (!G._migrated_retiredIds_v1) {
+- src\app.js:2949  G = { ...G, retiredIds: [...ids], _migrated_retiredIds_v1: true };
+- src\app.js:2953  if (!G._migrated_retiredSeasons_v1) {
+- src\app.js:2960  G = { ...G, retiredSeasons: rs, _migrated_retiredSeasons_v1: true };
+- src\app.js:2970  // v2へ昇格して全文再走する。置換は冪等。回帰網は test/mq-text-migration-v2-test.js
+- src\app.js:2971  if (!G._migrated_mq_text_v2) {
+- src\app.js:3012  G = { ...G, _migrated_mq_text_v2: true };
+- src\app.js:3015  if (!G._migrated_factions_v1) {
+- src\app.js:3019  G = { ...G, _migrated_factions_v1: true };
+- src\app.js:3027  if (!G._migrated_factions_internal_points_v1) {
+- src\app.js:3041  G = { ...G, _migrated_factions_internal_points_v1: true };
+- src\app.js:3046  if (!G._migrated_factions_internal_points_v2
+- src\app.js:3055  G = { ...G, _migrated_factions_internal_points_v2: true };
+- src\app.js:3060  if (!G._migrated_factions_internal_points_v3
+- src\app.js:3069  G = { ...G, _migrated_factions_internal_points_v3: true };
+- src\app.js:3071  console.log('[WM Internal Rank] Migration v3: leader initial points + OVR allocation [4,2,1,0]');
+- src\app.js:3078  if (Array.isArray(G.factions) && !G._migrated_archetype_v2) {
+- src\app.js:3100  _migrated_archetype_v2: true,
+- src\app.js:3105  if (!G._migrated_faction_dedupe_v1) {
+- src\app.js:3109  G = { ...G, _migrated_faction_dedupe_v1: true };
+- src\app.js:3112  if (!G._migrated_h2h_orgTimeline_v1) {
+- src\app.js:3128  G = { ...G, _migrated_h2h_orgTimeline_v1: true };
+- src\app.js:3130  if (!G._migrated_orgTimeline_v3) {
+- src\app.js:3143  _migrated_orgTimeline_v3: true,
+- src\app.js:3154  if (!G._migrated_growthLog) {
+- src\app.js:3155  G = { ...G, roster: G.roster.map(c => c.growthLog ? c : { ...c, growthLog: [] }), _migrated_growthLog: true };
+- src\app.js:3157  if (!G._migrated_junior_hof_v1) {
+- src\app.js:3172  _migrated_junior_hof_v1: true,
+- src\app.js:3186  if (!G._migrated_allHallOfFame_v1) {
+- src\app.js:3200  _migrated_allHallOfFame_v1: true,
+- src\app.js:3205  if (!G._migrated_allHallOfFame_v2) {
+- src\app.js:3217  G = { ...G, allHallOfFame: fixedHof, hallOfFame: fixedHof.player, _migrated_allHallOfFame_v2: true };
+- src\app.js:3226  if (!G._migrated_chronicle_v1) {
+- src\app.js:3348  _migrated_chronicle_v1: true
+- src\app.js:3360  if (!G._migrated_chronicle_status_v2 && G.chronicle && Engine.chronicle) {
+- src\app.js:3368  G = { ...G, _migrated_chronicle_status_v2: true };
+- src\app.js:3372  // _migrated_prologue_v1 が立っているセーブは B案で作られた擬似序章が入っているため、
+- src\app.js:3375  if (G._migrated_prologue_v1 && Engine.prologue) {
+- src\app.js:3377  delete G._migrated_prologue_v1;
+- src\app.js:3381  if (!G._migrated_chronicle_prime_v3 && G.chronicle && Engine.chronicle) {
+- src\app.js:3389  G = { ...G, _migrated_chronicle_prime_v3: true };
+- src\app.js:3392  if (!G._migrated_coachSlots_v1) {
+- src\app.js:3394  G = { ...G, coachSlots: Math.max(1, hiredCount), _migrated_coachSlots_v1: true };
+- src\app.js:3400  if (!G._migrated_absweek48_v1) {
+- src\app.js:3418  _migrated_absweek48_v1: true
+- src\app.js:3425  if (!G._migrated_calendarWeek52_v1) {
+- src\app.js:3483  _migrated_calendarWeek52_v1: true,
+- src\app.js:3512  if (!G._migrated_style_aerial_v1) {
+- src\app.js:3519  _migrated_style_aerial_v1: true
+- src\app.js:3542  if (!G._migrated_stat_round_v1) {
+- src\app.js:3555  _migrated_stat_round_v1: true
+- src\app.js:3565  if (G.endingCleared && !G._migrated_leagueElevation_v2) {
+- src\app.js:3567  G = { ...G, leagueElevated: true, _pendingLeagueElevation: true, endingShown: true, _migrated_leagueElevation_v2: true };
+- src\app.js:3571  // Legacy dormantPool refill migration retired; bounded recovery is handled elsewhere.
+- src\app.js:3572  if (!G._migrated_dormantPool_refill_v1) {
+- src\app.js:3573  G = { ...G, _migrated_dormantPool_refill_v1: true };
+- src\app.js:3608  if (!G._migrated_milestoneNotified_v1) {
+- src\app.js:3632  G._migrated_milestoneNotified_v1 = true;
+- src\app.js:3636  if (!G._migrated_affinity_v1) {
+- src\app.js:3642  if (!G._migrated_summit_news_v1) {
+- src\app.js:3655  G = { ...G, newspaperArchive: archive, weeklyNewspaper, _migrated_summit_news_v1: true };
+- src\app.js:3658  // growth-rebalance v1.0 migration: strainDebt/seasonIntensiveWeeksを全キャラに付与
+- src\app.js:3661  if (!G._migrated_strainDebt_v1) {
+- src\app.js:3675  G = { ...G, _migrated_strainDebt_v1: true };
+- src\app.js:3716  localStorage.setItem(SAVE_KEY + slot, Storage.serialize(G, existingName));
+- src\app.js:3740  if (Storage.deserialize(data)) {
+- src\app.js:3756  try { localStorage.setItem(AUTOSAVE_KEY, Storage.serialize(G)); } catch(e) { console.warn('[WM] オートセーブ失敗:', e.message); }
+- src\app.js:3761  if (data && Storage.deserialize(data)) {
+- src\app.js:3843  if (Storage.deserialize(raw)) {
+- src\app.js:3861  // Alias for backward compat in UI
+- src\app.js:3896  // ── Legacy utility aliases (for UI code backward compat) ──
+- src\data.js:31864  summit_migration_cleared: '🏆 旧形式の単独頂上決戦はPPV GRAND FINALへ統合済みのため、予約を解除しました',
+- src\data.js:32066  summit_migration_cleared: ['event'],
+- src\dev-tools.js:148  const write = () => localStorage.setItem(DEV_AUTOSAVE_KEY, Storage.serialize(G, '開発用オートセーブ'));
+- src\dev-tools.js:160  const payload = Storage.serialize(G, safeLabel);
+- src\dev-tools.js:174  if (!raw || !Storage.deserialize(raw)) throw new Error('開発用セーブの読み込みに失敗しました。');
+- src\dev-tools.js:416  if (!active) localStorage.setItem(DEV_SESSION_BASE_KEY, Storage.serialize(G, '開発開始地点'));
+- src\lang-en.js:4580  "📦 データ移行": "📦 Data Migration",
+- src\management.js:463  // save migration and must remain available for that repair path.
+- src\management.js:3447  if (state?.mqRecord && state?._migrated_mq_record_v1) return state;
+- src\management.js:3449  return { ...state, _migrated_mq_record_v1: true };
+- src\management.js:3463  _migrated_mq_record_v1: true,
+- src\management.js:3476  if (state?._migrated_mq_record_v2) return state;
+- src\management.js:3510  _migrated_mq_record_v2: true,
+- src\management.js:4011  /** Ensure fighter has careerRecord (for migration) */
+- src\management.js:4569  if (s._migrated_inherited_records_v1) return s;
+- src\management.js:4583  return { ...s, _migrated_inherited_records_v1: true };
+- src\management.js:4734  s = { ...s, aiOrgs: newAiOrgs, _migrated_inherited_records_v1: true };
+- src\management.js:19139  _migrated_mq_record_v1: true,
+- src\management.js:19140  _migrated_mq_record_v2: true,
+- src\management.js:19150  warWon: false,  // backward compatibility only
+- src\management.js:26373  // 奪還戦で興行中だけ一時参加するゲスト(セーブ時にも除外される app.js serialize と
+- src\relationships.js:424  if (state._migrated_affinity_v1) return state;
+- src\relationships.js:436  return { ...state, _migrated_affinity_v1: true };
+- src\ui-common.js:4513  // Traits section（セーブデータから引く。_migrated_npc_traits で付与済み）
+
+## [HIGH] Join/Leave/Transfer (roster-movement)
+
+Roster movement bugs often leave stale references behind.
+
+- src\app.js:234  transfer: 'wm_se_hr08_v01.ogg',   // HR08 到着・出発  1.36s
+- src\app.js:330  war:.60, transfer:.24, award:.72, tension_hit:.66,
+- src\app.js:760  transfer() {
+- src\app.js:1971  c?.isRental || (!c?.isAwayChallengeGuest && !c?.isCRGuest && !c?.isB3ChallengeGuest && !c?.isUnifiedTitleGuest)
+- src\app.js:2033  // freeAgentsのgrowthLog トリミング
+- src\app.js:2034  if (state.freeAgents) {
+- src\app.js:2035  state.freeAgents.forEach(c => {
+- src\app.js:2102  if (!G.coachAssign) {
+- src\app.js:2105  G = { ...G, coachAssign: ca };
+- src\app.js:2107  G = { ...G, coachAssign: Engine.coach.sanitizeAssignments(G) };
+- src\app.js:2118  // データ整合性: AI団体選手がfreeAgentsに混入している場合は正しい団体ロスターへ移動
+- src\app.js:2119  if (G.aiOrgs && G.freeAgents) {
+- src\app.js:2121  const misplaced = G.freeAgents.filter(f => f.orgId && aiOrgIds.has(f.orgId));
+- src\app.js:2123  let newFreeAgents = G.freeAgents.filter(f => !f.orgId || !aiOrgIds.has(f.orgId));
+- src\app.js:2130  G = { ...G, freeAgents: newFreeAgents, aiOrgs: newAiOrgs };
+- src\app.js:2136  // データ整合性: プレイヤーロスター選手がfreeAgentsに重複している場合は除去
+- src\app.js:2137  if (G.roster && G.freeAgents) {
+- src\app.js:2139  const dupFA = G.freeAgents.filter(f => rosterIds.has(f.id));
+- src\app.js:2141  G = { ...G, freeAgents: G.freeAgents.filter(f => !rosterIds.has(f.id)) };
+- src\app.js:2149  if (!G.transferLog) G = { ...G, transferLog: [] };
+- src\app.js:2150  if (G.transfersThisSeason === undefined) G = { ...G, transfersThisSeason: 0 };
+- src\app.js:2184  // v0.9c backward compat: transfer
+- src\app.js:2186  // v0.9d backward compat: rental & events
+- src\app.js:2187  if (G.rentals === undefined && G.rental === undefined) G = { ...G, rentals: [], warThisSeason: false, challengeTrigger: null, pendingEvent: null };
+- src\app.js:2254  G = { ...G, roster: G.roster.map(fixChar), freeAgents: G.freeAgents.map(fixChar) };
+- src\app.js:2264  // v1.0 migration: fix freeAgents that were created with useNotion:true bug
+- src\app.js:2268  G = { ...G, freeAgents: G.freeAgents.map(c => {
+- src\app.js:2281  // v1.2 migration: fix freeAgents stuck at age 16-17 (should be 17-23)
+- src\app.js:2284  G = { ...G, freeAgents: G.freeAgents.map(c => {
+- src\app.js:2319  || history.some(e => e && (e.type === 'debut' || e.type === 'transfer'))
+- src\app.js:2339  freeAgents: (G.freeAgents || []).map(migrateProspect),
+- src\app.js:2341  retiredFighters: (G.retiredFighters || []).map(migrateArchive),
+- src\app.js:2347  if (Array.isArray(G.pendingRetirements)) {
+- src\app.js:2348  G = { ...G, pendingRetirements: G.pendingRetirements.map(entry => entry?.fighter ? { ...entry, fighter: migrateArchive(entry.fighter) } : entry) };
+- src\app.js:2359  G = { ...G, roster: migrateAssessed(G.roster), freeAgents: migrateAssessed(G.freeAgents) };
+- src\app.js:2379  G = { ...G, roster: migrateV1b(G.roster), freeAgents: migrateV1b(G.freeAgents) };
+- src\app.js:2416  // v1.3 migration: add careerRecord to all fighters + retiredFighters/hallOfFame to state
+- src\app.js:2419  G = { ...G, roster: migrateCareer(G.roster), freeAgents: migrateCareer(G.freeAgents) };
+- src\app.js:2420  if (!G.retiredFighters) G = { ...G, retiredFighters: [] };
+- src\app.js:2446  G = { ...G, roster: migWear(G.roster), freeAgents: migWear(G.freeAgents) };
+- src\app.js:2467  G = { ...G, roster: migV132(G.roster), freeAgents: migV132(G.freeAgents) };
+- src\app.js:2494  G = { ...G, roster: fixFloats(G.roster), freeAgents: fixFloats(G.freeAgents) };
+- src\app.js:2631  // Rental system migration: G.rental (single object) → G.rentals (array)
+- src\app.js:2632  if (!G._migrated_rental_v2) {
+- src\app.js:2633  const rentals = Array.isArray(G.rentals) ? [...G.rentals] : [];
+- src\app.js:2635  if (G.rental) {
+- src\app.js:2636  // Convert old single rental to new contract format
+- src\app.js:2637  const old = G.rental;
+- src\app.js:2638  if (!rentals.some(r => r.fighterId === old.fighterId)) {
+- src\app.js:2639  rentals.push({
+- src\app.js:2649  ? { ...c, isRental: true, rentalSource: 'rival', rentalSeasonsLeft: 1 }
+- src\app.js:2653  G = { ...G, rentals, roster, rental: undefined, _migrated_rental_v2: true };
+- src\app.js:2656  // Rental v3: seasonsLeft → weeksLeft (1期=12週の週次減算に移行)
+- src\app.js:2657  if (!G._migrated_rental_v3) {
+- src\app.js:2658  const rentals = (G.rentals || []).map(r => {
+- src\app.js:2665  // roster上の rentalSeasonsLeft → rentalWeeksLeft
+- src\app.js:2667  if (!c.isRental) return c;
+- src\app.js:2668  const ct = rentals.find(r => r.fighterId === c.id);
+- src\app.js:2669  const { rentalSeasonsLeft, ...rest } = c;
+- src\app.js:2670  return { ...rest, rentalWeeksLeft: ct ? ct.weeksLeft : (rentalSeasonsLeft || 1) * 12 };
+- src\app.js:2672  G = { ...G, rentals, roster, _migrated_rental_v3: true };
+- src\app.js:2673  } else if ((G.roster || []).some(c => c?.isRental && c.rentalSeasonsLeft !== undefined && c.rentalWeeksLeft === undefined)) {
+- src\app.js:2675  if (!c?.isRental || c.rentalSeasonsLeft === undefined || c.rentalWeeksLeft !== undefined) return c;
+- src\app.js:2676  const { rentalSeasonsLeft, ...rest } = c;
+- src\app.js:2677  return { ...rest, rentalWeeksLeft: (rentalSeasonsLeft || 1) * 12 };
+- src\app.js:2761  f?.isRental || (!f?.isAwayChallengeGuest && !f?.isCRGuest && !f?.isB3ChallengeGuest && !f?.isUnifiedTitleGuest)
+- src\app.js:2790  cap = Math.max(cap, (G.roster || []).filter(f => !f.isRental).length);
+- src\app.js:2816  G = { ...G, freeAgents: reassess(G.freeAgents || []) };
+- src\app.js:2895  if (!G._migrated_retired_rivalry_cleanup_v1) {
+- src\app.js:2896  (G.retiredFighters || []).forEach(retiree => {
+- src\app.js:2897  G = archiveRetiredRivalryState(G, retiree);
+- src\app.js:2899  G = { ...G, _migrated_retired_rivalry_cleanup_v1: true };
+- src\app.js:2944  // retiredIds永続化マイグレーション: hallOfFame+現retiredFightersのIDを収集
+- src\app.js:2945  if (!G._migrated_retiredIds_v1) {
+- src\app.js:2946  const ids = new Set(G.retiredIds || []);
+- src\app.js:2948  (G.retiredFighters || []).forEach(f => { if (f.id) ids.add(f.id); });
+- src\app.js:2949  G = { ...G, retiredIds: [...ids], _migrated_retiredIds_v1: true };
+- src\app.js:2952  // retiredSeasonsマイグレーション: 既存retiredIdsに引退シーズンを割り当て（即リサイクル対象に）
+- src\app.js:2953  if (!G._migrated_retiredSeasons_v1) {
+- src\app.js:2954  const rs = { ...(G.retiredSeasons || {}) };
+- src\app.js:2955  // 現在どのプールにもいないretiredIdsに対して、5シーズン以上前のシーズンを割り当て
+- src\app.js:2957  (G.retiredIds || []).forEach(id => {
+- src\app.js:2960  G = { ...G, retiredSeasons: rs, _migrated_retiredSeasons_v1: true };
+- src\app.js:3119  G = { ...G, roster: addTimeline(G.roster || []), freeAgents: addTimeline(G.freeAgents || []) };
+- src\app.js:3140  freeAgents: normalizeTimeline(G.freeAgents || [], 'fa'),
+- src\app.js:3141  retiredFighters: normalizeTimeline(G.retiredFighters || [], null),
+- src\app.js:3170  freeAgents: _addHofFields(G.freeAgents),
+- src\app.js:3171  retiredFighters: _addHofFields(G.retiredFighters),
+- src\app.js:3193  retireOVR: h.retireOVR || h.ovr || 0,
+- src\app.js:3194  retireAge: h.retireAge || 0,
+- src\app.js:3249  const pk = cr.peakOVR || h.retireOVR || h.ovr || 0;
+- src\app.js:3279  retiredSeason: end
+- src\app.js:3282  // retiredFighter (player想定) を archive 形式に変換 (archiveFighter ロジック相当)
+- src\app.js:3283  const retiredToArchive = (f) => {
+- src\app.js:3320  retiredSeason: end
+- src\app.js:3325  ...((G.retiredFighters) || []).map(retiredToArchive)
+- src\app.js:3517  freeAgents: (G.freeAgents || []).map(fixStyle),
+- src\app.js:3553  freeAgents: (G.freeAgents || []).map(roundStats),
+- src\app.js:3571  // Legacy dormantPool refill migration retired; bounded recovery is handled elsewhere.
+- src\app.js:3578  const curFA = G.freeAgents || [];
+- src\app.js:3598  freeAgents: [...curFA, ...newFA],
+- src\app.js:3624  if (G.freeAgents) G.freeAgents = G.freeAgents.map(_initMN);
+- src\app.js:3666  G = { ...G, roster: migStrainDebt(G.roster), freeAgents: migStrainDebt(G.freeAgents) };
+- src\app.js:3912  function archiveRetiredRivalryState(state, fighter) {
+- src\app.js:3918  const history = [...historyStore.retiredRivalries];
+- src\app.js:3926  (state.retiredFighters || []).forEach(register);
+- src\app.js:3927  (state.freeAgents || []).forEach(register);
+- src\app.js:3967  reason: 'retirement',
+- src\app.js:3968  retiredFighterId: fighterId,
+- src\app.js:3982  entry.reason === 'retirement' &&
+- src\app.js:3983  entry.retiredFighterId === fighterId &&
+- src\app.js:3996  relationshipHistory: { ...historyStore, retiredRivalries: history },
+- src\app.js:5337  const idx = G.freeAgents.findIndex(c => c.id === charId);
+- src\app.js:5339  const fighter = G.freeAgents[idx];
+- src\app.js:5351  if (G.roster.filter(f => !f.isRental).length >= (G.rosterCap || 8)) {
+- src\app.js:5381  let c = normalized; // FA signing: no popularity reset (transfer reset is for org-to-org moves only)
+- src\app.js:5383  // Phase 3: orgJoinWeek設定
+- src\app.js:5384  c.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
+- src\app.js:5390  const newFA = G.freeAgents.filter((_, i) => i !== idx);
+- src\app.js:5399  G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, ...eliteTicketUpdate };
+- src\app.js:5460  const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
+- src\app.js:5466  { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log },
+- src\app.js:5474  const releasedFighter = Engine.orgTimeline.transfer(target, 'fa', G.season, G.week);
+- src\app.js:5475  G = { ...G, roster: newRoster, showCard: newShowCard, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
+- src\app.js:5477  G = { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log };
+- src\app.js:5484  G = { ...G, pendingRosterOverflowSigning: payload };
+- src\app.js:5488  setTimeout(() => showRosterOverflowSigningModal(G.pendingRosterOverflowSigning), 50);
+- src\app.js:5493  if (!G.pendingRosterOverflowSigning || typeof showRosterOverflowSigningModal !== 'function') return;
+- src\app.js:5494  const pending = G.pendingRosterOverflowSigning;
+- src\app.js:5496  if (!G.pendingRosterOverflowSigning) return;
+- src\app.js:5497  if (G.pendingRosterOverflowSigning.source !== pending.source || G.pendingRosterOverflowSigning.fighterId !== pending.fighterId) return;
+- src\app.js:5498  showRosterOverflowSigningModal(G.pendingRosterOverflowSigning);
+- src\app.js:5503  if (!G.pendingRosterOverflowSigning) return;
+- src\app.js:5504  const pending = G.pendingRosterOverflowSigning;
+- src\app.js:5505  const update = { pendingRosterOverflowSigning: null };
+- src\app.js:5513  const pending = G.pendingRosterOverflowSigning;
+- src\app.js:5515  const releaseTarget = G.roster.find(c => c.id === releaseId && !c.isRental && !c.lastRun);
+- src\app.js:5525  if (pending.source === 'fa' && !G.freeAgents.some(c => c.id === pending.fighterId)) {
+- src\app.js:5526  G = { ...G, pendingRosterOverflowSigning: null };
+- src\app.js:5533  G = { ...G, pendingRosterOverflowSigning: null };
+- src\app.js:5543  G = { ...G, pendingRosterOverflowSigning: null, negotiationResult: null };
+- src\app.js:5557  const idx = G.freeAgents.findIndex(c => c.id === pending.fighterId);
+- src\app.js:5558  const fighter = G.freeAgents[idx];
+- src\app.js:5562  normalized.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
+- src\app.js:5568  const newFA = G.freeAgents.filter((_, i) => i !== idx);
+- src\app.js:5574  G = { ...G, funds: G.funds - pending.cost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, eliteTicket: usedEliteTicket ? false : G.eliteTicket, eliteTicketUsed: usedEliteTicket ? true : G.eliteTicketUsed };
+- src\app.js:5587  normalizedSigned.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
+- src\app.js:5588  normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
+- src\app.js:5609  let resetFighter = Engine.popularity.applyTransferReset({ ...fighter, orgId: 'player', trust: 50, salaryBonus: 0 });
+- src\app.js:5610  resetFighter.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
+- src\app.js:5611  resetFighter = Engine.orgTimeline.transfer(resetFighter, 'player', G.season, G.week);
+- src\app.js:5612  resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: G.season, week: G.week, fromOrg: fromOrgName, toOrg: 'player', via: 'negotiate' });
+- src\app.js:5614  G = { ...G, aiOrgs: newAiOrgs, roster: [...G.roster, resetFighter], funds: G.funds - pending.cost, transferLog: [...(G.transferLog || []), { season: G.season, week: G.week, type: 'negotiate', fighter: fighter.name, from: fromOrgName, cost: pending.cost }], gameLog: [...G.gameLog, { type: 'poach_negotiate_success', data: { name: fighter.name, cost: pending.cost }, s: G.season, w: G.week }], negotiationResult: null };
+- src\app.js:5621  G = { ...G, pendingRosterOverflowSigning: null };
+- src\app.js:5683  let freeAgents = [...G.freeAgents];
+- src\app.js:5701  if (newRoster.filter(f => !f.isRental).length >= (G.rosterCap || 8)) {
+- src\app.js:5719  // Phase 3: orgJoinWeek設定
+- src\app.js:5720  normalizedSigned.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
+- src\app.js:5722  normalizedSigned = Engine.orgTimeline.transfer(normalizedSigned, 'player', G.season, G.week);
+- src\app.js:5759  const alreadyExists = freeAgents.some(f => f.id === cleanFighter.id)
+- src\app.js:5762  freeAgents.push(normalizeFighterForRoster(cleanFighter));
+- src\app.js:5780  ...G, funds: newFunds, roster: newRoster, freeAgents, aiOrgs, titles,
+- src\app.js:5860  let freeAgents = [...G.freeAgents];
+- src\app.js:5879  ...G, freeAgents, dormantPool, gameLog: log,
+- src\app.js:6142  const escNeg = { ...neg, attitude: 'transfer' };
+- src\app.js:6157  doRetireAdvise(fighterId) {
+- src\app.js:6159  const result = Engine.retirement.advise(rng, G, fighterId);
+- src\app.js:6160  if (!result._pendingRetireAdviseResult) return;
+- src\app.js:6161  const { accepted, fighter, line } = result._pendingRetireAdviseResult;
+- src\app.js:6162  const { _pendingRetireAdviseResult: _, ...cleanG } = result;
+- src\app.js:6167  showRetireAdviseResultPopup(accepted, fighter, line);
+- src\app.js:6174  if (!fighter) { closeRetirementPopup(); return; }
+- src\app.js:6176  if ((fighter.retainCount || 0) >= 2) { closeRetirementPopup(); return; }
+- src\app.js:6177  const retainLine = Engine.retirement.selectRetainLine(fighter, G);
+- src\app.js:6187  updatedFighter = Engine.career.addEvent(updatedFighter, { type: 'retireRetracted', season: G.season, week: G.week, orgName: G.orgName || 'プレイヤー団体' });
+- src\app.js:6201  closeRetirementPopup();
+- src\app.js:6292  const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
+- src\app.js:6302  { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log },
+- src\app.js:6310  const releasedFighter = Engine.orgTimeline.transfer(cWithRelease, 'fa', G.season, G.week);
+- src\app.js:6311  G = { ...G, roster: newRoster, showCard: newShowCard, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
+- src\app.js:6313  G = { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log };
+- src\app.js:6330  const eligible = G.roster.filter(c => !c.injury && !c.isRental && !c.forcedRest);
+- src\app.js:6466  coachAssign: { ...G.coachAssign, [coachId]: [] },
+- src\app.js:6505  const newAssign = { ...G.coachAssign };
+- src\app.js:6510  coachAssign: newAssign,
+- src\app.js:6523  const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, coachId, charId);
+- src\app.js:6526  G = { ...G, coachAssign };
+- src\app.js:6532  G = { ...G, coachAssign: Engine.coach.unassignFromCoach(G, charId) };
+- src\app.js:6856  // Guard: sanitize stale card refs (released/retired/transferred wrestlers)
+- src\app.js:8323  if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury, retireType: li.retireType || null, farewellKind: li.farewellKind || null }); }
+- src\app.js:8329  if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType || null, farewellKind: ri.farewellKind || null }); }
+- src\app.js:8793  if (nc.growthLog && !nc.isRental) {
+- src\app.js:9273  const lastRunRetireesById = new Map();
+- src\app.js:9286  lastRunRetireesById.set(lastRunFighter.id, lastRunFighter);
+- src\app.js:9288  const lastRunRetirees = [...lastRunRetireesById.values()];
+- src\app.js:9290  wmDiag('[WM][lastrun-diag] processShowResult:lastRunRetirees',
+- src\app.js:9291  { count: lastRunRetirees.length, names: lastRunRetirees.map(c => c?.name), resultsLen: results.length, validMatchesLen: validMatches.length });
+- src\app.js:9293  if (lastRunRetirees.length > 0) {
+- src\app.js:9295  const retiredWithRecords = lastRunRetirees.map(c => {
+- src\app.js:9297  f = Engine.career.addEvent(f, { type: 'retire', reason: 'lastrun', season: G.season, week: G.week, age: f.age });
+- src\app.js:9301  const lastRunRetiredIds = new Set(lastRunRetirees.map(c => c.id));
+- src\app.js:9302  const survivingRoster = G.roster.filter(c => !lastRunRetiredIds.has(c.id));
+- src\app.js:9303  // 関係値凍結 + trust影響 + retiredIds永続記録
+- src\app.js:9304  const newRetiredIds = [...(G.retiredIds || []), ...lastRunRetirees.map(c => c.id).filter(id => !(G.retiredIds || []).includes(id))];
+- src\app.js:9305  const _lrRetiredSeasons = { ...(G.retiredSeasons || {}) };
+- src\app.js:9306  lastRunRetirees.forEach(c => { _lrRetiredSeasons[c.id] = G.season; });
+- src\app.js:9307  let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds, retiredSeasons: _lrRetiredSeasons };
+- src\app.js:9308  // 退場者の後始末: 雇用コーチの担当から外す(残すと自己修復 coachAssign_stale_refs_removed が鳴る)
+- src\app.js:9309  updState = { ...updState, coachAssign: Engine.coach.sanitizeAssignments(updState) };
+- src\app.js:9311  retiredWithRecords.forEach(rf => {
+- src\app.js:9320  lastRunRetirees.forEach(retiree => {
+- src\app.js:9321  updState = Engine.relationships.freezeRelationships(updState, retiree.id);
+- src\app.js:9322  updState = { ...updState, roster: Engine.trust.applyDepartureTrustImpact(updState.roster, retiree.id, updState.relationships, { name: retiree.name, reason: '引退試合' }) };
+- src\app.js:9327  for (const retiree of lastRunRetirees) {
+- src\app.js:9329  const key = Engine.relationships._key(cid, retiree.id);
+- src\app.js:9334  updState = Engine.relationships.applyFromRoster(updState, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
+- src\app.js:9337  // 引退演出データを保持（pendingRetirements形式）
+- src\app.js:9338  const pendingLastRunRetirements = retiredWithRecords.map(f => {
+- src\app.js:9339  const { line, category } = Engine.retirement.selectLine(f, 'lastrun', updState, lrLineRng);
+- src\app.js:9340  const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t);
+- src\app.js:9343  G = { ...updState, _pendingLastRunRetirements: pendingLastRunRetirements };
+- src\app.js:10228  injuries: (App._lastInjuries || []).filter(ir => ir && ir.injury && !ir.retireType).map(ir => ({
+- src\app.js:10256  const pendingInjuryRetirements = previewState._pendingInjuryRetirements || [];
+- src\app.js:10257  if (previewState._pendingInjuryRetirements) {
+- src\app.js:10258  const { _pendingInjuryRetirements: _, ...cleanPreview } = previewState;
+- src\app.js:10261  pendingInjuryRetirements.forEach(r => {
+- src\app.js:10262  previewState = archiveRetiredRivalryState(previewState, r.fighter || null);
+- src\app.js:10265  const pendingLastRunRetirements = previewState._pendingLastRunRetirements || [];
+- src\app.js:10266  if (previewState._pendingLastRunRetirements) {
+- src\app.js:10267  const { _pendingLastRunRetirements: _, ...cleanPreview } = previewState;
+- src\app.js:10270  pendingLastRunRetirements.forEach(r => {
+- src\app.js:10271  previewState = archiveRetiredRivalryState(previewState, r.fighter || null);
+- src\app.js:10695  if (actualGain > 0 && fighter.growthLog && !fighter.isRental) {
+- src\app.js:10709  injuryResults.push({ id: fighter.id, name: fighter.name, injury: fighter.injury, retireType: injury.retireType || null });
+- src\app.js:10823  // v1.3-3: Extract pending injury retirements before state changes
+- src\app.js:10824  let pendingInjuryRetirements = G._pendingInjuryRetirements || [];
+- src\app.js:10825  if (G._pendingInjuryRetirements) {
+- src\app.js:10826  const { _pendingInjuryRetirements: _, ...cleanG } = G;
+- src\app.js:10830  wmDiag('[WM][injury-retire-diag] entry',
+- src\app.js:10831  { count: pendingInjuryRetirements.length,
+- src\app.js:10832  names: pendingInjuryRetirements.map(r => r?.fighter?.name),
+- src\app.js:10835  // 怪我引退セリフの取りこぼし救済: lookup 失敗・transient 欠落で _pendingInjuryRetirements に
+- src\app.js:10836  // 載らなかった「今週の怪我引退者」を retiredFighters の最新 retire イベントから復元する
+- src\app.js:10839  pendingInjuryRetirements.map(r => r?.fighter?.id).filter(id => id != null)
+- src\app.js:10841  const orphaned = (G.retiredFighters || []).filter(f => {
+- src\app.js:10844  const latestRetire = [...history].reverse().find(h => h.type === 'retire');
+- src\app.js:10845  if (!latestRetire) return false;
+- src\app.js:10846  if (latestRetire.season !== G.season || latestRetire.week !== G.week) return false;
+- src\app.js:10847  return latestRetire.reason === 'wearInjury' || latestRetire.reason === 'careerEnding';
+- src\app.js:10853  const latestRetire = [...history].reverse().find(h => h.type === 'retire');
+- src\app.js:10854  const route = latestRetire?.reason === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
+- src\app.js:10855  const { line, category } = Engine.retirement.selectLine(f, route, G, fbRng);
+- src\app.js:10856  const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t);
+- src\app.js:10857  console.warn('[WM] injury retirement recovered via fallback', { id: f.id, name: f.name, route });
+- src\app.js:10860  pendingInjuryRetirements = [...pendingInjuryRetirements, ...recovered];
+- src\app.js:10863  pendingInjuryRetirements.forEach(r => {
+- src\app.js:10864  G = archiveRetiredRivalryState(G, r.fighter || null);
+- src\app.js:10868  let pendingLastRunRetirements = G._pendingLastRunRetirements || [];
+- src\app.js:10869  if (G._pendingLastRunRetirements) {
+- src\app.js:10870  const { _pendingLastRunRetirements: _, ...cleanG } = G;
+- src\app.js:10875  { pendingLastRunCount: pendingLastRunRetirements.length,
+- src\app.js:10876  names: pendingLastRunRetirements.map(r => r?.fighter?.name),
+- src\app.js:10880  const existingLastRunRetiredIds = new Set(
+- src\app.js:10881  pendingLastRunRetirements
+- src\app.js:10891  if (existingLastRunRetiredIds.has(id) || fallbackLastRunFighters.has(id)) return;
+- src\app.js:10898  const synthesizedRetirements = [...fallbackLastRunFighters.values()].map(fighter => {
+- src\app.js:10899  let retiredFighter = Engine.career.ensure({ ...fighter, lastRun: false, lastRunWeek: null });
+- src\app.js:10900  retiredFighter = Engine.career.addEvent(retiredFighter, {
+- src\app.js:10901  type: 'retire', reason: 'lastrun', season: G.season, week: G.week, age: retiredFighter.age
+- src\app.js:10903  delete retiredFighter.growthLog;
+- src\app.js:10904  const { line, category } = Engine.retirement.selectLine(retiredFighter, 'lastrun', G, lrLineRng);
+- src\app.js:10905  const summary = Engine.retirement.buildCareerSummary(retiredFighter, WM_I18N.t);
+- src\app.js:10906  return { fighter: retiredFighter, route: 'lastrun', line, category, summary, canRetain: false };
+- src\app.js:10908  pendingLastRunRetirements = [...pendingLastRunRetirements, ...synthesizedRetirements];
+- src\app.js:10911  // 拾えなかった場合に、retiredFighters の最新 retire イベント (reason='lastrun', 同週)
+- src\app.js:10915  pendingLastRunRetirements.map(r => r?.fighter?.id).filter(id => id != null)
+- src\app.js:10917  const orphanedLR = (G.retiredFighters || []).filter(f => {
+- src\app.js:10920  const latestRetire = [...history].reverse().find(h => h.type === 'retire');
+- src\app.js:10921  if (!latestRetire) return false;
+- src\app.js:10922  if (latestRetire.season !== G.season || latestRetire.week !== G.week) return false;
+- src\app.js:10923  return latestRetire.reason === 'lastrun';
+- src\app.js:10928  const { line, category } = Engine.retirement.selectLine(f, 'lastrun', G, lrFbRng);
+- src\app.js:10929  const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t);
+- src\app.js:10930  console.warn('[WM] lastrun retirement recovered via 3rd-tier fallback', { id: f.id, name: f.name });
+- src\app.js:10933  pendingLastRunRetirements = [...pendingLastRunRetirements, ...recovered];
+- src\app.js:10936  if (pendingLastRunRetirements.length > 0) {
+- src\app.js:10937  const lastRunRetiredIds = new Set(
+- src\app.js:10938  pendingLastRunRetirements
+- src\app.js:10942  if (lastRunRetiredIds.size > 0) {
+- src\app.js:10943  const retiredById = new Map((G.retiredFighters || []).map(f => [f.id, f]));
+- src\app.js:10944  pendingLastRunRetirements.forEach(r => {
+- src\app.js:10945  if (r?.fighter?.id != null && !retiredById.has(r.fighter.id)) retiredById.set(r.fighter.id, r.fighter);
+- src\app.js:10947  const retiredIds = new Set(G.retiredIds || []);
+- src\app.js:10948  lastRunRetiredIds.forEach(id => retiredIds.add(id));
+- src\app.js:10949  const retiredSeasons = { ...(G.retiredSeasons || {}) };
+- src\app.js:10950  pendingLastRunRetirements.forEach(r => {
+- src\app.js:10951  if (r?.fighter?.id != null) retiredSeasons[r.fighter.id] = G.season;
+- src\app.js:10955  roster: (G.roster || []).filter(c => !lastRunRetiredIds.has(c.id)),
+- src\app.js:10956  retiredFighters: [...retiredById.values()],
+- src\app.js:10957  retiredIds: [...retiredIds],
+- src\app.js:10958  retiredSeasons,
+- src\app.js:10960  // 退場者の後始末: 雇用コーチの担当から外す(残すと自己修復 coachAssign_stale_refs_removed が鳴る)
+- src\app.js:10961  G = { ...G, coachAssign: Engine.coach.sanitizeAssignments(G) };
+- src\app.js:10968  pendingLastRunRetirements.forEach(r => {
+- src\app.js:10969  G = archiveRetiredRivalryState(G, r.fighter || null);
+- src\app.js:10996  // v0.96: Show injury popups (only non-retirement injuries)
+- src\app.js:10999  // v1.3-3: Skip retirement injuries (they get their own popup)
+- src\app.js:11000  if (ir.retireType) return;
+- src\app.js:11113  if (pendingLastRunRetirements.length > 0) {
+- src\app.js:11114  popupActions.push(done => showRetirementPopups(pendingLastRunRetirements, done));
+- src\app.js:11116  if (pendingInjuryRetirements.length > 0) {
+- src\app.js:11117  popupActions.push(done => showRetirementPopups(pendingInjuryRetirements, done));
+- src\app.js:11184  pendingLastRun: pendingLastRunRetirements.length,
+- src\app.js:11185  pendingInjury: pendingInjuryRetirements.length,
+- src\app.js:11785  if (c.injury || c.isRental || c.forcedRest) return c;
+- src\app.js:11873  let motivRetirements = G._pendingMotivationRetirements || [];
+- src\app.js:11874  if (G._pendingMotivationRetirements) {
+- src\app.js:11875  const { _pendingMotivationRetirements: _, ...cleanMr } = G;
+- src\app.js:11879  wmDiag('[WM][motiv-retire-diag] entry',
+- src\app.js:11880  { count: motivRetirements.length,
+- src\app.js:11881  ids: motivRetirements.map(r => r?.fighterId),
+- src\app.js:11885  // _pendingMotivationRetirements に載らなかった「今週のモチベ喪失引退者」を
+- src\app.js:11886  // retiredFighters の最新 retire イベントから復元する。本人は既に roster から
+- src\app.js:11887  // 抜けて retiredFighters に入っているので、_recoveredFighter で直接渡す。
+- src\app.js:11890  motivRetirements.map(r => r?.fighterId).filter(id => id != null)
+- src\app.js:11892  const orphanedMR = (G.retiredFighters || []).filter(f => {
+- src\app.js:11895  const latestRetire = [...history].reverse().find(h => h.type === 'retire');
+- src\app.js:11896  if (!latestRetire) return false;
+- src\app.js:11897  if (latestRetire.season !== G.season) return false;
+- src\app.js:11900  return latestRetire.reason === 'motivation';
+- src\app.js:11904  console.warn('[WM] motivation retirement recovered via fallback', { id: f.id, name: f.name });
+- src\app.js:11905  motivRetirements = [...motivRetirements, { fighterId: f.id, _recoveredFighter: f }];
+- src\app.js:11909  if (motivRetirements.length > 0) {
+- src\app.js:11910  motivRetirements.forEach(r => {
+- src\app.js:11912  // フォールバック復元ルート: 既に retiredFighters に入っているので
+- src\app.js:11913  // セリフ生成と showRetirementPopups だけ走らせる
+- src\app.js:11916  const { line } = Engine.retirement.selectLine(recF, 'motivation', G, lineRng);
+- src\app.js:11917  const summary = Engine.retirement.buildCareerSummary(recF, WM_I18N.t);
+- src\app.js:11919  wmDiag('[WM][motiv-retire-diag] firing recovered showRetirementPopups', { id: recF.id, name: recF.name });
+- src\app.js:11920  setTimeout(() => showRetirementPopups([{ fighter: recF, route: 'motivation', line, summary }]), delay);
+- src\app.js:11926  const { line } = Engine.retirement.selectLine(f, 'motivation', G, lineRng);
+- src\app.js:11927  const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t);
+- src\app.js:11928  const retiredF = Engine.career.addEvent(Engine.career.ensure(f), { type: 'retire', reason: 'motivation', season: G.season, age: f.age });
+- src\app.js:11929  delete retiredF.growthLog;
+- src\app.js:11932  retiredFighters: [...(G.retiredFighters || []), retiredF],
+- src\app.js:11934  coachAssign: Engine.coach.unassignFromCoach(G, f.id),
+- src\app.js:11937  G = Engine.chronicle.archiveFighter(G, retiredF);
+- src\app.js:11938  G = Engine.chronicle.applySpiritContribution(G, retiredF);
+- src\app.js:11943  G = archiveRetiredRivalryState(G, retiredF);
+- src\app.js:11947  wmDiag('[WM][motiv-retire-diag] firing showRetirementPopups', { id: retiredF.id, name: retiredF.name });
+- src\app.js:11948  setTimeout(() => showRetirementPopups([{ fighter: retiredF, route: 'motivation', line, summary }]), delay);
+- src\app.js:12310  if (G.pendingRosterOverflowSigning) {
+- src\app.js:12582  if (G.negotiationResult && G.negotiationResult.success && G.negotiationResult.fighter && !(G.pendingRosterOverflowSigning && G.pendingRosterOverflowSigning.source === 'negotiation')) {
+- src\app.js:12584  const fromOrg = (G.transferLog || []).slice(-1)[0];
+- src\app.js:12597  // v1.3-3: Extract pending retirements before save (transient field)
+- src\app.js:12598  const pendingRetirements = G.pendingRetirements || null;
+- src\app.js:12599  if (pendingRetirements) {
+- src\app.js:12600  const { pendingRetirements: _, ...cleanG } = G;
+- src\app.js:12617  // v1.3-3: Show retirement popups (season-end)
+- src\app.js:12619  if (pendingRetirements && pendingRetirements.length > 0) {
+- src\app.js:12625  // 殿堂入りは retiredFighters だけを見るので、確定前に表彰式を作ると殿堂が空になる。
+- src\app.js:12626  showRetirementPopups(pendingRetirements, () => {
+- src\app.js:12628  const confirmed = pendingRetirements
+- src\app.js:12632  const result = Engine.retirement.commitRetirements(G, confirmed);
+- src\app.js:12637  confirmed.forEach(f => { G = archiveRetiredRivalryState(G, f); });
+- src\app.js:12891  // 引退者(retiredFighters)と年代記アーカイブにも届けないと、その年の受賞が消える。
+- src\app.js:12938  // 殿堂入りエントリは commitRetirements 時点（受賞を積む前）のスナップショットなので、
+- src\app.js:12939  // 今季の受賞を刻んだあとに作り直す。作り直さないと retiredFighters 側だけ直っても
+- src\app.js:12950  const rosterIds = (G.roster || []).filter(f => !f.isRental).map(f => f.id);
+- src\app.js:12974  f.id !== winnerId && !f.isRental && Math.abs(Engine.util.ov(f) - winnerOvr) <= 5
+- src\app.js:13014  // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
+- src\app.js:13016  G = Engine.awards.finalizeRetireeBuffer(G);
+- src\app.js:13020  console.error('[WM] finalizeRetireeBuffer failed after awards:', e);
+- src\app.js:13165  && f.status !== 'retired' && !f.isRental)
+- src\app.js:13276  const tracked = Engine.orgTimeline.transfer(departed, 'fa', G.season, G.week);
+- src\app.js:13288  G = { ...G, freeAgents: [...(G.freeAgents || []), tracked] };
+- src\app.js:13297  G = { ...G, coachAssign: Engine.coach.sanitizeAssignments(G) };
+- src\app.js:13585  if (result.coachAssign) G = { ...G, coachAssign: result.coachAssign };
+- src\app.js:14717  if (target.isRental || target.injury) { showToast(WM_I18N.t('今は声をかけられない')); return; }
+- src\app.js:14788  if (target.isRental || target.injury) { showToast(WM_I18N.t('今は約束できない')); return; }
+- src\app.js:15011  // care-rework v0.1 §3: 招聘に伴う雇用コーチ退避(coachAssign)と招聘履歴(lastInvitedCoachId)
+- src\app.js:15012  if (result.coachAssign) G = { ...G, coachAssign: result.coachAssign };
+- src\app.js:15042  const participants = (G.roster || []).filter(f => !f.isRental && !f.injury && !f.onLeave);
+- src\app.js:15112  const roster = (G.roster || []).filter(f => f && !f.isRental);
+- src\app.js:15259  if (Engine.prologue.founderState(G, fid) !== 'retired') return;
+- src\app.js:15261  const retired = (G.retiredFighters || []).find(f => f.id === fid);
+- src\app.js:15262  const name = archive?.name || retired?.name || '';
+- src\app.js:15264  id: `founder_first_retire_${fid}`,
+- src\app.js:15266  textParts: [{ t: HL.founderRetire, v: { name } }],
+- src\app.js:16647  const playerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
+- src\app.js:17055  const playerIds = new Set((G.roster || []).filter(f => !f.isRental).map(f => f.id));
+- src\app.js:17156  const mine = (G.roster || []).filter(f => f && !f.isRental
+- src\data.js:1532  const TRANSFER_POP_MULT = 0.75; // 移籍時の人気リセット係数
+- src\data.js:8453  retiredCooldown: 5,
+- src\data.js:8467  // Transfer system config (v1.0 §7 modified: quarterly windows)
+- src\data.js:8468  // Transfer config: see TRANSFER_CONFIG in Section 4H for active constants
+- src\data.js:8516  // Retirement config (scout-spec §7)
+- src\data.js:8517  const RETIRE_CFG = {
+- src\data.js:8519  // ── D-1「力が尽きた」(retirement-drama-spec v0.2 §3-D) ──
+- src\data.js:8527  // ── A「静かに去る」の連続曲線 (retirement-drama-spec v0.2 §3-A) ──
+- src\data.js:8535  // ── B「燃え尽きるまで」(retirement-drama-spec v0.2 §3-B) ──
+- src\data.js:8545  // ── C「壮絶な幕切れ」(retirement-drama-spec v0.2 §3-C) ──
+- src\data.js:8713  // ║  世代交代 (retirement-drama-spec v0.2 §6)                 ║
+- src\data.js:8736  // Wear system: wear threshold effects (v1.3-1-decay-retirement-spec §3)
+- src\data.js:8738  // それまでは applyDecay / checkRetirement / getDeclinePresentation が同じ数字を
+- src\data.js:8744  { min:  0, max: 19, label: null,        decayMin: 0, decayMax: 0, retireChance: 0    },
+- src\data.js:8746  { min: 20, max: 39, label: '⚠ 衰え',  decayMin: 1, decayMax: 2, retireChance: 0    },
+- src\data.js:8748  { min: 40, max: 59, label: '⬇ 衰退期', decayMin: 2, decayMax: 4, retireChance: 0.20 },
+- src\data.js:8750  { min: 60, max: 79, label: '⬇⬇ 限界', decayMin: 3, decayMax: 5, retireChance: 0.50 },
+- src\data.js:8752  { min: 80, max: Infinity, label: null,  decayMin: 0, decayMax: 0, retireChance: 1.0  },
+- src\data.js:8760  const c = RETIRE_CFG.careerEnding;
+- src\data.js:8775  const c = RETIRE_CFG.quietExit;
+- src\data.js:8789  // draft-negotiation-spec §1.3: AI_SCOUT_CFG 廃止。idealRoster のみ残す（aiInterTransfer/aiFAAcquire 用）
+- src\data.js:8966  // ── Phase C: Transfer & Ace Constants ──
+- src\data.js:8967  const TRANSFER_CONFIG = {
+- src\data.js:8992  // ── Phase D: Rental & Event Constants ──
+- src\data.js:8993  const RENTAL_CONFIG = {
+- src\data.js:9005  // 根拠: レンタル在籍はRENTAL_CONFIG.minSeasons〜maxSeasons=1〜4期(12〜48週)で、
+- src\data.js:9012  const RENTAL_RIVALRY_CONFIG = {
+- src\data.js:9630  transfer_open: {
+- src\data.js:10234  transfer_retain_success: {
+- src\data.js:10353  transfer_retain_fail: {
+- src\data.js:10467  transfer_release: {
+- src\data.js:10574  transfer_listen: {
+- src\data.js:12005  // ║  幕切れの型 (retirement-drama-spec v0.2 §3-C)             ║
+- src\data.js:12008  // セリフ本体は RETIREMENT_LINES の性格別テーブルに任せる（地の文は性格で分けない）。
+- src\data.js:12055  const RETIREMENT_LINES = {
+- src\data.js:13045  const RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE = {
+- src\data.js:13061  // ── 引き抜きオファー解決時の選手反応 (transfer/poach 結果モーダル用) ───────
+- src\data.js:13261  // ── 引退勧告・引き留めシステム セリフデータ (retirement-advisory-spec-v1_1) ──
+- src\data.js:13262  const RETIRE_ACCEPT_LINES = {
+- src\data.js:13798  const RETIRE_REFUSE_LINES = {
+- src\data.js:17511  transferDone: [
+- src\data.js:17519  retirementDeclare: [
+- src\data.js:17724  retirement: [
+- src\data.js:17972  // {reigns} を含むバリアント(L-1/L-2/A-1/A-3)は reigns>=1 のときだけ選ぶ(Engine.newspaper.pickRetirementVariant)。
+- src\data.js:17973  const RETIREMENT_TEMPLATES = {
+- src\data.js:18025  // retiredAsChamp && maxSingleReign >= 10
+- src\data.js:18303  //   hofOrgFallback     … composeHallOfFameRetirement の所属名(d.orgName/d.org/hofEntry.orgName が全て空)
+- src\data.js:18937  retirementHeadline: '{org}の{name}が現役引退を表明',
+- src\data.js:18938  retirementBody: '{org}で{seasons}シーズンを戦った{name}（{age}歳）が引退を発表。',
+- src\data.js:18939  retirementSeasonsUnknown: '複数',
+- src\data.js:18940  playerRetirementHeadline: '{org}の{name}が現役引退',
+- src\data.js:18941  playerRetirementBody: '{name}が引退した。',
+- src\data.js:19036  const AI_INJURY_RETIREMENT_TEMPLATES = {
+- src\data.js:19050  // destination(transfer/fa/dormant/それ以外)の4分岐は元コードが既に相互排他な
+- src\data.js:19053  transfer: {
+- src\data.js:19187  transfer: '{from} から {to} へ移籍',
+- src\data.js:19188  transferPoach: '引き抜きで加入',
+- src\data.js:19189  transferPoachForced: '強制引き抜きで加入',
+- src\data.js:19190  transferNegotiate: '交渉成立で加入',
+- src\data.js:19197  retireRetracted: '引退を撤回し {org} に復帰',
+- src\data.js:19198  rentalInSeasons: '{from}から {to} へレンタル加入（{n}期）',
+- src\data.js:19199  rentalIn: '{from}から {to} へレンタル加入',
+- src\data.js:19200  rentalOut: 'レンタル期間満了で {org} へ帰団',
+- src\data.js:19202  retire: '引退（{age}歳）',
+- src\data.js:19203  retireInjuryWear: '度重なる怪我により',
+- src\data.js:19204  retireInjuryCareerEnding: '重傷により現役続行不可',
+- src\data.js:19205  retireAge: '年齢による引退',
+- src\data.js:19206  injuryRetire: '怪我による引退',
+- src\data.js:19352  //  ■ `引退` は ui-ledger に既訳("Retirement")があるので本表へは入れず、
+- src\data.js:20080  founderRetire: '旗揚げメンバー {name} が引退。',
+- src\data.js:20353  retirement: {
+- src\data.js:20403  UNIFIED_TITLE_TEMPLATES.affiliationLoss.vacancy = UNIFIED_TITLE_TEMPLATES.retirement.vacancy;
+- src\data.js:31280  const EVENT_RENTAL_GREETING_LINES = {
+- src\data.js:31346  const EVENT_RENTAL_GREETING_GENERIC_LINES = [
+- src\data.js:31823  rentalGreeting: EVENT_RENTAL_GREETING_LINES,
+- src\data.js:31824  rentalGreetingGeneric: EVENT_RENTAL_GREETING_GENERIC_LINES,
+- src\data.js:31877  fighter_released_claimed: 'Transfer: {name} -> {destOrg}{ejectedSuffix}',
+- src\data.js:32117  SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_EVENT_INCOME_CURVE, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
+- src\data.js:32144  SCOUT_EVENT_CFG, DORMANT_POOL_CFG, RETIRE_CFG, SPECIAL_EVENT_INTRO, WEAR_TABLE, getWearBand, quietExitChance, careerEndingChance, AI_TURNOVER_CFG,
+- src\data.js:32148  TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
+- src\data.js:32150  NEGOTIATE_LINES, RETIREMENT_LINES, FAREWELL_KIND_TEXT, FAREWELL_CLOSING, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
+- src\data.js:32167  RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE,
+- src\data.js:32180  EVENT_RENTAL_GREETING_LINES, EVENT_RENTAL_GREETING_GENERIC_LINES,
+- src\dev-tools.js:180  if (f.injury || f.isRental || f.forcedRest) return f;
+- src\dev-tools.js:186  const available = (state.roster || []).filter(f => !f.injury && !f.isRental && (f.condition || 0) >= 35).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+- src\dev-tools.js:192  const keys = ['_pendingChoiceEvent','_pendingNotifEvent','_pendingLargeEvent','_pendingTeamSpirit','_pendingGrowthEvents','_pendingMotivationRetirements','_pendingCoachReport','_flavorEvents','_pendingEliteTicket','_pendingFactionEvent','_pendingGlimpseA','_pendingGlimpseB','_pendingHotStreakEnds','_pendingMilestone','_pendingTrustReveals','_pendingR3Modal','_pendingPreWindowWarning','_pendingEmptyVenue','_pendingAIGrowthAlerts','_pendingSpringTagLeagueReplay','tenchosenPreEvent'];
+- src\dev-tools.js:224  if (next.weekPhase === 'scoutEvent' || next.weekPhase === 'event' || next.weekPhase === 'transfer') next = { ...next, weekPhase: 'manage' };
+- src\dev-tools.js:326  return (roster || []).filter(f => f && !f.injury && !f.forcedRest && !f.suspended && !f.isRental);
+- src\draft-negotiation.js:750  (state.freeAgents || []).forEach(f => occupied.add(f.id));
+- src\draft-negotiation.js:857  freeAgents: [],
+- src\factions.js:158  const roster = (state.roster || []).filter(c => !c.isRental);
+- src\factions.js:752  .filter(c => !c.isRental && !assigned.has(c.id))
+- src\factions.js:863  const rosterIds = new Set((s.roster || []).filter(c => !c.isRental).map(c => c.id));
+- src\factions.js:973  const rosterSize = (s.roster || []).filter(c => !c.isRental).length;
+- src\factions.js:1025  const oldLeader = (s.retiredFighters || []).find(c => c.id === faction.leaderId)
+- src\factions.js:1026  || (s.freeAgents || []).find(c => c.id === faction.leaderId)
+- src\factions.js:1333  || (state.retiredFighters || []).find(c => c.id === faction.leaderId)
+- src\factions.js:1334  || (state.freeAgents || []).find(c => c.id === faction.leaderId)
+- src\factions.js:1375  // return: { factionId, reason:'departure'|'retirement' } | null
+- src\factions.js:1381  const retiredIds = new Set((state.retiredFighters || []).map(c => c.id));
+- src\factions.js:1388  const reason = retiredIds.has(f.leaderId) ? 'retirement' : 'departure';
+- src\factions.js:3241  if (fA.isRental || fB.isRental) return false;
+- src\index.html:2024  animation:retireIn .5s cubic-bezier(0.22,1,0.36,1)}
+- src\index.html:2118  animation:retireIn .5s cubic-bezier(0.22,1,0.36,1)}
+- src\index.html:2147  animation:retireIn .5s cubic-bezier(0.22,1,0.36,1)}
+- src\index.html:2171  animation:retireIn .5s cubic-bezier(0.22,1,0.36,1)}
+- src\index.html:2337  overflow:hidden;animation:retireIn .5s cubic-bezier(0.22,1,0.36,1)}
+- src\index.html:4861  .shachoshitsu-rental-grid{display:grid;grid-template-columns:repeat(4,196px);
+- src\index.html:4863  .shachoshitsu-rental-mini{position:relative;width:196px;min-height:148px;
+- src\index.html:4870  .shachoshitsu-rental-mini-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;
+- src\index.html:4873  .shachoshitsu-rental-mini-row{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+- src\index.html:4874  .shachoshitsu-rental-mini-row img{width:32px;height:32px;object-fit:cover;border-radius:4px;
+- src\index.html:4876  .shachoshitsu-rental-mini-name{font-size:12px;font-weight:700;line-height:1.2}
+- src\index.html:4877  .shachoshitsu-rental-mini-ovr{font-family:'Bebas Neue',sans-serif;font-size:22px;font-weight:700;
+- src\index.html:4879  .shachoshitsu-rental-mini-ovr span{font-size:9px;color:rgba(42,35,24,0.5);margin-left:1px}
+- src\index.html:4880  .shachoshitsu-rental-mini-info{font-size:10px;color:rgba(42,35,24,0.6);margin-bottom:4px;text-align:center}
+- src\index.html:4881  .shachoshitsu-rental-mini-fee{font-size:11px;text-align:center;margin-bottom:5px}
+- src\index.html:4882  .shachoshitsu-rental-mini-fee b{color:#c44e8a;font-size:13px}
+- src\index.html:4883  .shachoshitsu-rental-mini-fee select{font-size:10px;padding:1px 3px;
+- src\index.html:4886  .shachoshitsu-rental-mini button{width:100%;font-size:11px;padding:5px 0;border-radius:3px;
+- src\index.html:4890  .shachoshitsu-rental-mini button:hover:not(:disabled){background:rgba(60,45,30,0.22)}
+- src\index.html:4891  .shachoshitsu-rental-mini button:disabled{opacity:0.4;cursor:default}
+- src\index.html:4894  .shachoshitsu-rental-sort{display:flex;align-items:center;gap:10px;margin-bottom:12px;
+- src\index.html:4896  .shachoshitsu-rental-sort .sort-label{font-size:12px;font-weight:700;
+- src\index.html:4898  .shachoshitsu-rental-sort button{font-size:13px;font-weight:700;padding:7px 20px;
+- src\index.html:4903  .shachoshitsu-rental-sort button:hover{background:rgba(42,35,24,0.92)}
+- src\index.html:4906  .shachoshitsu-wall-rental-strip{position:absolute;bottom:8px;right:4%;
+- src\index.html:4908  .shachoshitsu-wall-rental-card{background:rgba(30,28,22,0.85);backdrop-filter:blur(4px);
+- src\index.html:4912  .shachoshitsu-wall-rental-card .name{font-weight:600}
+- src\index.html:4913  .shachoshitsu-wall-rental-card .meta{color:var(--text-dim);font-size:10px;margin-top:2px}
+- src\index.html:4968  .neg-badge-transfer{background:rgba(231,76,60,0.20); border:1px solid rgba(231,76,60,0.45); color:#e84c3c}
+- src\index.html:4984  .neg-card-info-transfer{background:rgba(231,76,60,0.10)}
+- src\index.html:8782  .np-v3-hof-retirement { position: relative; padding: 10px; border: 4px double #9a7020; background: linear-gradient(150deg, rgba(212,184,122,0.18), rgba(120,84,39,0.04) 45%, rgba(139,26,26,0.05)); box-shadow: inset 0 0 0 1px rgba(120,84,39,0.25); }
+- src\index.html:9842  .sr-rc-tag.sr-retire{color:var(--sr-neg);border-color:rgba(224,103,79,0.45)}
+- src\kuroda-text.js:1018  aiAceRetirement: [
+- src\kuroda-text.js:1026  aiRetirement: [
+- src\lang-en.js:84  "30歳を過ぎると、選手は進退を考え始めます。引き際は選手それぞれ——引退した選手はロスターを去り、功績次第で": "Past 30, a wrestler starts weighing her future. When to step away differs from woman to woman — a retired wrestler leaves the roster, and depending on what she achieved, she may be inducted into the ",
+- src\lang-en.js:90  "3軸の合算:<br>・コア戦力 {force}　TOP8加重OVR×1.2 ＋ 加重人気×0.6<br>・層の厚み {depth}　主力層 {depthCore}/20 ＋ 控え層 {depthReserve}/10<br>・看板スター {marquee}　TOP3人気の突出加重×0.45<br>怪我人・引退・レンタル選手は除外。": "Sum of three axes:<br>• Core strength {force} — TOP8 weighted OVR×1.2 + weighted popularity×0.6<br>• Depth {depth} — Front line {depthCore}/20 + Reserves {depthReserve}/10<br>• Marquee star {marquee} — TOP3 popularity peak weighting×0.45<br>Injured, retired and loan wrestlers are excluded.",
+- src\lang-en.js:334  "{label}により引退": "Retired due to {label}",
+- src\lang-en.js:356  "{levelLabel}・引退特別号": "{levelLabel} · retirement special",
+- src\lang-en.js:382  "{name} が引退した。": "{name} has retired.",
+- src\lang-en.js:468  "{name}は他団体へ移籍した。": "{name} has transferred to another promotion.",
+- src\lang-en.js:726  "——蓄積が峠を越えるとステータスは下り坂に入り、引退が視野に入ります。": " — once the buildup carries her past the wall, her stats turn downward and retirement comes into view.",
+- src\lang-en.js:788  "─── 引退 ───": "─── Retirement ───",
+- src\lang-en.js:889  "⚠️ 来週は移籍ウィンドウです。信頼ケアの最後のチャンスかもしれません。": "⚠️ The transfer window opens next week. This may be your last chance to shore up trust.",
+- src\lang-en.js:1084  "この時代の気風はまだ動いています。この章の選手たちが引退したとき、最終的な傾向が確定します。": "The temper of this era is still shifting. It settles for good once the wrestlers in this chapter retire.",
+- src\lang-en.js:1100  "この章はまだ書きかけです。旗揚げメンバー全員が引退すると、序章が確定します。": "This chapter is still being written. The prologue is set once every founding member has retired.",
+- src\lang-en.js:1101  "この章はまだ書きかけです。選手たちが引退して数年が経つと、章が確定します。": "This chapter is still being written. It is set a few years after these wrestlers retire.",
+- src\lang-en.js:1223  "への引き抜き交渉を開始します。": " will be approached about a transfer.",
+- src\lang-en.js:1287  "エース級の選手が引退し、ひとつの世代が終わったとき、<br>最初の章が記録されます。": "When an ace-class wrestler retires and a generation closes,<br>the first chapter is written.",
+- src\lang-en.js:1629  "ボーナスも清算し、関係が大きく軋む ／ 移籍志願のおそれ": "Strains trust badly — transfer risk",
+- src\lang-en.js:1690  "ラストラン状態に入りました。次の興行で引退試合を組みましょう。": "She has entered her last run. Book her retirement match on the next show.",
+- src\lang-en.js:1739  "レンタルの{a}が戦列を支える。頼もしくもあり、借り物の厚みでもある。": "The rental wrestler {a} holds the line — reassuring, but borrowed depth all the same.",
+- src\lang-en.js:1747  "レンタル移籍：": "Loan Transfers:",
+- src\lang-en.js:2152  "全ての移籍オファーに対応しました。": "You've responded to every transfer offer.",
+- src\lang-en.js:2560  "契約更新 → ドラフト → 移籍ウィンドウ": "Contract Renewal → Draft → Transfer Window",
+- src\lang-en.js:2705  "峠と引退": "The Wall and Retirement",
+- src\lang-en.js:2748  "引 退 受 諾": "RETIREMENT ACCEPTED",
+- src\lang-en.js:2749  "引 退 拒 否": "RETIREMENT REFUSED",
+- src\lang-en.js:2760  "引退": "Retirement",
+- src\lang-en.js:2761  "引退時OVR {ovr}{age}": "OVR at retirement {ovr}{age}",
+- src\lang-en.js:2762  "引退試合をカードに組みましょう。（期限 あと約{n}週）": "Book her retirement match on a card. (About a {n}-week window left)",
+- src\lang-en.js:3026  "旗揚げメンバー全員が引退したとき、序章は閉じられます。": "The prologue closes when every founding member has retired.",
+- src\lang-en.js:3263  "殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>": "A wrestler with 15 or more Hall of Fame points is inducted when she retires.<br>",
+- src\lang-en.js:3265  "殿堂入り・引退特別号": "Hall of Fame · Retirement Special",
+- src\lang-en.js:3285  "永久保存版　殿堂入り・引退特別号": "Keepsake edition — Hall of Fame induction and retirement special",
+- src\lang-en.js:3432  "無 念 の 引 退": "AN UNWILLING RETIREMENT",
+- src\lang-en.js:3635  "移籍": "Transfer",
+- src\lang-en.js:3636  "移籍を承認": "Approve the Transfer",
+- src\lang-en.js:3637  "移籍ウィンドウへ →": "To the Transfer Window →",
+- src\lang-en.js:3638  "移籍ウィンドウ完了": "Transfer Window Closed",
+- src\lang-en.js:3639  "移籍金: +{fee}万": "Transfer fee: +¥{fee:man}",
+- src\lang-en.js:3640  "移籍金回収して退団": "Collect a transfer fee; she leaves.",
+- src\lang-en.js:3641  "移籍願望が出やすいが、信頼が低いと成長する": "Prone to wanting a transfer, but grows when trust is low",
+- src\lang-en.js:3953  "解雇: {name} / 移籍金: {cost}万": "Released: {name} / Transfer fee: ¥{cost:man}",
+- src\lang-en.js:4201  "選手一人ひとりが、社長への信頼を胸の内に持っています。数値では見えません——表情や様子、コーチの報告から察してください。出場機会とケアで育ち、冷遇と放置で冷えます。冷え切った心は、不満・造反・移籍の火種になります。": "Every wrestler carries her own trust in you. There is no number for it — read it from her face, her manner, and your coaches' reports. Ring time and care build it; being overlooked and left alone lets it cool. A heart that has gone cold becomes the spark for discontent, revolt and a transfer out.",
+- src\lang-en.js:4378  "🌅 引退を勧める": "🌅 Suggest Retirement",
+- src\lang-en.js:4379  "🌅 引退を勧める（クールダウン {n}週）": "🌅 Suggest Retirement (cooldown weeks: {n})",
+- src\lang-en.js:4467  "👁️ 来週は移籍ウィンドウです。動向を注視しましょう。": "👁️ The transfer window opens next week. Keep an eye on the movement.",
+- src\lang-en.js:4514  "💸 {name} → {org}へ移籍": "💸 Transfer: {name} → {org}",
+- src\lang-en.js:4604  "🔄 移籍ウィンドウ": "🔄 Transfer Window",
+- src\lang-en.js:4642  "🕯 ロッカールーム報告（移籍）": "🕯 Locker Room Report (transfer)",
+- src\lang-en.js:4664  "🚪 移籍志願": "🚪 Asking for a Transfer",
+- src\lang-en.js:4707  "🥀 引退の置き土産": "🥀 A Retirement's Parting Gift",
+- src\lang-en.js:4725  "（新人候補を巡ってライバル団体とセリ合い。各団体の関心と交渉のヒートを読みながら入札します）→ 移籍ウィンドウ、の順で進みます。": " (a bidding war with rival promotions over rookie prospects — you bid while reading each promotion's interest and how heated the talks are) → Transfer Window, in that order.",
+- src\lang-en.js:4748  "{from}から移籍": "Transferred from {from}",
+- src\lang-en.js:4755  "{org}に移籍": "Transferred to {org}",
+- src\lang-en-dialogue.js:248  "{name2}の引退は、ただ見送るだけでは済まない喪失だった。": "{name2}'s retirement was a loss too big to simply see off.",
+- src\lang-en-dialogue.js:4205  "…ふぅん。…王者に引退を勧める、か。…早いよ": "...Hm. ...Telling the champion to retire. ...It's too early for that.",
+- src\lang-en-dialogue.js:4616  "…チャンピオンに引退、か。…冗談はやめてよ": "...Retirement, to the champion. ...Don't joke with me.",
+- src\lang-en-dialogue.js:5181  "…引退、ね。…次の興行を見てからもう一度言って": "...Retirement, is it. ...Say that again after the next show.",
+- src\lang-en-dialogue.js:8839  "このままじゃ納得できない。改善してくれないなら移籍を考えるからね": "I can't accept this. Fix it, or I start looking at a transfer.",
+- src\lang-en-dialogue.js:8874  "このベルトの重みをまだ背負えます。引退はしません": "I can still bear the weight of this belt. I won't retire.",
+- src\lang-en-dialogue.js:10483  "まだまだ引退なんてしてやらないよ": "I'm nowhere near ready to give you a retirement.",
+- src\lang-en-dialogue.js:10544  "まだ引退するわけにはいきません。もう少しだけ…": "I can't retire yet. Just a little longer, please...",
+- src\lang-en-dialogue.js:10866  "もう限界を感じますの。…引退を考えておりますわ": "I am feeling my limits. ...I am considering retirement.",
+- src\lang-en-dialogue.js:11509  "チャンピオンに引退しろだと？ ふざけんな": "Telling the champ to retire? Don't be ridiculous.",
+- src\lang-en-dialogue.js:11510  "チャンピオンに引退しろって？ 冗談はやめて": "Telling the champion to retire? That isn't funny.",
+- src\lang-en-dialogue.js:11511  "チャンピオンに引退ですって？ ご冗談を": "Retirement, for the champion? You must be joking.",
+- src\lang-en-dialogue.js:11512  "チャンピオンに引退ですって？ 冗談でしょう？": "The champion, retire? You cannot be serious.",
+- src\lang-en-dialogue.js:13517  "女王である私を引退させようなんて、百年早くてよ": "Retire the queen herself? You are a century too early for that.",
+- src\lang-en-dialogue.js:13718  "引退…っ？ 冗談じゃない…まだ終わらない…！": "Retire...? Not a chance... I'm not finished...!",
+- src\lang-en-dialogue.js:13719  "引退だと？ 次の興行見てろ。後悔させてやる": "Retire? Watch the next show. You'll be sorry you said it.",
+- src\lang-en-dialogue.js:13720  "引退ですって？ 次の興行をご覧になってくださいまし": "Retirement, you say? Do watch the next show before you decide.",
+- src\lang-en-dialogue.js:13721  "引退ですって？ 次の興行を見てちょうだい": "Retire, am I? Watch the next show first, would you.",
+- src\lang-en-dialogue.js:13722  "引退？ 次の興行を見てなさい。後悔させてあげる": "Retire? Watch what I do at the next show. You'll regret this.",
+- src\lang-en-dialogue.js:15003  "王者に引退しろだと？ 100年早ぇんだよ！": "Tell the champ to retire? Come back in a hundred years!",
+- src\lang-en-templates.js:70  "40年見てきた中で、エースの引退で揺らがなかった団体はない。観察は続く": "Forty years on this beat, and no promotion came through the retirement of its ace unshaken. The watching continues.",
+- src\lang-en-templates.js:203  "Transfer: {name} -> {destOrg}{ejectedSuffix}": "Transfer: {name} -> {destOrg}{ejectedSuffix}",
+- src\lang-en-templates.js:266  "{age}歳での引退。{reigns}度の戴冠と、上位カードに置かれ続けた年数がそのまま{org}の看板の一部だった。来季の主要興行のメインを誰が務めるのか、編成の見直しはここから始まる。": "Retirement at age {age}. The title column reads {reigns}, and the years spent high on the card were themselves part of what {org} put on its posters. Who works the main event at next season's big shows — the booking rethink starts here.",
+- src\lang-en-templates.js:278  "{age}歳の{name}が引退 {org}の中心が空く": "{name} retires at {age} — the center of {org} comes open",
+- src\lang-en-templates.js:554  "{name}、{seasons}シーズンで現役に区切り": "{name} retires — {seasons}-season career",
+- src\lang-en-templates.js:563  "{name}、引退。{org}の一時代が終わる": "{name} retires, and an era at {org} ends",
+- src\lang-en-templates.js:605  "{name}が引退——現役生活に区切り": "{name} retires — a line under the career",
+- src\lang-en-templates.js:606  "{name}が引退した。": "{name} has retired.",
+- src\lang-en-templates.js:607  "{name}が引退表明 {org}の上位カードに空席": "{name} announces her retirement — an empty slot high on the {org} card",
+- src\lang-en-templates.js:614  "{name}が現役引退 {org}": "{name} retires from {org}",
+- src\lang-en-templates.js:615  "{name}が現役引退 {org}で{seasons}シーズン": "{name} retires after {seasons}-season run at {org}",
+- src\lang-en-templates.js:683  "{name}（{orgName}・{age}歳）が引退を表明した。{careerLine}デビューから{seasons}シーズン。積み重ねた試合と記録を残し、現役生活に区切りをつける。": "{name} ({orgName}, age {age}) has announced her retirement. Seasons from her debut: {seasons}. She leaves behind the matches and the records she stacked up, and draws a line under her time as an active wrestler. {careerLine}",
+- src\lang-en-templates.js:741  "{orgName}の{name}が現役引退": "{orgName}'s {name} retires",
+- src\lang-en-templates.js:789  "{org}で{seasons}シーズンを戦った{name}（{age}歳）が引退を発表。": "{name}, age {age}, has announced her retirement after a {seasons}-season run with {org}.",
+- src\lang-en-templates.js:792  "{org}での{seasons}シーズンをもって現役を退く。今後の予定については本人からの発表を待つことになる。": "She retires at the end of the {seasons}-season run with {org}. What comes next waits on an announcement from her.",
+- src\lang-en-templates.js:807  "{org}の{name}、引退": "{org}'s {name} retires",
+- src\lang-en-templates.js:814  "{org}の{name}が引退を決断した。{detail}。現役生活で積み重ねた試合と記録は、これからも団体史に残る。": "{org}'s {name} has decided to retire: {detail}. The matches and the records she stacked up as an active wrestler stay in the promotion's history from here on.",
+- src\lang-en-templates.js:817  "{org}の{name}が現役引退": "{name} of {org} retires",
+- src\lang-en-templates.js:818  "{org}の{name}が現役引退を決断": "{org}'s {name} decides to retire",
+- src\lang-en-templates.js:819  "{org}の{name}が現役引退を表明": "{name} of {org} announces her retirement",
+- src\lang-en-templates.js:821  "{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。": "{org}'s {name} has decided to retire on accumulated damage, closing out a {seasons}-season career in the ring.",
+- src\lang-en-templates.js:822  "{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。通算{reigns}度の戴冠を誇る。": "{org}'s {name} has decided to retire on accumulated damage, closing out a {seasons}-season career in the ring. Title reigns over that span: {reigns}.",
+- src\lang-en-templates.js:823  "{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。エース級の突然の退場は団体に激震を走らせた。": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. A {seasons}-season career in the ring, closed with no warning. Losing an ace this way leaves the promotion with a hole it never planned for.",
+- src\lang-en-templates.js:824  "{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。リング上での悲劇に関係者は言葉を失った。": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. A {seasons}-season career in the ring, closed with no warning. Nobody around the promotion had anything to say about what they had just seen.",
+- src\lang-en-templates.js:832  "{org}の{name}（{age}歳）、壊滅的な怪我で緊急引退——リング上で悲劇": "{org}'s {name}, {age}, forced to retire — career-ending injury in the ring",
+- src\lang-en-templates.js:833  "{org}の{name}（{age}歳）、度重なる怪我で引退——{seasons}シーズンの現役生活に幕": "{org}'s {name}, {age}, retires on repeated injuries — a {seasons}-season career in the ring comes to an end",
+- src\lang-en-templates.js:836  "{org}の{name}（{age}歳）が現役引退。リングに別れを告げた。": "{org}'s {name}, age {age}, has retired. She said her goodbye to the ring.",
+- src\lang-en-templates.js:873  "{org}・{name}、{age}歳で引退": "{org}'s {name} retires at {age}",
+- src\lang-en-templates.js:874  "{org}・{name}が引退 {seasons}シーズンの現役に区切り": "{org}'s {name} retires — {seasons}-season run ends",
+- src\lang-en-templates.js:875  "{org}・{name}が現役引退 {seasons}シーズンに幕": "{org}'s {name} retires — curtain on {seasons}-season career",
+- src\lang-en-templates.js:1043  "{seasons}シーズンの現役に区切り {name}が引退": "{seasons}-season career closes — {name} retires",
+- src\lang-en-templates.js:1881  "ベルトを巻いたまま、王者はリングを去る。{name}（{org}）の引退にともない、全国統一王座は空位となった。": "The champion leaves the ring with the belt still on her. With the retirement of {name} of {org}, the Unified National Championship is vacant.",
+- src\lang-en-templates.js:1926  "一人の引退が団体のバランスを崩すこともある。注視すべきだ": "One retirement can put a promotion out of balance. It bears watching.",
+- src\lang-en-templates.js:2231  "勝った直後に、彼女は動けなくなった。予定されていた引退試合は、もう組めない。花道は、その途中で終わった。": "She won, and then she could not move. The retirement match already on the calendar cannot be booked now. The send-off ended partway down the aisle.",
+- src\lang-en-templates.js:2286  "名家・大河内家の令嬢にして摺出川女学院を支配する女帝。高いカリスマ性と冷酷さで学園に君臨する。全国から実力者を編入させる権力と資金力を持ち、自らも卓越した身体能力で頂点に立つ。その支配欲と野心は留まるところを知らず、粕田市全体の覇権をも狙う。": "Daughter of the distinguished Okochi family and empress of Suridegawa Girls' Academy. She rules the school on charisma and cold nerve. She has the authority and the money to transfer talent in from across the country, and the athletic ability to stand at the top herself. Her appetite for control has no visible limit, and Kasuda City as a whole is in her sights.",
+- src\lang-en-templates.js:2365  "大河内が全国から呼び寄せた編入組の一角。市内屈指の体格とパワーは阿武隈にも引けを取らない。184cmの長身から繰り出す豪快なパワー殺法が武器。試合中に相手のスタイルに合わせた戦術変更もこなせる器用さを併せ持つ。": "One of the transfers Okochi brought in from around the country. In size and power she gives nothing away to Abukuma. Her weapon is the heavy power offense that comes off 184cm, and she is dexterous enough to change tactics mid-match to suit the opponent.",
+- src\lang-en-templates.js:2372  "大物引退。業界全体にとっても痛手だ。こういう選手は簡単には現れない": "A big name retires. A loss for the whole business. Wrestlers like that do not simply appear.",
+- src\lang-en-templates.js:2392  "奥山川高校に転校してきた174cmの大型選手。ムードメーカー気質で、チームの全国大会出場の夢を後押しする。恵まれた体格を活かしたグラップリングが武器で、型破りな発想で相手を翻弄することもある。陽気な性格でチームの雰囲気を明るくする欠かせない存在。": "A 174cm transfer into Okuyamagawa High School. She lifts the room, and she is pushing the team's dream of reaching nationals. Her weapon is grappling built on that frame, and she can throw an opponent off with an idea nobody saw coming. Cheerful, and the club would not be the same without her.",
+- src\lang-en-templates.js:2478  "年齢による引退": "Retired on age",
+- src\lang-en-templates.js:2491  "引退 {name}({age}歳)": "Retirement: {name} (age {age})",
+- src\lang-en-templates.js:2492  "引退は選手にとって避けられない運命だ。問題は、その後を誰が担うかだ": "Retirement is the one fate no wrestler avoids. The question is who carries what comes after.",
+- src\lang-en-templates.js:2493  "引退を撤回し {org} に復帰": "Reversed her retirement and returned to {org}",
+- src\lang-en-templates.js:2494  "引退を表明していた。その最後の一勝だった。": "She had already announced her retirement. This was the last win of her career.",
+- src\lang-en-templates.js:2495  "引退（{age}歳）": "Retired at {age}",
+- src\lang-en-templates.js:2523  "怪我による引退": "Retired through injury",
+- src\lang-en-templates.js:2647  "旗揚げメンバー {name} が引退。": "Founding member {name} retired.",
+- src\lang-en-templates.js:2684  "最後の旗揚げメンバーが引退。序章は閉じられた。": "The last founding member retired. The prologue is closed.",
+- src\lang-en-templates.js:2987  "看板選手の引退は、一つの時代の終わりを意味する。穴を埋められる逸材はいるのか": "The retirement of a marquee name means the end of an era. Is there anyone on hand who can fill that hole?",
+- src\lang-en-templates.js:3069  "統一王座、空位に 王者{name}が引退": "Unified title vacant: champion {name} retires",
+- src\lang-en-templates.js:3159  "規定は苛烈だ。王者はおよそ3か月ごとに他団体の刺客を迎え撃つ。負ければベルトは団体ごと持っていかれる。引退すれば返上、次の天頂戦まで誰の腰にも巻かれない。": "The rules are harsh. About every three months the champion has to meet a challenger sent from another promotion. Lose, and the belt leaves with them, promotion and all. Retire, and it is surrendered and goes around nobody's waist until the next Tenchosen.",
+- src\management.js:71  RETIRED_COOLDOWN: 5,
+- src\management.js:133  const rentalOrigins = new Map((state.rentals || [])
+- src\management.js:138  // Rival rentals intentionally keep a source-org copy while the player
+- src\management.js:139  // roster holds the active rental copy.
+- src\management.js:141  && rentalOrigins.get(Number(id)) === bucket.slice(3)) return;
+- src\management.js:147  (state.freeAgents || []).forEach(c => addSeen(c.id, 'fa'));
+- src\management.js:150  (state.retiredIds || []).forEach(id => addSeen(id, 'retired'));
+- src\management.js:158  freeAgents: (state.freeAgents || []).length,
+- src\management.js:160  missingRetiredSeasons: (state.retiredIds || []).filter(id => !state.retiredSeasons || state.retiredSeasons[id] === undefined),
+- src\management.js:164  _eligibleRetired(state, includeCooldownLocked = false) {
+- src\management.js:168  (state.freeAgents || []).forEach(c => blocked.add(c.id));
+- src\management.js:171  return (state.retiredIds || [])
+- src\management.js:173  .filter(id => includeCooldownLocked || (((state.season || 1) - ((state.retiredSeasons || {})[id] || 0)) >= Engine.saveDoctor.RETIRED_COOLDOWN))
+- src\management.js:174  .sort((a, b) => (((state.retiredSeasons || {})[a] || 0) - ((state.retiredSeasons || {})[b] || 0)));
+- src\management.js:205  'weekSummary', 'transfer', 'contractNegotiation', 'juniorTournament',
+- src\management.js:281  let coachAssign = state.coachAssign || {};
+- src\management.js:282  let coachAssignChanged = false;
+- src\management.js:283  if (coachAssign && typeof coachAssign === 'object') {
+- src\management.js:284  coachAssign = Object.fromEntries(Object.entries(coachAssign).map(([coachId, ids]) => {
+- src\management.js:287  if (after.length !== before.length) coachAssignChanged = true;
+- src\management.js:290  if (coachAssignChanged) changes.push('coachAssign_stale_refs_removed');
+- src\management.js:297  coachAssign,
+- src\management.js:310  // roster/freeAgents/scoutCandidates/retiredFighters/aiOrgs[].roster の
+- src\management.js:314  rentals: Array.isArray(rawState.rentals) ? rawState.rentals.map(r => ({ ...r })) : [],
+- src\management.js:315  freeAgents: (rawState.freeAgents || []).map(Engine.saveDoctor._normArchetype),
+- src\management.js:317  retiredFighters: (rawState.retiredFighters || []).map(Engine.saveDoctor._normArchetype),
+- src\management.js:319  retiredIds: [...new Set((rawState.retiredIds || []).map(Number).filter(Number.isFinite))],
+- src\management.js:320  retiredSeasons: { ...(rawState.retiredSeasons || {}) },
+- src\management.js:325  // roster/freeAgents/scoutCandidates/retiredFighters/aiOrgs[].roster の全選手が対象。
+- src\management.js:331  state.freeAgents = state.freeAgents.map(normTraits);
+- src\management.js:333  state.retiredFighters = state.retiredFighters.map(normTraits);
+- src\management.js:348  const rentalRosterIds = new Set(state.roster.filter(c => c?.isRental).map(c => Number(c.id)));
+- src\management.js:349  const seenRentalIds = new Set();
+- src\management.js:350  const orphanedRentalContracts = [];
+- src\management.js:351  state.rentals = state.rentals.filter(contract => {
+- src\management.js:353  const valid = Number.isFinite(fighterId) && rentalRosterIds.has(fighterId) && !seenRentalIds.has(fighterId);
+- src\management.js:355  orphanedRentalContracts.push(contract);
+- src\management.js:358  seenRentalIds.add(fighterId);
+- src\management.js:361  if (orphanedRentalContracts.length > 0) {
+- src\management.js:362  changes.push(`rental_orphan_contracts_removed:${orphanedRentalContracts.length}`);
+- src\management.js:363  const retiredIds = new Set([
+- src\management.js:364  ...(state.retiredIds || []).map(Number),
+- src\management.js:365  ...(state.retiredFighters || []).map(f => Number(f?.id)),
+- src\management.js:367  orphanedRentalContracts.forEach(contract => {
+- src\management.js:369  if (!retiredIds.has(fighterId) || contract?.fromSource !== 'rival' || !contract.fromOrgId) return;
+- src\management.js:379  const rentalOrigins = new Map(state.rentals
+- src\management.js:382  const preservedRentalSources = new Set();
+- src\management.js:386  if (rentalOrigins.get(fighterId) === orgId && !preservedRentalSources.has(fighterId)) {
+- src\management.js:387  preservedRentalSources.add(fighterId);
+- src\management.js:393  const prevFA = state.freeAgents.length;
+- src\management.js:394  state.freeAgents = state.freeAgents.filter(c => claim(Number(c.id)));
+- src\management.js:395  if (state.freeAgents.length !== prevFA) changes.push(`fa_conflict_removed:${prevFA - state.freeAgents.length}`);
+- src\management.js:402  const prevRetired = state.retiredIds.length;
+- src\management.js:403  state.retiredIds = state.retiredIds.filter(id => !occupied.has(id));
+- src\management.js:404  if (state.retiredIds.length !== prevRetired) changes.push(`retired_conflict_removed:${prevRetired - state.retiredIds.length}`);
+- src\management.js:447  (state.retiredFighters || []).forEach(f => {
+- src\management.js:448  if (f?.id && !occupied.has(f.id) && !state.retiredIds.includes(f.id)) state.retiredIds.push(f.id);
+- src\management.js:450  (state.retiredIds || []).forEach(id => {
+- src\management.js:451  if (state.retiredSeasons[id] === undefined) state.retiredSeasons[id] = baselineSeason;
+- src\management.js:453  if (before.missingRetiredSeasons.length > 0) changes.push(`retired_seasons_backfilled:${before.missingRetiredSeasons.length}`);
+- src\management.js:459  const staleRetirees = (state.retiredFighters || []).filter(fighter => {
+- src\management.js:460  const retireEvent = [...(fighter?.careerRecord?.history || [])]
+- src\management.js:461  .reverse().find(event => event?.type === 'retire');
+- src\management.js:462  // Legacy snapshots without a retirement event are still used by old
+- src\management.js:464  if (!retireEvent) return false;
+- src\management.js:465  const retiredSeason = Number(retireEvent.season);
+- src\management.js:466  return Number.isFinite(retiredSeason) && retiredSeason < currentSeason;
+- src\management.js:468  if (staleRetirees.length > 0) {
+- src\management.js:469  state = Engine.awards.finalizeRetireeBuffer(state, staleRetirees);
+- src\management.js:470  changes.push(`stale_retirement_buffer_cleared:${staleRetirees.length}`);
+- src\management.js:475  || before.freeAgents === 0
+- src\management.js:484  (state.freeAgents || []).forEach(c => tracked.add(c.id));
+- src\management.js:487  (state.retiredIds || []).forEach(id => tracked.add(id));
+- src\management.js:491  state.retiredIds.push(id);
+- src\management.js:492  state.retiredSeasons[id] = baselineSeason;
+- src\management.js:502  state.retiredIds = state.retiredIds.filter(rid => rid !== id);
+- src\management.js:503  delete state.retiredSeasons[id];
+- src\management.js:513  let ids = Engine.saveDoctor._eligibleRetired(state, false).slice(0, needed);
+- src\management.js:515  const extra = Engine.saveDoctor._eligibleRetired(state, true).filter(id => !ids.includes(id)).slice(0, needed - ids.length);
+- src\management.js:526  let ids = Engine.saveDoctor._eligibleRetired(state, false).slice(0, needed);
+- src\management.js:528  const extra = Engine.saveDoctor._eligibleRetired(state, true).filter(id => !ids.includes(id)).slice(0, needed - ids.length);
+- src\management.js:537  if (state.freeAgents.length < Engine.saveDoctor.FA_MIN) {
+- src\management.js:538  const needed = Engine.saveDoctor.FA_MIN - state.freeAgents.length;
+- src\management.js:549  state.freeAgents = [...state.freeAgents, ...created];
+- src\management.js:557  const ids = Engine.saveDoctor._eligibleRetired(state, true).slice(0, needed);
+- src\management.js:736  const fa = state.freeAgents || [];
+- src\management.js:758  /** Compute visible Rental IDs for this quarter (20 slots) */
+- src\management.js:759  getVisibleRentalIds(state) {
+- src\management.js:760  const rentals = Engine.rental.getAvailableRentals(state);
+- src\management.js:761  if (rentals.length <= 20) return rentals.map(r => r.fighter.id);
+- src\management.js:763  return Engine.util.seededPick(rentals.map(r => r.fighter.id), 20, seed);
+- src\management.js:778  (state.freeAgents || []).forEach(c => occupied.add(c.id));
+- src\management.js:782  (state.retiredIds || []).forEach(id => occupied.add(id));
+- src\management.js:786  canAddToFA(state) { return (state.freeAgents || []).length < ROSTER_CFG.fa; },
+- src\management.js:1009  // §B-5: Transfer popularity reset (×0.75)
+- src\management.js:1010  applyTransferReset(fighter) {
+- src\management.js:1011  const newPop = Math.max(1, fighter.popularity * TRANSFER_POP_MULT);
+- src\management.js:1019  return roster.filter(c => !c.isRental).reduce((sum, c) => sum + Engine.util.getSalary(c, titles), 0);
+- src\management.js:1056  if (c.isRental) return;
+- src\management.js:1760  let retireType = null;
+- src\management.js:1766  retireType = 'wearInjury';
+- src\management.js:1768  // C「壮絶な幕切れ」(retirement-drama-spec v0.2 §3-C)
+- src\management.js:1773  if (!retireType) {
+- src\management.js:1779  const kind = Engine.retirement.pickFarewellKind(fighter, matchResult, {
+- src\management.js:1783  if (kind) { retireType = 'careerEnding'; farewellKind = kind; }
+- src\management.js:1821  retireType, // null | 'wearInjury' | 'careerEnding'
+- src\management.js:1825  tick(roster, freeAgents) {
+- src\management.js:1844  const newFA = freeAgents.map(c => {
+- src\management.js:1849  return { roster: newRoster, freeAgents: newFA, events };
+- src\management.js:2093  (state.freeAgents || []).forEach(c => nameMap.set(c.id, c.name));
+- src\management.js:2252  const transferAbs = Engine.util.absWeek(eh.transferredSeason || 1, eh.transferredWeek || 1);
+- src\management.js:2253  if (now - transferAbs < this.RECLAIM_COOLDOWN_WEEKS) return false;
+- src\management.js:2339  transferTitleToOrg(state, titleType, fighterId, toOrgId) {
+- src\management.js:2352  transferredSeason: state.season, transferredWeek: state.week,
+- src\management.js:2389  const available = roster.filter(f => f.id !== champId && !f.injury && !f.isRental);
+- src\management.js:2395  const maxOvr = Math.max(...roster.filter(f => !f.injury && !f.isRental).map(f => Engine.util.ov(f)));
+- src\management.js:2455  if ((leftF && leftF.isRental) || (rightF && rightF.isRental)) allowed = false;
+- src\management.js:2695  const newsType = reason === 'retirement' ? 'unifiedTitleVacateRetirement' : 'unifiedTitleVacateAffiliation';
+- src\management.js:2746  return !!fighter && !fighter.injury && !fighter.isRental && !fighter.isIntrusion;
+- src\management.js:3454  ...(state?.freeAgents || []),
+- src\management.js:3455  ...(state?.retiredFighters || []),
+- src\management.js:3484  ...(state?.freeAgents || []),
+- src\management.js:3485  ...(state?.retiredFighters || []),
+- src\management.js:3566  const inFA = (state?.freeAgents || []).find(c => c.id === id);
+- src\management.js:3568  const inRet = (state?.retiredFighters || []).find(c => c.id === id);
+- src\management.js:3927  !c.injury && !c.isRental && !c.isIntrusion &&
+- src\management.js:4032  || (event.type === 'transfer' && event.toOrg === 'player')
+- src\management.js:4034  const entrant = isPlayerJoin && !fighter.isRental
+- src\management.js:4077  *  引退の記録経路は player 側だけで4つ（commitRetirements / 興行中の怪我引退 /
+- src\management.js:4083  *  既に retire がある場合は何もしない（二重記録で年表が「2度引退」になるのを防ぐ）。 */
+- src\management.js:4084  ensureRetireEvent(fighter, season, week, reason) {
+- src\management.js:4088  if (hist.some(e => e && e.type === 'retire')) return f;
+- src\management.js:4089  const ev = { type: 'retire', season, week, age: f.age };
+- src\management.js:4159  * - 見つからない場合は最古の type:'transfer' (toOrg=player) または type:'rentalIn'（player団体行き）を fallback
+- src\management.js:4165  // 後の transfer(toOrg=player) があればそれを優先する
+- src\management.js:4166  const playerJoinTransfer = hist.find(e => e.type === 'transfer' && e.toOrg === 'player');
+- src\management.js:4167  if (playerJoinTransfer && playerJoinTransfer.season != null) return playerJoinTransfer.season;
+- src\management.js:4168  const rentalInPlayer = hist.find(e => e.type === 'rentalIn' && (e.toOrg === 'player' || e.toOrg === undefined));
+- src\management.js:4169  if (rentalInPlayer && rentalInPlayer.season != null) return rentalInPlayer.season;
+- src\management.js:4233  /** state/G から ID指定で選手名を解決する（roster→aiOrgs→freeAgents→retiredFighters→
+- src\management.js:4246  const fa = (state.freeAgents || []).find(c => c.id === id);
+- src\management.js:4248  const ret = (state.retiredFighters || []).find(c => c.id === id);
+- src\management.js:4473  const transferSeason = 2 + Engine.rng.int(rng, 0, Math.min(careerSeasons - 2, 8));
+- src\management.js:4478  history.push({ type: 'transfer', season: transferSeason, week: 1, fromOrg: fromName, toOrg: toName });
+- src\management.js:4479  careerHistory.push({ type: 'transfer', season: transferSeason, detail: `${fromName}から移籍`,
+- src\management.js:4483  const t2Season = transferSeason + 2 + Engine.rng.int(rng, 0, 3);
+- src\management.js:4488  history.push({ type: 'transfer', season: t2Season, week: 1, fromOrg: from2Name, toOrg: toName });
+- src\management.js:4489  careerHistory.push({ type: 'transfer', season: t2Season, detail: `${from2Name}から移籍`,
+- src\management.js:4556  s = { ...s, freeAgents: (s.freeAgents || []).map(f => applyBackstory(f, 'fa')) };
+- src\management.js:5249  _estimateRetiredSeason(fighter, state, fallbackStart) {
+- src\management.js:5251  const retireEv = [...hist].reverse().find(e => e.type === 'retire' || e.type === 'injury_retirement');
+- src\management.js:5252  return retireEv?.season || fighter?.retiredSeason || state?.retiredSeasons?.[fighter?.id] || state?.season || fallbackStart || 1;
+- src\management.js:5276  const careerSeasonsEnd = Engine.chronicle._estimateRetiredSeason(fighter, state, careerSeasonsStart);
+- src\management.js:5316  retiredSeason: careerSeasonsEnd
+- src\management.js:5330  const end = Engine.chronicle._estimateRetiredSeason(fighter, state, start);
+- src\management.js:6996  const retired = (state.retiredFighters || []).some(f => f.id === fighterId)
+- src\management.js:6998  if (retired) return 'retired';
+- src\management.js:7010  ...(state?.retiredFighters || []),
+- src\management.js:7011  ...(state?.freeAgents || []),
+- src\management.js:7040  const allRetired = p.founderIds.every(id => Engine.prologue.founderState(state, id) === 'retired');
+- src\management.js:7041  if (!allRetired) return state;
+- src\management.js:7078  * Searches roster, retiredFighters, freeAgents.
+- src\management.js:7088  || (G.retiredFighters || []).find(c => c.id === fighterId)
+- src\management.js:7089  || (G.freeAgents || []).find(c => c.id === fighterId)
+- src\management.js:7157  case 'transfer': {
+- src\management.js:7163  if (ev.via === 'poach') tfDetail = _t(T.transferPoach);
+- src\management.js:7164  else if (ev.via === 'poach_forced') tfDetail = _t(T.transferPoachForced);
+- src\management.js:7165  else if (ev.via === 'negotiate') tfDetail = _t(T.transferNegotiate);
+- src\management.js:7166  milestones.push({ season: rel(ev.season), week: ev.week, type: 'transfer',
+- src\management.js:7167  text: _t(T.transfer, { from: tfFrom, to: tfTo }), detail: tfDetail });
+- src\management.js:7191  case 'retireRetracted': {
+- src\management.js:7192  milestones.push({ season: rel(ev.season), week: ev.week, type: 'retire_retracted',
+- src\management.js:7193  text: _t(T.retireRetracted, { org: ev.orgName || _lbl('所属団体') }) });
+- src\management.js:7196  case 'rentalIn': {
+- src\management.js:7199  milestones.push({ season: rel(ev.season), week: ev.week, type: 'rental_in',
+- src\management.js:7201  ? _t(T.rentalInSeasons, { from: riFrom, to: riTo, n: ev.seasons })
+- src\management.js:7202  : _t(T.rentalIn, { from: riFrom, to: riTo }) });
+- src\management.js:7205  case 'rentalOut': {
+- src\management.js:7206  milestones.push({ season: rel(ev.season), week: ev.week, type: 'rental_out',
+- src\management.js:7207  text: _t(T.rentalOut, { org: ev.toOrg || _lbl(T.labels.formerOrg) }) });
+- src\management.js:7210  case 'retire':
+- src\management.js:7211  milestones.push({ season: rel(ev.season), week: ev.week || 48, type: 'retire',
+- src\management.js:7212  text: _t(T.retire, { age: ev.age || '?' }),
+- src\management.js:7213  detail: ev.reason === 'injury_wear' ? _t(T.retireInjuryWear) : ev.reason === 'injury_career_ending' ? _t(T.retireInjuryCareerEnding) : ev.reason === 'age' ? _t(T.retireAge) : undefined });
+- src\management.js:7330  // i18n P7-28: 'injury'/'injury_retirement' の detail は怪我名を埋め込んだ完成文
+- src\management.js:7335  const isInjuryEv = ev.type === 'injury' || ev.type === 'injury_retirement';
+- src\management.js:7339  type: ev.type === 'injury_retirement' ? 'injury' : (ev.type || 'note'),
+- src\management.js:7341  detail: ev.type === 'injury_retirement' ? _t(T.injuryRetire) : undefined
+- src\management.js:7369  transfer:      { icon: '📋', color: '#9b59b6' },
+- src\management.js:7370  retire:        { icon: '🌅', color: '#e67e22' },
+- src\management.js:7387  retire_retracted: { icon: '↩️', color: '#27ae60' },
+- src\management.js:7388  rental_in:      { icon: '🤝', color: '#16a085' },
+- src\management.js:7389  rental_out:     { icon: '↩', color: '#16a085' },
+- src\management.js:7397  // ── v1.3-3: Retirement Presentation ────────────────
+- src\management.js:7398  retirement: {
+- src\management.js:7419  const transfers = history.filter(e => e.type === 'transfer');
+- src\management.js:7445  // 5. transfer (max 2)
+- src\management.js:7446  transfers.slice(0, 2).forEach(e => {
+- src\management.js:7470  * Select retirement line based on route × career × personality (spec §3.4)
+- src\management.js:7475  * @returns {string} retirement line
+- src\management.js:7508  const catObj = RETIREMENT_LINES[category] || RETIREMENT_LINES.A2_uncrowned;
+- src\management.js:7523  /** C「壮絶な幕切れ」の型を決める（retirement-drama-spec v0.2 §3-C）。
+- src\management.js:7547  if ((fighter.intensiveWeeksTotal || 0) >= (RETIRE_CFG.careerEnding.strainRefWeeks || 60)) {
+- src\management.js:7563  const dropRatio = Engine.retirement.getPeakDropRatio(fighter);
+- src\management.js:7577  if (!fighter || fighter.isRental) return false;
+- src\management.js:7578  const dropRatio = Engine.retirement.getPeakDropRatio(fighter);
+- src\management.js:7615  const winRate = Engine.retirement.calcRecentWinRate(fighter);
+- src\management.js:7626  const winRate = Engine.retirement.calcRecentWinRate(fighter);
+- src\management.js:7636  const catObj = RETIRE_ACCEPT_LINES[cat] || RETIRE_ACCEPT_LINES.accept_no_title;
+- src\management.js:7645  const catObj = RETIRE_REFUSE_LINES[cat] || RETIRE_REFUSE_LINES.refuse_fighting;
+- src\management.js:7654  if (!fighter || !Engine.retirement.canAdvise(fighter)) return G;
+- src\management.js:7655  if ((fighter.retireAdviceCooldown || 0) > 0) return G;
+- src\management.js:7657  const rate = Engine.retirement.calcAcceptance(fighter, G);
+- src\management.js:7661  const line = Engine.retirement.selectAdviseLine(fighter, G, true, rng);
+- src\management.js:7668  updated = Engine.career.addEvent(updated, { type: 'retain', reason: 'player_retire', season: G.season, week: G.week, age: fighter.age });
+- src\management.js:7672  _pendingRetireAdviseResult: { accepted: true, fighter: updated, line },
+- src\management.js:7675  const line = Engine.retirement.selectAdviseLine(fighter, G, false, rng);
+- src\management.js:7676  let updated = { ...fighter, trust: Math.max(0, (fighter.trust ?? 50) - 3.82), retireAdviceCooldown: 48 };
+- src\management.js:7699  _pendingRetireAdviseResult: { accepted: false, fighter: updated, line },
+- src\management.js:7707  commitRetirements(state, confirmedFighters) {
+- src\management.js:7715  // 1. retire イベント追加 + careerRecord 整備
+- src\management.js:7716  const retiredWithRecords = confirmedFighters.map(c => {
+- src\management.js:7718  f = Engine.career.addEvent(f, { type: 'retire', season: s.season, age: f.age });
+- src\management.js:7723  const retireeIds = new Set(retiredWithRecords.map(f => f.id));
+- src\management.js:7726  const surviving = (s.roster || []).filter(c => !retireeIds.has(c.id));
+- src\management.js:7727  const _newRetiredIds = [...(s.retiredIds || []), ...retiredWithRecords.map(f => f.id).filter(id => !(s.retiredIds || []).includes(id))];
+- src\management.js:7728  const _newRetiredSeasons = { ...(s.retiredSeasons || {}) };
+- src\management.js:7729  retiredWithRecords.forEach(f => { _newRetiredSeasons[f.id] = s.season; });
+- src\management.js:7730  s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, retiredSeasons: _newRetiredSeasons };
+- src\management.js:7731  const unifiedRetiree = retiredWithRecords.find(f => f.id === state.unifiedTitle?.championId);
+- src\management.js:7732  if (unifiedRetiree) s = Engine.unifiedTitle.vacate(s, 'retirement', unifiedRetiree);
+- src\management.js:7734  // 2026-08-31 実セーブ棚で発見: コーチ配属(coachAssign)だけが掃除されず、
+- src\management.js:7736  // coachAssign_stale_refs_removed(遅延修復+「セーブデータ自動修復」ログ)を毎回踏んでいた。
+- src\management.js:7738  if (s.coachAssign) {
+- src\management.js:7740  const cleanedAssign = Object.fromEntries(Object.entries(s.coachAssign).map(([coachId, ids]) => {
+- src\management.js:7741  const kept = (ids || []).filter(id => !retireeIds.has(id));
+- src\management.js:7745  if (_assignChanged) s = { ...s, coachAssign: cleanedAssign };
+- src\management.js:7749  // reconciliation lets retired members survive in a saved faction state.
+- src\management.js:7758  for (const retiree of retiredWithRecords) {
+- src\management.js:7760  if (cid === retiree.id) return false;
+- src\management.js:7761  const key = Engine.relationships._key(cid, retiree.id);
+- src\management.js:7766  s = Engine.relationships.applyFromRoster(s, highBondIds, retiree.id, { min: -15, max: -8 }, { min: 0, max: 0 }, retRelRng);
+- src\management.js:7770  toId: retiree.id,
+- src\management.js:7771  fighterId: retiree.id,
+- src\management.js:7773  mode: 'retire',
+- src\management.js:7780  retiredWithRecords.forEach(rf => {
+- src\management.js:7788  retiredWithRecords.forEach(retiree => { s = Engine.relationships.freezeRelationships(s, retiree.id); });
+- src\management.js:7792  retiredWithRecords.forEach(retiree => {
+- src\management.js:7793  const impacted = Engine.trust.applyDepartureTrustImpact(s.roster, retiree.id, s.relationships, { name: retiree.name, reason: '引退' });
+- src\management.js:7798  retiredWithRecords.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
+- src\management.js:7816  // 10. 新聞 retirement イベント (App 側で _pushNewsEvent する用)
+- src\management.js:7817  retiredWithRecords.forEach(f => {
+- src\management.js:7822  type: 'retirement',
+- src\management.js:7852  sanitizeAssignments(G, coachAssign = G.coachAssign) {
+- src\management.js:7856  const raw = (coachAssign && Array.isArray(coachAssign[coachId])) ? coachAssign[coachId] : [];
+- src\management.js:7866  getCoachAssignees(G, coachId) {
+- src\management.js:7867  const raw = (G.coachAssign && Array.isArray(G.coachAssign[coachId])) ? G.coachAssign[coachId] : [];
+- src\management.js:7886  if (Engine.coach.getCoachAssignees(G, coachId).includes(charId)) return ALL_COACHES.find(c => c.id === coachId);
+- src\management.js:7893  if (current.length >= COACH_MAX_ASSIGN) return { coachAssign: baseAssign, success: false };
+- src\management.js:7894  if (current.includes(charId)) return { coachAssign: baseAssign, success: true };
+- src\management.js:7895  return { coachAssign: { ...baseAssign, [coachId]: [...current, charId] }, success: true };
+- src\management.js:7917  // 雇用コーチ(coachAssign 経由)はこの分岐に入らないので従来どおり。
+- src\management.js:8169  const withAssignees = hired.filter(c => (Engine.coach.getCoachAssignees(G, c.id)).length > 0);
+- src\management.js:8172  const assignees = Engine.coach.getCoachAssignees(G, coach.id);
+- src\management.js:8260  getRetireAdvice(G, fighterId) {
+- src\management.js:8268  const rate = Engine.retirement.calcAcceptance(fighter, G);
+- src\management.js:8272  const text = Engine.coach._buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned, coach);
+- src\management.js:8273  // i18n Stage B P5-2n: text は COACH_VOICE_RETIRE_LINES の1行そのもの(=辞書キー)。
+- src\management.js:8284  _buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned, coach) {
+- src\management.js:8286  const pool = COACH_VOICE_RETIRE_LINES[voiceKey] || COACH_VOICE_RETIRE_LINES.theorist;
+- src\management.js:8288  // 観察ランクE/Dは「わからない」1本。COACH_VOICE_RETIRE_LINES に無い文言なので
+- src\management.js:8513  freeAgents: (state.freeAgents || []).map(refreshFighter),
+- src\management.js:8835  if (!c || c.isRental) return c;   // レンタルは元所属先が管理する
+- src\management.js:8901  const floor = Math.round((notion[s] || 30) * RETIRE_CFG.decayFloor);
+- src\management.js:8963  if (c.isRental) return c;
+- src\management.js:9077  const tops = (roster || []).filter(f => f && !f.retired && !f.isRental)
+- src\management.js:9100  const active = (roster || []).filter(f => !f.retired && !f.isRental && !f.injury && !f.forcedRest)
+- src\management.js:9139  * 引退済 (f.retired === true) は除外。レンタル選手は団体戦力として含める。
+- src\management.js:9146  const active = (roster || []).filter(f => !f.retired && !f.isRental);
+- src\management.js:9214  const playerRoster = (state.roster || []).filter(f => !f.isRental && !f.isAwayChallengeGuest);
+- src\management.js:9238  const ownedAiRoster = aiRoster.filter(f => !f.isRental);
+- src\management.js:9490  orgJoinWeek: 0,      // Phase 3: 団体加入時の絶対週
+- src\management.js:9661  // Step 8: Remaining → FA (cfg.fa slots) + dormant (20人, age分散) + retired (残り)
+- src\management.js:9681  // 残りは引退枠スタート（retiredSeasons を -4〜+5 にばらけさせ、年6人ずつ復帰可能に）
+- src\management.js:9682  const retiredSlice = restPool.slice(DORMANT_INIT_SIZE);
+- src\management.js:9683  const initRetiredIds = retiredSlice.map(c => c.id);
+- src\management.js:9684  const initRetiredSeasons = {};
+- src\management.js:9685  retiredSlice.forEach((c, i) => {
+- src\management.js:9687  initRetiredSeasons[c.id] = -4 + (i % 10);
+- src\management.js:9697  return { dormantPool: dormantAll, initRetiredIds, initRetiredSeasons };
+- src\management.js:9747  coachAssign: {},
+- src\management.js:9780  coachAssign: data.coachAssign || {},
+- src\management.js:9826  coachAssign: { ...(org.coachAssign || {}) },
+- src\management.js:9840  coachAssign: { ...(data.coachAssign || {}) },
+- src\management.js:9934  buildAICoachAssignments(roster, coachIds) {
+- src\management.js:9942  const coachAssign = {};
+- src\management.js:9957  if (!coachAssign[bestCoach.id]) coachAssign[bestCoach.id] = [];
+- src\management.js:9958  coachAssign[bestCoach.id].push(fighter.id);
+- src\management.js:9962  return coachAssign;
+- src\management.js:10003  coachAssign: Engine.rival.buildAICoachAssignments(roster, selected),
+- src\management.js:10012  // Check if current week is a transfer window
+- src\management.js:10013  isTransferWindow(week) {
+- src\management.js:10014  return TRANSFER_CONFIG.windows.includes(week);
+- src\management.js:10016  // Calculate transfer fee (rival-org §7.1)
+- src\management.js:10017  calcTransferFee(fighter, fromOrgTier) {
+- src\management.js:10224  const rosterIds = roster.filter(f => !f.isRental && !f.injury).map(f => f.id);
+- src\management.js:10228  .filter(f => !f.injury && !f.isRental)
+- src\management.js:10300  if (f.injury || f.isRental) return f;
+- src\management.js:10500  const r = roster.filter(f => !f.injury && !f.isRental);
+- src\management.js:10743  if ((nc.slump || nc.motivationLoss) && !nc.injury && !nc.isRental) {
+- src\management.js:11089  let retireType = null;
+- src\management.js:11091  retireType = 'wearInjury';
+- src\management.js:11093  if (!retireType) {
+- src\management.js:11097  if (ceChance > 0 && Engine.rng.float(ceRng) < ceChance) retireType = 'careerEnding';
+- src\management.js:11099  if (retireType && roster.filter(f => !f._pendingInjuryRetire).length > 4) {
+- src\management.js:11100  nc._pendingInjuryRetire = retireType;
+- src\management.js:11129  // AI怪我引退処理: _pendingInjuryRetireフラグのある選手を引退させる
+- src\management.js:11130  const injuryRetirees = roster.filter(f => f._pendingInjuryRetire);
+- src\management.js:11131  if (injuryRetirees.length > 0) {
+- src\management.js:11132  for (const retiree of injuryRetirees) {
+- src\management.js:11134  const activeCount = roster.filter(f => !f._pendingInjuryRetire || f.id === retiree.id).length;
+- src\management.js:11135  if (roster.length <= 4) { delete retiree._pendingInjuryRetire; continue; }
+- src\management.js:11137  const retireType = retiree._pendingInjuryRetire;
+- src\management.js:11138  delete retiree._pendingInjuryRetire;
+- src\management.js:11141  retiree.careerHistory = [...(retiree.careerHistory || []), {
+- src\management.js:11142  type: 'injury_retirement', week: state.week, season: state.season,
+- src\management.js:11143  detail: `${injuryLabel(retiree.injury?.type) || '重傷'}により引退`,
+- src\management.js:11147  if (retiree.orgTimeline) {
+- src\management.js:11148  const lastEntry = retiree.orgTimeline[retiree.orgTimeline.length - 1];
+- src\management.js:11156  roster = roster.filter(f => f.id !== retiree.id);
+- src\management.js:11159  roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI怪我引退' });
+- src\management.js:11161  // midSeasonRetirees蓄積（シーズン末HOF判定用）
+- src\management.js:11163  // 週が失われるので、ここで retire を刻んでから溜める。
+- src\management.js:11164  if (!nextOrgData._midSeasonRetirees) nextOrgData._midSeasonRetirees = [];
+- src\management.js:11165  nextOrgData._midSeasonRetirees.push(
+- src\management.js:11166  Engine.career.ensureRetireEvent(retiree, state.season, state.week, 'injury'));
+- src\management.js:11167  // retiredIds追跡用: 週次で呼び出し元がretiredIds/retiredSeasonsに反映する
+- src\management.js:11168  if (!nextOrgData._weekRetiredIds) nextOrgData._weekRetiredIds = [];
+- src\management.js:11169  nextOrgData._weekRetiredIds.push(retiree.id);
+- src\management.js:11172  if (!nextOrgData._newsInjuryRetirement) nextOrgData._newsInjuryRetirement = [];
+- src\management.js:11175  // peakOVR/wasChampion と合わせて共通ヘルパー(_retirementCareerStats)に寄せる
+- src\management.js:11176  const _injCs = Engine.newspaper._retirementCareerStats(retiree);
+- src\management.js:11177  nextOrgData._newsInjuryRetirement.push({
+- src\management.js:11178  orgName: org.name, fighterId: retiree.id, fighterName: retiree.name,
+- src\management.js:11179  age: retiree.age || 17, ovr: Engine.util.ov(retiree),
+- src\management.js:11180  injuryType: retireType,
+- src\management.js:11181  careerSeasons: retiree.careerSeasons || 1, titleReigns: _injCs.reigns,
+- src\management.js:11186  // 残りの選手から_pendingInjuryRetireフラグをクリア
+- src\management.js:11187  roster = roster.map(f => { if (f._pendingInjuryRetire) { const nf = { ...f }; delete nf._pendingInjuryRetire; return nf; } return f; });
+- src\management.js:11423  const rosterIds = roster.filter(f => f.id !== fId && !f.injury && !f.isRental).map(f => f.id);
+- src\management.js:11433  const closeIds = roster.filter(f => f.id !== fId && !f.isRental && Math.abs((f.ovr || 50) - targetOvr) <= 5).map(f => f.id);
+- src\management.js:11479  if (!state.freeAgents) state.freeAgents = [];
+- src\management.js:11480  state.freeAgents.push(dep);
+- src\management.js:11523  coachAssign: Engine.rival.buildAICoachAssignments(roster, nextOrgData.coaches || []),
+- src\management.js:11530  const allRetiredCharIds = []; // AI引退者ID集約（retiredIds追跡用）
+- src\management.js:11536  const retiredNames = [];
+- src\management.js:11571  const aiRetirees = [];
+- src\management.js:11573  if (Engine.rival.checkRetirement(rng, f)) {
+- src\management.js:11574  retiredNames.push(`${f.name}(${f.age}歳)`);
+- src\management.js:11575  aiRetirees.push(f);
+- src\management.js:11583  aiRetirees.forEach(retiree => {
+- src\management.js:11584  roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI引退' });
+- src\management.js:11592  retiredNames.push(`${d.fighterName}(${d.destination === 'retire' ? '引退' : '退団'})`);
+- src\management.js:11596  const contractRetirees = contractResult.departures.filter(d => d.destination === 'retire').map(d => d._fighter).filter(Boolean);
+- src\management.js:11597  if (contractRetirees.length > 0) aiRetirees.push(...contractRetirees);
+- src\management.js:11599  // Step 5c: 世代交代の余分な放出（retirement-drama-spec v0.2 §6）
+- src\management.js:11606  retiredNames.push(...turn.released.map(f => `${f.name}(${f.age}歳・契約満了)`));
+- src\management.js:11614  if (retiredNames.length > 0) {
+- src\management.js:11615  events.push(`${org.emoji} ${org.name}: ${retiredNames.join('、')}（退団）`);
+- src\management.js:11621  const midSeasonRetirees = aiData._midSeasonRetirees || [];
+- src\management.js:11622  // AI引退者には retire イベントが1件も積まれていなかった。殿堂入りエントリの
+- src\management.js:11624  // 常に 1 になっていた（debut と retire の差で年数を出しているため）。
+- src\management.js:11625  // ensureRetireEvent は冪等なので、既に刻まれている怪我引退分は素通りする。
+- src\management.js:11626  const allRetirees = [...aiRetirees, ...midSeasonRetirees]
+- src\management.js:11627  .map(f => Engine.career.ensureRetireEvent(f, state.season, undefined, 'career'));
+- src\management.js:11628  allRetirees.forEach(f => { if (f && f.id) allRetiredCharIds.push(f.id); });
+- src\management.js:11629  const npcInductees = Engine.awards.checkNpcHallOfFame(allRetirees, org.id, org.name, state);
+- src\management.js:11636  // 引退記事の格付け(Engine.newspaper.retirementGrade)がこれを読む
+- src\management.js:11637  const newsRetirements = aiRetirees.map(f => {
+- src\management.js:11638  const cs = Engine.newspaper._retirementCareerStats(f);
+- src\management.js:11651  _newsRetirements: newsRetirements.length > 0 ? newsRetirements : undefined,
+- src\management.js:11654  _midSeasonRetirees: undefined,
+- src\management.js:11659  return { aiOrgs: Engine.rival.sanitizeAIOrgs(newAiOrgs), events, retiredCharIds: allRetiredCharIds };
+- src\management.js:11669  if (f.injury || f.isRental) continue;
+- src\management.js:11707  destination = 'transfer';
+- src\management.js:11711  const transferF = { ...f, trust: 50, orgJoinWeek: Engine.util.absWeek(state.season + 1, 1) };
+- src\management.js:11713  if (transferF.orgTimeline) {
+- src\management.js:11714  const lastEntry = transferF.orgTimeline[transferF.orgTimeline.length - 1];
+- src\management.js:11719  transferF.orgTimeline = [...transferF.orgTimeline, { orgId: destOrg.id, fromSeason: state.season + 1, fromWeek: 1 }];
+- src\management.js:11721  state.aiOrgs[destOrg.id].roster.push(transferF);
+- src\management.js:11740  destination = (f.age || 17) >= 28 ? 'retire' : 'fa';
+- src\management.js:11744  if (destination !== 'transfer' && f.orgTimeline) {
+- src\management.js:11758  if (!state.freeAgents) state.freeAgents = [];
+- src\management.js:11759  state.freeAgents.push({ ...f, trust: 50 });
+- src\management.js:11779  _fighter: destination === 'retire' ? f : undefined,
+- src\management.js:11786  /** 世代交代の余分な放出（retirement-drama-spec v0.2 §6）
+- src\management.js:11833  .filter(f => !protectedIds.has(f.id) && !f.isRental)
+- src\management.js:11851  if (!state.freeAgents) state.freeAgents = [];
+- src\management.js:11854  state.freeAgents.push(ft);
+- src\management.js:11922  const healthy = roster.filter(f => !f.injury && !f.isRental);
+- src\management.js:12144  const healthy = roster.filter(f => !f.injury && !f.isRental);
+- src\management.js:12152  const healthy = roster.filter(f => !f.injury && !f.isRental);
+- src\management.js:12377  // Retirement check (v1.3-1 ?4)
+- src\management.js:12378  checkRetirement(rng, fighter) {
+- src\management.js:12383  if (getWearBand(wear).retireChance >= 1.0) return true;
+- src\management.js:12390  if (peakOvr > 0 && currentOvr < peakOvr * RETIRE_CFG.peakDropThreshold) {
+- src\management.js:12392  if (fighter.lowPerformanceSeasons >= RETIRE_CFG.voluntarySeasons) return true;
+- src\management.js:12399  let retireChance = quietExitChance(wear);
+- src\management.js:12401  if (RETIRE_CFG.chances[age] != null) retireChance = Math.max(retireChance, RETIRE_CFG.chances[age]);
+- src\management.js:12402  else if (age >= 33) retireChance = 1.0;
+- src\management.js:12403  if (retireChance > 0 && Engine.rng.float(rng) < retireChance) return true;
+- src\management.js:12457  // AI inter-org transfers (rival-spec §7.3 + F1 tier divergence)
+- src\management.js:12459  aiInterTransfer(rng, aiOrgs, leagueElevated) {
+- src\management.js:12507  // v1.0b: Transfer popularity reset
+- src\management.js:12508  const resetTarget = Engine.popularity.applyTransferReset(target);
+- src\management.js:12529  const transferee = sorted[0];
+- src\management.js:12530  if (!transferee || Engine.rng.float(rng) > 0.4) continue;
+- src\management.js:12531  newOrgs[srcOrg.id].roster = srcRoster.filter(f => f.id !== transferee.id);
+- src\management.js:12532  transferee.orgId = org.id;
+- src\management.js:12533  // v1.0b: Transfer popularity reset
+- src\management.js:12534  const resetTransferee = Engine.popularity.applyTransferReset(transferee);
+- src\management.js:12535  Object.assign(transferee, resetTransferee);
+- src\management.js:12536  Engine.rival.pushUniqueFighter(newOrgs[org.id].roster, transferee);
+- src\management.js:12537  events.push(`📋 ${transferee.name}が${srcOrg.name}→${org.name}に移籍`);
+- src\management.js:12549  let freeAgents = [...(state.freeAgents || [])];
+- src\management.js:12563  if (freeAgents.length === 0) break;
+- src\management.js:12565  if (freeAgents.length <= (ROSTER_CFG.faProtectMin || 6)) break;
+- src\management.js:12568  const sortedFA = [...freeAgents].sort((a,b) => Engine.util.ov(b) - Engine.util.ov(a));
+- src\management.js:12583  const acquired = Engine.popularity.applyTransferReset({ ...fa, orgId: org.id, careerStage: 'active' });
+- src\management.js:12585  freeAgents = freeAgents.filter(f => f.id !== fa.id);
+- src\management.js:12591  return { aiOrgs: newAiOrgs, freeAgents, events };
+- src\management.js:12597  let freeAgents = [...(state.freeAgents || [])];
+- src\management.js:12617  if (freeAgents.length === 0) break;
+- src\management.js:12619  if (freeAgents.length <= (ROSTER_CFG.faProtectMin || 6)) break;
+- src\management.js:12625  const sortedFA = [...freeAgents].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+- src\management.js:12667  const acquired = Engine.popularity.applyTransferReset({ ...bestFA, orgId: org.id, careerStage: 'active' });
+- src\management.js:12669  freeAgents = freeAgents.filter(f => f.id !== bestFA.id);
+- src\management.js:12674  return { aiOrgs: newAiOrgs, freeAgents, dormantPool, events };
+- src\management.js:12735  let transfer = Engine.popularity.applyTransferReset({
+- src\management.js:12741  transfer.orgJoinWeek = Engine.util.absWeek(state.season || 1, state.week || 1);
+- src\management.js:12742  transfer = Engine.orgTimeline.transfer(transfer, picked.org.id, state.season || 1, state.week || 1);
+- src\management.js:12743  delete transfer.trustCap;
+- src\management.js:12744  delete transfer.s4Count;
+- src\management.js:12746  transfer = Engine.career.addEvent(transfer, {
+- src\management.js:12747  type: 'transfer',
+- src\management.js:12756  Engine.rival.pushUniqueFighter(orgData.roster, transfer);
+- src\management.js:12768  fighter: transfer,
+- src\management.js:12774  // Returns { roster, freeAgents, heatScore, events } — does NOT mutate G
+- src\management.js:12782  const injResult = Engine.injury.tick(G.roster, G.freeAgents);
+- src\management.js:12785  const freeAgents = injResult.freeAgents;
+- src\management.js:12803  const pendingMotivationRetirements = [];
+- src\management.js:12851  if ((nc.retireAdviceCooldown || 0) > 0) nc = { ...nc, retireAdviceCooldown: nc.retireAdviceCooldown - 1 };
+- src\management.js:12910  if (motResult.selfRetire) {
+- src\management.js:12911  pendingMotivationRetirements.push({ fighterId: nc.id });
+- src\management.js:12914  pendingRelOps.push({ type: 'autoRetire', fighterId: nc.id });
+- src\management.js:12921  // D-1: Rental fighters — injury recovery only, no growth/promo
+- src\management.js:12922  if (nc.isRental) {
+- src\management.js:12925  nc._weekAction = 'rental';
+- src\management.js:13022  if (nc.isRental) {
+- src\management.js:13141  if (c.injury || c.isRental) return c;
+- src\management.js:13159  } else if (op.type === 'autoRetire') {
+- src\management.js:13160  relState = Engine.relationships.applyAutoRetireEffect(relState, op.fighterId, relOpRng);
+- src\management.js:13162  const rosterIdsForScandal = roster.filter(c => !c.isRental && c.id !== op.fighterId).map(c => c.id);
+- src\management.js:13179  if (c.injury || c.isRental || c.popularity <= 10) return c;
+- src\management.js:13190  if (c.injury || c.isRental) return c;
+- src\management.js:13198  // 卒業ログ + 雇用コーチ自動復帰(coachAssign)+ _lastInviteEndWeek 記録。
+- src\management.js:13200  let coachAssignAfterInviteTick = null;
+- src\management.js:13207  coachAssignAfterInviteTick = inviteTick.coachAssign;
+- src\management.js:13314  const ownedRoster = roster.filter(f => !f.isRental);
+- src\management.js:13370  freeAgents,
+- src\management.js:13378  // care-rework v0.1 §3.5: 招聘終了に伴う雇用コーチ自動復帰(coachAssign)
+- src\management.js:13379  if (coachAssignAfterInviteTick) result.coachAssign = coachAssignAfterInviteTick;
+- src\management.js:13381  if (pendingMotivationRetirements.length > 0) result._pendingMotivationRetirements = pendingMotivationRetirements;
+- src\management.js:13792  freeAgents: manage.freeAgents,
+- src\management.js:13799  // care-rework v0.1 §3.5: 招聘終了に伴う雇用コーチ自動復帰(coachAssign)
+- src\management.js:13800  if (manage.coachAssign) s = { ...s, coachAssign: manage.coachAssign };
+- src\management.js:13830  if (manage._pendingMotivationRetirements) s = { ...s, _pendingMotivationRetirements: manage._pendingMotivationRetirements };
+- src\management.js:13906  const rentalResult = Engine.rental.processWeeklyRental(s);
+- src\management.js:13907  s = rentalResult.state;
+- src\management.js:13909  if (rentalResult.events.length > 0) {
+- src\management.js:13910  s = { ...s, gameLog: [...(s.gameLog || []), ...rentalResult.events] };
+- src\management.js:13957  // AI怪我引退IDをretiredIds/retiredSeasonsに反映（5シーズンクールダウン用）
+- src\management.js:13959  const _aiRetiredIds = [];
+- src\management.js:13961  if (orgData._weekRetiredIds) {
+- src\management.js:13962  _aiRetiredIds.push(...orgData._weekRetiredIds);
+- src\management.js:13963  delete orgData._weekRetiredIds;
+- src\management.js:13966  if (_aiRetiredIds.length > 0) {
+- src\management.js:13967  const updIds = [...(s.retiredIds || []), ..._aiRetiredIds.filter(id => !(s.retiredIds || []).includes(id))];
+- src\management.js:13968  const updSeasons = { ...(s.retiredSeasons || {}) };
+- src\management.js:13969  _aiRetiredIds.forEach(id => { updSeasons[id] = s.season; });
+- src\management.js:13970  s = { ...s, retiredIds: updIds, retiredSeasons: updSeasons };
+- src\management.js:13971  if (_unifiedChampionSnapshot && _aiRetiredIds.includes(_unifiedChampionSnapshot.fighter.id)) {
+- src\management.js:13972  s = Engine.unifiedTitle.vacate(s, 'retirement', _unifiedChampionSnapshot.fighter);
+- src\management.js:14115  // D-1: Rental — 費用は前払い済み。週次処理は不要（シーズン末に processSeasonEnd で返却）
+- src\management.js:14118  let fa = [...(s.freeAgents || [])];
+- src\management.js:14162  s = { ...s, freeAgents: fa, dormantPool: pool };
+- src\management.js:14170  s = { ...s, aiOrgs: aiMidResult.aiOrgs, freeAgents: aiMidResult.freeAgents, dormantPool: aiMidResult.dormantPool };
+- src\management.js:14218  const newJoiners = (s.roster || []).filter(c => c.orgJoinWeek === absWeek);
+- src\management.js:14576  // Rental restriction: レンタル選手はタイトルマッチ出場不可
+- src\management.js:14577  const rentalInTitle = validMatches.filter(m => m.isTitle).some(m => {
+- src\management.js:14580  return (l && l.isRental) || (r && r.isRental);
+- src\management.js:14582  if (rentalInTitle) {
+- src\management.js:15064  if (li.retireType) {
+- src\management.js:15065  const retiredMsg = li.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
+- src\management.js:15067  let retiredF = { ...li.newFighter, careerHistory: [...(li.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${injuryLabel(li.injuryInfo.injury.type)}により引退` }] };
+- src\management.js:15068  retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
+- src\management.js:15069  delete retiredF.growthLog;
+- src\management.js:15071  s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== lc.id), lc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [lc.id]: s.season } };
+- src\management.js:15073  s = { ...s, coachAssign: Engine.coach.sanitizeAssignments({ ...s, roster }) };
+- src\management.js:15074  s = Engine.rental.terminateForRetirement(s, lc.id);
+- src\management.js:15076  s = Engine.chronicle.archiveFighter(s, retiredF);
+- src\management.js:15077  s = Engine.chronicle.applySpiritContribution(s, retiredF);
+- src\management.js:15081  injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
+- src\management.js:15082  events.push(`🏁 ${lc.name}(${lc.age}歳)が${retiredMsg}により引退`);
+- src\management.js:15094  if (ri.retireType) {
+- src\management.js:15095  const retiredMsg = ri.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
+- src\management.js:15097  let retiredF = { ...ri.newFighter, careerHistory: [...(ri.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${injuryLabel(ri.injuryInfo.injury.type)}により引退` }] };
+- src\management.js:15098  retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
+- src\management.js:15099  delete retiredF.growthLog;
+- src\management.js:15101  s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== rc.id), rc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [rc.id]: s.season } };
+- src\management.js:15103  s = { ...s, coachAssign: Engine.coach.sanitizeAssignments({ ...s, roster }) };
+- src\management.js:15104  s = Engine.rental.terminateForRetirement(s, rc.id);
+- src\management.js:15106  s = Engine.chronicle.archiveFighter(s, retiredF);
+- src\management.js:15107  s = Engine.chronicle.applySpiritContribution(s, retiredF);
+- src\management.js:15111  injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
+- src\management.js:15112  events.push(`🏁 ${rc.name}(${rc.age}歳)が${retiredMsg}により引退`);
+- src\management.js:15122  const injRetirees = injuryResults.filter(ir => ir.retireType);
+- src\management.js:15123  if (injRetirees.length > 0 && s.relationships) {
+- src\management.js:15124  const rosterIdsForRetire = roster.map(c => c.id);
+- src\management.js:15125  for (const ir of injRetirees) {
+- src\management.js:15126  const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
+- src\management.js:15127  if (!retiredF) continue;
+- src\management.js:15128  const highBondIds = rosterIdsForRetire.filter(cid => {
+- src\management.js:15129  const key = Engine.relationships._key(cid, retiredF.id);
+- src\management.js:15134  s = Engine.relationships.applyFromRoster(s, highBondIds, retiredF.id, { min: -15, max: -8 }, { min: 0, max: 0 }, injRetRelRng);
+- src\management.js:15138  toId: retiredF.id,
+- src\management.js:15139  fighterId: retiredF.id,
+- src\management.js:15141  mode: 'injury_retire',
+- src\management.js:15147  for (const ir of injRetirees) {
+- src\management.js:15148  const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
+- src\management.js:15149  if (!retiredF) continue;
+- src\management.js:15150  roster = Engine.trust.applyDepartureTrustImpact(roster, retiredF.id, s.relationships, { name: retiredF.name, reason: '怪我引退' });
+- src\management.js:15312  if (nc.growthLog && !nc.isRental) {
+- src\management.js:15381  if (nc.growthLog && !nc.isRental) {
+- src\management.js:15507  events.push(`Transfer: ${d.name} -> ${starClaim.orgName}${starClaim.ejected ? ` / out: ${starClaim.ejected.name}` : ''}`);
+- src\management.js:15515  let transferred = { ...fighterWithHist, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
+- src\management.js:15516  transferred = Engine.orgTimeline.transfer(transferred, orgId, s.season, s.week);
+- src\management.js:15517  delete transferred.trustCap; delete transferred.s4Count;
+- src\management.js:15518  org.roster = [...(org.roster || []), transferred];
+- src\management.js:15524  faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
+- src\management.js:15525  s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+- src\management.js:15586  // v1.3-3: Build pending injury retirement presentation data
+- src\management.js:15587  const injuryRetirees = injuryResults.filter(ir => ir.retireType);
+- src\management.js:15588  if (injuryRetirees.length > 0) {
+- src\management.js:15590  const pendingInjuryRetirements = injuryRetirees.map(ir => {
+- src\management.js:15591  const route = ir.retireType === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
+- src\management.js:15593  const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
+- src\management.js:15594  if (!retiredF) {
+- src\management.js:15595  console.warn('[WM] retired fighter lookup failed for injury popup', ir);
+- src\management.js:15598  const { line, category } = Engine.retirement.selectLine(retiredF, route, state, lineRng);
+- src\management.js:15599  const summary = Engine.retirement.buildCareerSummary(retiredF);
+- src\management.js:15600  const wasChampion = state.titles?.world?.championId === retiredF.id;
+- src\management.js:15604  const trust = retiredF.trust ?? 50;
+- src\management.js:15606  const a = retiredF.archetype || 'standard';
+- src\management.js:15607  const archetypeLines = typeof RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE : {};
+- src\management.js:15612  return { fighter: retiredF, route, line, category, summary, injuryType: ir.injury?.type, wasChampion, championWorryLine, farewellKind: ir.farewellKind || null };
+- src\management.js:15614  if (pendingInjuryRetirements.length > 0) {
+- src\management.js:15615  s = { ...s, _pendingInjuryRetirements: pendingInjuryRetirements };
+- src\management.js:15689  // ║  ENGINE: ACE & TRANSFER (Phase C)                         ║
+- src\management.js:15692  // ── C-3: Transfer Fee Calculation ──
+- src\management.js:15693  transfer: {
+- src\management.js:15706  return Math.round(Engine.transfer.calcFee(fighter, { tier: 'B' }) * TRANSFER_CONFIG.retentionCostMultiplier);
+- src\management.js:15709  // C-2: Quarterly transfer window — AI poach from player
+- src\management.js:15710  processTransferWindow(rng, state) {
+- src\management.js:15711  const cfg = TRANSFER_CONFIG;
+- src\management.js:15720  if (fighter.isRental) return;
+- src\management.js:15748  poachAttempts.push({ fighter, org, fee: Engine.transfer.calcFee(fighter, org) });
+- src\management.js:15776  if (poach && poach.fighter && poach.fighter.isRental) {
+- src\management.js:15779  return { state: s, events: ['rental poach offer ignored'], outcome: null };
+- src\management.js:15803  s = { ...s, roster: impactedRoster, coachAssign: Engine.coach.unassignFromCoach(s, fighterIdToRelease) };
+- src\management.js:15805  // Fighter leaves — player gets transfer fee
+- src\management.js:15817  // v1.0b: Transfer popularity reset
+- src\management.js:15818  let resetFighter = Engine.popularity.applyTransferReset({ ...liveFighter, orgId: targetId });
+- src\management.js:15819  // Phase 3: orgJoinWeek設定
+- src\management.js:15820  resetFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
+- src\management.js:15822  resetFighter = Engine.orgTimeline.transfer(resetFighter, targetId, s.season, s.week);
+- src\management.js:15823  // v1.3: Record transfer event
+- src\management.js:15824  resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: 'player', toOrg: poach.org.name, via: 'poach' });
+- src\management.js:15831  const retCost = Engine.transfer.calcRetentionCost(poach.fighter);
+- src\management.js:15835  const retRate = (TRANSFER_CONFIG.retentionRateByTrust || []).find(t => fTrust >= t.min)?.rate || 0.80;
+- src\management.js:15860  s = { ...s, roster: impactedRoster2, coachAssign: Engine.coach.unassignFromCoach(s, fighterIdToRelease) };
+- src\management.js:15861  // Defense failed — forced transfer
+- src\management.js:15870  // v1.0b: Transfer popularity reset
+- src\management.js:15871  let resetFighter = Engine.popularity.applyTransferReset({ ...liveFighter, orgId: targetId });
+- src\management.js:15872  // Phase 3: orgJoinWeek設定
+- src\management.js:15873  resetFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
+- src\management.js:15875  resetFighter = Engine.orgTimeline.transfer(resetFighter, targetId, s.season, s.week);
+- src\management.js:15876  // v1.3: Record forced transfer
+- src\management.js:15877  resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: 'player', toOrg: poach.org.name, via: 'poach_forced' });
+- src\management.js:15911  const fee = Engine.transfer.calcFee(fighter, orgCfg);
+- src\management.js:15928  // Phase 3: orgJoinWeek設定
+- src\management.js:15929  newFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
+- src\management.js:15934  newFighter = Engine.orgTimeline.transfer(newFighter, 'player', s.season, s.week);
+- src\management.js:15935  // v1.3: Record transfer event
+- src\management.js:15936  newFighter = Engine.career.addEvent(newFighter, { type: 'transfer', season: s.season, week: s.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'poach' });
+- src\management.js:15941  transfersThisSeason: (s.transfersThisSeason || 0) + 1
+- src\management.js:15970  return Engine.transfer.calcFee(fighter, orgCfg);
+- src\management.js:16114  // v1.0b: Transfer popularity reset
+- src\management.js:16115  let resetFighter = Engine.popularity.applyTransferReset(newFighter);
+- src\management.js:16116  // Phase 3: orgJoinWeek設定
+- src\management.js:16117  resetFighter.orgJoinWeek = Engine.util.absWeek(state.season, state.week);
+- src\management.js:16121  // v1.3: Record transfer event
+- src\management.js:16122  resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: state.season, week: state.week, fromOrg: orgCfg.name, toOrg: 'player', via: 'negotiate' });
+- src\management.js:16124  const _ownCount = state.roster.filter(f => !f.isRental).length;
+- src\management.js:16131  pendingRosterOverflowSigning: {
+- src\management.js:16150  transferLog: [...(state.transferLog || []), { season: state.season, week: state.week, type: 'negotiate', fighter: fighter.name, from: orgCfg.name, cost: neg.totalCost }]
+- src\management.js:16173  // ── Phase D: Rental System (rental-system-spec) ────────────────
+- src\management.js:16174  rental: {
+- src\management.js:16175  /** Calculate lump-sum rental fee for a fighter (per season × seasons) */
+- src\management.js:16181  ? (RENTAL_CONFIG.tierMul[orgCfgOrNull.tier] || 1.0)
+- src\management.js:16182  : RENTAL_CONFIG.faTierMul;
+- src\management.js:16190  getAvailableRentals(state) {
+- src\management.js:16192  const rentalIds = new Set((state.rentals || []).map(r => r.fighterId));
+- src\management.js:16195  const excluded = id => rentalIds.has(id) || rosterIds.has(id);
+- src\management.js:16202  sorted.slice(RENTAL_CONFIG.topExclude).forEach(f => {
+- src\management.js:16205  for (let s = RENTAL_CONFIG.minSeasons; s <= RENTAL_CONFIG.maxSeasons; s++) {
+- src\management.js:16206  fees[s] = Engine.rental.calcSeasonFee(f, orgCfg, s);
+- src\management.js:16215  /** How many more rentals the player can sign */
+- src\management.js:16217  const ownRoster = (state.roster || []).filter(c => !c.isRental);
+- src\management.js:16218  const max = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+- src\management.js:16219  const current = (state.rentals || []).length;
+- src\management.js:16223  /** Attempt rental negotiation. Returns { success, state, events } */
+- src\management.js:16224  requestRental(rng, state, fighterId, fromSource, fromOrgId, seasons) {
+- src\management.js:16226  const rentals = state.rentals || [];
+- src\management.js:16227  const ownRoster = state.roster.filter(c => !c.isRental);
+- src\management.js:16228  const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+- src\management.js:16229  if (rentals.length >= maxSlots) {
+- src\management.js:16232  if (seasons < RENTAL_CONFIG.minSeasons || seasons > RENTAL_CONFIG.maxSeasons) {
+- src\management.js:16243  fee = Engine.rental.calcSeasonFee(fighter, orgCfg, seasons);
+- src\management.js:16244  // Rival rentals now succeed deterministically once listed and affordable.
+- src\management.js:16246  // Free agent rental — no negotiation needed
+- src\management.js:16247  fighter = (state.freeAgents || []).find(f => f.id === fighterId);
+- src\management.js:16249  fee = Engine.rental.calcSeasonFee(fighter, null, seasons);
+- src\management.js:16256  // Create rental fighter on player roster
+- src\management.js:16258  const rentalOrgName = fromSource === 'rival'
+- src\management.js:16266  ...rentalBase
+- src\management.js:16268  let rentalFighter = {
+- src\management.js:16269  ...rentalBase,
+- src\management.js:16270  isRental: true, rentalFromOrg: fromOrgId || null, rentalSource: fromSource,
+- src\management.js:16271  rentalWeeksLeft: weeksLeft,
+- src\management.js:16273  orgJoinWeek: Engine.util.absWeek(state.season, state.week),
+- src\management.js:16276  rentalFighter = Engine.career.addEvent(rentalFighter, {
+- src\management.js:16277  type: 'rentalIn', season: state.season, week: state.week,
+- src\management.js:16278  toOrg: state.orgName || 'プレイヤー団体', fromOrg: rentalOrgName, seasons,
+- src\management.js:16280  const rentalContract = { fighterId: fighter.id, fromSource, fromOrgId: fromOrgId || null, weeksLeft, fee };
+- src\management.js:16282  roster: [...state.roster, rentalFighter],
+- src\management.js:16283  rentals: [...rentals, rentalContract],
+- src\management.js:16286  // FA source: remove from freeAgents pool
+- src\management.js:16288  s = { ...s, freeAgents: (s.freeAgents || []).filter(f => f.id !== fighterId) };
+- src\management.js:16296  const rentalRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3D, s.season, fighterId));
+- src\management.js:16298  s = Engine.relationships.applyFromRoster(s, existingIds, fighterId, { min: -2, max: 2 }, { min: 0, max: 0 }, rentalRelRng);
+- src\management.js:16300  const recontactEvents = Engine.relationships.checkRecontact(s, fighterId, existingIds, state, rentalRelRng);
+- src\management.js:16308  /** End an active rental immediately when its fighter retires. */
+- src\management.js:16309  terminateForRetirement(state, fighterId) {
+- src\management.js:16310  const contract = (state.rentals || []).find(r => Number(r.fighterId) === Number(fighterId));
+- src\management.js:16326  rentals: (state.rentals || []).filter(r => Number(r.fighterId) !== Number(fighterId)),
+- src\management.js:16331  processWeeklyRental(state) {
+- src\management.js:16332  const rentals = state.rentals || [];
+- src\management.js:16333  if (rentals.length === 0) return { state, events: [] };
+- src\management.js:16339  let freeAgents = [...(s.freeAgents || [])];
+- src\management.js:16341  const rentalRetRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3E, s.season, s.week));
+- src\management.js:16342  for (const contract of rentals) {
+- src\management.js:16343  const rentalF = roster.find(c => c.id === contract.fighterId && c.isRental);
+- src\management.js:16344  if (!rentalF) {
+- src\management.js:16352  const colleagueIds = roster.filter(c => c.id !== contract.fighterId && !c.isRental).map(c => c.id);
+- src\management.js:16353  s = Engine.relationships.applyFromRoster(s, colleagueIds, contract.fighterId, { min: -6, max: -3 }, { min: 0, max: 0 }, rentalRetRelRng);
+- src\management.js:16361  const rentalOutEv = { type: 'rentalOut', season: s.season, week: s.week,
+- src\management.js:16369  const updated = { ...f, popularity: rentalF ? rentalF.popularity : f.popularity, injury: rentalF ? rentalF.injury : f.injury };
+- src\management.js:16370  return Engine.career.addEvent(updated, rentalOutEv);
+- src\management.js:16375  if (rentalF) {
+- src\management.js:16376  const { isRental, rentalFromOrg, rentalSource, rentalWeeksLeft, ...cleanF } = rentalF;
+- src\management.js:16377  const cleanFWithHist = Engine.career.addEvent(cleanF, rentalOutEv);
+- src\management.js:16378  if (freeAgents.length < ROSTER_CFG.fa) {
+- src\management.js:16379  freeAgents = [...freeAgents, cleanFWithHist];
+- src\management.js:16388  events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
+- src\management.js:16391  // Update rentalWeeksLeft on the roster fighter too
+- src\management.js:16392  roster = roster.map(c => c.id === contract.fighterId ? { ...c, rentalWeeksLeft: newWeeksLeft } : c);
+- src\management.js:16395  return { state: { ...s, roster, rentals: remaining, aiOrgs, freeAgents }, events };
+- src\management.js:16730  .filter(r => !usedIds.has(r.id) && !r.injury && !r.isRental)
+- src\management.js:17321  const ptTransfer = BATTLE_POINT_CFG.summit;
+- src\management.js:17324  if (bp[winKey] !== undefined) bp[winKey] = (bp[winKey] || 0) + ptTransfer;
+- src\management.js:17325  if (bp[loseKey] !== undefined) bp[loseKey] = Math.max(-50, (bp[loseKey] || 0) - ptTransfer);
+- src\management.js:17330  events.push(`🏆 頂上決戦: ${winnerName}勝利！ 対戦pt${playerWon ? '+' : '-'}${ptTransfer}`);
+- src\management.js:17556  const ptTransfer = BATTLE_POINT_CFG.summit;
+- src\management.js:17557  if (bp[winnerOrgId] !== undefined) bp[winnerOrgId] = (bp[winnerOrgId] || 0) + ptTransfer;
+- src\management.js:17558  if (bp[loserOrgId] !== undefined) bp[loserOrgId] = Math.max(-50, (bp[loserOrgId] || 0) - ptTransfer);
+- src\management.js:17689  .filter(f => f && !f.injury && !f.isRental && !f.forcedRest && !f.suspended && !f.onLeave
+- src\management.js:17937  // 外さないと、引退ダイアログまでの間 coachAssign に stale 参照が残る
+- src\management.js:17939  s = { ...s, coachAssign: Engine.coach.sanitizeAssignments(s) };
+- src\management.js:17942  // Player retirement check (skip rental fighters — they return to their org)
+- src\management.js:17944  // 引き留めダイアログ後に Engine.retirement.commitRetirements で行う
+- src\management.js:17945  let retirees = [];
+- src\management.js:17947  if (!c.isRental && Engine.rival.checkRetirement(rng, c)) {
+- src\management.js:17948  retirees.push(c);
+- src\management.js:17952  // B「燃え尽きるまで」(retirement-drama-spec v0.2 §3-B)
+- src\management.js:17958  const ft = RETIRE_CFG.farewellTour;
+- src\management.js:17959  const eligible = retirees
+- src\management.js:17968  retirees = retirees.filter(c => !sentIds.has(c.id));
+- src\management.js:17978  // ラストラン期限切れ選手をretirees扱いで統合
+- src\management.js:17979  const allRetirees = [...retirees, ...lastRunExpiredList];
+- src\management.js:17981  if (allRetirees.length > 0) {
+- src\management.js:17984  const pendingRetirements = allRetirees.map(c => {
+- src\management.js:17988  const { line, category } = Engine.retirement.selectLine(f, route, s, lineRng);
+- src\management.js:17989  const summary = Engine.retirement.buildCareerSummary(f, dict);
+- src\management.js:17993  s = { ...s, pendingRetirements };
+- src\management.js:18011  const retired = (aiResult.retiredCharIds || []).includes(unifiedBeforeAISeasonEnd.fighter.id);
+- src\management.js:18012  s = Engine.unifiedTitle.vacate(s, retired ? 'retirement' : 'affiliation', unifiedBeforeAISeasonEnd.fighter);
+- src\management.js:18016  // AIシーズン末引退者のIDをretiredIds/retiredSeasonsに反映（5シーズンクールダウン用）
+- src\management.js:18017  if (aiResult.retiredCharIds && aiResult.retiredCharIds.length > 0) {
+- src\management.js:18018  const _seIds = [...(s.retiredIds || []), ...aiResult.retiredCharIds.filter(id => !(s.retiredIds || []).includes(id))];
+- src\management.js:18019  const _seSeasons = { ...(s.retiredSeasons || {}) };
+- src\management.js:18020  aiResult.retiredCharIds.forEach(id => { _seSeasons[id] = s.season; });
+- src\management.js:18021  s = { ...s, retiredIds: _seIds, retiredSeasons: _seSeasons };
+- src\management.js:18041  const agedFA = (s.freeAgents || []).map(f => {
+- src\management.js:18059  s = { ...s, freeAgents: youngFA, dormantPool: [...(s.dormantPool || []), ...recycledEntries] };
+- src\management.js:18061  s = { ...s, freeAgents: youngFA };
+- src\management.js:18083  let retiredIds = [...(s.retiredIds || [])];
+- src\management.js:18084  let retiredSeasons = { ...(s.retiredSeasons || {}) };
+- src\management.js:18093  if (!retiredIds.includes(e.id)) {
+- src\management.js:18094  retiredIds.push(e.id);
+- src\management.js:18095  retiredSeasons[e.id] = s.season; // 今シーズンからクールダウン開始
+- src\management.js:18100  let fa = [...(s.freeAgents || [])];
+- src\management.js:18104  if (!retiredIds.includes(f.id)) {
+- src\management.js:18105  retiredIds.push(f.id);
+- src\management.js:18106  retiredSeasons[f.id] = s.season;
+- src\management.js:18116  const COOLDOWN = DORMANT_POOL_CFG.retiredCooldown || 5;
+- src\management.js:18124  const eligible = retiredIds.filter(id => {
+- src\management.js:18126  const retSeason = retiredSeasons[id];
+- src\management.js:18130  const sorted = [...eligible].sort((a, b) => (retiredSeasons[a] || 0) - (retiredSeasons[b] || 0));
+- src\management.js:18149  retiredIds = retiredIds.filter(rid => rid !== id);
+- src\management.js:18150  delete retiredSeasons[id];
+- src\management.js:18152  s = { ...s, dormantPool: pool, freeAgents: fa, retiredIds, retiredSeasons };
+- src\management.js:18200  const _preRefix = new Map((s.roster || []).filter(f => !f.isRental)
+- src\management.js:18207  if (f.isRental || !_preRefix.has(f.id)) return;
+- src\management.js:18266  // OffWeek 4: AI inter-org transfers + FA acquisition
+- src\management.js:18267  const transferResult = Engine.rival.aiInterTransfer(rng, s.aiOrgs, s.leagueElevated || false);
+- src\management.js:18268  s = { ...s, aiOrgs: transferResult.aiOrgs };
+- src\management.js:18269  if (transferResult.events.length > 0) events.push(...transferResult.events);
+- src\management.js:18273  s = { ...s, aiOrgs: faResult.aiOrgs, freeAgents: faResult.freeAgents };
+- src\management.js:18287  if ((s.retiredFighters || []).length > 0) {
+- src\management.js:18288  s = Engine.awards.finalizeRetireeBuffer(s);
+- src\management.js:18350  freeAgents: Engine.scout.seasonalAdjust(s.freeAgents, adjRng)
+- src\management.js:18391  if (s.freeAgents) {
+- src\management.js:18392  s = { ...s, freeAgents: s.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+- src\management.js:18418  transfersThisSeason: 0, warThisSeason: false, challengeTrigger: null, pendingEvent: null,
+- src\management.js:18541  const healthy = (s.roster || []).filter(f => !f.injury && !f.isRental);
+- src\management.js:18619  const PRE_WINDOW_WEEKS = TRANSFER_CONFIG.windows.map(w => w - 1); // [11, 23, 35, 47]
+- src\management.js:18626  if (f.isRental) return false;
+- src\management.js:18628  if ((f.popularity || 0) < TRANSFER_CONFIG.poachMinPopularity) return false;
+- src\management.js:18773  // 2026-07-23: 25→24へ移動。transfer window(週24)の早期リターンに先取りされないよう、
+- src\management.js:18774  // warCheck/transferより前に配置する）
+- src\management.js:18793  // NOTE: C-2の早期リターン前に実行。transfer windowと週が重なるため後に置くとスキップされる
+- src\management.js:18802  // C-2: Quarterly transfer window check
+- src\management.js:18803  if (TRANSFER_CONFIG.windows.includes(s.week)) {
+- src\management.js:18805  const tfResult = Engine.transfer.processTransferWindow(trng, s);
+- src\management.js:18809  return { state: { ...s, weekPhase: 'transfer' }, events };
+- src\management.js:18923  orgJoinWeek: 0,        // Phase 3: 団体加入時の絶対週（孤立判定の安全弁）
+- src\management.js:19013  // Complete draft: returns updated state with roster, freeAgents, and dormantPool
+- src\management.js:19037  const freeAgents = allFreeIds.map(id => {
+- src\management.js:19047  const rankings = Engine.ranking.updateRankings({ ...state, roster, freeAgents, dormantPool });
+- src\management.js:19054  freeAgents,
+- src\management.js:19063  { type: 'startup_fa_available', data: { count: freeAgents.length }, s: state.season, w: state.week },
+- src\management.js:19104  const freeAgents = freeIds.map(id => {
+- src\management.js:19127  freeAgents,
+- src\management.js:19164  coachAssign: {},
+- src\management.js:19172  transferLog: [],
+- src\management.js:19173  transfersThisSeason: 0,
+- src\management.js:19178  // v0.9c: Phase C — Transfer
+- src\management.js:19180  // v0.9d: Phase D — Rental & Events
+- src\management.js:19181  rentals: [],
+- src\management.js:19200  retiredFighters: [],  // temporary — cleared after year-end awards
+- src\management.js:19207  retiredIds: [...(rosterResult.initRetiredIds || [])],       // temporary cooldown — retired character IDs (recycled after 5 seasons)
+- src\management.js:19208  retiredSeasons: { ...(rosterResult.initRetiredSeasons || {}) },   // {charId: season} — tracks when each character retired for recycle timing
+- src\management.js:19275  relationshipHistory: { betrayalRecord: [], retiredRivalries: [] },
+- src\management.js:19301  if (initState.freeAgents) {
+- src\management.js:19302  initState.freeAgents = initState.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) }));
+- src\management.js:19574  .filter(f => f && !f.isRental)
+- src\management.js:19840  if (f.isIntrusion || f.isRental) return;
+- src\management.js:19862  (state.retiredFighters || []).forEach(f => {
+- src\management.js:19864  const retiredSeason = (state.retiredSeasons || {})[f.id];
+- src\management.js:19865  if (retiredSeason !== state.season) return;
+- src\management.js:19866  const orgId = f._orgIdAtRetire || 'player';
+- src\management.js:20100  if (!f) f = (state.retiredFighters || []).find(x => x.id === fid);
+- src\management.js:20232  || (state.retiredFighters || []).find(x => x && x.id === fid)
+- src\management.js:20237  || (state.retiredFighters || []).find(x => x && x.id === fid)
+- src\management.js:20240  return (state.retiredFighters || []).find(x => x && x.id === fid) || null;
+- src\management.js:20248  if (state.retiredFighters) all.push(...state.retiredFighters);
+- src\management.js:20519  (state.freeAgents || []).map(f => ({ fighter: f, orgId: null })),
+- src\management.js:20520  (state.retiredFighters || []).map(f => ({ fighter: f, orgId: null }))
+- src\management.js:20729  ...(state.retiredFighters || []),
+- src\management.js:20809  wf = (state.retiredFighters || []).find(f => f.id === winner.fighterId);
+- src\management.js:20931  /** ⑤ 殿堂入り判定: retiredFighters から条件合致者（ポイント制）
+- src\management.js:21141  test: (r, h, f, ctx) => ctx.maxSingleReign >= 10 && ctx.retiredAsChamp },
+- src\management.js:21266  const retiredAsChamp = lastTitleEvent && lastTitleEvent.type !== 'titleLoss';
+- src\management.js:21273  const retire = history.find(e => e.type === 'retire');
+- src\management.js:21274  const careerSeasons = debut && retire ? (retire.season - debut.season + 1) : 1;
+- src\management.js:21278  maxSingleReign, retiredAsChamp,
+- src\management.js:21383  const retiredAsChamp    = entry.retiredAsChamp || false;
+- src\management.js:21409  if (retiredAsChamp && maxSingleReign >= 10) intro = pick(I.champUnbeaten);
+- src\management.js:21463  // debut/retire は post-join で取得（player団体所属期間の起点・終点）
+- src\management.js:21464  const debut = hist.find(e => e.type === 'debut') || hist.find(e => e.type === 'transfer' && e.toOrg === 'player');
+- src\management.js:21465  const retire = hist.find(e => e.type === 'retire');
+- src\management.js:21488  activeSeasonsEnd: retire ? retire.season : state.season,
+- src\management.js:21489  activeYears: `S${debut ? debut.season : (joinS || 1)}〜S${retire ? retire.season : state.season}`,
+- src\management.js:21499  retireOVR: Engine.util.ov(fighter),
+- src\management.js:21500  retireAge: fighter.age || 0,
+- src\management.js:21513  entry.retiredAsChamp    = ctx.retiredAsChamp;
+- src\management.js:21531  *  引退確定(Engine.retirement.commitRetirements)は**表彰式より前**に走る決まりなので、
+- src\management.js:21534  *  取りこぼしだった。retiredFighters と 年代記アーカイブにも同じイベントを届ける。
+- src\management.js:21537  *  今季アーカイブされたエントリ(retiredSeason === ev.season)だけに積む。
+- src\management.js:21563  if (Array.isArray(s.retiredFighters) && s.retiredFighters.length > 0) {
+- src\management.js:21564  s = { ...s, retiredFighters: apply(s.retiredFighters) };
+- src\management.js:21571  if (ev.season != null && entry.retiredSeason !== ev.season) return entry;
+- src\management.js:21583  return (state.retiredFighters || [])
+- src\management.js:21593  checkNpcHallOfFame(aiRetirees, orgId, orgName, state) {
+- src\management.js:21594  return aiRetirees
+- src\management.js:21604  * 殿堂入り確定処理: retiredFighters → allHallOfFame.player 移動
+- src\management.js:21609  // `retiredFighters` is presentation-only. The reincarnation cooldown lives
+- src\management.js:21610  // in retiredIds/retiredSeasons, so a stuck presentation buffer must never
+- src\management.js:21611  // make a retired wrestler remain visible indefinitely.
+- src\management.js:21612  finalizeRetireeBuffer(state, retirees = state.retiredFighters || []) {
+- src\management.js:21613  const targetIds = new Set((retirees || []).map(f => f?.id).filter(id => id != null));
+- src\management.js:21615  const targets = (state.retiredFighters || []).filter(f => targetIds.has(f?.id));
+- src\management.js:21618  const bufferState = { ...state, retiredFighters: targets };
+- src\management.js:21622  : { ...bufferState, retiredFighters: [] };
+- src\management.js:21628  retiredFighters: (state.retiredFighters || []).filter(f => !targetIds.has(f?.id)),
+- src\management.js:21629  retiredIds: finalized.retiredIds,
+- src\management.js:21630  retiredSeasons: finalized.retiredSeasons,
+- src\management.js:21672  // retiredFightersクリア前に全IDをretiredIdsに永続保存（一時的再登場猶予、5シーズン後にリサイクル対象）
+- src\management.js:21673  const newRetiredIds = [...(state.retiredIds || [])];
+- src\management.js:21674  const newRetiredSeasons = { ...(state.retiredSeasons || {}) };
+- src\management.js:21675  (state.retiredFighters || []).forEach(f => {
+- src\management.js:21676  if (f.id && !newRetiredIds.includes(f.id)) newRetiredIds.push(f.id);
+- src\management.js:21677  if (f.id && !newRetiredSeasons[f.id]) newRetiredSeasons[f.id] = state.season;
+- src\management.js:21679  return { ...state, hallOfFame: newHallOfFame, allHallOfFame: allHof, retiredFighters: [], retiredIds: newRetiredIds, retiredSeasons: newRetiredSeasons };
+- src\management.js:21727  * retiredFighters は年末表彰式完了後に空へリセットされる transient フィールドのため、
+- src\management.js:21728  * それが空でも復元できるよう retiredSeasons(永続) + chronicle.fighterArchive(永続) の
+- src\management.js:21740  (state.retiredFighters || []).forEach(f => {
+- src\management.js:21742  const retireEv = hist.find(e => e.type === 'retire' && e.season === season);
+- src\management.js:21743  if (retireEv && !seen.has(f.id)) {
+- src\management.js:21750  const retiredSeasons = state.retiredSeasons || {};
+- src\management.js:21752  Object.keys(retiredSeasons).forEach(idStr => {
+- src\management.js:21753  if (retiredSeasons[idStr] !== season) return;
+- src\management.js:21843  const cand = (G.roster || []).filter(f => !f.isRental).sort((a, b) => ov(b) - ov(a))[0];
+- src\management.js:21927  .filter(f => !f.isRental && (f.careerSeasons || 0) === joinThreshold)
+- src\management.js:22233  * @returns {{ fighter, recovered: bool, selfRetire: bool, duration?: number }} */
+- src\management.js:22235  if (!fighter.motivationLoss) return { fighter, recovered: false, selfRetire: false };
+- src\management.js:22244  return { fighter: { ...fighter, motivationLoss: ml }, recovered: false, selfRetire: true };
+- src\management.js:22255  return { fighter: nf, recovered: true, selfRetire: false, duration };
+- src\management.js:22257  return { fighter: { ...fighter, motivationLoss: ml }, recovered: false, selfRetire: false };
+- src\management.js:22440  const orgJoinWeek = fighter.orgJoinWeek || 0;
+- src\management.js:22442  if (currentAbsWeek - orgJoinWeek >= 8) {
+- src\management.js:22487  if (f.isRental) return f;
+- src\management.js:22545  const seniorCount = roster.filter(f => !f.injury && !f.isRental && (f.trust != null ? f.trust : 50) >= 70).length;
+- src\management.js:22548  const activeRoster = roster.filter(f => !f.injury && !f.isRental);
+- src\management.js:22569  const sameOrgActiveRoster = roster.filter(f => !f.injury && !f.isRental);
+- src\management.js:22665  if (grievanceDelta < 0 && (state.roster || []).some(c => c.id !== updated.id && !c.isRental && Traits.has(c, 'リーダー気質') && !c.injury)) {
+- src\management.js:22721  const ownedRoster = rosterArr.filter(f => !f.isRental);
+- src\management.js:22777  if (f.isRental || f.isUnifiedTitleGuest) return true;
+- src\management.js:22934  !f.isRental && !f.injury && !f.onLeave && (f.trust != null ? f.trust : 50) < 60
+- src\management.js:22940  return roster.some(f => !f.isRental && (f.slump || f.motivationLoss));
+- src\management.js:22954  return roster.some(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+- src\management.js:22960  return roster.some(f => !f.isRental && Engine.shachoshitsu.isLongTermInjured(f));
+- src\management.js:22967  const eligibleIds = new Set(roster.filter(f => !f.isRental && !f.injury && !f.onLeave).map(f => f.id));
+- src\management.js:22982  return roster.filter(f => !f.isRental).length >= minSize;
+- src\management.js:23050  const headcount = (state.roster || []).filter(f => !f.isRental && !f.injury && !f.onLeave).length;
+- src\management.js:23377  // 返り値: { roster, coachAssign, events, inviteEvents }
+- src\management.js:23381  let coachAssign = state.coachAssign ? { ...state.coachAssign } : {};
+- src\management.js:23513  const current = coachAssign[buf.prevCoachId] || [];
+- src\management.js:23516  coachAssign = { ...coachAssign, [buf.prevCoachId]: [...current, f.id] };
+- src\management.js:23530  return { roster, coachAssign, events, inviteEvents, funds, decisionPoints };
+- src\management.js:23535  // 返り値: { roster, coachAssign, events } | { error: 'not_found' }
+- src\management.js:23546  let coachAssign = state.coachAssign ? { ...state.coachAssign } : {};
+- src\management.js:23552  const current = coachAssign[buf.prevCoachId] || [];
+- src\management.js:23555  coachAssign = { ...coachAssign, [buf.prevCoachId]: [...current, fighterId] };
+- src\management.js:23572  return { roster, coachAssign, events };
+- src\management.js:23702  // care-rework v0.1 §3: 招聘(trainer) 専用 — 雇用コーチ退避後の coachAssign / 直近招聘コーチID
+- src\management.js:23703  let coachAssignAfterInvite = null;
+- src\management.js:23840  const current = (state.coachAssign && state.coachAssign[prevCoach.id]) || [];
+- src\management.js:23841  coachAssignAfterInvite = { ...(state.coachAssign || {}), [prevCoach.id]: current.filter(id => id !== fighterId) };
+- src\management.js:24103  const pool = roster.filter(f => !f.isRental && !f.injury && !f.onLeave);
+- src\management.js:24133  const activeCount = Math.max(1, roster.filter(f => !f.isRental).length);
+- src\management.js:24171  const relRosterIds = roster.filter(c => !c.isRental).map(c => c.id);
+- src\management.js:24179  const pairIds = roster.filter(c => !c.isRental && !c.injury && !c.onLeave).map(c => c.id);
+- src\management.js:24196  // care-rework v0.1 §3: 招聘に伴う雇用コーチ退避(coachAssign)と招聘履歴(lastInvitedCoachId)
+- src\management.js:24197  if (coachAssignAfterInvite) result.coachAssign = coachAssignAfterInvite;
+- src\management.js:24456  const roster = (state.roster || []).filter(f => !f.injury && !f.isRental);
+- src\management.js:25210  const r = (state.roster || []).filter(f => !f.injury && !f.isRental);
+- src\management.js:25556  const teammateIds = roster.filter(f => f.id !== fighterId && !f.injury && !f.isRental).map(f => f.id);
+- src\management.js:25708  const rosterIds = roster.filter(f => f.id !== fId && !f.injury && !f.isRental).map(f => f.id);
+- src\management.js:25716  const closeIds = roster.filter(f => f.id !== fId && !f.isRental && Math.abs((f.ovr || 50) - targetOvr) <= 5).map(f => f.id);
+- src\management.js:25810  const roster = (state.roster || []).filter(f => !f.injury && !f.isRental);
+- src\management.js:25952  (state.freeAgents || []).forEach(f => {
+- src\management.js:26300  if (G.freeAgents) {
+- src\management.js:26301  G = { ...G, freeAgents: G.freeAgents.map(c => ({
+- src\management.js:26376  const _capCounted = G.roster.filter(c => !c.isRental && !c.isCRGuest
+- src\management.js:26433  ...(G.freeAgents || []),
+- src\management.js:26630  'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event', 'weekSummary', 'transfer',
+- src\management.js:26671  if ((G.retiredFighters || []).some(f => f.id === title.championId)) {
+- src\management.js:26822  // ランタイムでの検出はコストが高く、一時プール(scoutCandidates/retiredFighters等)の
+- src\management.js:26864  if (f.isRental) return f;
+- src\management.js:27042  const roster = (state.roster || []).filter(c => !c.isRental);
+- src\management.js:27113  attitude = 'transfer';
+- src\management.js:27136  attitude = 'transfer';
+- src\management.js:27428  reactionPhase = 'transfer_retain_success';
+- src\management.js:27431  reactionPhase = 'transfer_retain_fail';
+- src\management.js:27434  reactionPhase = 'transfer_listen';
+- src\management.js:27438  reactionPhase = 'transfer_release';
+- src\management.js:27524  // (retire の場合は下の info.type === 'retire' 分岐で ensureRetireEvent が刻む)
+- src\management.js:27526  if (info.type !== 'retire') {
+- src\management.js:27536  const starClaim = info.type !== 'retire'
+- src\management.js:27550  //   freeAgent / retire: 既存 O-03 挙動 (bond -15〜-8, rivalry +5〜+10)
+- src\management.js:27562  s = Engine.title.transferTitleToOrg(s, 'world', fighter.id, info.orgId);
+- src\management.js:27574  coachAssign: Engine.coach.unassignFromCoach(s, fighter.id),
+- src\management.js:27594  if (info.type === 'retire') {
+- src\management.js:27595  // 「retire は別途 retire type で記録される」と書いてあったが、**どの呼び出し元も
+- src\management.js:27597  // 契約満了・突発退団からの引退だけ retire イベントが無く、殿堂入りの在籍年数と
+- src\management.js:27599  let _retF = Engine.career.ensureRetireEvent(fighter, s.season, s.week,
+- src\management.js:27602  s = { ...s, retiredFighters: [...(s.retiredFighters || []), _retF], retiredIds: [...(s.retiredIds || []).filter(id => id !== fighter.id), fighter.id], retiredSeasons: { ...(s.retiredSeasons || {}), [fighter.id]: s.season } };
+- src\management.js:27610  let transferredFighter = { ...fighterWithHist, orgId, trust: 50, salaryBonus: 0 };
+- src\management.js:27611  transferredFighter = Engine.orgTimeline.transfer(transferredFighter, orgId, s.season, s.week);
+- src\management.js:27612  const newOrg = { ...orgData, roster: [...orgData.roster, transferredFighter] };
+- src\management.js:27625  faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
+- src\management.js:27626  s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+- src\management.js:27639  else s = Engine.unifiedTitle.vacate(s, info.type === 'retire' ? 'retirement' : 'affiliation', fighterWithHist);
+- src\management.js:27653  if (Engine.rng.float(rng) < 0.4 + (wear / 200)) return { type: 'retire' };
+- src\management.js:27893  if (f.injury || f.isRental) return;
+- src\management.js:28324  return (roster || []).filter(f => f && !f.injury && !f.isRental && !f.isIntrusion);
+- src\management.js:28497  return !fighter || fighter.injury || fighter.isRental || fighter.isIntrusion;
+- src\management.js:28834  const transfer = 7;
+- src\management.js:28835  battlePoints[championEntry.orgId] = (battlePoints[championEntry.orgId] || 0) + transfer;
+- src\management.js:28836  battlePoints[runnerUpEntry.orgId] = Math.max(-50, (battlePoints[runnerUpEntry.orgId] || 0) - transfer);
+- src\management.js:29080  return (roster || []).filter(f => !f.injury && !f.isRental);
+- src\management.js:29935  return (roster || []).filter(f => !f.injury && !f.isRental);
+- src\management.js:31162  unifiedTitleVacateRetirement: 140,
+- src\management.js:31164  aiAceRetirement:     160,
+- src\management.js:31165  aiInjuryRetirement:  150,
+- src\management.js:31180  aiRetirement:        100,
+- src\management.js:31194  transferDone:        150,   // P3 §2-6: 移籍・引き抜き成立。主役補正が乗る
+- src\management.js:31195  retirementDeclare:   180,   // P3 §2-6: 引退。自団体には記事が無かった
+- src\management.js:31196  transfer:             50,   // (旧: テンプレも生成側も無い死んだエントリ。互換のため残置)
+- src\management.js:31198  // 自団体の獲得は引退記事(aiAceRetirement 160)と並んで一面を争える高さに置く
+- src\management.js:31293  //  基礎点(retirementDeclare 180 / aiAceRetirement系)はいじらない — §2 の
+- src\management.js:31296  //  入口は2系統(AIシーズン末キュー _newsRetirements / retiredFighters 週次スキャン) +
+- src\management.js:31297  //  aiInjuryRetirement(強度のみ適用・本文は既存の負傷フレーバーを維持)。
+- src\management.js:31301  RETIREMENT_GRADE_CAP: 120,
+- src\management.js:31305  HOF_RETIREMENT_BONUS: 150,
+- src\management.js:31329  composeHallOfFameRetirement(d, hofEntry, dict) {
+- src\management.js:31365  hallOfFameRetirement: true,
+- src\management.js:31373  /** NPC(AI団体所属選手)殿堂入り記事。h = { orgName, name, retireAge, hofLevel, titleReigns,
+- src\management.js:31392  headline: T(NAI.hofHeadline, { org: h.orgName, name: h.name, age: h.retireAge, star: starText }),
+- src\management.js:31398  retirementGrade(d) {
+- src\management.js:31412  bonus = Math.min(Engine.newspaper.RETIREMENT_GRADE_CAP, bonus);
+- src\management.js:31424  _wasChampionAtRetirement(f) {
+- src\management.js:31439  _retirementCareerStats(f) {
+- src\management.js:31444  wasChampion: Engine.newspaper._wasChampionAtRetirement(f),
+- src\management.js:31450  pickRetirementVariant(tier, reigns, usedCounts) {
+- src\management.js:31451  const table = (typeof RETIREMENT_TEMPLATES !== 'undefined') ? RETIREMENT_TEMPLATES[tier] : null;
+- src\management.js:31463  *  i18n Stage B P6-10: 第3引数 dict(=WM_I18N.t 相当)を受ける。RETIREMENT_TEMPLATES
+- src\management.js:31468  _fillRetirementTemplate(t, d, dict) {
+- src\management.js:31564  unifiedTitleVacateRetirement: 'retirement', unifiedTitleVacateAffiliation: 'affiliationLoss',
+- src\management.js:31600  } else if (key === 'retirement') {
+- src\management.js:31807  if (story.type === 'retirementDeclare' || story.type === 'aiAceRetirement'
+- src\management.js:31808  || story.type === 'aiRetirement' || story.type === 'aiInjuryRetirement') {
+- src\management.js:31809  n += Engine.newspaper.retirementGrade(d).bonus;
+- src\management.js:31810  if (d.hallOfFameRetirement) n += Engine.newspaper.HOF_RETIREMENT_BONUS;
+- src\management.js:32148  if (!f || f.id == null || f.isRental) return;
+- src\management.js:32160  type: 'transferDone', characterId: f.id,
+- src\management.js:32172  // AI団体は既に aiRetirement 系を持っているが、**自団体の引退には記事が無かった**
+- src\management.js:32176  const seenRetired = { ...(seen.retired || {}) };
+- src\management.js:32177  (s.retiredFighters || []).forEach(r => {
+- src\management.js:32178  if (!r || r.id == null || seenRetired[String(r.id)]) return;
+- src\management.js:32179  seenRetired[String(r.id)] = 1;
+- src\management.js:32180  const cs = Engine.newspaper._retirementCareerStats(r);
+- src\management.js:32182  type: 'retirementDeclare', characterId: r.id,
+- src\management.js:32196  injury: nextInjury, streak: nextStreak, org: nextOrg, retired: seenRetired,
+- src\management.js:32223  if (!f || f.id == null || f.isRental) return;
+- src\management.js:32239  const nw = last(['debut', 'transfer']);
+- src\management.js:32314  // AI団体ループ(aiAceRetirement/aiRetirement)と業界ニュースキュー(retirementDeclare)の
+- src\management.js:32316  const _retiredVariantCounts = {};
+- src\management.js:32571  // task-77 §A-2: 現行の isAce=ovr>=70 二値と固定文を廃止。格スコア(retirementGrade)の
+- src\management.js:32572  // ティア L/A → aiAceRetirement(160)、B/C → aiRetirement(100) に振り分け、
+- src\management.js:32574  if (aiData._newsRetirements) {
+- src\management.js:32575  aiData._newsRetirements.forEach(ev => {
+- src\management.js:32576  const grade = Engine.newspaper.retirementGrade(ev);
+- src\management.js:32578  const variant = Engine.newspaper.pickRetirementVariant(grade.tier, ev.reigns || 0, _retiredVariantCounts);
+- src\management.js:32580  const hofFeature = Engine.newspaper.composeHallOfFameRetirement(ev, hofEntry, dict);
+- src\management.js:32581  const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, ev, dict)
+- src\management.js:32582  : T(NAI.retirementHeadline, { org: ev.orgName, name: ev.name });
+- src\management.js:32583  const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, ev, dict)
+- src\management.js:32584  : T(NAI.retirementBody, {
+- src\management.js:32586  seasons: ev.seasons || L(NAI.retirementSeasonsUnknown),
+- src\management.js:32588  // i18n P7-58: 3経路とも表示時再構築できる。hofFeatureはcomposeHallOfFameRetirement
+- src\management.js:32591  // (_fillRetirementTemplateはdict(t,vars)相当なのでWM_I18N.t(tpl,vars)で再現できる)。
+- src\management.js:32592  const retireVars = {
+- src\management.js:32597  const fallbackBodyVars = { org: ev.orgName, name: ev.name, age: ev.age, seasons: ev.seasons || NAI.retirementSeasonsUnknown };
+- src\management.js:32599  type: isAce ? 'aiAceRetirement' : 'aiRetirement',
+- src\management.js:32600  priority: isAce ? P.aiAceRetirement : P.aiRetirement,
+- src\management.js:32602  headlineTpl: hofFeature ? null : (variant ? variant.headline : NAI.retirementHeadline),
+- src\management.js:32603  headlineVars: hofFeature ? null : (variant ? retireVars : { org: ev.orgName, name: ev.name }),
+- src\management.js:32604  bodyTpl: hofFeature ? null : (variant ? variant.body : NAI.retirementBody),
+- src\management.js:32605  bodyVars: hofFeature ? null : (variant ? retireVars : fallbackBodyVars),
+- src\management.js:32607  _recompose: hofFeature ? { kind: 'hofRetirement', d: ev, hofEntry } : null,
+- src\management.js:32625  if (aiData._newsInjuryRetirement) {
+- src\management.js:32626  aiData._newsInjuryRetirement.forEach(ev => {
+- src\management.js:32628  // i18n Stage A P3a-2: AI_INJURY_RETIREMENT_TEMPLATES(data.js・監査3-5「同法」)。
+- src\management.js:32632  const T = AI_INJURY_RETIREMENT_TEMPLATES.careerEnding;
+- src\management.js:32637  const T = AI_INJURY_RETIREMENT_TEMPLATES.default;
+- src\management.js:32643  type: 'aiInjuryRetirement',
+- src\management.js:32644  priority: P.aiInjuryRetirement + (isAce ? 20 : 0),
+- src\management.js:32678  const depKey = ev.destination === 'transfer' ? 'transfer'
+- src\management.js:32699  const retirementIds = new Set((aiData._newsRetirements || []).map(ev => String(ev.id)));
+- src\management.js:32703  if (retirementIds.has(String(h.id))) return;
+- src\management.js:32946  const retirementEventIds = new Set(industryEvents
+- src\management.js:32947  .filter(ev => ev && ev.type === 'retirementDeclare' && ev.characterId != null)
+- src\management.js:32972  // ここだけ個別に組み立てる(AI団体ループと同じ _retiredVariantCounts を共有し、
+- src\management.js:32974  if (ev.type === 'retirementDeclare') {
+- src\management.js:32978  const grade = Engine.newspaper.retirementGrade(d);
+- src\management.js:32979  const variant = Engine.newspaper.pickRetirementVariant(grade.tier, d.reigns || 0, _retiredVariantCounts);
+- src\management.js:32990  const hofFeature = Engine.newspaper.composeHallOfFameRetirement(d, hofEntry, dict);
+- src\management.js:32991  const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, d, dict)
+- src\management.js:32992  : T(NAI.playerRetirementHeadline, { org: d.org || '', name: d.name || '' });
+- src\management.js:32993  const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, d, dict)
+- src\management.js:32994  : T(NAI.playerRetirementBody, { name: d.name || '' });
+- src\management.js:32999  const retireVars = {
+- src\management.js:33008  headlineTpl: hofFeature ? null : (variant ? variant.headline : NAI.playerRetirementHeadline),
+- src\management.js:33009  headlineVars: hofFeature ? null : (variant ? retireVars : { org: retireVars.org, name: retireVars.name }),
+- src\management.js:33011  bodyTpl: hofFeature ? null : (variant ? variant.body : NAI.playerRetirementBody),
+- src\management.js:33012  bodyVars: hofFeature ? null : (variant ? retireVars : { name: retireVars.name }),
+- src\management.js:33014  _recompose: hofFeature ? { kind: 'hofRetirement', d, hofEntry } : null,
+- src\management.js:33027  if (ev.type === 'hallOfFame' && retirementEventIds.has(String(ev.characterId))) return;
+- src\management.js:33382  delete org._newsRetirements;
+- src\management.js:33388  delete org._newsInjuryRetirement;
+- src\relationships.js:102  return { betrayalRecord: [], retiredRivalries: [...historyStore] };
+- src\relationships.js:105  return { betrayalRecord: [], retiredRivalries: [] };
+- src\relationships.js:110  retiredRivalries: Array.isArray(historyStore.retiredRivalries) ? historyStore.retiredRivalries : [],
+- src\relationships.js:267  state.freeAgents || [],
+- src\relationships.js:303  (state.freeAgents || []).forEach(c => allChars.push({ id: c.id, orgId: null, personality: c.personality || 'normal', archetype: c.archetype || 'standard', ovr: Engine.util.ov(c) }));
+- src\relationships.js:420  //  既存セーブの全キャラ（roster / aiOrgs / freeAgents / retired）に
+- src\relationships.js:433  (state.freeAgents || []).forEach(fixOne);
+- src\relationships.js:434  (state.retiredFighters || []).forEach(fixOne);
+- src\relationships.js:849  const activeRoster = roster.filter(f => !f.injury && !f.isRental);
+- src\relationships.js:1050  //  レンタル選手の在籍期間はRENTAL_CONFIG.minSeasons〜maxSeasons=1〜4期
+- src\relationships.js:1053  //  RENTAL_RIVALRY_CONFIG(data.js)の倍率で発火確率とrivalry増加量を底上げする。
+- src\relationships.js:1060  const rentalFighters = roster.filter(f => !f.injury && f.isRental);
+- src\relationships.js:1061  if (rentalFighters.length > 0) {
+- src\relationships.js:1062  const eligibleForRentalRivalry = roster.filter(f => !f.injury);
+- src\relationships.js:1063  const rentalRivalryRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 42, state.season, state.week, 0x8ED2));
+- src\relationships.js:1064  const probMult = (RENTAL_RIVALRY_CONFIG && RENTAL_RIVALRY_CONFIG.probMult) || 1;
+- src\relationships.js:1065  const magMult = (RENTAL_RIVALRY_CONFIG && RENTAL_RIVALRY_CONFIG.magnitudeMult) || 1;
+- src\relationships.js:1066  const processedRentalPairs = new Set();
+- src\relationships.js:1068  for (const rf of rentalFighters) {
+- src\relationships.js:1069  for (const other of eligibleForRentalRivalry) {
+- src\relationships.js:1072  if (processedRentalPairs.has(canon)) continue;
+- src\relationships.js:1073  processedRentalPairs.add(canon);
+- src\relationships.js:1084  if (Engine.rng.float(rentalRivalryRng) < 0.035 * probMult) {
+- src\relationships.js:1091  if (Engine.rng.float(rentalRivalryRng) < 0.035 * probMult) {
+- src\relationships.js:1100  if (Engine.rng.float(rentalRivalryRng) < 0.015 * probMult) {
+- src\relationships.js:1101  const awakeRiv = (15 + Engine.rng.int(rentalRivalryRng, 0, 5)) * magMult;
+- src\relationships.js:1102  const awakeBondDrop = -(10 + Engine.rng.int(rentalRivalryRng, 0, 5));
+- src\relationships.js:1109  const awTpl1 = awPool1[Engine.rng.int(rentalRivalryRng, 0, awPool1.length - 1)];
+- src\relationships.js:1114  if (Engine.rng.float(rentalRivalryRng) < 0.015 * probMult) {
+- src\relationships.js:1115  const awakeRiv = (15 + Engine.rng.int(rentalRivalryRng, 0, 5)) * magMult;
+- src\relationships.js:1116  const awakeBondDrop = -(10 + Engine.rng.int(rentalRivalryRng, 0, 5));
+- src\relationships.js:1123  const awTpl2 = awPool2[Engine.rng.int(rentalRivalryRng, 0, awPool2.length - 1)];
+- src\relationships.js:1443  if (c.isRental) continue;
+- src\relationships.js:1498  .filter(c => c.id !== departingId && !c.injury && !c.isRental)
+- src\relationships.js:1521  // 既存の remainingIds (line 1157) は !injury && !isRental のみ。forcedRest を追加して再フィルタ
+- src\relationships.js:1555  // 在籍年数: orgJoinWeek があれば現在週との差から計算（1シーズン=20週前提の概算）
+- src\relationships.js:1557  if (firedFighter.orgJoinWeek != null && state) {
+- src\relationships.js:1559  yearsInOrg = Math.max(0, Math.floor((nowAbs - firedFighter.orgJoinWeek) / 20));
+- src\relationships.js:1627  const colleagues = roster.filter(c => c.id !== firedId && !c.isRental);
+- src\relationships.js:1686  s.freeAgents = decayList(s.freeAgents);
+- src\relationships.js:1695  if (Array.isArray(s.retiredFighters)) s.retiredFighters = decayList(s.retiredFighters);
+- src\relationships.js:1734  const rosterIds = roster.filter(c => !c.isRental).map(c => c.id);
+- src\relationships.js:1782  if (!f || f.injury || f.isRental) continue;
+- src\relationships.js:1977  freezeRelationships(state, retiredFighterId) {
+- src\relationships.js:1986  if (idA === retiredFighterId || idB === retiredFighterId) {
+- src\relationships.js:1996  applyAutoRetireEffect(state, fighterId, rng) {
+- src\relationships.js:2929  //  Engine.orgTimeline.transfer 内で targetOrgId === 'player' の時に呼ばれる
+- src\relationships.js:3032  const masterJoin = master.orgJoinWeek ?? absNow;
+- src\relationships.js:3136  const aTen = absNow - (A.orgJoinWeek ?? absNow);
+- src\relationships.js:3137  const bTen = absNow - (B.orgJoinWeek ?? absNow);
+- src\relationships.js:3206  if (r) return { fighter: r, retired: false };
+- src\relationships.js:3210  if (f) return { fighter: f, retired: false };
+- src\relationships.js:3213  const fa = (state.freeAgents || []).find(c => c.id === id);
+- src\relationships.js:3214  if (fa) return { fighter: fa, retired: false };
+- src\relationships.js:3215  // retired 判定
+- src\relationships.js:3216  const retiredIds = state.retiredIds || [];
+- src\relationships.js:3217  if (retiredIds.includes(id)) return { fighter: null, retired: true };
+- src\relationships.js:3218  const retF = (state.retiredFighters || []).find(f => f && f.id === id);
+- src\relationships.js:3219  if (retF) return { fighter: retF, retired: true };
+- src\relationships.js:3220  return { fighter: null, retired: false };
+- src\relationships.js:3228  if (!aInfo.fighter && !aInfo.retired) { kept.push(entry); continue; }
+- src\relationships.js:3230  if (aInfo.retired) continue;
+- src\relationships.js:3232  if (bInfo.retired) {
+- src\relationships.js:3457  // 引退判定: B が引退 (retiredIds)
+- src\relationships.js:3458  const retiredIds = new Set(state.retiredIds || []);
+- src\relationships.js:3461  if (retiredIds.has(entry.toId)) {
+- src\relationships.js:3644  if (self.isRental) return false;
+- src\relationships.js:3707  const playerRoster = (s.roster || []).filter(f => !f.isRental);
+- src\relationships.js:3805  .filter(f => f && f.id !== picked.selfId && !f.injury && f.status !== 'retired')
+- src\relationships.js:3942  const _healthy = f => f && !f.injury && !f.forcedRest && !f.suspended && !f.isRental;
+- src\relationships.js:3979  .filter(f => f.id !== requester.id && _healthy(f) && (isInverse ? true : !f.isRental))
+- src\relationships.js:4005  .filter(f => f.id !== opponent.id && _healthy(f) && (isInverse ? !f.isRental : true))
+- src\relationships.js:4211  if (f.injury || f.isRental) return;
+- src\relationships.js:4287  const playerRoster = roster.filter(f => !f.injury && !f.isRental);
+- src\relationships.js:4692  if ((fighter?.orgId || fighter?._orgId) === orgId && typeof fighter?.orgJoinWeek === 'number' && fighter.orgJoinWeek > 0) {
+- src\relationships.js:4693  return Math.min(fighter.orgJoinWeek, currentAbsWeek);
+- src\relationships.js:4728  transfer(fighter, newOrgId, season, week) {
+- src\relationships.js:4740  /** state からID指定で fighter オブジェクトを引く（roster/aiOrgs/freeAgents/retiredFighters 横断） */
+- src\relationships.js:4751  const fa = (state.freeAgents || []).find(c => c.id === id);
+- src\relationships.js:4753  const ret = (state.retiredFighters || []).find(c => c.id === id);
+- src\relationships.js:4980  if (f.injury || f.isRental) return;
+- src\relationships.js:5036  const roster = (state.roster || []).filter(f => !f.isRental);
+- src\ui-common.js:357  // U4(2026-07-26): eventPopupOverlay/retirementPopupOverlay/rivalryPopupOverlay/milestoneOverlay は
+- src\ui-common.js:1518  const isRetired = reason && (reason.includes('引退') || reason === 'retired');
+- src\ui-common.js:1519  const departureText = isRetired
+- src\ui-common.js:1623  const releaseCandidates = (G.roster || []).filter(c => !c.isRental && !c.lastRun);
+- src\ui-common.js:1862  const fighter = G.freeAgents.find(c => c.id === charId);
+- src\ui-common.js:1924  const fighter = G.freeAgents.find(c => c.id === charId);
+- src\ui-common.js:1967  const assigned = getCoachAssignees(c.id);
+- src\ui-common.js:2127  const lists = [G.roster || [], G.freeAgents || [], G.retiredFighters || []];
+- src\ui-common.js:2451  // ── v1.3-3: Retirement Popup ────────────────
+- src\ui-common.js:2452  let _retirementPopupQueue = [];
+- src\ui-common.js:2454  let _retirementBgmOn = false;
+- src\ui-common.js:2455  let _retirementPopupCallback = null;
+- src\ui-common.js:2458  * Show retirement popup(s) in sequence.
+- src\ui-common.js:2459  * @param {Array} retirements - Array of { fighter, route, line, summary, injuryType?, wasChampion? }
+- src\ui-common.js:2466  // retiredFighters(引退が確定した選手)だけを見ており、確定前に表彰式を作ると
+- src\ui-common.js:2468  function showRetirementPopups(retirements, onAllDone) {
+- src\ui-common.js:2469  if (!retirements || retirements.length === 0) { if (onAllDone) onAllDone(); return; }
+- src\ui-common.js:2470  _retirementPopupQueue = [...retirements];
+- src\ui-common.js:2471  _retirementPopupCallback = onAllDone || null;
+- src\ui-common.js:2472  _enqueuePopup(() => _renderRetirementPopup());
+- src\ui-common.js:2475  function _renderRetirementPopup() {
+- src\ui-common.js:2477  wmDiag('[WM][retire-popup-render]', { queueLen: _retirementPopupQueue.length });
+- src\ui-common.js:2479  if (_retirementPopupQueue.length === 0) {
+- src\ui-common.js:2480  if (_retirementPopupCallback) { _retirementPopupCallback(); _retirementPopupCallback = null; }
+- src\ui-common.js:2483  const r = _retirementPopupQueue[0];
+- src\ui-common.js:2544  const buttons = [{ label: btnLabel, primary: true, id: 'mdlBRetireClose' }];
+- src\ui-common.js:2559  if (!_retirementBgmOn) {
+- src\ui-common.js:2560  _retirementBgmOn = true;
+- src\ui-common.js:2567  const btn = document.getElementById('mdlBRetireClose');
+- src\ui-common.js:2568  if (btn) btn.addEventListener('click', closeRetirementPopup);
+- src\ui-common.js:2574  function closeRetirementPopup() {
+- src\ui-common.js:2576  const justClosed = _retirementPopupQueue[0];
+- src\ui-common.js:2578  _retirementPopupQueue.shift();
+- src\ui-common.js:2583  if (_retirementPopupQueue.length > 0) {
+- src\ui-common.js:2584  setTimeout(_renderRetirementPopup, 300);
+- src\ui-common.js:2585  } else if (_retirementPopupCallback) {
+- src\ui-common.js:2586  _stopRetirementBgm();
+- src\ui-common.js:2587  const cb = _retirementPopupCallback; _retirementPopupCallback = null; cb();
+- src\ui-common.js:2590  _stopRetirementBgm();
+- src\ui-common.js:2597  if (_retirementPopupQueue.length > 0) {
+- src\ui-common.js:2598  setTimeout(_renderRetirementPopup, 300);
+- src\ui-common.js:2599  } else if (_retirementPopupCallback) {
+- src\ui-common.js:2600  _stopRetirementBgm();
+- src\ui-common.js:2601  const cb = _retirementPopupCallback; _retirementPopupCallback = null; cb();
+- src\ui-common.js:2604  _stopRetirementBgm();
+- src\ui-common.js:2610  function _stopRetirementBgm() {
+- src\ui-common.js:2611  if (!_retirementBgmOn) return;
+- src\ui-common.js:2612  _retirementBgmOn = false;
+- src\ui-common.js:2640  function showRetireAdviseResultPopup(accepted, fighter, line) {
+- src\ui-common.js:2657  ${_mdlBActions([{ label: WM_I18N.t('— 閉 じ る —'), primary: true, id: 'mdlBRetireAdviseClose' }])}
+- src\ui-common.js:2664  const btn = document.getElementById('mdlBRetireAdviseClose');
+- src\ui-common.js:2892  // Best-match snapshots can outlive a transfer or release at season end.  Old
+- src\ui-common.js:2906  ...((typeof G !== 'undefined' && G.retiredFighters) || []),
+- src\ui-common.js:3899  // 担当コーチを逆引き（coachAssign = { coachId: [fighterId, ...] }）
+- src\ui-common.js:3900  const coachAssign = (typeof G !== 'undefined' && G.coachAssign) || {};
+- src\ui-common.js:3902  for (const [cId, fighters] of Object.entries(coachAssign)) {
+- src\ui-common.js:3987  if (history.some(event => ['transfer', 'release', 'contractEnd', 'suddenDeparture', 'retire'].includes(event?.type))) return true;
+- src\ui-common.js:4015  // v1.0c: Get rental greeting quote (personality×archetype)
+- src\ui-common.js:4016  function getRentalQuote(char) {
+- src\ui-common.js:4017  const pool = EVENT_RENTAL_GREETING_LINES;
+- src\ui-common.js:4019  const generic = EVENT_RENTAL_GREETING_GENERIC_LINES || ['よろしくお願いします！'];
+- src\ui-common.js:4033  else if (source === 'free') { const f = G.freeAgents.find(c => c.id === fighterId); if (f) return f; }
+- src\ui-common.js:4043  f = G.freeAgents.find(c => c.id === fighterId);
+- src\ui-common.js:4053  f = (G.retiredFighters || []).find(c => c.id === fighterId);
+- src\ui-common.js:4110  const isFree = G.freeAgents.some(r => r.id === c.id);
+- src\ui-common.js:4196  ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">${WM_I18N.t('🤝 レンタル（残{n}週）', { n: ct ? ct.weeksLeft : '?' })}</span>`; })() : ''}
+- src\ui-common.js:4217  ${(() => { const decline = Engine.retirement.getDeclinePresentation(c); if (decline.stage === 'terminal') return `<span style="color:#e74c3c">${WM_I18N.t('⬇⬇ 限界')}</span>`; if (decline.stage === 'major') return `<span style="color:#e67e22">${WM_I18N.t('⬇ 衰退期')}</span>`; if (decline.stage === 'early') return `<span style="color:#f1c40f">${WM_I18N.t('⚠ 衰え')}</span>`; return ''; })()}
+- src\ui-common.js:4234  ${(isRoster && !c.isRental && (c.trust != null ? c.trust : 50) < 40) ? `<span style="color:#e67e22;font-weight:700">${WM_I18N.t('💭 最近よそよそしい')}</span>` : ''}
+- src\ui-common.js:4274  const canEncourage = isRoster && !c.isRental && !c.injury
+- src\ui-common.js:4303  const canPledge = isRoster && !c.isRental && !c.injury && !c.onLeave && isBold
+- src\ui-common.js:4494  const allChars = [...(G.roster || []), ...(G.freeAgents || []), ...(G.retiredFighters || [])];
+- src\ui-common.js:4656  const typeColor = h.type === 'injury_retirement' ? '#e74c3c' : '#e17055';
+- src\ui-common.js:4657  const typeIcon  = h.type === 'injury_retirement' ? '🏁' : '🩹';
+- src\ui-common.js:4661  // i18n P7-28: detail は怪我名を埋め込んだ完成文のことがある(型はinjury/injury_retirement)。
+- src\ui-common.js:4665  const _hDetail = (h.type === 'injury' || h.type === 'injury_retirement')
+- src\ui-common.js:4680  if (!c.isRental) {
+- src\ui-common.js:4682  const canAdvise = Engine.retirement.canAdvise(c);
+- src\ui-common.js:4694  const cooldown = c.retireAdviceCooldown || 0;
+- src\ui-common.js:4695  const advice = Engine.coach.getRetireAdvice(G, c.id);
+- src\ui-common.js:4699  // i18n Stage B P5-2n: ここは t() を一度も通していなかった(COACH_VOICE_RETIRE_LINES
+- src\ui-common.js:4710  html += `<button onclick="closeFighterPopup();doRetireAdvise(${c.id})" style="font-size:13px;padding:8px 14px;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.4);color:var(--gold);border-radius:6px;width:100%;cursor:pointer;font-weight:700">${WM_I18N.t('🌅 引退を勧める')}</button>`;
+- src\ui-common.js:4724  if (c.isRental) {
+- src\ui-common.js:4738  const _ownRosterCount = G.roster.filter(f => !f.isRental).length;
+- src\ui-common.js:4771  const _scoutOwnCount = G.roster.filter(f => !f.isRental).length;
+- src\ui-common.js:5013  const slotHasRental = (left.isRental || right.isRental);
+- src\ui-common.js:5014  const slotIsTitle = i === 0 && G.titleEstablished && cdOk && (hasChamp || isVacant) && !slotHasRental;
+- src\ui-common.js:5129  const hasRental = [card[topRegularIdx].left, card[topRegularIdx].right].some(id => G.roster.find(c => c.id === id)?.isRental);
+- src\ui-common.js:5130  if (!hasRental) card[topRegularIdx].isTitle = true;
+- src\ui-common.js:5163  // Rental restriction
+- src\ui-common.js:5164  const hasRental = [m.left, m.right].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
+- src\ui-common.js:5165  if (hasRental) { alert(WM_I18N.t('レンタル選手はタイトルマッチに出場できません')); return; }
+- src\ui-common.js:5904  const findF = id => G.roster.find(c => c.id === id) || (G.retiredFighters||[]).find(c => c.id === id);
+- src\ui-common.js:6118  function doRetireAdvise(id) { App.doRetireAdvise(id); }
+- src\ui-common.js:6205  let newFA = [...(G.freeAgents || [])];
+- src\ui-common.js:6321  G = { ...G, aiOrgs: newAiOrgs, freeAgents: newFA, dormantPool: updatedDormant, gameLog: log };
+- src\ui-common.js:6950  let newFA = [...(G.freeAgents || [])];
+- src\ui-common.js:6969  if (newFunds >= ns.finalBid && acquired.length < maxPicks && newRoster.filter(c => !c.isRental).length < (G.rosterCap || 16)) {
+- src\ui-common.js:6971  signed.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
+- src\ui-common.js:6972  signed = Engine.orgTimeline.transfer(signed, 'player', G.season, G.week);
+- src\ui-common.js:6987  const existingIds = newRoster.filter(c => c.id !== clean.id && !c.isRental).map(c => c.id);
+- src\ui-common.js:7057  G = { ...G, roster: newRoster, funds: newFunds, aiOrgs: newAiOrgs, freeAgents: newFA, dormantPool: updatedDormant, gameLog: log };
+- src\ui-common.js:7133  // C-4: Transfer & Ace UI functions
+- src\ui-common.js:7135  Audio.play(accepted ? 'transfer' : 'deselect');
+- src\ui-common.js:7136  const result = Engine.transfer.resolvePoach(G, fighterId, accepted);
+- src\ui-common.js:7169  function finishTransferWindow() {
+- src\ui-common.js:7233  const champAutoEntry = champ && !champ.injury && !champ.isRental;
+- src\ui-common.js:7254  const champAutoEntry = champ && !champ.injury && !champ.isRental;
+- src\ui-common.js:8061  // ── Phase D: Rental UI Functions ──
+- src\ui-common.js:8062  function requestRental(fighterId, fromSource, fromOrgId) {
+- src\ui-common.js:8063  const sel = document.getElementById(`rentalSeasons_${fighterId}`);
+- src\ui-common.js:8073  const f = (G.freeAgents || []).find(c => c.id === fighterId);
+- src\ui-common.js:8076  const feeEl = document.getElementById(`rentalFee_${fighterId}`);
+- src\ui-common.js:8098  showConfirm(msg, WM_I18N.t('レンタルする'), () => _executeRental(fighterId, fromSource, fromOrgId, seasons));
+- src\ui-common.js:8101  function _executeRental(fighterId, fromSource, fromOrgId, seasons) {
+- src\ui-common.js:8102  Audio.play('transfer');
+- src\ui-common.js:8104  const result = Engine.rental.requestRental(rng, G, fighterId, fromSource, fromOrgId || null, seasons);
+- src\ui-common.js:8109  const quote = getRentalQuote(fighter);
+- src\ui-common.js:8132  /** Update displayed rental fee when season selector changes */
+- src\ui-common.js:8133  function updateRentalFee(fighterId) {
+- src\ui-common.js:8134  const sel = document.getElementById(`rentalSeasons_${fighterId}`);
+- src\ui-common.js:8135  const feeEl = document.getElementById(`rentalFee_${fighterId}`);
+- src\ui-common.js:8136  const btnEl = document.getElementById(`rentalBtn_${fighterId}`);
+- src\ui-common.js:8139  const rentals = Engine.rental.getAvailableRentals(G);
+- src\ui-common.js:8140  const r = rentals.find(x => x.fighter.id === fighterId);
+- src\ui-common.js:8149  function unassignFromCoach(charId) { G = { ...G, coachAssign: Engine.coach.unassignFromCoach(G, charId) }; }
+- src\ui-common.js:8152  const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, coachId, charId);
+- src\ui-common.js:8153  if (success) G = { ...G, coachAssign };
+- src\ui-common.js:8154  return { coachAssign, success };
+- src\ui-common.js:8156  function getCoachAssignees(coachId) { return Engine.coach.getCoachAssignees(G, coachId); }
+- src\ui-common.js:8356  || G.retiredFighters?.find(c => c.id === ev.fighterId);
+- src\ui-common.js:8465  || G.retiredFighters?.find(c => c.id === ev.fighterId);
+- src\ui-common.js:8764  candidates = roster.filter(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+- src\ui-common.js:8766  candidates = roster.filter(f => !f.isRental && !f.injury && !f.onLeave);
+- src\ui-common.js:9256  const candidates = roster.filter(f => !f.isRental && !f.injury && !f.onLeave && !f._inviteBuff);
+- src\ui-common.js:9576  const headcount = (state.roster || []).filter(f => !f.isRental && !f.injury).length;
+- src\ui-common.js:9648  if (!fA || !fB || fA.isRental || fB.isRental || fA.injury || fB.injury) return null;
+- src\ui-common.js:10488  // reason: 'retirement' → A（引退）/ 'departure'|'poach' → B（引き抜き）
+- src\ui-common.js:10524  const reason = payload.reason || 'retirement';
+- src\ui-common.js:10526  retirement: { sub: 'FACTION DISSOLVED ・ LEADER RETIRED', caption: 'LEADER RETIRED', lostReason: 'RETIREMENT', line: WM_I18N.t('もう、あの旗の下には戻れない') },
+- src\ui-common.js:10533  const meta = reasonMap[reason] || reasonMap.retirement;
+- src\ui-common.js:13256  .filter(f => f && f.id !== requester.id && !f.isRental
+- src\ui-common.js:13432  const roster = base.filter(f => f && !f.isRental && !f.injury);
+- src\ui-common.js:14780  const available = roster.filter(f => !f.injury && !f.isRental);
+- src\ui-common.js:15460  let available = roster.filter(f => !f.injury && !f.isRental);
+- src\ui-common.js:15482  available = roster.filter(f => !f.injury && !f.isRental);
+- src\ui-common.js:17026  : ['neg-badge-transfer', WM_I18N.t('🚪 移籍志願')];
+- src\ui-common.js:17061  const isTransfer = neg.attitude === 'transfer';
+- src\ui-common.js:17064  const [badgeCls, badgeLabel] = isTransfer
+- src\ui-common.js:17065  ? ['neg-badge-transfer', WM_I18N.t('🚪 移籍志願')]
+- src\ui-common.js:17067  ? [isVoluntaryDecline ? 'neg-badge-raise' : 'neg-badge-transfer',
+- src\ui-common.js:17073  const openPhase = isTransfer
+- src\ui-common.js:17074  ? 'transfer_open'
+- src\ui-common.js:17085  const retentionRaise = isTransfer && fighter
+- src\ui-common.js:17135  infoHtml = `<div class="neg-card-info ${isVoluntaryDecline ? 'neg-card-info-raise' : 'neg-card-info-transfer'}" style="font-size:12px">
+- src\ui-common.js:17139  infoHtml = `<div class="neg-card-info neg-card-info-transfer" style="font-size:12px">
+- src\ui-common.js:17175  if (ci === 0) Audio.play(isTransfer ? 'coin' : 'fanfare');
+- src\ui-common.js:17213  const wallHtml = _negSpeakerHtml(neg, listenText, 'neg-badge-transfer', WM_I18N.t('🚪 移籍志願'), true);
+- src\ui-common.js:17264  Audio.play('transfer');
+- src\ui-common.js:17292  if (r.departureInfo.type === 'retire')      dest = `→ ${WM_I18N.t('引退')}`;
+- src\ui-common.js:17336  Audio.play(departed.length > 0 ? 'transfer' : 'save');
+- src\ui-common.js:17540  const mine = new Set((state.roster || []).filter(f => f && !f.isRental).map(f => f.id));
+- src\ui-common.js:17764  const assign = state.coachAssign || {};
+- src\ui-render.js:110  if (!fighter || fighter.isRental) return false;
+- src\ui-render.js:202  if (!fighter || fighter.injury || fighter.isRental) return;
+- src\ui-render.js:212  if (!c || c.injury || c.isRental || c.onLeave) return;
+- src\ui-render.js:707  <span class="sr-rc-tag sr-retire">${WM_I18N.t('引退')}</span></div>`;
+- src\ui-render.js:1096  const nextRoles = ['to-season-report', 'to-draft', 'to-transfer', 'start-season'];
+- src\ui-render.js:1349  const _ownRosterWk = G.roster.filter(c => !c.isRental);
+- src\ui-render.js:1350  const _rentalRosterWk = G.roster.filter(c => c.isRental);
+- src\ui-render.js:1369  if (c.isRental) {
+- src\ui-render.js:1370  const rentalContract = (G.rentals || []).find(r => r.fighterId === c.id);
+- src\ui-render.js:1371  const rentalWL = rentalContract ? rentalContract.weeksLeft : '?';
+- src\ui-render.js:1372  const rentalAction = c.injury ? WM_I18N.t('療養') : c.condition < 60 ? `🔄${WM_I18N.t('休養')}` : WM_I18N.t('練習');
+- src\ui-render.js:1384  <span style="font-size:10px;color:#f39c12;margin-left:4px">${WM_I18N.t('🤝残{w}週', { w: rentalWL })}</span>
+- src\ui-render.js:1404  <td><span class="sched-tag practice">${rentalAction}</span></td>
+- src\ui-render.js:1518  if (_rentalRosterWk.length > 0) {
+- src\ui-render.js:1519  const _rSlots = RENTAL_CONFIG.getMaxConcurrent(_ownRosterWk.length);
+- src\ui-render.js:1520  html += `<tr><td colspan="10" style="padding:6px 8px;background:rgba(243,156,18,0.07);border-top:1px solid rgba(243,156,18,0.3);border-bottom:1px solid rgba(243,156,18,0.3);color:#f39c12;font-size:12px;font-weight:600">${WM_I18N.t('🤝 レンタル枠 ({a}/{b})', { a: _rentalRosterWk.length, b: _rSlots })}</td></tr>`;
+- src\ui-render.js:1521  _rentalRosterWk.forEach(_renderWeekRow);
+- src\ui-render.js:1666  // ── C-4: TRANSFER WINDOW UI ──
+- src\ui-render.js:1667  else if (G.weekPhase === 'transfer') {
+- src\ui-render.js:1675  const retCost = Engine.transfer.calcRetentionCost(f);
+- src\ui-render.js:1710  html += `<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" onclick="finishTransferWindow()">${WM_I18N.t('次へ進む →')}</button></div>`;
+- src\ui-render.js:1741  const champAutoEntry = champ && !champ.injury && !champ.isRental;
+- src\ui-render.js:1767  if (c.isRental) return false;
+- src\ui-render.js:2191  const decline = Engine.retirement.getDeclinePresentation(c);
+- src\ui-render.js:2360  const aCount = getCoachAssignees(h.id).length;
+- src\ui-render.js:2368  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('担当コーチ')}</span><span class="rd-meta-val"><select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px 6px"${isInjured?' disabled':''}>${opts}</select></span></div>`;
+- src\ui-render.js:2461  const assigned = getCoachAssignees(c.id);
+- src\ui-render.js:2473  staffHtml += `<span class="coach-match-chip" style="background:rgba(122,101,48,0.06);border:1px solid rgba(122,101,48,0.15);border-radius:4px;padding:3px 6px;display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#4a4638">${portraitImg(ch.id, 24, '', false)} ${WM_I18N.pn(ch.name).substring(0,4)}${matchIcon}<span onclick="event.stopPropagation();changeCoachAssign(${ch.id},0)" style="cursor:pointer;color:#a03030;font-size:9px;margin-left:2px" title="${WM_I18N.t('担当解除')}">✕</span></span>`;
+- src\ui-render.js:2479  const unassignedFighters = G.roster.filter(f => !f.isRental && !f.injury && !getCharCoach(f.id));
+- src\ui-render.js:2487  staffHtml += `<select onclick="event.stopPropagation()" onchange="event.stopPropagation();if(this.value)changeCoachAssign(Number(this.value),${c.id});this.value=''" style="font-size:10px;padding:2px 4px;border-radius:4px;background:rgba(122,101,48,0.08);border:1px solid rgba(122,101,48,0.2);color:#7a6530;cursor:pointer">${addOpts}</select>`;
+- src\ui-render.js:2529  const ownFighters = G.roster.filter(c => !c.isRental).sort(_sortFn);
+- src\ui-render.js:2530  const rentalFighters = G.roster.filter(c => c.isRental).sort((a,b) => ov(b) - ov(a));
+- src\ui-render.js:2549  const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:12px"> 🤝</span>' : '';
+- src\ui-render.js:2552  const decline = Engine.retirement.getDeclinePresentation(c);
+- src\ui-render.js:2573  const lowTrustBadge = (!c.isRental && (c.trust != null ? c.trust : 50) < 40)
+- src\ui-render.js:2581  const coachOfChar = c.isRental ? null : getCharCoach(c.id);
+- src\ui-render.js:2590  } else if (!c.isRental && hired.length > 0) {
+- src\ui-render.js:2595  const aC = getCoachAssignees(h.id).length;
+- src\ui-render.js:2602  coachInlineHtml = `<select class="rd-coach-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();changeCoachAssign(${c.id}, Number(this.value))"${c.injury?' disabled':''}>${miniOpts}</select>`;
+- src\ui-render.js:2643  // ── Rental fighters separated section ──
+- src\ui-render.js:2644  if (rentalFighters.length > 0) {
+- src\ui-render.js:2645  const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownFighters.length);
+- src\ui-render.js:2646  html += `<div class="panel-title" style="font-size:14px;margin-top:16px;color:#a06000">🤝 ${WM_I18N.t('レンタル枠（{a}/{b}）', { a: rentalFighters.length, b: maxSlots })}</div>`;
+- src\ui-render.js:2648  rentalFighters.forEach(c => {
+- src\ui-render.js:2652  const contract = (G.rentals || []).find(r => r.fighterId === c.id);
+- src\ui-render.js:3118  const transferAbs = Engine.util.absWeek(eh.transferredSeason || 1, eh.transferredWeek || 1);
+- src\ui-render.js:3123  Math.max(0, Engine.title.RECLAIM_COOLDOWN_WEEKS - (nowAbs - transferAbs)),
+- src\ui-render.js:3286  // Sanitize stale IDs (released/retired/transferred wrestlers still in card)
+- src\ui-render.js:3906  const slotHasRental = [curL, curR].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
+- src\ui-render.js:3907  const canTitle = !slot._crMatchLocked && !slot._unifiedTitleLocked && titleEligible && cdCheck.allowed && !slotHasRental;
+- src\ui-render.js:3927  if (titleEligible && cdCheck.allowed && slotHasRental) tagParts.push(`<span class="sp-match-tag sp-tag-dim">${WM_I18N.t('🤝レンタル不可')}</span>`);
+- src\ui-render.js:4449  const ownFightersForSalary = G.roster.filter(c => !c.isRental);
+- src\ui-render.js:4450  const rentalFightersForSalary = G.roster.filter(c => c.isRental);
+- src\ui-render.js:4457  if (rentalFightersForSalary.length > 0) {
+- src\ui-render.js:4458  html += `<div style="font-size:11px;color:var(--text-dim);margin-top:6px">${WM_I18N.t('🤝 レンタル選手（{names}）は前払い契約のため給与なし', { names: rentalFightersForSalary.map(c => c.name).join('、') })}</div>`;
+- src\ui-render.js:4681  roster = (G.roster || []).filter(c => !c.isRental && !c.injury && !c.forcedRest);
+- src\ui-render.js:4685  roster = aiData ? Engine.rival.dedupeRoster(aiData.roster || []).filter(f => !f.isRental) : [];
+- src\ui-render.js:5046  const _buildDepthNoteV2 = ({ sortedAll, featured, rentalRoster = [], readyOvr = 70 }) => {
+- src\ui-render.js:5060  const rental = (rentalRoster || []).find(f => f && f.isRental) || null;
+- src\ui-render.js:5090  else if (rental) third = WM_I18N.t('レンタルの{a}が戦列を支える。頼もしくもあり、借り物の厚みでもある。', { a: nameForDisplay(rental) });
+- src\ui-render.js:5110  let roster, championId, defenses, orgPop, rentalRoster;
+- src\ui-render.js:5112  roster = (G.roster || []).filter(c => !c.isRental && !c.injury && !c.forcedRest);
+- src\ui-render.js:5113  rentalRoster = (G.roster || []).filter(c => c.isRental);
+- src\ui-render.js:5120  roster = Engine.rival.dedupeRoster(aiData.roster || []).filter(f => !f.isRental);
+- src\ui-render.js:5121  rentalRoster = Engine.rival.dedupeRoster(aiData.roster || []).filter(f => f.isRental);
+- src\ui-render.js:5127  const rosterAll = isPlayer ? (G.roster || []).filter(c => !c.isRental) : roster;
+- src\ui-render.js:5180  const dynamicDepthNote = _buildDepthNoteV2({ sortedAll, featured, rentalRoster, readyOvr: r.depthReadyOvr });
+- src\ui-render.js:5305  const rentalDot = (G.rentals || []).length > 0 ? '<span class="shachoshitsu-tab-dot"></span>' : '';
+- src\ui-render.js:5309  <button class="shachoshitsu-tab${tab === 'rental' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('rental')">${WM_I18N.t('🤝 レンタル')}${rentalDot}</button>
+- src\ui-render.js:5314  const wallRentalHtml = (tab === 'rental') ? _renderShachoshitsuWallRentals() : '';
+- src\ui-render.js:5315  html += `<div class="shachoshitsu-wall" style="background-image:url('../image/shachoshitsu/wall-window-${season}.webp')">${wallRentalHtml}</div>`;
+- src\ui-render.js:5326  } else if (tab === 'rental') {
+- src\ui-render.js:5327  html += _renderShachoshitsuRentalDesk();
+- src\ui-render.js:5354  const ownCount = G.roster.filter(f => !f.isRental).length;
+- src\ui-render.js:5362  } else if (tab === 'rental') {
+- src\ui-render.js:5363  const activeRentals = G.rentals || [];
+- src\ui-render.js:5364  const ownRoster = G.roster.filter(c => !c.isRental);
+- src\ui-render.js:5365  const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+- src\ui-render.js:5366  const remaining = Math.max(0, maxSlots - activeRentals.length);
+- src\ui-render.js:5368  ${WM_I18N.t('レンタル枠')} <b style="color:var(--text-main)">${WM_I18N.t('{n}/{max}枠', { n: activeRentals.length, max: maxSlots })}</b>
+- src\ui-render.js:5391  const ownCount = G.roster.filter(f => !f.isRental).length;
+- src\ui-render.js:5396  return `<div class="shachoshitsu-summary">${WM_I18N.t('所属:')} <b>${WM_I18N.t('{n}/{cap}名', { n: ownCount, cap: rCap })}</b> ｜ FA: <b>${WM_I18N.t('{n}名', { n: G.freeAgents.length })}</b> ｜ ${WM_I18N.t('紹介枠:')} <b>${WM_I18N.t('{n}名', { n: visibleFAIds.length })}</b>${WM_I18N.t('（{q}入替）', { q: qLabel })}</div>`;
+- src\ui-render.js:5398  if (tab === 'rental') {
+- src\ui-render.js:5399  const activeRentals = G.rentals || [];
+- src\ui-render.js:5400  const ownRoster = G.roster.filter(c => !c.isRental);
+- src\ui-render.js:5401  const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+- src\ui-render.js:5402  const visibleRentalIds = Engine.util.getVisibleRentalIds(G);
+- src\ui-render.js:5403  return `<div class="shachoshitsu-summary">${WM_I18N.t('レンタル枠:')} <b>${WM_I18N.t('{n}/{max}枠', { n: activeRentals.length, max: maxSlots })}</b> ｜ ${WM_I18N.t('紹介枠:')} <b>${WM_I18N.t('{n}名', { n: visibleRentalIds.length })}</b>${WM_I18N.t('（四半期入替）')}</div>`;
+- src\ui-render.js:5577  const allVisibleFA = [...G.freeAgents]
+- src\ui-render.js:5600  const _ownCount = G.roster.filter(f => !f.isRental).length;
+- src\ui-render.js:5692  function _renderShachoshitsuRentalDesk() {
+- src\ui-render.js:5693  const activeRentals = G.rentals || [];
+- src\ui-render.js:5694  const ownRoster = G.roster.filter(c => !c.isRental);
+- src\ui-render.js:5695  const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
+- src\ui-render.js:5696  const remainingSlots = Math.max(0, maxSlots - activeRentals.length);
+- src\ui-render.js:5707  const rentals = Engine.rental.getAvailableRentals(G);
+- src\ui-render.js:5708  const visibleRentalIds = Engine.util.getVisibleRentalIds(G);
+- src\ui-render.js:5709  const visibleRentals = rentals.filter(r => visibleRentalIds.includes(r.fighter.id));
+- src\ui-render.js:5711  if (visibleRentals.length === 0) {
+- src\ui-render.js:5716  const sortDir = window._rentalSortDir || 'asc';
+- src\ui-render.js:5717  const sorted = [...visibleRentals].sort((a, b) => {
+- src\ui-render.js:5724  html += `<div class="shachoshitsu-rental-sort">
+- src\ui-render.js:5726  <button onclick="window._rentalSortDir=window._rentalSortDir==='asc'?'desc':'asc';renderShachoshitsu()">${WM_I18N.t('💰 費用 {order} {arrow}', { order: sortDir === 'asc' ? WM_I18N.t('安い順') : WM_I18N.t('高い順'), arrow })}</button>
+- src\ui-render.js:5728  html += '<div class="shachoshitsu-rental-grid">';
+- src\ui-render.js:5733  const selectId = `rentalSeasons_${f.id}`;
+- src\ui-render.js:5738  <div class="shachoshitsu-rental-mini" style="animation-delay:${idx * 0.04}s">
+- src\ui-render.js:5739  <div class="shachoshitsu-rental-mini-tag">${srcLabel}</div>
+- src\ui-render.js:5740  <div class="shachoshitsu-rental-mini-row">
+- src\ui-render.js:5741  ${portraitImg(f.id, 40, '', 'rental')}
+- src\ui-render.js:5743  <div class="shachoshitsu-rental-mini-name">${WM_I18N.pn(f.name)}</div>
+- src\ui-render.js:5746  <div class="shachoshitsu-rental-mini-ovr" style="color:${_ovrColor(Engine.util.ov(f)).color}">${Engine.util.ov(f)}<span>OVR</span></div>
+- src\ui-render.js:5748  <div class="shachoshitsu-rental-mini-fee">
+- src\ui-render.js:5749  <b><span id="rentalFee_${f.id}">${feeFor1}</span>${WM_I18N.t('万')}</b>${WM_I18N.t('/期')}
+- src\ui-render.js:5750  <select id="${selectId}" onchange="updateRentalFee(${f.id})">
+- src\ui-render.js:5754  <button id="rentalBtn_${f.id}" onclick="requestRental(${f.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" ${G.funds >= feeFor1 ? '' : 'disabled'}>${WM_I18N.t('🤝 契約')}</button>
+- src\ui-render.js:5757  html += '</div>'; // rental-grid
+- src\ui-render.js:5762  function _renderShachoshitsuWallRentals() {
+- src\ui-render.js:5763  const activeRentals = G.rentals || [];
+- src\ui-render.js:5764  if (activeRentals.length === 0) return '';
+- src\ui-render.js:5765  let html = '<div class="shachoshitsu-wall-rental-strip">';
+- src\ui-render.js:5766  activeRentals.forEach(contract => {
+- src\ui-render.js:5767  const rentalF = G.roster.find(c => c.id === contract.fighterId);
+- src\ui-render.js:5772  const open = rentalF ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(rentalF.id)},'rental',true)"` : '';
+- src\ui-render.js:5773  html += `<div class="shachoshitsu-wall-rental-card"${open}>
+- src\ui-render.js:5774  <div class="name">${rentalF ? rentalF.name : WM_I18N.t('不明')} ← ${fromLabel}</div>
+- src\ui-render.js:6743  const assigned = getCoachAssignees(c.id);
+- src\ui-render.js:6895  // Data Transfer section
+- src\ui-render.js:6984  function changeCoachAssign(charId, newCoachId) {
+- src\ui-render.js:6995  const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, newCoachId, charId);
+- src\ui-render.js:6998  G = { ...G, coachAssign };
+- src\ui-render.js:7000  G = { ...G, coachAssign: unassigned };
+- src\ui-render.js:7287  transferDone: 'contract', retirementDeclare: 'press',
+- src\ui-render.js:7594  const inFA = (state.freeAgents || []).find(c => c.id === id);
+- src\ui-render.js:7596  const inRet = (state.retiredFighters || []).find(c => c.id === id);
+- src\ui-render.js:7903  if (r.kind === 'hofRetirement') {
+- src\ui-render.js:7904  const feature = Engine.newspaper.composeHallOfFameRetirement(r.d, r.hofEntry, WM_I18N.t);
+- src\ui-render.js:8331  function _npV3IsHofRetirement(story) {
+- src\ui-render.js:8333  const retirementTypes = ['retirementDeclare', 'aiAceRetirement', 'aiRetirement', 'aiInjuryRetirement'];
+- src\ui-render.js:8334  if (!retirementTypes.includes(story.type)) return false;
+- src\ui-render.js:8335  return !!(story.newsData?.hallOfFameRetirement || _npV3HofEntry(story.characterId));
+- src\ui-render.js:8340  function _npV3HallOfFameRetirement(ts, seasonNum, weekNum) {
+- src\ui-render.js:8365  const headline = data.hallOfFameRetirement
+- src\ui-render.js:8370  return `<article class="np-v3-hof-retirement">
+- src\ui-render.js:8409  if (_npV3IsHofRetirement(ts)) {
+- src\ui-render.js:8410  return _npV3HallOfFameRetirement(ts, seasonNum, weekNum);
+- src\ui-render.js:8541  if (_npV3IsHofRetirement(wp.topStory)) {
+- src\ui-render.js:10208  ...(G.retiredFighters || [])
+- src\ui-render.js:10210  .map(f => ({ ...f, _orgId: 'retired', _orgName: WM_I18N.t('引退'), _orgTier: 'retired' })),
+- src\ui-render.js:10306  const tierBadge = f._orgTier !== 'player' && f._orgTier !== 'fa' && f._orgTier !== 'retired'
+- src\ui-render.js:10441  add(G.freeAgents, WM_I18N.t('フリー'), true);
+- src\ui-render.js:10442  add(G.retiredFighters, WM_I18N.t('引退'));
+- src\ui-render.js:10927  // 対抗戦戦績（既存エントリはwarWins未保存→retiredFightersからフォールバック）
+- src\ui-render.js:10930  const _rf = (G.retiredFighters || []).find(f => f.id === h.id);
+- src\ui-render.js:10951  const retireInfo = h.retireOVR
+- src\ui-render.js:10952  ? `<div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('引退時OVR {ovr}{age}', { ovr: h.retireOVR, age: h.retireAge ? WM_I18N.t('（{age}歳）', { age: h.retireAge }) : '' })}</div>`
+- src\ui-render.js:10980  ${retireInfo}
+- src\ui-render.js:11774  .chron-prologue-card.retired,
+- src\ui-render.js:11860  // founder の最新スナップショット (roster / archive / retiredFighters のいずれかから取得)
+- src\ui-render.js:11864  const inRetired = (G.retiredFighters || []).find(f => f.id === id);
+- src\ui-render.js:11866  const src = inRoster || inArchive || inRetired || raw || { id, name: '?' };
+- src\ui-render.js:11931  const cardCls = `chron-prologue-card${isChamp ? ' champion' : ''}${isIdol ? ' idol' : ''}${f.state === 'retired' ? ' retired' : ''}${f.state === 'departed' ? ' departed' : ''}`;
+- src\ui-render.js:11937  if (f.state === 'retired') badge = `<div class="chron-prologue-badge muted">${WM_I18N.t('引退')}</div>`;
+- src\ui-render.js:12788  const history = historyStore.retiredRivalries;
+- src\ui-render.js:14582  else if (_relmapOrgFilter === 'fa') addRoster(G.freeAgents);
+- src\ui-render.js:14595  (G.freeAgents || []).forEach(c => { if (c && c.id != null) liveIds.add(c.id); });
+- src\ui-render.js:14619  (G.freeAgents || []).forEach(c => { if (c && c.id != null) ovrMap.set(c.id, Engine.util.ov(c)); });
+- src\ui-render.js:15393  ? (G.roster || []).filter(c => !c.isRental)
+- src\ui-render.js:15605  ? (G.roster || []).filter(c => !c.isRental)
+
+## [MEDIUM] Season Transition (season-stats)
+
+Season summaries break when one route updates only part of the state.
+
+- src\app.js:1771  return (state.seasonHistory || []).some(season => (season?.rank || 99) === 1);
+- src\app.js:1781  check: G => (G.seasonStats?.totalRevenue || 0) > 0 || G.seasonHistory?.some(s => s.totalRevenue > 0) },
+- src\app.js:2188  if (G.seasonStats === undefined) G = { ...G, seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 }, seasonHistory: [], fundsHistory: [G.funds] };
+- src\app.js:2189  // 古いセーブで seasonStats のフィールドが欠落している場合に備えて補完（NaN/undefined→0 防止）
+- src\app.js:2191  const _ssDefaults = { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:G.funds||0, peakPop:G.orgPop||0, eventsWon:0, eventsLost:0 };
+- src\app.js:2192  const _fixedSS = { ..._ssDefaults, ...(G.seasonStats || {}) };
+- src\app.js:2194  ['wins','losses','draws','showCount','totalRevenue','totalExpense','bestMQ','peakFunds','peakPop','eventsWon','eventsLost'].forEach(k => {
+- src\app.js:2197  G = { ...G, seasonStats: _fixedSS };
+- src\app.js:2613  const endingClearedSeason = G.endingClearedSeason || ((G.seasonHistory || []).find(s => (s?.rank || 99) === 1)?.season) || null;
+- src\app.js:3011  'allHallOfFame', 'lastAwards', 'seasonHistory', 'chronicle', 'prologue', 'mvpRace'].forEach(key => _mqFixWalk(G[key]));
+- src\app.js:3228  const peakPopularityOf = (f, fallbackSeason) => {
+- src\app.js:3230  const peakPopularity = Math.round(cr.peakPopularity ?? f.peakPopularity ?? f.popularity ?? f.pop ?? 0);
+- src\app.js:3231  const peakPopularitySeason = cr.peakPopularitySeason || f.peakPopularitySeason || fallbackSeason || 1;
+- src\app.js:3232  return { peakPopularity, peakPopularitySeason };
+- src\app.js:3250  const { peakPopularity, peakPopularitySeason } = peakPopularityOf(h, end);
+- src\app.js:3259  peakPopularity,
+- src\app.js:3260  peakPopularitySeason,
+- src\app.js:3271  peakPopularity,
+- src\app.js:3272  peakPopularitySeason
+- src\app.js:3291  const { peakPopularity, peakPopularitySeason } = peakPopularityOf(f, end);
+- src\app.js:3300  peakPopularity,
+- src\app.js:3301  peakPopularitySeason,
+- src\app.js:3312  peakPopularity,
+- src\app.js:3313  peakPopularitySeason
+- src\app.js:8810  const stats = { ...G.seasonStats };
+- src\app.js:9248  G = { ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
+- src\app.js:11042  const stats = { ...G.seasonStats };
+- src\app.js:11047  if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
+- src\app.js:11048  if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
+- src\app.js:11049  const fh = [...(G.fundsHistory || []), result.state.funds];
+- src\app.js:11050  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+- src\app.js:11806  const stats = { ...G.seasonStats };
+- src\app.js:11811  if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
+- src\app.js:11812  if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
+- src\app.js:11813  const fh = [...(G.fundsHistory || []), result.state.funds];
+- src\app.js:11814  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+- src\app.js:12765  // 初年度のoffWeek 1ではseasonHistoryはまだ空。ここで復旧を拒むと、保存・演出
+- src\app.js:15227  const bestMQ = G.seasonStats?.bestMQ || 0;
+- src\app.js:15228  const histBest = (G.seasonHistory || []).reduce((m, s) => Math.max(m, s.bestMQ || 0), 0);
+- src\app.js:15663  const evStats = { ...(G.seasonStats || {}) };
+- src\app.js:15736  G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+- src\app.js:16276  const stats = { ...(G.seasonStats || {}) };
+- src\app.js:16282  G = { ...G, ...s, seasonStats: stats, weekPhase: 'showExec', gameLog: [...G.gameLog, ...events] };
+- src\app.js:16343  const stats = { ...G.seasonStats };
+- src\app.js:16348  const fh = [...(G.fundsHistory || []), result.state.funds];
+- src\app.js:16349  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+- src\app.js:16498  const stats = { ...G.seasonStats };
+- src\app.js:16503  if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
+- src\app.js:16504  if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
+- src\app.js:16505  const fh = [...(G.fundsHistory || []), result.state.funds];
+- src\app.js:16506  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+- src\data.js:19614  'OVR{peakOVR}・人気{peakPop}に達したこの選手の在位は、{eraTag}と呼ぶに相応しい時代を作った。'
+- src\data.js:19655  '人気{peakPop}を記録したこの選手は、{org}にとってチケットそのものだった。',
+- src\data.js:19851  '{surname}は人気{peakPop}を記録し、客足を背負ったスターだった。',
+- src\lang-en-templates.js:173  "OVR{peakOVR}・人気{peakPop}に達したこの選手の在位は、{eraTag}と呼ぶに相応しい時代を作った。": "Overall {peakOVR}, Popularity {peakPop} — her reign built a stretch that earns the name: {eraTag}.",
+- src\lang-en-templates.js:1140  "{surname}は人気{peakPop}を記録し、客足を背負ったスターだった。": "{surname} reached Popularity {peakPop} and was the star the gate rested on.",
+- src\lang-en-templates.js:2030  "人気{peakPop}を記録したこの選手は、{org}にとってチケットそのものだった。": "At Popularity {peakPop}, she was the ticket itself for {org}.",
+- src\management.js:2183  return Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(updated, 'world', G.season, G.week, { orgName: titleOrgName, defeatedName: prev?.name }), G.season);
+- src\management.js:2226  updated = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(updated, 'world', G.season, G.week, newDefenses, { orgName: titleOrgName, lastChallengerName: opts.challengerName }), G.season);
+- src\management.js:2538  return Engine.career.updatePeakPopularity(updated, state.season);
+- src\management.js:3072  return Engine.career.updatePeakPopularity({
+- src\management.js:4009  return { history: [], totalTitleWins: 0, totalDefenses: 0, peakOVR: 0, peakOVRSeason: 0, peakPopularity: 0, peakPopularitySeason: 0, juniorTournamentWins: 0, juniorTournamentAppearances: 0, ppvMainEventWins: 0 };
+- src\management.js:4015  if (cr.peakPopularity != null && cr.peakPopularitySeason != null) return fighter;
+- src\management.js:4021  peakPopularity: cr.peakPopularity ?? fallbackPop,
+- src\management.js:4022  peakPopularitySeason: cr.peakPopularitySeason ?? cr.peakOVRSeason ?? fighter.careerSeasons ?? 0,
+- src\management.js:4129  updatePeakPopularity(fighter, season) {
+- src\management.js:4132  if (pop > (f.careerRecord.peakPopularity || 0)) {
+- src\management.js:4133  return { ...f, careerRecord: { ...f.careerRecord, peakPopularity: pop, peakPopularitySeason: season } };
+- src\management.js:4138  return Engine.career.updatePeakPopularity(Engine.career.updatePeakOVR(fighter, season), season);
+- src\management.js:4913  if ((ace.peakPopularity || 0) >= 90) return 'popStar';
+- src\management.js:5076  peakPop: ace.peakPopularity || 0
+- src\management.js:5094  peakPop: String(ctx.peakPop),
+- src\management.js:5255  _peakPopularityOf(fighter, fallbackSeason) {
+- src\management.js:5257  const peakPopularity = Math.round(cr.peakPopularity ?? fighter?.peakPopularity ?? fighter?.popularity ?? fighter?.pop ?? 0);
+- src\management.js:5258  const peakPopularitySeason = cr.peakPopularitySeason || fighter?.peakPopularitySeason || fallbackSeason || 1;
+- src\management.js:5259  return { peakPopularity, peakPopularitySeason };
+- src\management.js:5281  const { peakPopularity, peakPopularitySeason } = Engine.chronicle._peakPopularityOf(fighter, careerSeasonsEnd);
+- src\management.js:5301  peakPopularity, peakPopularitySeason,
+- src\management.js:5310  peakPopularity, peakPopularitySeason,
+- src\management.js:5359  const popN = (f.peakPopularity || 0) / 100;
+- src\management.js:5408  /** 同様にその時代の人気を取得 (snapshots 優先 / fallback で peakPopularity) */
+- src\management.js:5410  if (focusSeason == null) return fighter.peakPopularity || 0;
+- src\management.js:5418  return fighter.peakPopularity || 0;
+- src\management.js:5426  const pop = focus != null ? Engine.chronicle._estimatedPopularityAt(f, focus) : (f.peakPopularity || 0);
+- src\management.js:5546  const peak = Engine.util.clamp(f.peakOVRSeason || f.peakPopularitySeason || careerEnd, careerStart, careerEnd);
+- src\management.js:5584  const { peakPopularity, peakPopularitySeason } = Engine.chronicle._peakPopularityOf(f, state.season || 1);
+- src\management.js:5611  peakPopularity,
+- src\management.js:5612  peakPopularitySeason,
+- src\management.js:5623  peakPopularity,
+- src\management.js:5624  peakPopularitySeason,
+- src\management.js:5764  // 才能スコア = peakOVR*0.5 + currentOVR(focusSeason)*0.3 + peakPop*0.2
+- src\management.js:5773  + (c.peakPopularity || 0) * 0.2
+- src\management.js:5780  // 看板スター (idol): 0〜1 名。peakPopularity ≥ 80 の最高人気、stage 不問
+- src\management.js:5782  .filter(c => !usedIds.has(c.id) && (c.peakPopularity || 0) >= 80)
+- src\management.js:5783  .sort((a, b) => (b.peakPopularity || 0) - (a.peakPopularity || 0))[0];
+- src\management.js:5840  else if (aces.some(a => (a.peakPopularity || 0) >= 90 && (a.peakOVR || 0) < 85)) category = 'idol';
+- src\management.js:6242  const sh = (state && state.seasonHistory) || [];
+- src\management.js:6532  const peakPop = peer.peakPopularity || 0;
+- src\management.js:6593  const popTier = peakPop >= 90 ? 'star' : peakPop >= 75 ? 'high' : peakPop >= 55 ? 'mid' : 'low';
+- src\management.js:6604  const openVars = { surname, debutSeason, peakPop, peakOVR, styleJa, org };
+- src\management.js:6736  const peakOrgPop = chars.reduce((mx, c) => Math.max(mx, c.peakPopularity || 0), 0);
+- src\management.js:6841  peakPopularity: a.peakPopularity,
+- src\management.js:6857  peakPopularity: p.peakPopularity,
+- src\management.js:11251  if (topIdx >= 0) roster[topIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(roster[topIdx], beltId, state.season, state.week, { orgName: aiTitleOrgName }), state.season);
+- src\management.js:11288  if (champIdx >= 0) roster[champIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(roster[champIdx], beltId, state.season, state.week, newDefenses, { orgName: aiTitleOrgNameDef, lastChallengerName: aiChallengerName }), state.season);
+- src\management.js:11306  if (winnerIdx >= 0) roster[winnerIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleWin(roster[winnerIdx], beltId, state.season, state.week, { orgName: aiTitleOrgNameChange, defeatedName: oldChampName }), state.season);
+- src\management.js:18317  const oldStats = s.seasonStats || { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:0, eventsWon:0, eventsLost:0 };
+- src\management.js:18342  const seasonHistory = [...(s.seasonHistory || []), archive];
+- src\management.js:18368  // orgPopHistory: 新シーズン開幕時の団体人気を記録
+- src\management.js:18369  const oph = { ...(s.orgPopHistory || {}) };
+- src\management.js:18380  s = { ...s, orgPopHistory: oph };
+- src\management.js:18422  seasonStats: { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:s.orgPop||0, eventsWon:0, eventsLost:0 },
+- src\management.js:18423  seasonHistory, fundsHistory: [s.funds],
+- src\management.js:19211  seasonStats: { wins: 0, losses: 0, draws: 0, showCount: 0, totalRevenue: 0, totalExpense: 0,
+- src\management.js:19212  bestMQ: 0, bestMQMatch: '', peakFunds: 5000, peakPop: 0, eventsWon: 0, eventsLost: 0 },
+- src\management.js:19213  seasonHistory: [], // array of past season summaries
+- src\management.js:19214  fundsHistory: [5000], // weekly fund snapshots for sparkline
+- src\management.js:19282  orgPopHistory: {},
+- src\management.js:19284  // orgPopHistory: シーズン1開幕時の初期値を記録
+- src\management.js:19292  initState.orgPopHistory = initOph;
+- src\management.js:19518  const sh = state.seasonHistory || [];
+- src\management.js:19519  const allBestMQ  = [...sh.map(h => h.bestMQ  || 0), state.seasonStats?.bestMQ  || 0];
+- src\management.js:19520  const allOrgPop  = [...sh.map(h => h.peakPop || h.orgPop || 0), state.orgPop || 0];
+- src\management.js:19521  const allShows   = [...sh.map(h => h.showCount || 0), state.seasonStats?.showCount || 0];
+- src\management.js:19540  const sh = state.seasonHistory || [];
+- src\management.js:19542  const allFunds  = sh.map(h => h.peakFunds || h.funds || 0);
+- src\management.js:19543  const allPop    = sh.map(h => h.peakPop || h.orgPop || 0);
+- src\management.js:19546  const overallBestMQ  = Math.max(...allBestMQ, state.seasonStats?.bestMQ || 0, 0);
+- src\management.js:19548  const bestMQMatch    = bestMQSeason?.bestMQMatch || state.seasonStats?.bestMQMatch || '—';
+- src\management.js:19553  peakFunds:       allFunds.length ? Math.max(...allFunds, 0) : 0,
+- src\management.js:19555  totalShows:      allShows.reduce((a, b) => a + b, 0) + (state.seasonStats?.showCount || 0),
+- src\management.js:19694  if (orgId === 'player') return (state.seasonStats && state.seasonStats.bestMQ) || 0;
+- src\management.js:20722  const playerMQ = (state.seasonStats && state.seasonStats.bestMQ) || 0;
+- src\management.js:20724  const matchStrRaw = (state.seasonStats && state.seasonStats.bestMQMatch) || '';
+- src\management.js:21830  const histArr = Array.isArray(G.seasonHistory) ? G.seasonHistory : [];
+- src\management.js:21915  const fundsCurve = Engine.seasonReview._downsample(G.fundsHistory || [], 12);
+- src\management.js:21916  const st = G.seasonStats || {};
+- src\management.js:26941  const showCount = (state.seasonStats || {}).showCount || 0;
+- src\management.js:27869  const seasonStats = state.seasonStats ? {
+- src\management.js:27870  ...state.seasonStats,
+- src\management.js:27871  totalRevenue: (state.seasonStats.totalRevenue || 0) + amount,
+- src\management.js:27872  peakFunds: Math.max(state.seasonStats.peakFunds || 0, (state.funds || 0) + amount),
+- src\management.js:27873  } : state.seasonStats;
+- src\management.js:27874  return { state: { ...state, funds: (state.funds || 0) + amount, seasonStats }, amount };
+- src\management.js:30527  const seasonStats = s.seasonStats ? {
+- src\management.js:30528  ...s.seasonStats,
+- src\management.js:30529  totalRevenue: (s.seasonStats.totalRevenue || 0) + totalEventIncome,
+- src\management.js:30530  peakFunds: Math.max(s.seasonStats.peakFunds || 0, (s.funds || 0) + totalEventIncome),
+- src\management.js:30531  } : s.seasonStats;
+- src\management.js:30536  seasonStats,
+- src\ui-common.js:7202  const evStats = { ...(G.seasonStats || {}) };
+- src\ui-common.js:7205  G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+- src\ui-common.js:16308  const peakPop = Math.round(data.peakOrgPop || 0);
+- src\ui-common.js:16324  <span style="font-size:14px;font-weight:700;color:var(--text)">${peakPop}</span>
+- src\ui-common.js:16514  <div class="gameover-stat-row"><span>${WM_I18N.t('最高資金')}</span><span>${fmt(summary.peakFunds)} ${WM_I18N.t('万')}</span></div>
+- src\ui-common.js:16601  <span style="font-size:14px;font-weight:700;color:#d8c8c8">${fmt(data.peakFunds)} ${WM_I18N.t('万')}</span>
+- src\ui-render.js:1139  const stats = G.seasonStats || {};
+- src\ui-render.js:1140  const fh = G.fundsHistory || [];
+- src\ui-render.js:4250  // fundsHistory は今シーズンの週次スナップショット（シーズン開幕でリセット）のため、
+- src\ui-render.js:4251  // 今月=直近4週 / 年間=今シーズンの月末値 / 全期間=seasonHistory のシーズン末資金 で描き分ける
+- src\ui-render.js:4252  const fhRaw = G.fundsHistory || [];
+- src\ui-render.js:4257  } else if (period === 'all' && (G.seasonHistory || []).length >= 1) {
+- src\ui-render.js:4258  fh = [...G.seasonHistory.map(h => h.funds || 0), G.funds];
+- src\ui-render.js:4464  // seasonHistory から過去シーズンのorgPopを収集（最大30シーズン）
+- src\ui-render.js:4465  const sh = (G.seasonHistory || []).slice(-29);
+- src\ui-render.js:4466  const chartPoints = sh.map(h => ({ season: h.season, pop: h.orgPop || h.peakPop || 0 }));
+- src\ui-render.js:4491  const prevPop = prev.orgPop || prev.peakPop || 0;
+- src\ui-render.js:4772  // トレンド (player のみ seasonHistory あり)
+- src\ui-render.js:4773  if (isPlayer && Array.isArray(G.seasonHistory) && G.seasonHistory.length >= 2) {
+- src\ui-render.js:4774  const recent = G.seasonHistory.slice(-3).map(h => h.rank).filter(x => x != null);
+- src\ui-render.js:4817  const sh = G.seasonHistory || [];
+- src\ui-render.js:5242  const _validHistory = (G.seasonHistory || []).filter(_hasValidRecord);
+- src\ui-render.js:11873  peakPopularity: src.peakPopularity || src.popularity || 0,
+- src\ui-render.js:11878  // 看板候補: peakPopularity 最大かつ 60+ かつ active のメンバー
+- src\ui-render.js:11880  const idolCandidate = founders.filter(f => f.peakPopularity >= idolThreshold)
+- src\ui-render.js:11881  .sort((a, b) => b.peakPopularity - a.peakPopularity)[0];
+- src\ui-render.js:11969  const peakPop = founders.reduce((m, f) => Math.max(m, f.peakPopularity || 0), 0);
+- src\ui-render.js:11971  const peakMQ = Math.max(G.seasonStats?.bestMQ || 0,
+- src\ui-render.js:11972  (G.seasonHistory || []).reduce((m, s) => Math.max(m, s.bestMQ || 0), 0));
+- src\ui-render.js:12004  <div class="chron-era-stat-val">${Math.round(peakPop)}</div>
+- src\ui-render.js:12252  <div class="chron-dual-meta-val">${a.peakPopularity || 0}</div>
+- src\ui-render.js:12299  <div class="chron-ace-meta-val">${a.peakPopularity || 0}</div>
+- src\ui-render.js:12440  <span class="chron-gen-pop">${p.peakPopularity || 0}</span>
+
+## [MEDIUM] UI Consistency (ui-wording)
+
+Display wording often drifts from internal counters.
+
+- src\app.js:2643  seasonsLeft: 1,  // finish at next season end
+- src\app.js:2649  ? { ...c, isRental: true, rentalSource: 'rival', rentalSeasonsLeft: 1 }
+- src\app.js:2656  // Rental v3: seasonsLeft → weeksLeft (1期=12週の週次減算に移行)
+- src\app.js:2659  if (r.weeksLeft != null) return r; // 既に移行済み
+- src\app.js:2660  // 旧 seasonsLeft を weeksLeft に変換: seasonsLeft * 12
+- src\app.js:2661  const wl = (r.seasonsLeft || 1) * 12;
+- src\app.js:2662  const { seasonsLeft, ...rest } = r;
+- src\app.js:2663  return { ...rest, weeksLeft: wl };
+- src\app.js:2665  // roster上の rentalSeasonsLeft → rentalWeeksLeft
+- src\app.js:2669  const { rentalSeasonsLeft, ...rest } = c;
+- src\app.js:2670  return { ...rest, rentalWeeksLeft: ct ? ct.weeksLeft : (rentalSeasonsLeft || 1) * 12 };
+- src\app.js:2673  } else if ((G.roster || []).some(c => c?.isRental && c.rentalSeasonsLeft !== undefined && c.rentalWeeksLeft === undefined)) {
+- src\app.js:2675  if (!c?.isRental || c.rentalSeasonsLeft === undefined || c.rentalWeeksLeft !== undefined) return c;
+- src\app.js:2676  const { rentalSeasonsLeft, ...rest } = c;
+- src\app.js:2677  return { ...rest, rentalWeeksLeft: (rentalSeasonsLeft || 1) * 12 };
+- src\app.js:6907  alert(WM_I18N.t('タイトルマッチは12週に1回のみ開催できます（あと{n}週）', { n: cd.weeksLeft }));
+- src\app.js:10231  weeksLeft: ir.injury.weeksLeft,
+- src\app.js:11009  detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(ir.injury.type, WM_I18N.t), weeks: ir.injury.weeksLeft }),
+- src\app.js:11846  speech: getTraitQuote('injury', c), speechTranslated: true, detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(c.injury.type, WM_I18N.t), weeks: c.injury.weeksLeft }) }), i * 100);
+- src\factions.js:1406  const weeksLeft = (leader.injury && leader.injury.weeksLeft) || 0;
+- src\factions.js:1407  if (weeksLeft >= 8) {
+- src\factions.js:1408  return { factionId: f.id, estimatedWeeks: weeksLeft };
+- src\factions.js:1425  const weeksLeft = (leader.injury && leader.injury.weeksLeft) || 0;
+- src\factions.js:1426  if (weeksLeft === 0) {
+- src\management.js:1303  if (fighter.breakthroughWeeksLeft > 0) situational += cfg.btBonus;
+- src\management.js:1340  if (fighter.breakthroughWeeksLeft > 0) details.push({ label: _wmFillWithDict(dict, '🔥BT'), value: cfg.btBonus });
+- src\management.js:1751  let updatedFighter = { ...fighter, injury: { type: injury.type, weeksLeft: weeks, totalWeeks: weeks, color: injury.color }, condition: Math.min(fighter.condition, 30) };
+- src\management.js:1829  const wl = c.injury.weeksLeft - 1;
+- src\management.js:1842  return { ...decayed, injury: { ...c.injury, weeksLeft: wl } };
+- src\management.js:1846  const wl = c.injury.weeksLeft - 1;
+- src\management.js:1847  return wl <= 0 ? { ...c, injury: null } : { ...c, injury: { ...c.injury, weeksLeft: wl } };
+- src\management.js:2404  // Returns { allowed: boolean, weeksLeft: number }
+- src\management.js:2406  if (!state.titleEstablished) return { allowed: false, weeksLeft: 0 };
+- src\management.js:2408  if (!state.titles?.world?.championId) return { allowed: true, weeksLeft: 0 };
+- src\management.js:2410  if (last == null) return { allowed: true, weeksLeft: 0 };
+- src\management.js:2412  const weeksLeft = Math.max(0, 12 - elapsed);
+- src\management.js:2413  return { allowed: weeksLeft === 0, weeksLeft };
+- src\management.js:3794  data: { name: champ.name, orgName, titleName: `${orgName}王座`, weeks: champ.injury.weeksLeft || 0 },
+- src\management.js:10133  weeksLeft: 4,
+- src\management.js:10150  if (buff.weeksLeft <= 1) {
+- src\management.js:10154  return { ...f, _inviteBuff: { ...buff, weeksLeft: buff.weeksLeft - 1 } };
+- src\management.js:10341  const weeksOutForHist = injuredFTmp && injuredFTmp.injury ? injuredFTmp.injury.weeksLeft : 3;
+- src\management.js:10357  weeksOut: injuredF && injuredF.injury ? injuredF.injury.weeksLeft : 3,
+- src\management.js:10750  nc.injury = { ...nc.injury, weeksLeft: nc.injury.weeksLeft - 1 };
+- src\management.js:10751  if (nc.injury.weeksLeft <= 0) nc.injury = null;
+- src\management.js:10828  nc.injury = { type: 'training injury', weeksLeft: weeks, totalWeeks: weeks, severity: 'minor', color: '#f39c12' };
+- src\management.js:11083  nc.injury = { type: injType, weeksLeft: weeks, totalWeeks: weeks, severity: isSevere ? 'severe' : isModerate ? 'moderate' : 'minor', color: injColor };
+- src\management.js:12791  const totalWeeks = (c.injury.weeksLeft || 0);
+- src\management.js:12941  if (nc.onLeave && nc.onLeave.weeksLeft > 0) {
+- src\management.js:12956  if (nc.onLeave.weeksLeft <= 1) {
+- src\management.js:12963  return { ...nc, onLeave: { ...nc.onLeave, weeksLeft: nc.onLeave.weeksLeft - 1 }, forcedRest: true };
+- src\management.js:12996  nc.injury = { type: '練習負傷', weeksLeft: weeks, totalWeeks: weeks, severity: 'minor', color: '#f39c12' };
+- src\management.js:13213  // これにより _trainerBuff.weeksLeft と pendingTrustDeltas[].weeksRemaining が常に同期する
+- src\management.js:13904  // レンタル契約: 毎週 weeksLeft を1減算、満了で返却
+- src\management.js:14574  return { error: `タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）` };
+- src\management.js:16257  const weeksLeft = seasons * 12; // 1期=12週
+- src\management.js:16271  rentalWeeksLeft: weeksLeft,
+- src\management.js:16280  const rentalContract = { fighterId: fighter.id, fromSource, fromOrgId: fromOrgId || null, weeksLeft, fee };
+- src\management.js:16330  /** 週次レンタル処理: weeksLeft を毎週1減算し、0になったら返却 */
+- src\management.js:16348  const newWeeksLeft = contract.weeksLeft - 1;
+- src\management.js:16349  if (newWeeksLeft <= 0) {
+- src\management.js:16376  const { isRental, rentalFromOrg, rentalSource, rentalWeeksLeft, ...cleanF } = rentalF;
+- src\management.js:16390  remaining.push({ ...contract, weeksLeft: newWeeksLeft });
+- src\management.js:16391  // Update rentalWeeksLeft on the roster fighter too
+- src\management.js:16392  roster = roster.map(c => c.id === contract.fighterId ? { ...c, rentalWeeksLeft: newWeeksLeft } : c);
+- src\management.js:22897  // 怪我の「発生時の総週数」。既存セーブには totalWeeks が無いため weeksLeft に
+- src\management.js:22902  return injury.totalWeeks != null ? injury.totalWeeks : (injury.weeksLeft || 0);
+- src\management.js:22908  if ((fighter.injury.weeksLeft || 0) <= 0) return false;
+- src\management.js:22915  rollTreatmentReduction(weeksLeft, rng) {
+- src\management.js:22918  const reduction = Math.max(4, Math.round((weeksLeft || 0) * pct));
+- src\management.js:22919  return { pct, reduction, reduced: Math.max(1, (weeksLeft || 0) - reduction) };
+- src\management.js:22954  return roster.some(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+- src\management.js:23270  getInviteMarketWeeksLeft(state) {
+- src\management.js:23281  return Engine.shachoshitsu.getInviteMarketWeeksLeft(state) === 1;
+- src\management.js:23389  // §3.4: 中間報告(2週目経過時=weeksLeftが totalWeeks-2 になった瞬間 に1回だけ判定)
+- src\management.js:23390  // totalWeeks=4固定 → weeksLeft が 2 に落ちた週(=2週経過した週)がその判定タイミング。
+- src\management.js:23393  if (buf.weeksLeft === midtermWeek && !buf._midtermDone && !buf._conflictDone) {
+- src\management.js:23400  // §3.4: 衝突イベント(相性✕のみ、期間中1回、weeksLeftが2週目経過タイミングで20%)
+- src\management.js:23403  if (buf.weeksLeft === midtermWeek && !buf._conflictDone && buf.compat === 'bad') {
+- src\management.js:23413  if (!conflictFired && buf.weeksLeft === midtermWeek && !buf._extensionDone && buf.compat === 'good') {
+- src\management.js:23431  _midtermDone: buf._midtermDone || buf.weeksLeft === midtermWeek,
+- src\management.js:23432  _conflictDone: buf._conflictDone || conflictFired || buf.weeksLeft === midtermWeek,
+- src\management.js:23433  _extensionDone: buf._extensionDone || extensionFired || buf.weeksLeft === midtermWeek,
+- src\management.js:23436  if (markedBuf.weeksLeft <= 1) {
+- src\management.js:23452  weeksLeft: 4,
+- src\management.js:23528  return { ...f, _inviteBuff: { ...markedBuf, weeksLeft: markedBuf.weeksLeft - 1 } };
+- src\management.js:23600  return { ...c, _inviteBuff: { ...buf, weeksLeft: buf.weeksLeft + 2, totalWeeks: buf.totalWeeks + 2 } };
+- src\management.js:23674  // weeksRemaining は _trainerBuff.weeksLeft と同じ値を指すよう設計。
+- src\management.js:23820  f = { ...f, onLeave: { weeksLeft: weeks, totalWeeks: weeks }, forcedRest: true, intensive: false };
+- src\management.js:23847  coachId: coach.id, weeksLeft: 4, totalWeeks: 4, mult, compat,
+- src\management.js:23864  const cur = f.injury.weeksLeft || 0;
+- src\management.js:23869  f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
+- src\management.js:24010  return { ...queued, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
+- src\management.js:24323  if (buf.weeksLeft <= 1) {
+- src\management.js:24327  return { ...f, _trainerBuff: { ...buf, weeksLeft: buf.weeksLeft - 1 } };
+- src\management.js:24333  // trainer/camp の _trainerBuff.weeksLeft と pendingTrustDeltas[].weeksRemaining が同期する。
+- src\management.js:24422  const cur = f.injury.weeksLeft || 0;
+- src\management.js:24427  f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
+- src\management.js:25317  weeksLeft: weeks,
+- src\management.js:32096  const weeks = (f.injury && f.injury.weeksLeft) || 0;
+- src\ui-common.js:4196  ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">${WM_I18N.t('🤝 レンタル（残{n}週）', { n: ct ? ct.weeksLeft : '?' })}</span>`; })() : ''}
+- src\ui-common.js:4223  const weeks = c._trainerBuff.weeksLeft;
+- src\ui-common.js:4230  return `<span style="color:#d4a843">🎓 ${coachName}${WM_I18N.t('コーチ招聘中 残り{n}週', { n: c._inviteBuff.weeksLeft })}</span>`;
+- src\ui-common.js:4428  🏥 ${injuryLabel(c.injury.type, WM_I18N.t)} — ${WM_I18N.t('残り{n}週', { n: c.injury.weeksLeft })}
+- src\ui-common.js:4687  const weeksLeft = Math.max(0, 4 - (currentAbsWeek - lastRunStart));
+- src\ui-common.js:4690  <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('引退試合をカードに組みましょう。（期限 あと約{n}週）', { n: weeksLeft })}</div>
+- src\ui-common.js:5162  if (!cd.allowed) { alert(WM_I18N.t('タイトルマッチは12週に1回のみ開催できます（あと{n}週）', { n: cd.weeksLeft })); return; }
+- src\ui-common.js:6110  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(injuryLabel(ir.injury.type, WM_I18N.t))}</span> <span class="name">${escHtml(WM_I18N.pn(ir.name))}</span> ${WM_I18N.t('全治 {n}週間', { n: ir.injury.weeksLeft })}</span>`).join('');
+- src\ui-common.js:8764  candidates = roster.filter(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+- src\ui-common.js:8819  hintText = WM_I18N.t('全治{n}週', { n: f.injury.weeksLeft || '?' });
+- src\ui-common.js:9156  showToast(WM_I18N.t('すでに招聘中のコーチがいます({name}・残{n}週)', { name: busyCoach ? busyCoach.name : WM_I18N.t('招聘コーチ'), n: busy._inviteBuff.weeksLeft }));
+- src\ui-render.js:1361  ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${injuryLabelShort(c.injury.type, WM_I18N.t)} ${WM_I18N.t('{w}週', { w: c.injury.weeksLeft })}</span>`
+- src\ui-render.js:1371  const rentalWL = rentalContract ? rentalContract.weeksLeft : '?';
+- src\ui-render.js:1439  const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(WM_I18N.t('専属指導中 — 練習効果アップ(残{w}週)', { w: c._trainerBuff.weeksLeft }))}>🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
+- src\ui-render.js:1442  const inviteBadge = c._inviteBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(inviteCoach ? WM_I18N.t('{name}コーチ招聘中 — 練習効果アップ(残{w}週)', { name: inviteCoach.name, w: c._inviteBuff.weeksLeft }) : WM_I18N.t('コーチ招聘中 — 練習効果アップ(残{w}週)', { w: c._inviteBuff.weeksLeft }))}>🏋️${c._inviteBuff.weeksLeft}w</span>` : '';
+- src\ui-render.js:1443  const leaveBadge = isOnLeave ? ` <span style="font-size:10px;color:#3498db;background:rgba(52,152,219,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(52,152,219,0.3);cursor:help" ${_tipAttr(WM_I18N.t('休暇中は興行に欠場します。体調が回復し、蓄積した衰えも少し癒えます。'))}>${WM_I18N.t('🏖️休暇 あと{w}週', { w: c.onLeave.weeksLeft })}</span>` : '';
+- src\ui-render.js:2190  if (c.injury) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">🏥 ${injuryLabelShort(c.injury.type, WM_I18N.t)} ${WM_I18N.t('{w}週', { w: c.injury.weeksLeft })}</span>`);
+- src\ui-render.js:2351  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('担当コーチ')}</span><span class="rd-meta-val" style="color:#7a6530;font-style:italic">${WM_I18N.t('招聘中: {name}（残{w}週・終了後は元の担当に自動復帰）', { name: coach ? coach.name : WM_I18N.t('外部コーチ'), w: c._inviteBuff.weeksLeft })}</span></div>`;
+- src\ui-render.js:2546  const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">${WM_I18N.t('🏥{w}週', { w: c.injury.weeksLeft })}</span>` : '';
+- src\ui-render.js:2589  coachInlineHtml = `<span style="font-size:10px;color:#7a6530;font-style:italic">${WM_I18N.t('招聘中: {name}（残{w}週）', { name: invName, w: c._inviteBuff.weeksLeft })}</span>`;
+- src\ui-render.js:2616  ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
+- src\ui-render.js:2619  return `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(invCoach ? WM_I18N.t('{name}コーチ招聘中 — 練習効果アップ(残{w}週)', { name: invCoach.name, w: c._inviteBuff.weeksLeft }) : WM_I18N.t('コーチ招聘中 — 練習効果アップ(残{w}週)', { w: c._inviteBuff.weeksLeft }))}>🏋️${c._inviteBuff.weeksLeft}w</span>`;
+- src\ui-render.js:2651  const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">${WM_I18N.t('🏥{w}週', { w: c.injury.weeksLeft })}</span>` : '';
+- src\ui-render.js:2679  <div style="margin-top:2px;color:#a06000">${WM_I18N.t('{src}・残{w}週', { src: srcLabel, w: contract ? contract.weeksLeft : '?' })}</div>
+- src\ui-render.js:3703  : `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-dim);font-size:18px">${WM_I18N.t('⏳{n}週', { n: titleCd.weeksLeft })}</div><div class="sp-metric-label">${WM_I18N.t('王座戦 解禁まで')}</div></div>`)}
+- src\ui-render.js:3926  if (titleEligible && !cdCheck.allowed) tagParts.push(`<span class="sp-match-tag sp-tag-dim">${WM_I18N.t('⏳{n}週後', { n: cdCheck.weeksLeft })}</span>`);
+- src\ui-render.js:5489  const weeksLeft = Engine.shachoshitsu.getInviteMarketWeeksLeft(G);
+- src\ui-render.js:5490  const swapText = weeksLeft == null
+- src\ui-render.js:5492  : (weeksLeft === 1 ? WM_I18N.t('次の週で入れ替わる') : WM_I18N.t('入れ替わりまで あと{n}週', { n: weeksLeft }));
+- src\ui-render.js:5775  <div class="meta">${WM_I18N.t('残り{n}週', { n: contract.weeksLeft })}</div>
+- src\ui-render.js:8849  const weeks = ir.weeksLeft != null ? WM_I18N.t(' / {n}週離脱', { n: ir.weeksLeft }) : '';
+
+## [MEDIUM] Week/Season (phase-routing)
+
+Sibling flows often drift and miss a required state update.
+
+- src\app.js:6  // Stage overlays live outside weekPhase, so ordinary state restoration cannot
+- src\app.js:86  weekPhase: state.weekPhase === 'event' ? 'manage' : state.weekPhase,
+- src\app.js:194  // PPV TV中継(ppvTV)は演出上テレビ音量で鳴らすため一段低い。
+- src\app.js:1348  // この区間は G が無い(または gameover 後の残骸)ので weekPhase より先に判定する。
+- src\app.js:1356  if (G.weekPhase === 'opening') { BGM.stop(); return; }
+- src\app.js:1357  if (G.weekPhase === 'draft') { BGM.play('draftPick'); return; }        // WM-C08 ドラフト選択
+- src\app.js:1358  if (G.weekPhase === 'contractNegotiation') { BGM.play('contract'); return; } // WM-C07 契約交渉
+- src\app.js:1359  if ((G.offSeason && G.offWeek >= 2) || G.weekPhase === 'offseason') { BGM.play('season_end'); return; }
+- src\app.js:1360  if (G.weekPhase === 'showExec') { BGM.play('battle'); return; }
+- src\app.js:1361  if (G.weekPhase === 'event') {
+- src\app.js:1369  if (G.weekPhase === 'scoutEvent' && (G._draftInterests || G._draftNegotiation)) { BGM.play('draftBid'); return; }
+- src\app.js:1370  if (G.weekPhase === 'juniorTournament') {
+- src\app.js:2177  // v0.9b backward compat: offseason system
+- src\app.js:2178  if (G.offSeason === undefined) G = { ...G, offSeason: false, offWeek: 0 };
+- src\app.js:2752  // v0.99b: clean up scoutEvent state if weekPhase isn't scoutEvent
+- src\app.js:2753  if (G.weekPhase !== 'scoutEvent') {
+- src\app.js:3742  // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
+- src\app.js:3743  if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
+- src\app.js:3755  if (G.weekPhase === 'gameover') return; // ゲームオーバー時は上書きしない
+- src\app.js:3762  // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
+- src\app.js:3763  if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
+- src\app.js:3845  // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
+- src\app.js:3846  if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
+- src\app.js:4005  // A completed Tenchosen save can still carry Week48's ppvShow phase.
+- src\app.js:4011  if (G.weekPhase === 'ppvShow') {
+- src\app.js:4012  App.initPPVShow();
+- src\app.js:4015  if (G.weekPhase === 'ppvTV') {
+- src\app.js:4016  App.initPPVTV();
+- src\app.js:4019  if (G.weekPhase === 'juniorTournament') {
+- src\app.js:4042  && !G.offSeason
+- src\app.js:4043  && G.weekPhase === 'manage'
+- src\app.js:4080  G = { ...G, _juniorTournamentSelection: selection, weekPhase: 'juniorTournament' };
+- src\app.js:4090  if (!G || G.weekPhase !== 'juniorTournament') return false;
+- src\app.js:4094  return App.recoverWeekPhase();
+- src\app.js:4124  weekPhase: 'manage',
+- src\app.js:4144  recoverWeekPhase() {
+- src\app.js:4146  if (G.weekPhase === 'juniorTournament') {
+- src\app.js:4150  const clean = { ...G, weekPhase: 'manage' };
+- src\app.js:4157  weekPhase: 'manage',
+- src\app.js:4954  if (G.weekPhase === 'showExec' && (showResultActive || App._showPreview || App._closingShowResult)) {
+- src\app.js:4961  console.warn('[WM] progression state repaired', { reason, changes: repair.changes, phase: G.weekPhase, week: G.week });
+- src\app.js:5151  G = { ...G, orgName: _pendingOrgName, playerOrgIcon: _pendingOrgIcon, difficultyMode: _selectedDifficulty, weekPhase: 'opening', _draftPicks: [], _draftFocus: null, gameLog: [] };
+- src\app.js:5174  if (G.weekPhase !== 'draft') return;
+- src\app.js:5199  if (G.weekPhase !== 'draft') return;
+- src\app.js:5884  weekPhase: G.offSeason ? 'offseason' : 'manage',
+- src\app.js:5892  // If offseason, continue to next offWeek
+- src\app.js:5893  if (G.offSeason) {
+- src\app.js:5901  handleContractNegotiations() {
+- src\app.js:5904  if (App._contractNegotiationSession?.active) {
+- src\app.js:5911  //     セッションを破棄して保存済みカーソル(_contractNegotiationProgress・毎手保存)
+- src\app.js:5915  const staleSession = App._contractNegotiationSession;
+- src\app.js:5922  App._contractNegotiationSession = null;
+- src\app.js:5924  const negotiations = G.pendingContractNegotiations || [];
+- src\app.js:5929  pendingContractNegotiations: _,
+- src\app.js:5931  _contractNegotiationProgress: ___,
+- src\app.js:5941  App._contractNegotiationSession = session;
+- src\app.js:5942  const isCurrentSession = () => App._contractNegotiationSession === session && session.active;
+- src\app.js:5946  App._contractNegotiationSession = null;
+- src\app.js:5953  const savedProgress = G._contractNegotiationProgress;
+- src\app.js:5984  _contractNegotiationProgress: {
+- src\app.js:6015  // weekPhase を offseason に戻す（ナビロック解除 + advanceWeek の再ループ防止）
+- src\app.js:6017  pendingContractNegotiations: _,
+- src\app.js:6019  _contractNegotiationProgress: ___,
+- src\app.js:6022  G = { ...clean, weekPhase: 'offseason', gameLog: [...(G.gameLog || []), { type: 'contract_renewal_complete', data: { stayCount: results.filter(r => r.type === 'stay').length, departCount: results.filter(r => r.type === 'depart').length }, s: G.season, w: G.week }] };
+- src\app.js:6049  showContractNegotiationModal(neg, idx, negotiations.length, G, (choiceIdx) => {
+- src\app.js:6144  showContractNegotiationModal(escNeg, results.length, results.length + 1, G, (escChoice) => {
+- src\app.js:6543  if (G.offSeason || G.weekPhase !== 'manage' || !isRegularShowWeek(G.week)) {
+- src\app.js:6553  weekPhase: 'showPrep',
+- src\app.js:6747  // v2.0: weekPhase guard — settled/weekSummary等の非興行フェーズでは実行不可
+- src\app.js:6748  if (G.offSeason || !['manage', 'showPrep'].includes(G.weekPhase)) { Audio.play('error'); return; }
+- src\app.js:7730  // 進行不具合復旧: 例外で weekPhase='showExec' のまま残ると今週タブが
+- src\app.js:7733  if (G && G.weekPhase === 'showExec') {
+- src\app.js:7734  G = { ...G, weekPhase: 'manage', lastShowResults: G.lastShowResults || [],
+- src\app.js:7763  let s = { ...G, totalShows: G.totalShows + 1, weekPhase: 'showExec' };
+- src\app.js:10039  const isPPVShow = isPPV(G.week);
+- src\app.js:10096  isHighMQ, isSuperMQ, isLowMQ, isPPVShow, isSpecial,
+- src\app.js:10456  weekPhase: 'showPrep',
+- src\app.js:10561  || !['manage', 'showPrep'].includes(G.weekPhase)
+- src\app.js:10578  // weekPhase は呼び出し側で既に 'showPrep' になっている前提
+- src\app.js:10620  if (G.weekPhase === 'showPrep' && typeof renderShowPrep === 'function') renderShowPrep();
+- src\app.js:10638  App._awayChallengeCompletedForClose = !wasManualStart && G.weekPhase === 'showExec';
+- src\app.js:10641  if (wasManualStart || G.weekPhase !== 'showExec') {
+- src\app.js:10644  if (G.weekPhase === 'showPrep' && typeof renderShowPrep === 'function') renderShowPrep();
+- src\app.js:10755  // weekPhase は 'showPrep' のままなので着地先は 'week' タブではなく 'show' 画面。
+- src\app.js:10760  if (G.weekPhase === 'showPrep' && typeof renderShowPrep === 'function') renderShowPrep();
+- src\app.js:10774  if (G.weekPhase !== 'showExec') {
+- src\app.js:10777  console.warn('[WM] closeShowResult fallback: overlay active while weekPhase=', G.weekPhase);
+- src\app.js:10814  // advanceFromWeekSummary → dismissAllPopups まで進むため、ここで同期表示すると
+- src\app.js:11211  // **3系統とも同期で開かない(2026-08-13)。** この後の advanceFromWeekSummary →
+- src\app.js:11269  // 週送り自体(_tryAutoAdvance→advanceFromWeekSummary)はこの直後に同期実行され、
+- src\app.js:11271  // (advanceWeek後の値を先読みできない)。weekPhaseだけを再確認すれば、
+- src\app.js:11274  if (!G || G.weekPhase !== 'manage') return;
+- src\app.js:11289  // 描画は一切しない」形になり、呼び出し側が続けて advanceFromWeekSummary() を
+- src\app.js:11292  // 閉じるたびに状態だけ weekSummary へ進んで画面が前のまま**になっていた。
+- src\app.js:11296  App.advanceFromWeekSummary();
+- src\app.js:11305  // 進行不具合復旧: weekPhase が 'showExec' のまま残ると 今週/興行準備 タブが
+- src\app.js:11309  if (G && G.weekPhase === 'showExec') {
+- src\app.js:11316  G = { ...G, weekPhase: 'manage', lastShowResults: [],
+- src\app.js:11362  const isSeasonOpening = !G.offSeason && G.week === 1 && (G.season || 1) > 1;
+- src\app.js:11661  // `weekSummary` は advanceFromWeekSummary の入力契約としてだけ使う。一度画面に
+- src\app.js:11676  // 増えていた。weekSummary は既存セーブ/ボタンとの後方互換のため維持する。
+- src\app.js:11677  G = { ...G, financeHistory: newHistory, weekPhase: 'weekSummary' };
+- src\app.js:11681  // tickWeek 完了後の次週遷移。旧セーブの weekSummary ボタンからもここへ入る。
+- src\app.js:11682  advanceFromWeekSummary() {
+- src\app.js:11683  if (App._guardAwardsStage?.('advanceFromWeekSummary')) return false;
+- src\app.js:11686  if (G.weekPhase !== 'weekSummary') {
+- src\app.js:11688  season: G.season, week: G.week, weekPhase: G.weekPhase,
+- src\app.js:11692  const before = { season: G.season, week: G.week, weekPhase: G.weekPhase };
+- src\app.js:11695  if (App.repairProgressionState('advanceFromWeekSummary')) {
+- src\app.js:11702  to: { season: G.season, week: G.week, weekPhase: G.weekPhase, offSeason: !!G.offSeason },
+- src\app.js:11714  if (G.weekPhase === 'contractNegotiation') {
+- src\app.js:11716  App.handleContractNegotiations();
+- src\app.js:11725  if (G.weekPhase === 'ppvShow') {
+- src\app.js:11727  App.initPPVShow();
+- src\app.js:11730  if (G.weekPhase === 'ppvTV') {
+- src\app.js:11732  App.initPPVTV();
+- src\app.js:11782  if (G.weekPhase !== 'manage') return;
+- src\app.js:11817  if (G.weekPhase === 'gameover') {
+- src\app.js:11833  // advanceFromWeekSummary → dismissAllPopups が同 tick で走るため、同期表示分
+- src\app.js:12209  if (!G || G.weekPhase !== 'manage' || !G._pendingFactionEvent) return;
+- src\app.js:12226  if (!G || G.weekPhase !== 'manage') return;
+- src\app.js:12319  // weekSummary をセットし、既存の専用大会分岐も持つ入口へ渡す。
+- src\app.js:12321  App.advanceFromWeekSummary();
+- src\app.js:12377  * 式典途中の再読込、または旧バグでoffWeek 2へ飛んだセーブから表彰式だけを復旧する。
+- src\app.js:12393  const skippedIntoWeek2 = !!(G?.offSeason && G?.offWeek === 2 && !completedThisSeason);
+- src\app.js:12414  || source === 'advanceFromWeekSummary'
+- src\app.js:12424  source, season: G && G.season, offWeek: G && G.offWeek,
+- src\app.js:12441  if (G.weekPhase === 'manage') {
+- src\app.js:12445  if (G.weekPhase === 'weekSummary') {
+- src\app.js:12446  App.advanceFromWeekSummary();
+- src\app.js:12449  if (G.weekPhase === 'contractNegotiation') {
+- src\app.js:12450  App.handleContractNegotiations();
+- src\app.js:12453  if (G.weekPhase === 'scoutEvent') {
+- src\app.js:12460  if (G.offSeason || G.weekPhase === 'offseason' || G.weekPhase === 'settled') {
+- src\app.js:12472  *  通常は weekPhase === 'scoutEvent' の間ずっと画面へ押し戻すので通れないが、
+- src\app.js:12477  if (!G || !G.offSeason) return false;
+- src\app.js:12480  if (G.weekPhase === 'scoutEvent') return false;   // 通常経路。画面側で処理する
+- src\app.js:12484  season: G.season, offWeek: G.offWeek, weekPhase: G.weekPhase,
+- src\app.js:12502  if (G.weekPhase === 'scoutEvent') {
+- src\app.js:12533  if (G.weekPhase === 'contractNegotiation') {
+- src\app.js:12535  App.handleContractNegotiations();
+- src\app.js:12544  if (G.weekPhase === 'ppvShow') {
+- src\app.js:12546  App.initPPVShow();
+- src\app.js:12549  if (G.weekPhase === 'ppvTV') {
+- src\app.js:12551  App.initPPVTV();
+- src\app.js:12567  if (G.weekPhase === 'juniorTournament') {
+- src\app.js:12594  // 総括の出しどころは offWeek 1（レポートの週）で決め打つ方が壊れない。
+- src\app.js:12612  // 通常ティック(offWeek 1〜4)では何も起きない(通常週の大ニュース通知の挙動は変えない)。
+- src\app.js:12613  if (!G.offSeason && G.week === 1 && (G.season || 1) > 1) {
+- src\app.js:12689  // （実機で offWeek 1 なのに「0/4」「シーズンレポートへ →」が出たままだった）。
+- src\app.js:12761  // offWeek 2 は、旧バグで表彰式の途中から一週飛んだセーブだけを救う範囲。
+- src\app.js:12763  if (!G.offSeason || G.offWeek < 1 || G.offWeek > 2) return false;
+- src\app.js:12765  // 初年度のoffWeek 1ではseasonHistoryはまだ空。ここで復旧を拒むと、保存・演出
+- src\app.js:12767  // offSeason/offWeekという生成時点の条件で十分に絞れているため、履歴の有無は見ない。
+- src\app.js:12798  if (G.week === 1 && !G.offSeason && G.season > 1 && typeof showSeasonFanfare === 'function') {
+- src\app.js:12828  *  offWeek 1 の総括が見えないことがあった。レポート週だけ今週画面へ戻す。 */
+- src\app.js:12830  // 表彰式が何らかの中断から offWeek 2 で復旧した場合、式典を閉じた後に
+- src\app.js:12833  if (G.offSeason && G.offWeek === 2 && G.weekPhase === 'contractNegotiation') {
+- src\app.js:12834  if (!App._contractNegotiationSession?.active) {
+- src\app.js:12836  App.handleContractNegotiations();
+- src\app.js:12840  if (G.offSeason && G.offWeek === 1 && typeof showScreen === 'function') {
+- src\app.js:12869  startedAtOffWeek: G.offWeek || 1,
+- src\app.js:14814  offseason_locked: WM_I18N.t('オフシーズンには約束できない'),
+- src\app.js:14946  if (result.error === 'offseason_locked') { showToast(WM_I18N.t('オフシーズン中は依頼できません')); return; }
+- src\app.js:14984  if (result.error === 'offseason_locked') { showToast(WM_I18N.t('オフシーズン中は決裁できません')); return { ok: false }; }
+- src\app.js:15292  // 2026-08-02 バグ修正: このチェックの直後に呼び出し元(advanceFromWeekSummary/advanceWeek)が
+- src\app.js:15736  G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+- src\app.js:15820  App.initPPVShow = function() {
+- src\app.js:16282  G = { ...G, ...s, seasonStats: stats, weekPhase: 'showExec', gameLog: [...G.gameLog, ...events] };
+- src\app.js:16310  if (G.offSeason || G.week !== 48) {
+- src\app.js:16397  App.initPPVTV = function() {
+- src\app.js:16407  const cached = G._ppvTvBroadcast;
+- src\app.js:16430  ppvTvWatchCount: (G.ppvTvWatchCount || 0) + 1,
+- src\app.js:16431  _ppvTvBroadcast: { season: G.season, week: G.week, card: tvResult.card, results: tvResult.results },
+- src\app.js:16440  let _ppvTvStarted = false;
+- src\app.js:16442  if (_ppvTvStarted) return;
+- src\app.js:16443  _ppvTvStarted = true;
+- src\app.js:16445  renderPPVTvBroadcast(tvResult.card, tvResult.results, G.ppvName);
+- src\app.js:16449  console.warn('[WM] ppvTV broadcast render failed — falling back to the exit card:', e && e.message);
+- src\app.js:16450  App._renderPPVTvFallback();
+- src\app.js:16455  if (!_ppvTvStarted) {
+- src\app.js:16456  console.warn('[WM] ppvTV safety net fired — starting broadcast without queue drain');
+- src\app.js:16463  App._renderPPVTvFallback = function() {
+- src\app.js:16471  + `<button type="button" class="ptv-btn" onclick="App.closePPVTV()">${WM_I18N.t('事務所へ戻る')}</button>`
+- src\app.js:16476  App.closePPVTV = function() {
+- src\app.js:16478  if (App._tcwGate('ppv', {}, () => App.closePPVTV())) return;
+- src\app.js:16480  // 正規の閉じ時は advanceWeek が立てた 'ppvTV' のまま(initPPVTV は phase を変えない)
+- src\app.js:16481  if (G.offSeason || G.weekPhase !== 'ppvTV') {
+- src\app.js:16482  console.info('[WM] closePPVTV re-entry ignored — week already advanced', {
+- src\app.js:16483  season: G.season, week: G.week, weekPhase: G.weekPhase, offSeason: !!G.offSeason,
+- src\app.js:16531  G = { ...G, ppvPhase: null, _ppvTvBroadcast: undefined };
+- src\app.js:16631  G = { ...G, weekPhase: 'manage' };
+- src\app.js:17089  G = { ...G, weekPhase: 'manage' };
+- src\app.js:17825  offSeason: true,
+- src\app.js:17826  offWeek: 4,
+- src\app.js:17827  weekPhase: 'offseason',
+- src\app.js:17836  console.log('  offSeason:', G.offSeason, '/ offWeek:', G.offWeek, '/ weekPhase:', G.weekPhase);
+- src\data.js:8446  offseason: { count: [6, 8], maxPicks: 3 },
+- src\data.js:31960  // 自発的残留の通知(management.js advanceWeek offWeek2)。events経由の文字列ログだが、
+- src\data.js:32100  // D-G3(ui-render.js:1014): オフシーズン週(offWeek 2+)の「オフシーズンレポート」パネル専用の
+- src\data.js:32104  const GAMELOG_OFFSEASON_REPORT_TYPES = new Set([
+- src\data.js:32192  GAMELOG_OFFSEASON_REPORT_TYPES,
+- src\dev-tools.js:130  function phaseLabel(state) { return `S${state.season} / ${state.offSeason ? `OFF ${state.offWeek || 0}` : `W${state.week}`} / ${state.weekPhase || 'manage'}`; }
+- src\dev-tools.js:197  if (next.weekPhase === 'draft') {
+- src\dev-tools.js:220  if (next.weekPhase === 'contractNegotiation') {
+- src\dev-tools.js:221  (next.pendingContractNegotiations || []).forEach(neg => { const rng = Engine.rng.create(Engine.rng.derive(next.rngSeed, next.season, 0xC0E7, neg.fighterId, 2)); next = Engine.contract.resolveNegotiation(rng, next, neg, 0).state; });
+- src\dev-tools.js:222  delete next.pendingContractNegotiations; delete next._contractAutoRenewed; next = { ...next, weekPhase: 'offseason' };
+- src\dev-tools.js:224  if (next.weekPhase === 'scoutEvent' || next.weekPhase === 'event' || next.weekPhase === 'transfer') next = { ...next, weekPhase: 'manage' };
+- src\dev-tools.js:225  if (next.weekPhase === 'juniorTournament') {
+- src\dev-tools.js:229  // apply()の非キャンセル分岐はweekPhaseを'manage'に戻さない（実UIのApp.finalizeJuniorTournamentが
+- src\dev-tools.js:231  next = { ...next, weekPhase: 'manage' };
+- src\dev-tools.js:234  if (next.weekPhase === 'ppvShow' || next.weekPhase === 'ppvTV') next = { ...next, weekPhase: 'manage', ppvPhase: null };
+- src\dev-tools.js:271  return { ...clean, autumnWarPhase: 'result', weekPhase: 'manage' };
+- src\dev-tools.js:275  if (next.weekPhase === 'manage') {
+- src\dev-tools.js:291  if (!next.offSeason && Engine.util.isShowWeek(next.week) && !isTenchosenShowWeek && !isSpringTagWeek && !isAutumnWarWeek && !isJuniorTournamentWeek) {
+- src\dev-tools.js:299  function targetReached(state, season, week) { return !state.offSeason && state.season === season && state.week === week; }
+- src\dev-tools.js:306  if (state.weekPhase === 'gameover') throw new Error('高速進行中にゲームオーバーになりました。直前のチェックポイントから条件を調整してください。');
+- src\dev-tools.js:307  if (state.season > targetSeason || (state.season === targetSeason && !state.offSeason && state.week > targetWeek)) throw new Error('指定週を通過しました。目標は現在より後の日付を指定してください。');
+- src\draft-negotiation.js:839  // シーズン気分の抽選（実ゲームの offWeek 5 相当）
+- src\factions.js:1061  const absWeekLL = Engine.util.absWeekTotal(s.season, s.week, s.offSeason, s.offWeek);
+- src\factions.js:1319  return Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\factions.js:2098  const absWeekF03 = Engine.util.absWeekTotal(s.season, s.week, s.offSeason, s.offWeek);
+- src\factions.js:2872  if (!state.offSeason) return { eligible: false };
+- src\factions.js:2978  if (state.offSeason) return { eligible: false };
+- src\factions.js:3368  const week = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\factions.js:3429  if (state.offSeason) return { eligible: false };
+- src\factions.js:3605  if (state.offSeason) return { eligible: false };
+- src\factions.js:5185  const absWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\factions.js:5348  const absWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\factions.js:5536  const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\factions.js:5667  const absWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\factions.js:5778  const week = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\index.html:298  .week-season-card.is-offseason .week-season-quarter{color:var(--text-dim)}
+- src\index.html:299  .week-season-card.is-offseason .week-season-bridge{display:block}
+- src\index.html:3063  .pb-live.is-ppvtv{background:rgba(109,148,184,0.14);border-color:rgba(109,148,184,0.45);color:var(--c-info)}
+- src\index.html:3067  .pb-banner-title.is-ppvtv{font-size:34px}
+- src\lang-en.js:94  "48週目の後はオフシーズンへ。年末表彰式（新人王・MVP・殿堂入りなど）と1年の総括に続き、": "After week 48 comes the offseason. Following the year-end awards ceremony (Rookie of the Year, MVP, Hall of Fame inductions, and more) and the annual wrap-up, the new season begins after ",
+- src\lang-en.js:612  "{season}年目 年度末 — オフシーズン {offWeek}/4": "End of Year {season} — Off-season {offWeek}/4",
+- src\lang-en.js:1292  "オフシーズンの補強：": "Offseason Reinforcement:",
+- src\lang-en.js:2718  "年度末ブリッジ {offWeek}/4": "Year-end break {offWeek}/4",
+- src\lang-en.js:2723  "年間48週完了、年度末オフシーズン{offWeek}/4": "48 weeks done; year-end offseason {offWeek}/4",
+- src\lang-en.js:4739  "＋オフシーズンです。": " plus an offseason.",
+- src\management.js:203  'opening', 'draft', 'manage', 'settled', 'showPrep', 'showExec', 'offseason',
+- src\management.js:204  'scoutEvent', 'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event',
+- src\management.js:205  'weekSummary', 'transfer', 'contractNegotiation', 'juniorTournament',
+- src\management.js:209  let nextPhase = state.weekPhase || (state.offSeason ? 'offseason' : 'manage');
+- src\management.js:212  changes.push(`weekPhase_invalid:${nextPhase}`);
+- src\management.js:213  nextPhase = state.offSeason ? 'offseason' : 'manage';
+- src\management.js:216  // showPrep/showExec are UI-only transient phases. If they survive a reload,
+- src\management.js:219  if (nextPhase === 'showExec') {
+- src\management.js:220  changes.push('weekPhase_showExec_recovered');
+- src\management.js:221  nextPhase = state.offSeason ? 'offseason' : 'manage';
+- src\management.js:222  } else if (nextPhase === 'showPrep' && (state.offSeason || !isShowWeekNow)) {
+- src\management.js:223  changes.push('weekPhase_showPrep_non_show_week');
+- src\management.js:224  nextPhase = state.offSeason ? 'offseason' : 'manage';
+- src\management.js:227  if (state.offSeason && !['offseason', 'contractNegotiation', 'scoutEvent', 'gameover', 'draft', 'opening'].includes(nextPhase)) {
+- src\management.js:228  changes.push(`offseason_phase_recovered:${nextPhase}`);
+- src\management.js:229  nextPhase = 'offseason';
+- src\management.js:295  weekPhase: nextPhase,
+- src\management.js:620  absWeekTotal(season, week, offSeason, offWeek) {
+- src\management.js:621  return ((season || 1) - 1) * 52 + (week || 1) + (offSeason ? (offWeek || 0) : 0);
+- src\management.js:3005  if (!booking || !Engine.util.isRegularShowWeek(state.week) || state.offSeason) return state;
+- src\management.js:3024  || !Engine.util.isRegularShowWeek(next.week) || next.offSeason) return next;
+- src\management.js:3924  if (state.offSeason) return [];
+- src\management.js:7664  const lastRunStartAbsWeek = G.offSeason
+- src\management.js:7666  : Engine.util.absWeekTotal(G.season, G.week, G.offSeason, G.offWeek);
+- src\management.js:8166  if (Engine.util.isShowWeek(G.week) || G.offSeason) return null;
+- src\management.js:11610  // Step 6: AIスカウト — handled separately in offseason week 2
+- src\management.js:12587  break; // 1 FA per org per offseason
+- src\management.js:13244  if (!Engine.util.isShowWeek(G.week) && !G.offSeason) {
+- src\management.js:13282  && G.week % 4 === 0 && roster.length > 0 && !G.offSeason) {
+- src\management.js:13294  if (!Engine.util.isShowWeek(G.week) && !G.offSeason && (G.coaches || []).length > 0) {
+- src\management.js:13307  const _airRng =(!Engine.util.isShowWeek(G.week) && !G.offSeason && roster.length > 0)
+- src\management.js:13848  s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
+- src\management.js:13905  if (!s.offSeason) {
+- src\management.js:13916  if (s.aiOrgs && !s.offSeason) {
+- src\management.js:14045  if (s.aiOrgs && !s.offSeason) {
+- src\management.js:14050  if (s.aiOrgs && !s.offSeason) {
+- src\management.js:14073  if (!s.offSeason) {
+- src\management.js:14088  s = { ...s, weekPhase: 'gameover', gameOverReason: 'collapse' };
+- src\management.js:14106  s = { ...s, weekPhase: 'gameover', gameOverReason: 'timeout' };
+- src\management.js:14117  if (s.week % 4 === 0 && !s.offSeason) {
+- src\management.js:14439  if (!s.offSeason && s.week >= 1 && s.week <= 45 && (s.week - 1) % 4 === 0) {
+- src\management.js:14457  if (!s.offSeason && (s._partyAfterglowWeeks || 0) > 0) {
+- src\management.js:14477  if (!s.offSeason) s = Engine.newspaper.scanRosterNews(s);
+- src\management.js:14481  if (!s.offSeason) {
+- src\management.js:14490  if (!s.offSeason) {
+- src\management.js:14499  if (!s.offSeason) s = Engine.streak.refresh(s);
+- src\management.js:14502  if (!s.offSeason) {
+- src\management.js:14587  let s = { ...repaired, totalShows: repaired.totalShows + 1, weekPhase: 'showExec' };
+- src\management.js:16603  const cfg = SCOUT_EVENT_CFG.offseason;
+- src\management.js:17835  // B-2: Offseason 4-week system
+- src\management.js:17846  // ── OFFSEASON PROCESSING ──
+- src\management.js:17847  if (s.offSeason) {
+- src\management.js:17848  const offWeek = (s.offWeek || 0) + 1;
+- src\management.js:17849  const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 900 + offWeek));
+- src\management.js:17851  if (offWeek === 1) {
+- src\management.js:17908  // OffWeek 1: Player season end (aging + decay + growth reset) + AI season end
+- src\management.js:17925  const currentAbsWeek = Engine.util.absWeekTotal(s.season, s.week, s.offSeason, s.offWeek);
+- src\management.js:18071  const offSeasonRoster = s.roster.map(f => {
+- src\management.js:18077  s = { ...s, roster: offSeasonRoster };
+- src\management.js:18163  } else if (offWeek === 2) {
+- src\management.js:18164  // OffWeek 2: 契約更新交渉 — シーズン開幕前に低trust選手との1対1交渉
+- src\management.js:18165  if (s.season >= 1 && !s.pendingContractNegotiations) {
+- src\management.js:18181  pendingContractNegotiations: negResult.negotiations,
+- src\management.js:18187  return { state: { ...s, offWeek, weekPhase: 'contractNegotiation' }, events };
+- src\management.js:18192  // 交渉不要 or 交渉解決済み → そのまま次のoffWeekへ
+- src\management.js:18195  } else if (offWeek === 3) {
+- src\management.js:18223  // OffWeek 3: Draft Negotiation (draft-negotiation-spec §3.1)
+- src\management.js:18228  const report = Engine.scout.generateScoutReport(scoutRng, s, 'offseason');
+- src\management.js:18255  scoutMaxPicks: SCOUT_EVENT_CFG.offseason.maxPicks,
+- src\management.js:18256  scoutEventType: 'offseason',
+- src\management.js:18263  return { state: { ...s, offWeek, weekPhase: 'scoutEvent' }, events };
+- src\management.js:18265  } else if (offWeek === 4) {
+- src\management.js:18266  // OffWeek 4: AI inter-org transfers + FA acquisition
+- src\management.js:18278  } else if (offWeek >= 5) {
+- src\management.js:18281  s = { ...s, offWeek, _trialEnd: true };
+- src\management.js:18284  // OffWeek 5: New season preparation — advance to next season
+- src\management.js:18417  s = { ...s, season: s.season + 1, week: 1, offSeason: false, offWeek: 0,
+- src\management.js:18493  return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
+- src\management.js:18497  s = { ...s, offWeek, mvpRace: Engine.mvpRace.recalcRanking({ ...s, offWeek }) };
+- src\management.js:18498  return { state: { ...s, weekPhase: 'offseason' }, events };
+- src\management.js:18516  return { state: { ...s, weekPhase: 'manage' }, events };
+- src\management.js:18519  // どの経路で来ても必ず ppvShow / ppvTV に接続する。week43のエントリー初期化が
+- src\management.js:18522  if (s.week === PPV_SHOW_WEEK && !s.offSeason
+- src\management.js:18559  if (s.week === PPV_SHOW_WEEK && !s.offSeason && s.ppvPhase === 'locked') {
+- src\management.js:18562  return { state: { ...s, weekPhase: 'ppvShow' }, events };
+- src\management.js:18564  if (s.week === PPV_SHOW_WEEK && !s.offSeason && s.ppvPhase === 'tv') {
+- src\management.js:18566  return { state: { ...s, weekPhase: 'ppvTV' }, events };
+- src\management.js:18570  // F2: Force-resolve any pending negotiation before offseason
+- src\management.js:18593  s = { ...s, weekPhase: 'gameover', gameOverReason: 'season_end' };
+- src\management.js:18599  s = { ...s, weekPhase: 'gameover', gameOverReason: 'season_end' };
+- src\management.js:18603  // Enter offseason
+- src\management.js:18604  s = { ...s, offSeason: true, offWeek: 0 };
+- src\management.js:18606  return { state: { ...s, weekPhase: 'offseason' }, events };
+- src\management.js:18620  if (PRE_WINDOW_WEEKS.includes(s.week) && !s.offSeason) {
+- src\management.js:18675  if (s.week === Engine.springTagLeague.ANNOUNCE_WEEK && !s.offSeason
+- src\management.js:18707  // weekPhase は奪わない（'manage' 以外が残留すると今週画面の操作がロックされるため）。
+- src\management.js:18710  if (s.week === Engine.springTagLeague.ENTRY_WEEK && !s.offSeason
+- src\management.js:18718  if (s.week === Engine.springTagLeague.LEAGUE_WEEK && !s.offSeason
+- src\management.js:18729  if (s.week === Engine.autumnWar.ANNOUNCE_WEEK && !s.offSeason) {
+- src\management.js:18756  if (s.week === Engine.autumnWar.EVENT_WEEK && !s.offSeason) {
+- src\management.js:18775  if (s.week === Engine.juniorTournament.WEEK && !s.offSeason) {
+- src\management.js:18780  return { state: { ...s, weekPhase: 'juniorTournament' }, events };
+- src\management.js:18799  return { state: { ...s, weekPhase: 'event' }, events };
+- src\management.js:18809  return { state: { ...s, weekPhase: 'transfer' }, events };
+- src\management.js:18813  // 天頂戦: Week42 開催前ミニイベント（数値効果なし・純演出）。weekPhaseは奪わない。
+- src\management.js:18820  // 天頂戦: Week43 エントリー受付。通常PPVと異なり weekPhase は奪わない。
+- src\management.js:18857  return { state: { ...s, weekPhase: 'ppvEntry' }, events };
+- src\management.js:18866  return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
+- src\management.js:19057  weekPhase: 'manage',
+- src\management.js:19129  weekPhase: isDraft ? 'draft' : 'manage',
+- src\management.js:19175  // v0.9b: Offseason system
+- src\management.js:19176  offSeason: false,
+- src\management.js:19177  offWeek: 0,
+- src\management.js:19906  lastUpdated: { season: state.season, week: state.week, offSeason: !!state.offSeason, offWeek: state.offWeek || 0 },
+- src\management.js:20492  * @param {Object} state - offWeek 1 処理完了後の GameState
+- src\management.js:20505  // state 側の一時データに頼ると offWeek1 の表彰式時点で欠ける:
+- src\management.js:21792  * オフシーズン週画面(offWeek 0〜1)に必要な全データを1オブジェクトで返す。
+- src\management.js:21805  const processed = (G.offWeek || 0) >= 1; // offWeek1移行時点でシーズン末処理(applySeasonEnd)済み
+- src\management.js:22997  if (state.offSeason) return [];
+- src\management.js:23256  if (state.offSeason) return { error: 'offseason_locked' };
+- src\management.js:23271  if (!state || state.offSeason) return null;
+- src\management.js:23363  const absoluteWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\management.js:23384  const absoluteWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\management.js:23564  const absoluteWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\management.js:23621  if (state.offSeason) return { error: 'offseason_locked' };
+- src\management.js:26614  if (!G.offSeason) {
+- src\management.js:26628  // weekPhaseの妥当性
+- src\management.js:26629  const validPhases = ['opening', 'draft', 'manage', 'settled', 'showPrep', 'showExec', 'offseason', 'scoutEvent',
+- src\management.js:26630  'gameover', 'ppvEntry', 'ppvShow', 'ppvTV', 'event', 'weekSummary', 'transfer',
+- src\management.js:26631  'contractNegotiation', 'juniorTournament'];
+- src\management.js:26632  if (G.weekPhase && !validPhases.includes(G.weekPhase)) {
+- src\management.js:26633  warn(`weekPhaseが不正値: "${G.weekPhase}"`);
+- src\management.js:27360  // C: bonusも清算し、offWeek3の再固定後に適正給ちょうどへ合わせる。
+- src\management.js:28080  weekPhase: 'manage',
+- src\management.js:28284  weekPhase: 'manage',
+- src\management.js:29297  if (!state || !stl || stl.cancelled || state.offSeason) return false;
+- src\management.js:32067  if (!state || state.offSeason) return state;
+- src\management.js:33285  if (state.week === Engine.juniorTournament.WEEK - 2 && !state.offSeason) {
+- src\ui-common.js:4304  && (typeof G !== 'undefined') && !G.offSeason;
+- src\ui-common.js:4342  && (G.weekPhase === 'contractNegotiation' || !!G._releaseInterviewTarget);
+- src\ui-common.js:4686  const currentAbsWeek = Engine.util.absWeekTotal(G.season, G.week, G.offSeason, G.offWeek);
+- src\ui-common.js:5144  season: G.season, week: G.week, weekPhase: G.weekPhase, venue: G.showVenue,
+- src\ui-common.js:5192  if (G.offSeason || G.weekPhase !== 'manage' || !Engine.util.isRegularShowWeek(G.week)) {
+- src\ui-common.js:5210  weekPhase: 'showPrep',
+- src\ui-common.js:5242  // startShowPrep() は weekPhase==='manage' を要求するため再入できない。ここでは
+- src\ui-common.js:5245  if (G.weekPhase !== 'showPrep') { startShowPrep(); return; }
+- src\ui-common.js:5246  if (G.offSeason || !Engine.util.isRegularShowWeek(G.week)) {
+- src\ui-common.js:6326  // 全候補処理完了 → まとめ記事 → 直接offseason進行
+- src\ui-common.js:6595  season: s.season, week: s.offWeek || 0,
+- src\ui-common.js:7170  G = { ...G, weekPhase: 'manage', pendingPoach: [], lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+- src\ui-common.js:7205  G = { ...G, seasonStats: evStats, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } };
+- src\ui-common.js:7219  G = { ...G, pendingEvent: null, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] },
+- src\ui-common.js:7277  weekPhase: 'manage',
+- src\ui-common.js:7339  // initPPVShow が playStage('ppvA') を呼んでいるが、導入(コーチ→選手→会場入り)を
+- src\ui-common.js:7790  function renderPPVTvBroadcast(card, results, ppvName) {
+- src\ui-common.js:7798  const watchCount = G.ppvTvWatchCount || 1;
+- src\ui-common.js:7970  <button type="button" class="ptv-btn" onclick="App.closePPVTV()">${WM_I18N.t('事務所へ戻る')}</button>
+- src\ui-common.js:8238  if (typeof G !== 'undefined' && G.weekPhase === 'contractNegotiation' && id !== 'shachoshitsu') return;
+- src\ui-common.js:8274  if (id !== 'show' && G.weekPhase !== 'showExec') Audio.bgm.playForState();
+- src\ui-common.js:8300  // showExec 中は興行進行のUIを壊さないよう触らない。
+- src\ui-common.js:8302  && ['manage', 'showPrep'].includes(G.weekPhase)) renderShowPrep();
+- src\ui-common.js:9262  const absoluteWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\ui-common.js:17056  function showContractNegotiationModal(neg, idx, total, state, onChoice) {
+- src\ui-common.js:21000  <div class="pb-live is-ppvtv">📺 ${WM_I18N.t('テレビ観戦')}</div>
+- src\ui-common.js:21001  <div class="pb-banner-title is-ppvtv">${WM_I18N.t('天頂戦')}</div>
+- src\ui-render.js:257  if (navBar) navBar.style.display = (['draft','opening'].includes(G.weekPhase)) ? 'none' : '';
+- src\ui-render.js:260  if (topBar) topBar.style.display = (['draft','opening'].includes(G.weekPhase)) ? 'none' : '';
+- src\ui-render.js:265  && !['draft','opening','gameover'].includes(G.weekPhase)
+- src\ui-render.js:266  && !G.offSeason;
+- src\ui-render.js:277  if (appEl) { G.weekPhase === 'draft' ? appEl.classList.add('draft-cream') : appEl.classList.remove('draft-cream'); }
+- src\ui-render.js:280  if (G.offSeason) {
+- src\ui-render.js:281  dateEl.textContent = WM_I18N.t('{season}年目 年度末 — オフシーズン {offWeek}/4', { season: G.season, offWeek: G.offWeek || 0 });
+- src\ui-render.js:546  G.weekPhase = 'draft';
+- src\ui-render.js:751  function _renderWeekSeasonTrack(week, offSeason = false, offWeek = 0) {
+- src\ui-render.js:753  const filledThrough = offSeason ? Engine.util.WEEKS_PER_SEASON : info.week;
+- src\ui-render.js:755  <div class="week-season-quarter${!offSeason && season.quarter === info.quarter ? ' is-active' : ''}">
+- src\ui-render.js:764  !offSeason && cellWeek === info.week ? 'is-current' : '',
+- src\ui-render.js:768  const ariaLabel = offSeason
+- src\ui-render.js:769  ? WM_I18N.t('年間48週完了、年度末オフシーズン{offWeek}/4', { offWeek })
+- src\ui-render.js:771  return `<div class="week-season-card${offSeason ? ' is-offseason' : ''}">
+- src\ui-render.js:774  <div class="week-season-bridge">${WM_I18N.t('年度末ブリッジ {offWeek}/4', { offWeek })}</div>
+- src\ui-render.js:786  if (G.weekPhase === 'opening') {
+- src\ui-render.js:793  if (G.weekPhase === 'juniorTournament') {
+- src\ui-render.js:809  if (G.weekPhase === 'draft') {
+- src\ui-render.js:1007  // ── OFFSEASON DISPLAY ──
+- src\ui-render.js:1008  if (G.weekPhase === 'offseason') {
+- src\ui-render.js:1009  const offW = G.offWeek || 0;
+- src\ui-render.js:1028  // **offWeek 1 =「レポート」の週にだけ出す**(2026-07-27 Keisuke 再々報告)。
+- src\ui-render.js:1030  // 総括はレポートの週のもの。offWeek 0 は引退の判断・新聞・エンディング・年末表彰式が
+- src\ui-render.js:1033  // 以前は `offW <= 1` で **offWeek 0 にも描いていた**ため、表彰式が終わった直後の
+- src\ui-render.js:1034  // offWeek 0 に総括が出てしまい、しかもボタンは「シーズンレポートへ →」と
+- src\ui-render.js:1055  // offWeek 2以降(ドラフト/移籍/開幕準備週)は従来どおりgameLogフィルタ+ランキング要約を表示
+- src\ui-render.js:1056  // D-G3: 新形式({type,data})は typeの族(GAMELOG_OFFSEASON_REPORT_TYPES)で判定し、
+- src\ui-render.js:1058  const _offseasonKw = t => typeof t === 'string' && (t.includes('オフシーズン') || t.includes('シーズン') || t.includes('引退') || t.includes('獲得') || t.includes('移籍') || t.includes('衰退') || t.includes('成長'));
+- src\ui-render.js:1059  const _offseasonHighlightKw = t => typeof t === 'string' && (t.includes('引退') || t.includes('獲得') || t.includes('移籍'));
+- src\ui-render.js:1061  if (typeof e === 'string') return _offseasonKw(e);
+- src\ui-render.js:1062  if (e && typeof e === 'object' && e.type && !(typeof e.text === 'string')) return GAMELOG_OFFSEASON_REPORT_TYPES.has(e.type);
+- src\ui-render.js:1071  const isHighlight = typeof ev === 'string' ? _offseasonHighlightKw(ev) : (ev.type && GAMELOG_OFFSEASON_REPORT_TYPES.has(ev.type));
+- src\ui-render.js:1129  document.getElementById('weekTitle').textContent = G.offSeason ? WM_I18N.t('オフシーズン {w}/4', { w: G.offWeek }) : typeLabel;
+- src\ui-render.js:1136  if (G.weekPhase === 'manage' || G.weekPhase === 'showPrep') {
+- src\ui-render.js:1337  html += G.weekPhase === 'showPrep'
+- src\ui-render.js:1348  const canManageWeek = G.weekPhase === 'manage';
+- src\ui-render.js:1525  else if (G.weekPhase === 'weekSummary') {
+- src\ui-render.js:1527  const dateStr = G.offSeason ? WM_I18N.t('オフシーズン {w}/4', { w: G.offWeek }) : Engine.util.formatDate(G.season, G.week, WM_I18N.t);
+- src\ui-render.js:1552  <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;font-weight:700" data-walk-role="advance-week" onclick="App.advanceFromWeekSummary()">${WM_I18N.t('次の週へ →')}</button>
+- src\ui-render.js:1555  else if (G.weekPhase === 'settled') {
+- src\ui-render.js:1667  else if (G.weekPhase === 'transfer') {
+- src\ui-render.js:1714  else if (G.weekPhase === 'event') {
+- src\ui-render.js:1734  else if (G.weekPhase === 'ppvEntry') {
+- src\ui-render.js:1802  else if (G.weekPhase === 'ppvShow') {
+- src\ui-render.js:1806  <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="App.initPPVShow()">🏟️ ${WM_I18N.t('PPV カードを表示')}</button>
+- src\ui-render.js:1810  else if (G.weekPhase === 'ppvTV') {
+- src\ui-render.js:1814  <button class="btn btn-blue" style="padding:10px 24px;font-size:14px" onclick="App.initPPVTV()">📺 ${WM_I18N.t('テレビ中継を見る')}</button>
+- src\ui-render.js:1819  else if (G.weekPhase === 'scoutEvent') {
+- src\ui-render.js:1821  const weekLabel = G.offSeason
+- src\ui-render.js:1822  ? WM_I18N.t('シーズン{s} オフ第{w}週', { s: G.season, w: G.offWeek || 3 })
+- src\ui-render.js:1890  // 進行不具合復旧: 想定外の weekPhase（showExec/showPrep 等）でも今週タブを空にしない。
+- src\ui-render.js:1893  console.warn('[WM] renderWeekScreen: unhandled weekPhase=', G.weekPhase, '— showing recovery UI');
+- src\ui-render.js:1896  <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px">${WM_I18N.t('想定外の状態({phase})で停止しました。下のボタンで復旧できます。', { phase: G.weekPhase || WM_I18N.t('不明') })}</div>
+- src\ui-render.js:1898  onclick="if(typeof App!=='undefined'&&App.recoverWeekPhase){App.recoverWeekPhase()}">
+- src\ui-render.js:2173  const canManage = G.weekPhase === 'manage';
+- src\ui-render.js:2879  return !!(!G.offSeason && G.week === Engine.ppvTournament.SHOW_WEEK
+- src\ui-render.js:2886  return !!(!G.offSeason && G.week === Engine.juniorTournament.WEEK
+- src\ui-render.js:2887  && (G.weekPhase === 'juniorTournament'
+- src\ui-render.js:2918  // spec: docs/ui/03-screens/tenchosen.md。weekPhaseは奪わず、manage画面のバナーから
+- src\ui-render.js:3024  weekPhase: G.weekPhase, venue: G.showVenue,
+- src\ui-render.js:3066  if (!Engine.util.isRegularShowWeek(G.week) || !['manage', 'showPrep'].includes(G.weekPhase)) {
+- src\ui-render.js:4041  <button class="btn btn-blue" onclick="G={...G,weekPhase:'manage'};showScreen('week');refreshAll()">${WM_I18N.t('← 戻る')}</button>
+- src\ui-render.js:5288  if (G.weekPhase === 'contractNegotiation') return;
+- src\ui-render.js:5417  const emptyMsg = G.offSeason
+- src\ui-render.js:5530  if (G.offSeason) {
+- src\ui-render.js:5699  if (G.offSeason) {
+- src\ui-render.js:5825  const seasonId = Engine.util.getSeasonInfo(G.offSeason ? 48 : G.week).id;
+- src\ui-render.js:5884  const eventType = context.eventType || 'offseason';
+- src\ui-render.js:5885  const weekLabel = eventType === 'offseason' ? WM_I18N.t('シーズン{season} オフ第3週', { season }) : WM_I18N.t('シーズン{season} 第{week}週', { season, week: context.week || '?' });
+- src\ui-render.js:6187  <span>${WM_I18N.t('シーズン{season} オフ第{week}週', { season: G.season || '?', week: G.offWeek || '?' })}</span>
+- src\ui-render.js:6540  G.weeklyNewspaper || { season: G.season, week: G.offWeek || G.week },
+- src\ui-render.js:6577  // 行き止まり防止(2026-07-31)。weekPhase が scoutEvent の間、週送りはこの画面へ
+- src\ui-render.js:6581  if (G.weekPhase === 'scoutEvent' && !G._draftNegotiationStarted
+- src\ui-render.js:6606  eventType: G.scoutEventType || 'offseason',
+- src\ui-render.js:7038  const alive = !!(G.weekPhase === 'scoutEvent' || G.scoutCandidates || G.scoutPendingPick
+- src\ui-render.js:7043  { season: G.season, week: G.week, offWeek: G.offWeek, weekPhase: G.weekPhase });
+- src\ui-render.js:13186  const totalWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\ui-render.js:13299  const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\ui-render.js:13523  const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+- src\ui-render.js:13596  const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+
+## Follow-up
+
+- Compare each hit against sibling execution paths before fixing.
+- If a hit changes week math, verify in-season and offseason behavior together.
+- If a hit changes persistence, inspect serialize, deserialize, and migrations in one pass.
+
