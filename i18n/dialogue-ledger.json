@@ -92781,7 +92781,7 @@
   },
   {
     "key": "あっ…勝てたかぁ…油断は禁物だね",
-    "en": "Ah... so I won. I can't afford to get careless now.",
+    "en": "Ah... I won already... Can't let my guard down, you see.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -104792,7 +104792,7 @@
   },
   {
     "key": "いい試合だったわ。また一つ経験になった……",
-    "en": "That was a good match. That's one more bit of experience for me...",
+    "en": "That was a good match. Another one to grow from...",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -125167,7 +125167,7 @@
   },
   {
     "key": "この試合、ヒールっぽかった？　えっ、そんな事無い？",
-    "en": "Was I kind of a heel out there? Huh, you don't think so?",
+    "en": "Was I being a heel out there? Huh — you don't think so?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -134744,7 +134744,7 @@
   },
   {
     "key": "どんな勝ち方でも勝ちは勝ち。…ごめんなさいね",
-    "en": "However you get it, a win is a win. ...Sorry about that.",
+    "en": "A win is a win, however it comes. ...Sorry about that.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -134800,7 +134800,7 @@
   },
   {
     "key": "どんな相手だって、自分の強みを生かせば勝てるんだよ",
-    "en": "No matter who you're up against, you can win if you play to your strengths.",
+    "en": "Anyone can be beaten, as long as you play to what you're good at.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -137654,7 +137654,7 @@
   },
   {
     "key": "ひ弱だけど…諦めたくないから…！",
-    "en": "I know I'm frail... but I don't want to give up...!",
+    "en": "I'm not strong, I know... but I don't want to give up...!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -137849,7 +137849,7 @@
   },
   {
     "key": "ふぅ……観客のみんなに実力を見せれたかな？",
-    "en": "Phew... I wonder if the crowd got to see what I'm made of.",
+    "en": "Phew... Think everyone out there got to see what I can do?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -156621,7 +156621,7 @@
   },
   {
     "key": "コツコツ磨いた関節技…やっと実を結んだわ。",
-    "en": "All those hours on my submission work... it finally came together.",
+    "en": "All those hours on my submission work... it showed today.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -169968,7 +169968,7 @@
   },
   {
     "key": "仕事もプロレスも、全力で！",
-    "en": "I go all out at work, and all out in the ring!",
+    "en": "My day job, the ring — I go all out at both!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -175171,7 +175171,7 @@
   },
   {
     "key": "冷静に分析して、弱点を突く。それだけのことよ。",
-    "en": "I analyze calmly and go for the weak point. That's all there is to it.",
+    "en": "Study them calmly. Go at the weak spot. That's all there is to it.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],

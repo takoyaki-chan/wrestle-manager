@@ -1,5 +1,30 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-08 ネイティブ検品⑤(丁寧 18行)を反映 — 改稿1本(49)、内部レビュー稿の差し戻し9本(50/51/56/58/59/62/64/65/66)、変更なし8本
+
+Keisuke から検品⑤(丁寧ブロック 49〜66、`docs/en-anchor-samples-draft-v0.1.md` §5)が到着。検品が読んだのは P7-57 内部レビュー**前**の稿(f96a4314 時点)で、**18行中17行を変更なし(または注記なし)で通し、1行(49 澤出)だけ書き換え**。裁定「検品が届いたら台帳の該当行を差し替える」(P7-57)に従い、内部レビュー⑤が改稿した10行はすべて検品稿へ差し替えた(=1本は検品の新稿、9本は検品が通した旧稿へ戻す)。**JAは1バイトも触っていない。**
+
+| # | セル | JA | 反映前(内部レビュー稿) | 反映後(検品稿) | 検品の注記 |
+|---|---|---|---|---|---|
+| 49 | 5-1 澤出 | あっ…勝てたかぁ…油断は禁物だね | Ah... so I won. I can't afford to get careless now. | Ah... I won already... Can't let my guard down, you see. | 「もう勝てたかぁ」の意味だが流れ的に最適と判断(検品稿の二重スペースは1つに正規化) |
+| 50 | 5-1 澤出 | どんな相手だって、自分の強みを生かせば勝てるんだよ | No matter who you're up against, you can win if you play to your strengths. | Anyone can be beaten, as long as you play to what you're good at. | 変更なし・「いつも以上にいい訳」 |
+| 51 | 5-1 澤出 | どんな勝ち方でも勝ちは勝ち。…ごめんなさいね | However you get it, a win is a win. ...Sorry about that. | A win is a win, however it comes. ...Sorry about that. | 変更なし |
+| 56 | 5-3 高島 | ひ弱だけど…諦めたくないから…！ | I know I'm frail... but I don't want to give up...! | I'm not strong, I know... but I don't want to give up...! | 変更なし |
+| 58 | 5-4 岸 | 冷静に分析して、弱点を突く。それだけのことよ。 | I analyze calmly and go for the weak point. That's all there is to it. | Study them calmly. Go at the weak spot. That's all there is to it. | 注記なし(検品稿=旧稿) |
+| 59 | 5-4 岸 | コツコツ磨いた関節技…やっと実を結んだわ。 | All those hours on my submission work... it finally came together. | All those hours on my submission work... it showed today. | 注記なし(検品稿=旧稿) |
+| 62 | 5-5 木ノ内 | この試合、ヒールっぽかった？　えっ、そんな事無い？ | Was I kind of a heel out there? Huh, you don't think so? | Was I being a heel out there? Huh — you don't think so? | 変更なし |
+| 64 | 5-6 大久保 | 仕事もプロレスも、全力で！ | I go all out at work, and all out in the ring! | My day job, the ring — I go all out at both! | 変更なし(ただし旧稿の "The day job" が検品稿では "My day job"。検品稿を採用) |
+| 65 | 5-6 大久保 | ふぅ……観客のみんなに実力を見せれたかな？ | Phew... I wonder if the crowd got to see what I'm made of. | Phew... Think everyone out there got to see what I can do? | 変更なし |
+| 66 | 5-6 大久保 | いい試合だったわ。また一つ経験になった…… | That was a good match. That's one more bit of experience for me... | That was a good match. Another one to grow from... | 変更なし |
+
+**変更なし8本**(内部レビューも触っていなかった行): 52/53/54 川野辺、55/57 高島、60 岸、61/63 木ノ内。
+
+- 反映先: `i18n/dialogue-ledger.json`(10行、テキスト置換・現行EN一致をassert)→ `src/lang-en-dialogue.js` 再生成(`test/i18n-build-dialogue-dict.js`: 訳文あり 17,096/未訳0/**セル検査違反0**——P7-57 で追加した規則9〜17にも旧稿は触れない)/ `i18n-ledger-consistency-test` ok / `i18n-ratchet` 増加なし。
+- docs: アンカー §5 見出し+10行の出所欄 / トーンバイブル §4-6 に「検品第5弾」7項目(検品④「原文の構造に戻す」はヤンキー帯限定・「〜かぁ」=already・「〜だね」=you see・丁寧帯の命令形短文/emダッシュ/主語落ち問いかけは可・「やっと」は毎回finallyでなくてよい・2セル間の同語重複は不問・The→My)と、内部レビュー第5弾の丁寧帯根拠2項目に「検品⑤で上書き」を明記 / ロードマップ🌐1行 / 実機確認バックログ1セクション。
+- **内部レビュー第5弾で「丁寧帯」を根拠にした規則は検品⑤に通らなかった**(命令形禁止・emダッシュは emotional の道具・名詞列+both の均質化・帯別の語の割り振り)。検品④のルールをヤンキー以外へ一般化した判断(原文の語順)も同様。蠱惑・鷹揚の内部レビュー稿(§6/§7 の18行)は検品⑥⑦が来るまでそのまま。
+- 検品稿の "Ah...  I won" の二重スペースは貼り付け由来と判断して1つにした。64 の "My day job" は旧稿(The)と1語違うが、検品が「変更なし」と書いた稿の文字列をそのまま採用。
+- **Web/配布zipは未反映**(v1.35 は検品⑤前の稿)。push・再梱包・再差し替えは Keisuke 判断(ルール: push は指示があるときだけ)。
+
 ## 2026-09-07 BOOTH 差し替え(v1.35)完了 — 商品 8121734
 
 - Browser ペインで Keisuke が pixiv ログイン → 商品編集(manage.booth.pm/items/8121734/edit)。作品ファイルは「変更する」が OS ダイアログのため Keisuke が `WrestleManager_1.35.zip` を選択(編集画面でファイル名 1.35 を確認)。

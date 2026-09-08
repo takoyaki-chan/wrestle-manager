@@ -171,7 +171,7 @@
 
 ---
 
-## 5. 丁寧(polite) — 6セル(🔍 **内部レビュー済み 2026-09-07・ネイティブ検品未着。届き次第差し替え**: 18行中10行を改稿、8行は変更なし)
+## 5. 丁寧(polite) — 6セル(✅ ネイティブ検品⑤反映 2026-09-08: 49 を検品稿に改稿、50/51/56/58/59/62/64/65/66 は内部レビュー稿を検品が通した旧稿へ戻し、52〜55/57/60/61/63 は変更なし)
 
 > **ブロックで意識したレシピ**: 完全文+緩衝表現(I think / somehow / if that's all right)。あたたかく礼を失わない。**「丁寧=敬語」ではない**(アンカー川野辺はタメ口) — 英語では相手への敬意と自分への正直さで出す。お嬢様帯との差は **courtesy without deference の逆**で、こちらは謙譲・感謝・詫びを入れてよい。
 
@@ -179,9 +179,9 @@
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| あっ…勝てたかぁ…油断は禁物だね | Ah... so I won. I can't afford to get careless now. | 内部レビュー⑤で改稿: 後置の "though" は鷹揚帯のシグネチャ(§2-6)で丁寧帯に使うと声が混線する(§4-3)。主語を戻して完全文へ |
-| どんな相手だって、自分の強みを生かせば勝てるんだよ | No matter who you're up against, you can win if you play to your strengths. | 内部レビュー⑤で改稿: 受動態が原文の主体「勝てる」を相手側に転置していた。原文の順序(どんな相手→強みを生かせば→勝てる)へ戻して能動で言う(検品④) |
-| どんな勝ち方でも勝ちは勝ち。…ごめんなさいね | However you get it, a win is a win. ...Sorry about that. | A/B収束(#18)→ 内部レビュー⑤で語順を原文へ(検品④)。"however it comes" は書き言葉寄り |
+| あっ…勝てたかぁ…油断は禁物だね | Ah... I won already... Can't let my guard down, you see. | ネイティブ検品⑤で改稿(2026-09-08): 「勝てたかぁ」を「もう勝てたのか」の驚きと読み "I won already..."。締めの「〜だね」は "you see"。内部レビュー稿(so I won / can't afford to get careless)は差し替え |
+| どんな相手だって、自分の強みを生かせば勝てるんだよ | Anyone can be beaten, as long as you play to what you're good at. | ネイティブ検品⑤で確定(変更なし・「いつも以上にいい訳」と評)。内部レビュー⑤の能動化(検品④「原文の順序」の一般化)は検品に通らず旧稿へ戻した |
+| どんな勝ち方でも勝ちは勝ち。…ごめんなさいね | A win is a win, however it comes. ...Sorry about that. | A/B収束(#18)→ ネイティブ検品⑤で確定(変更なし)。内部レビュー⑤の語順入れ替えは旧稿へ戻した |
 
 ### 5-2. 丁寧×真面目 — 川野辺菜穂子(Nahoko Kawanobe)
 
@@ -196,15 +196,15 @@
 | 日本語 | EN | 出所 |
 |---|---|---|
 | わ…わたし、勝てたの…？ うそ…！ | I... I actually won...? No way...! | A/B収束(#19・内気の「疑う」成分が残る側を採用) |
-| ひ弱だけど…諦めたくないから…！ | I know I'm frail... but I don't want to give up...! | 内部レビュー⑤で改稿: 「ひ弱」= 体の弱さ。"not strong" では岸ゆみえの "can't win on athleticism" と像が重なる。自己中断を文中へ(§3 shy) |
+| ひ弱だけど…諦めたくないから…！ | I'm not strong, I know... but I don't want to give up...! | ネイティブ検品⑤で確定(変更なし)。内部レビュー⑤の frail 稿は旧稿へ戻した |
 | 明日も生きてたい…だから、今日も戦うの…！ | I want to live to see tomorrow... that's why I fight today...! | A/B判定済(focus #20・ネイティブ指摘「今日**も**」のtoo直訳を退けて採用) |
 
 ### 5-4. 丁寧×寡黙 — 岸ゆみえ(Yumie Kishi)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| 冷静に分析して、弱点を突く。それだけのことよ。 | I analyze calmly and go for the weak point. That's all there is to it. | 内部レビュー⑤で改稿: **丁寧帯のNG「命令形」に正面から違反**していた(クール帯のregister)。原文の主語は「私」。弱点は新見ゆりの weak spot と重ねず weak point |
-| コツコツ磨いた関節技…やっと実を結んだわ。 | All those hours on my submission work... it finally came together. | 内部レビュー⑤で改稿: 「やっと」が英語から落ちていた。finally を戻し、川野辺の "it finally paid off!" とは came together で分ける |
+| 冷静に分析して、弱点を突く。それだけのことよ。 | Study them calmly. Go at the weak spot. That's all there is to it. | ネイティブ検品⑤で確定(検品稿=旧稿・注記なし)。内部レビュー⑤の「丁寧帯に命令形を使わない」稿は旧稿へ戻した(寡黙の短文は丁寧帯でも通る) |
+| コツコツ磨いた関節技…やっと実を結んだわ。 | All those hours on my submission work... it showed today. | ネイティブ検品⑤で確定(検品稿=旧稿・注記なし)。内部レビュー⑤の finally 復元稿は旧稿へ戻した(§8メモ2の川野辺との書き分けも復活) |
 | 身体能力じゃ勝てない。だから頭を使うの。 | I can't win on athleticism. So I use my head. | A/B収束(#21・寡黙帯として短い側を採用) |
 
 ### 5-5. 丁寧×お気楽 — 木ノ内幸音(Sachine Kinouchi)
@@ -212,16 +212,16 @@
 | 日本語 | EN | 出所 |
 |---|---|---|
 | 勝った！楽しい！いい感じ！ | I won! That was fun! Feeling great! | 新規 |
-| この試合、ヒールっぽかった？　えっ、そんな事無い？ | Was I kind of a heel out there? Huh, you don't think so? | 内部レビュー⑤で改稿: 「っぽかった」の含み(-ish)が消えていた。emダッシュは§3 emotional の道具なのでお気楽帯からコンマへ |
+| この試合、ヒールっぽかった？　えっ、そんな事無い？ | Was I being a heel out there? Huh — you don't think so? | ネイティブ検品⑤で確定(変更なし)。内部レビュー⑤の kind of / コンマ稿は旧稿へ戻した(丁寧×お気楽の emダッシュは検品が通した) |
 | 見てましたか！？ 私、やりましたよーっ！ | Did you see that!? I did it! | A/B判定済(focus #17・採用稿から**反復を落とした確定形**=§4-6「素直な一回が正」) |
 
 ### 5-6. 丁寧×強気 — 大久保桃子(Momoko Okubo)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| 仕事もプロレスも、全力で！ | I go all out at work, and all out in the ring! | 内部レビュー⑤で改稿: 東金沙織(§6-5)と同じ構文(名詞列+emダッシュ+both)で2セルの声が均質化していた(§4-3)。並列反復で「〜も〜も」を運ぶ |
-| ふぅ……観客のみんなに実力を見せれたかな？ | Phew... I wonder if the crowd got to see what I'm made of. | 内部レビュー⑤で改稿: 「かな？」の自問を主語落ちの問いかけで訳しており丁寧帯の完全文から外れていた。実力の訳も東金の "what I can do" と分ける |
-| いい試合だったわ。また一つ経験になった…… | That was a good match. That's one more bit of experience for me... | 内部レビュー⑤で改稿: 「経験になった」を "to grow from" に振ると原文にない前向きさが乗る。素朴に experience で受け完全文へ |
+| 仕事もプロレスも、全力で！ | My day job, the ring — I go all out at both! | ネイティブ検品⑤で確定(検品稿は旧稿 "The day job" を "My day job" とした形・変更なし扱い)。内部レビュー⑤の並列反復稿は差し替え |
+| ふぅ……観客のみんなに実力を見せれたかな？ | Phew... Think everyone out there got to see what I can do? | ネイティブ検品⑤で確定(変更なし)。内部レビュー⑤の "I wonder if" 稿は旧稿へ戻した(丁寧×強気の主語落ち問いかけは検品が通した) |
+| いい試合だったわ。また一つ経験になった…… | That was a good match. Another one to grow from... | ネイティブ検品⑤で確定(変更なし)。内部レビュー⑤の experience 稿は旧稿へ戻した |
 
 ---
 
