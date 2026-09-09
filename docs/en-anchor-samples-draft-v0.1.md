@@ -225,7 +225,7 @@
 
 ---
 
-## 6. 蠱惑(seductive) — 6セル(🔍 **内部レビュー済み 2026-09-07・ネイティブ検品未着。届き次第差し替え**: 18行中9行を改稿、9行は変更なし)
+## 6. 蠱惑(seductive) — 6セル(✅ ネイティブ検品⑥反映 2026-09-09: 67/69〜76/78〜84 の16行を検品稿に改稿、68/77 は変更なし。内部レビュー⑤の改稿9行はすべて検品稿へ差し替え)
 
 > **ブロックで意識したレシピ**: 喉を鳴らす低温(Oh my / Mm)+味わう動詞(savor / watch / enjoy)+余韻の "..."。**声を荒げない**。露骨な性的語彙と "darling" 乱発のキャンプ芝居は禁止で、色気は**温度の低さと余裕**で出す。友達口調の馴れ馴れしさと混同しない。
 
@@ -233,49 +233,49 @@
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| …あら、もう終わり？もっと苦しむ顔が見たかったのに。 | ...Oh my. Over already? I was hoping to savor that face a while longer. | A/B判定済(anchors9 #22・採用稿) |
+| …あら、もう終わり？もっと苦しむ顔が見たかったのに。 | ...Oh, over already? I was hoping to see more of your face twisted in pain. | ネイティブ検品⑥で改稿(2026-09-09): Sっ気を具体像で足した("your face twisted in pain"——検品注記「もうちょっとSな所を表せるように」)。"Oh my" は落ちて "...Oh," |
 | 関節が軋む音…心地いいわ。 | That little creak in your joints... how soothing. | A/B判定済(anchors9 #23・採用稿) |
-| 負けて無様な姿をさらして…　いい気味ね♪ | Beaten, sprawled out for everyone to see... it suits you ♪ | A/B判定済(anchors9 #24・採用稿) |
+| 負けて無様な姿をさらして…　いい気味ね♪ | Beaten and sprawled out in such an unsightly manner... it suits you ♪ | ネイティブ検品⑥で改稿: 「無様」を unsightly で強調(検品注記)。♪の前の空白は台帳慣行(149:0)に合わせた |
 
 ### 6-2. 蠱惑×寡黙 — 高槻千歳(Chitose Takatsuki)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| ふふ…計画通り | Mm... just as planned. | A/B収束(#22・語数の少ない側を採用) |
-| 支配する側と、される側。…この結果でハッキリしたわね？ | One who dominates, one who is dominated. ...That much is clear now, isn't it? | A/B判定済(focus #23・採用稿) |
-| 力づくで分からせるのも、意外と悪くないものよね♪ | Making someone understand by force is not bad at all, actually ♪ | 内部レビュー⑤で改稿: 「意外と」が丸ごと落ちていた。文末の actually で復元し、原文にコンマしかない位置への "..."(溜め)の追加をやめる(検品②の裏返し) |
+| ふふ…計画通り | Hehe... just as planned. | ネイティブ検品⑥で改稿: 「ふふ」= "Hehe..."(検品注記「笑い言葉でのアレンジ」)。内部レビュー⑤の「蠱惑=Mm」判断は検品で覆った |
+| 支配する側と、される側。…この結果でハッキリしたわね？ | These results made it clear, yes? ...Who dominates and who is dominated, I mean. | ネイティブ検品⑥で改稿: 結果→誰が支配するか、の順に組み替え "yes?" と "I mean" で流す(検品注記「ちょっとドラマチック、がナチュラルな流れに」) |
+| 力づくで分からせるのも、意外と悪くないものよね♪ | Using force to make others know their place... not a bad feeling at all ♪ | ネイティブ検品⑥で改稿: 「分からせる」= make others know their place(身の程を知らせる)。内部レビュー⑤の "actually"(意外と)稿は差し替え |
 
 ### 6-3. 蠱惑×お気楽 — 倉見菜々(Nana Kurami)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| いい試合だったね♪ …あ、本音？ もっとやれたんじゃない？ | Good match ♪ ...Oh, honestly? You could have done more than that, don't you think? | 内部レビュー⑤で改稿: 「〜じゃない？」の問い返しが平叙に潰れていた(§1-11)。毒の刺し方が「断定」でなく「同意を求める問い」なのがこのセルの芯 |
-| 人当たりいいのは仕事のスキル。毒舌はオフの特権♪ | Being pleasant is a job skill. The sharp tongue is an off-the-clock privilege ♪ | 内部レビュー⑤で改稿: 落ちの語「特権」が薄まっていた。原文の対句と privilege を戻す(検品④「原文の構造に戻す」) |
-| 勝った勝った♪　ファイトマネーで焼き肉ね♪ | Won it, won it ♪ That purse is going straight to yakiniku ♪ | A/B判定済(focus #24・採用稿はハイブリッド形)/(固有名詞: 焼肉 = yakiniku 維持が裁定) |
+| いい試合だったね♪ …あ、本音？ もっとやれたんじゃない？ | Good match ♪ ...Oh, how I really feel? Couldn't you put up more of a fight? | ネイティブ検品⑥で改稿: 本音と建て前は英語圏にない概念なので「あ、本音？」= "Oh, how I really feel?" とストレートに(検品注記)。「もっとやれたんじゃない？」は疑問形のまま(内部レビュー⑤と同方向) |
+| 人当たりいいのは仕事のスキル。毒舌はオフの特権♪ | Being pleasant is a job skill. This sharp tongue I keep strictly for off hours ♪ | ネイティブ検品⑥で改稿: "This sharp tongue I keep strictly for off hours"(「この毒舌」の指示が自然に乗る——検品注記)。内部レビュー⑤の privilege 稿は差し替え |
+| 勝った勝った♪　ファイトマネーで焼き肉ね♪ | I won ♪ I won ♪ That purse is going straight to yakiniku ♪ | ネイティブ検品⑥で改稿: 反復を歌のように "I won ♪ I won ♪"(検品注記)。生駒エリカ("That's a win for me ♪")とは引き続き別の英語 |
 
 ### 6-4. 蠱惑×強気 — 浅見里緒菜(Riona Asami)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| 元マドンナの座、必ず取り戻すわ…！ | The Madonna spot was mine once. I will be taking it back...! | 内部レビュー⑤で改稿: 指示語 "That" に先行詞がなく浮いていた。「必ず」の確信を未来進行で運ぶ/(固有名詞: マドンナの座 = the Madonna spot 仮置き・辞書待ち) |
+| 元マドンナの座、必ず取り戻すわ…！ | I used to be the queen bee, and I WILL be again...! | ネイティブ検品⑥で改稿: 「〇〇のマドンナ」は英語圏にない概念なので queen bee(社会的な場面を統べる女性)に概念置換。強調は1語の全大文字 "WILL"(検品①と同じ)。テンプレ層の人物紹介の「社内マドンナ」は office favorite(別訳のまま) |
 | 策略を巡らせるのは得意なの。正面からだけが勝負じゃない。 | Scheming happens to be a specialty of mine. Head-on is not the only way to fight. | A/B収束(#25・蠱惑の含みが残る側を採用) |
-| このまま積み上げていけば、いずれ私が…… | If I keep piling up wins like this, sooner or later it will be me... | 内部レビュー⑤で改稿: 英語の命令形慣用("Keep X, and Y")が、自分についての条件節を他者への指示に読み替えていた。一人称の条件文へ |
+| このまま積み上げていけば、いずれ私が…… | If I keep stacking wins like this, eventually I'll... | ネイティブ検品⑥で改稿: "eventually I'll..." で自然に(検品注記)。内部レビュー⑤の piling up 稿は差し替え |
 
 ### 6-5. 蠱惑×感情的 — 東金沙織(Saori Togane)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| モデルの仕事もプロレスも、華やかにこなすわ♪ | Modeling, wrestling — I look good doing both ♪ | 内部レビュー⑤で改稿: "make both of them look good" は「仕事の方を良く見せる」の意になり、「(自分が)華やかにこなす」からずれる |
-| 堅実な実力が私の強み。派手さだけじゃないの。 | Steady ability is my real strength. There's more to me than the sparkle. | 内部レビュー⑤で改稿: 落ちの語「強み」が消え、"built on" は建築の抽象メタファー(§1-5)。素直に my real strength へ |
-| 私の実力、相手に見せつけてあげたわ。 | I made sure she got a good long look at what I can do. | 新規(「〜してあげた」の恩着せを made sure で運ぶ) |
+| モデルの仕事もプロレスも、華やかにこなすわ♪ | Modeling, wrestling — I'm fabulous at both ♪ | ネイティブ検品⑥で改稿: 「華やかにこなす」= fabulous at both(検品注記)。内部レビュー⑤の look good 稿は差し替え |
+| 堅実な実力が私の強み。派手さだけじゃないの。 | I'm all about steady improvement. There's more to me than just glamor. | ネイティブ検品⑥で改稿: 「堅実な実力が私の強み」= "I'm all about steady improvement"、「派手さ」= glamor(現代語では派手さと同等——検品注記)。内部レビュー⑤の real strength 稿は差し替え |
+| 私の実力、相手に見せつけてあげたわ。 | I made sure the other side got a good long look at what I can do. | ネイティブ検品⑥で改稿: 「相手」は she だと曖昧なので the other side(検品注記) |
 
 ### 6-6. 蠱惑×真面目 — 新見ゆり(Yuri Niimi)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| …観察していれば、弱点は見えてくるものよ。 | ...Watch long enough, and the weak spot shows itself. | 新規 |
-| 大人びてるって言われるけど…それが私の武器かしら。 | People say I seem older than I am... I suppose that's my edge. | 内部レビュー⑤で改稿: **検品④「『武器』は訳さない(weapon は翻訳調)」に真正面から当たる行**。英語の生きた語 edge へ |
-| 知性で戦う。それが新見ゆりのスタイル。 | I fight with my mind. That is the Yuri Niimi style. | 内部レビュー⑤で改稿: 岸ゆみえの "So I use my head."(A/B収束の採用形)と像が重なっていたため mind に振り分け(§4-3)/**自分を三人称で呼ぶ型は共通セリフでは禁止(§1-2)。本行は個別セリフなので原文どおり保持** |
+| …観察していれば、弱点は見えてくるものよ。 | ...Observe long enough, and the weak spot shows itself. | ネイティブ検品⑥で改稿: Watch → Observe(「観察」をより直接に——検品注記) |
+| 大人びてるって言われるけど…それが私の武器かしら。 | People say I'm mature for my age... I suppose that's my strength. | ネイティブ検品⑥で改稿: 「大人びてる」= mature for my age、「武器」= strength(検品注記「武器より強さが英語で通用」)。内部レビュー⑤の edge 稿は差し替え |
+| 知性で戦う。それが新見ゆりのスタイル。 | I fight with my head. That's how Yuri Niimi gets it done. | ネイティブ検品⑥で改稿: フルネーム自称は "That's how Yuri Niimi gets it done." のフレージングなら可(検品注記)。内部レビュー⑤の mind 稿は head に戻った |
 
 ---
 
@@ -337,11 +337,11 @@
 
 1. **A/B収束行の採用形を主筆が1つに決めた**(20行)。バイブル裁定(過去形/疑問符/大文字)が効く行はそれに従い、効かない行は「英語として自然な側」(最重要則2)で選んだ。異論のある行は差し戻してほしい
 2. **英語の重複を意図的に避けた箇所**が3つある。同じ日本語表現に同じ英語を当てると34セルの声が均質化するため:
-   - 「勝った勝った♪」: 倉見菜々 = "Won it, won it ♪" / 生駒エリカ = "That's a win ♪"
+   - 「勝った勝った♪」: 倉見菜々 = "I won ♪ I won ♪"(検品⑥) / 生駒エリカ = "That's a win for me ♪"(検品④)
    - 「やっと実を結んだ/報われた」: 川野辺 = "it finally paid off!" / 岸 = "it showed today."
    - 「舐めないで」: 西川 = "Don't take it so lightly." / 菊池 = "Don't get too comfortable."
-3. **§1-2(自分を三人称で呼ばない)と衝突する行が2本**ある(新見ゆり「それが新見ゆりのスタイル」/ 副沢たまき「この副ちゃんさんを」= "good ol' Fuku-chan"。後者はA/B focus #27でKeisuke採用済み)。いずれも個別セリフなので原文どおり保持したが、共通セリフへ横展開してはいけない行として印を付けてある
-4. **固有名詞が本文に出る行は7件**: 姫宮(Himemiya) / 剛の芝(Shiba the Mighty・ネイティブ検品②で確定) / 四天王(The Big Four) / マドンナの座(the Madonna spot) / 副ちゃん(Fuku-chan) / 新見ゆり(Yuri Niimi) / 焼肉(yakiniku)。うち**四天王・副ちゃん・焼肉はA/Bで判定済み**。残る4件は辞書確定時に1語差し替えで済む形にしてある
+3. **§1-2(自分を三人称で呼ばない)と衝突する行が2本**ある(新見ゆり「それが新見ゆりのスタイル」/ 副沢たまき「この副ちゃんさんを」= "good ol' Fuku-chan"。後者はA/B focus #27でKeisuke採用済み)。いずれも個別セリフなので原文どおり保持したが、共通セリフへ横展開してはいけない行として印を付けてある。**新見ゆりの行はネイティブ検品⑥で "That's how Yuri Niimi gets it done." に確定**(「英語ではあまりフルネームを口にしないが、このフレージングなら大丈夫」)
+4. **固有名詞が本文に出る行は7件**: 姫宮(Himemiya) / 剛の芝(Shiba the Mighty・ネイティブ検品②で確定) / 四天王(The Big Four) / マドンナの座(the Madonna spot → **ネイティブ検品⑥で queen bee に概念置換**) / 副ちゃん(Fuku-chan) / 新見ゆり(Yuri Niimi) / 焼肉(yakiniku)。うち**四天王・副ちゃん・焼肉はA/Bで判定済み**。残る4件は辞書確定時に1語差し替えで済む形にしてある
 5. ~~蔵前静の「みなさま、楽しんでいただけましたか？」を平叙で訳している~~ → ネイティブ検品②で疑問形+「I do hope so.」に確定(2026-09-04)
 
 ---

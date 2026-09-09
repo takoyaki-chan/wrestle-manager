@@ -1,5 +1,36 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-09 ネイティブ検品⑥(蠱惑 18行)を反映 — 改稿16本、変更なし2本(68 橘「関節が軋む音」/ 77 浅見「策略を巡らせるのは得意なの」)
+
+Keisuke から検品⑥(蠱惑ブロック 67〜84、`docs/en-anchor-samples-draft-v0.1.md` §6)が到着。検品が読んだのは P7-57 内部レビュー**前**の稿。⑤と違い**18行中16行に手が入った**(検品②の「お嬢様」以来の改稿率)。内部レビュー⑤が改稿していた9行はすべて検品稿へ差し替え、内部レビューが触っていなかった7行も検品稿へ。**JAは1バイトも触っていない。**
+
+| # | セル | JA | 反映前(内部=内部レビュー稿、無印=旧稿) | 反映後(検品稿) | 検品の注記(要約) |
+|---|---|---|---|---|---|
+| 67 | 6-1 橘 | …あら、もう終わり？もっと苦しむ顔が見たかったのに。 | ...Oh my. Over already? I was hoping to savor that face a while longer. | ...Oh, over already? I was hoping to see more of your face twisted in pain. | もう少しSな所を表せるようにアレンジ |
+| 69 | 6-1 橘 | 負けて無様な姿をさらして…　いい気味ね♪ | Beaten, sprawled out for everyone to see... it suits you ♪ | Beaten and sprawled out in such an unsightly manner... it suits you ♪ | 「無様」を強調 |
+| 70 | 6-2 高槻 | ふふ…計画通り | Mm... just as planned. | Hehe... just as planned. | 笑い言葉でのアレンジ |
+| 71 | 6-2 高槻 | 支配する側と、される側。…この結果でハッキリしたわね？ | One who dominates, one who is dominated. ...That much is clear now, isn't it? | These results made it clear, yes? ...Who dominates and who is dominated, I mean. | ちょっとドラマチック、がナチュラルな流れに |
+| 72 | 6-2 高槻 | 力づくで分からせるのも、意外と悪くないものよね♪ | Making someone understand by force is not bad at all, actually ♪(内部) | Using force to make others know their place... not a bad feeling at all ♪ | know their place=身の程を知る。最適と判断 |
+| 73 | 6-3 倉見 | いい試合だったね♪ …あ、本音？ もっとやれたんじゃない？ | Good match ♪ ...Oh, honestly? You could have done more than that, don't you think?(内部) | Good match ♪ ...Oh, how I really feel? Couldn't you put up more of a fight? | 本音と建て前は英語圏にない概念。ストレートに |
+| 74 | 6-3 倉見 | 人当たりいいのは仕事のスキル。毒舌はオフの特権♪ | Being pleasant is a job skill. The sharp tongue is an off-the-clock privilege ♪(内部) | Being pleasant is a job skill. This sharp tongue I keep strictly for off hours ♪ | 「この毒舌」の意味。こちらがナチュラル |
+| 75 | 6-3 倉見 | 勝った勝った♪　ファイトマネーで焼き肉ね♪ | Won it, won it ♪ That purse is going straight to yakiniku ♪ | I won ♪ I won ♪ That purse is going straight to yakiniku ♪ | 繰り返しを歌のように |
+| 76 | 6-4 浅見 | 元マドンナの座、必ず取り戻すわ…！ | The Madonna spot was mine once. I will be taking it back...!(内部) | I used to be the queen bee, and I WILL be again...! | マドンナは英語圏にない概念→queen bee。強調は全大文字/斜体/太字 |
+| 78 | 6-4 浅見 | このまま積み上げていけば、いずれ私が…… | If I keep piling up wins like this, sooner or later it will be me...(内部) | If I keep stacking wins like this, eventually I'll... | もう少しナチュラルに |
+| 79 | 6-5 東金 | モデルの仕事もプロレスも、華やかにこなすわ♪ | Modeling, wrestling — I look good doing both ♪(内部) | Modeling, wrestling — I'm fabulous at both ♪ | fabulous=華やかで素晴らしい |
+| 80 | 6-5 東金 | 堅実な実力が私の強み。派手さだけじゃないの。 | Steady ability is my real strength. There's more to me than the sparkle.(内部) | I'm all about steady improvement. There's more to me than just glamor. | 「堅実に上達、それが私」。glamor は現代では派手さと同等 |
+| 81 | 6-5 東金 | 私の実力、相手に見せつけてあげたわ。 | I made sure she got a good long look at what I can do. | I made sure the other side got a good long look at what I can do. | she は曖昧→相手側 |
+| 82 | 6-6 新見 | …観察していれば、弱点は見えてくるものよ。 | ...Watch long enough, and the weak spot shows itself. | ...Observe long enough, and the weak spot shows itself. | もう少し直接な言葉に |
+| 83 | 6-6 新見 | 大人びてるって言われるけど…それが私の武器かしら。 | People say I seem older than I am... I suppose that's my edge.(内部) | People say I'm mature for my age... I suppose that's my strength. | 年の割に大人びてる。武器より強さが英語で通用 |
+| 84 | 6-6 新見 | 知性で戦う。それが新見ゆりのスタイル。 | I fight with my mind. That is the Yuri Niimi style.(内部) | I fight with my head. That's how Yuri Niimi gets it done. | フルネーム自称はこのフレージングなら大丈夫 |
+
+- 反映先: `i18n/dialogue-ledger.json`(16行、テキスト置換・現行EN一致をassert・110字上限を事前確認)→ `src/lang-en-dialogue.js` 再生成(**セル検査違反0**、未訳0)/ `i18n-ledger-consistency-test` ok / `i18n-ratchet` 増加なし / npm test。
+- 正規化2点: 検品稿の "x♪"(空白なし)は台帳慣行 " ♪"(149:0)に合わせた(69/72/73/75/79)。カーリーアポストロフィ(80/83の "There’s"/"that’s")は直線に。文字列そのものは検品稿のまま。
+- **概念置換**: 「マドンナ」→ queen bee(検品注記「〇〇のマドンナは英語圏にない概念」)。テンプレ層の人物紹介(浅見・木ノ内ほか3行)は「社内マドンナ」= office favorite で別訳のまま——セリフの queen bee と意味は両立する(社内の人気者/社交の場を統べる女性)。
+- **内部レビュー第5弾の蠱惑帯根拠の規則は検品⑥で上書き**: 「ふふ」の帯別使い分け(蠱惑=Mm→検品は Hehe)/落ちの語(意外と・特権・強み はいずれも検品稿が訳出せず)/head→mind の割り振り(検品は head)/my edge(検品は my strength)。一方、**「武器」= weapon 不採用(検品④⑤⑥で一貫)**と**「もっとやれたんじゃない？」の疑問形**(§1-11)は検品⑥が同方向で確定。
+- docs: アンカー §6 見出し+16行の出所欄+§8メモ2(倉見=I won ♪ I won ♪/生駒=検品④稿)・メモ3(新見の自称は検品⑥で確定)・メモ4(マドンナ→queen bee)/ トーンバイブル §2-7 見本表2行+レシピ注記、§4-6 に「検品第6弾」11項目と第5弾の上書き明記4箇所 / ロードマップ🌐1行 / 実機確認バックログ1セクション。
+- 見つけたが触っていないもの: テンプレ層の人物紹介に "her main weapon is" / "Her weapons are"(比喩の武器)が残っている(マドンナ3行の中だけで2件)。セリフ層の検査16(weapon 禁止)はテンプレ層に掛かっていない。検品④〜⑥の「武器は訳さない」をテンプレ層へ広げるかは別件(件数の棚卸しから)。
+- **Web/配布zipは未反映**(v1.35 は検品⑤⑥前の稿)。push・再梱包・再差し替えは Keisuke 判断。残る検品は⑦鷹揚のみ。
+
 ## 2026-09-08 ネイティブ検品⑤(丁寧 18行)を反映 — 改稿1本(49)、内部レビュー稿の差し戻し9本(50/51/56/58/59/62/64/65/66)、変更なし8本
 
 Keisuke から検品⑤(丁寧ブロック 49〜66、`docs/en-anchor-samples-draft-v0.1.md` §5)が到着。検品が読んだのは P7-57 内部レビュー**前**の稿(f96a4314 時点)で、**18行中17行を変更なし(または注記なし)で通し、1行(49 澤出)だけ書き換え**。裁定「検品が届いたら台帳の該当行を差し替える」(P7-57)に従い、内部レビュー⑤が改稿した10行はすべて検品稿へ差し替えた(=1本は検品の新稿、9本は検品が通した旧稿へ戻す)。**JAは1バイトも触っていない。**
