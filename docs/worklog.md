@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-10 v1.36 リリース — 版更新・再デプロイ・製品版梱包・検証(検品⑤〜⑦の英語セリフ40行を配布へ)
+
+Keisuke 指示「これで全部完了ということで、もう修正しちゃって」(09-10、検品⑦到着後「あなたのいうように進めてください」)。
+
+- **版更新**(Edit ツール): `release/manifest.json` 1.35→1.36 / `src/app.js` `_saveVersion` / `src/index.html` タイトル `VERSION 1.36`。`version-consistency-test` ok(v1.36)、ja-golden 完全一致(e43b8ed4…)、npm test 267/267(検品⑦反映後)。コミット 5827184c → push(Cloudflare Pages 再デプロイ)。
+- **梱包**: `release/package-release.ps1`(製品版)。作業ツリークリーン、進行不能出荷ゲート 30 PASS、39ファイル+2ディレクトリ、1,211ファイル・73.8MB → `release/dist/WrestleManager_1.36.zip`(64.3MB、**67,427,235 バイト**——DLsite の受付メールと突合する数字)。
+- **検証**: 展開物を直接検査(`verify-package.ps1` は非対話環境で Read-Host 停止のため): 1,211ファイル / src 36 / タイトル `VERSION 1.36` / dev-tools・dev-event-catalog 参照0 / セーブ版 1.36 / ルートに START.html・README.txt・ガイド3本 / EN辞書に検品⑤⑥⑦の文字列(I won already / queen bee / sell ol' Fuku-chan here short)。HTTP 配信(python http.server)で Playwright スモーク(JA/EN タイトル・`<html lang>`・新規ゲーム開始・コンソールエラー0)**11/11 PASS**。
+- ストア用の更新情報の下書き `release/dist/DLsite更新情報_v1.36.txt`(gitignore 領域)。体験版は未梱包(1.31_Trial のまま。必要なら `-Trial`)。
+- 次: DLsite(RJ01592994)/BOOTH(8121734) の差し替え——Keisuke のログインとファイル投入が要る。DLsite は 09-07 の v1.35 申請が反映済みかを先に確認する(未反映なら申請の重複になる可能性)。
+
 ## 2026-09-10 ネイティブ検品⑦(鷹揚 18行)を反映 — 改稿14本、変更なし4本(85/86/87 阿武隈、92 北畠「結果は出さないと」)。**これで検品①〜⑦が全帯完了**
 
 Keisuke から検品⑦(鷹揚ブロック 85〜102、`docs/en-anchor-samples-draft-v0.1.md` §7)が到着。検品が読んだのは P7-57 内部レビュー**前**の稿。内部レビュー⑤が改稿していた9行のうち、検品稿が旧稿と一致した4行(91/96/99/101)は旧稿へ戻し、5行(88/94/100/102 と 92)は検品稿へ——92 は内部レビューの bring→get と検品が一致したので実質変更なし。内部レビューが触っていなかった9行のうち8行も検品稿へ。**JAは1バイトも触っていない。**
