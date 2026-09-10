@@ -15,6 +15,7 @@ Keisuke 指示「itch.io にも売り出すので画像の英語版・販売画�
 - **合成パイプライン**(`WM素材/販促用/en/_tools/` に保存): `psd-en-layers.py`(psd-tools+scikit-image で PSD を 背景/スクショ7スロット/上物 に分解、`psd-shot-layers.json` に bbox)→ `en-thumb-swap.py mapping.json`(スロットに EN 画像を cover-fit で貼り、スロット別の明度で再合成。無差し替え時は元画像と最大1階調差)→ `en-thumb-compose.py <素地> <tag>`(副題 Impact 30・惹句 Noto Sans Bold 22 黒縁・4:3 メイン・63:50 カバーを出力)。撮影スクリプト `shots_v2.js`/`shots_v2b.js`/`gen-fixture.js` も同梱。
 - **P7-60 追補**: 2本目のエージェントが興行モーダルで「Spike Piledriver → 3-count / 15ターン」を発見。`src/ui-common.js` の `${result.turns}ターン`(2箇所: 興行結果の finish 表示)と `${r.turns || 0}ターン`(PPV フラッシュ詳細)を `WM_I18N.t('{n}ターン', {n})`(ui-ledger 収録済み)に。JA 出力は不変(ja-golden 完全一致)。
 - 未反映: P7-60 の修正(相関図/道場/ターン)は v1.36 には入っていない。次の配布(1.37)で。Web への push も未実施(指示待ち)。
+- **同日追記**: Keisuke「書いてください」で itch.io ページ用の英語テキストを作成 → `WM素材/販促用/en/itch_page_text_EN.md`(タイトル/短い紹介文/本文(About・Features・How it plays・Language・Requirements・Notes)/itch の設定項目の提案/スクショ10枚のキャプション)。文言は BOOTH/DLsite の日本語紹介文と CLAUDE.md の三本柱(覗き見る・社長は舞台を作る・数値は嘘をつかない)を英語で言い直したもの。Keisuke の全文チェック待ち。
 
 ## 2026-09-10 P7-60 — 英語版販売画像の撮影で見つかった EN 露出4件を修正(相関図の団体名・ライバル方向ラベル・道場のコーチ名・コーチ能力)
 
