@@ -1956,7 +1956,7 @@ function _renderRosterDojoHeader() {
   if (coachForBubble || atmo) {
     html += '<div class="dojo-scene-coach">';
     if (coachForBubble) {
-      const speakerName = (report && report.coachName) ? report.coachName : coachForBubble.name;
+      const speakerName = WM_I18N.pn((report && report.coachName) ? report.coachName : coachForBubble.name); // i18n P7-60
       // i18n Stage B P5-1: report.reportText はapp.js/management.jsで選択されたCOACH_VOICE_REPORT_LINES
       // の生JA行(選択ロジックには触れず、ここ=表示直前でt()を通す)。
       // i18n Stage B P7-2: atmo.text(ATMOSPHERE_TEXTS)はテンプレ台帳へ収録済みになったので
@@ -2133,7 +2133,8 @@ function _renderRosterDojoHeader() {
   // コーチ特性（バナー外に残す）
   if (hired.length > 0) {
     const abilityParts = hired.flatMap(c => c.abilities || []);
-    html += `<div class="train-tendency" style="margin-bottom:8px">→ ${WM_I18N.t('コーチ能力:')} <strong>${abilityParts.join('、')}</strong></div>`;
+    // i18n P7-60: 能力名を各々t()し、区切りは言語で分ける(EN は ", ")
+    html += `<div class="train-tendency" style="margin-bottom:8px">→ ${WM_I18N.t('コーチ能力:')} <strong>${abilityParts.map(a => WM_I18N.t(a)).join(WM_I18N.lang === 'ja' ? '、' : ', ')}</strong></div>`;
   }
   el.innerHTML = html;
 
@@ -13010,7 +13011,8 @@ function _relmapRivalryStrokeWidth(link, emphasized) {
 }
 
 function _relmapNodeDisplayName(node) {
-  return _escapeHtml(node?.name || '');
+  // i18n P7-60: focus/強調時のライバル方向ラベル(「A→B 71」)がノード名を生JAで出していた
+  return _escapeHtml(WM_I18N.pn(node?.name || ''));
 }
 
 function _relmapRivalryDirectionText(link, s, t, named) {
@@ -14723,7 +14725,8 @@ function _relmapGetOrgNameById(orgId) {
   if (orgId === 'player') return WM_I18N.pn(G.orgName || 'プレイヤー団体');
   if (orgId === 'fa') return WM_I18N.t('フリー');
   const org = RIVAL_ORGS.find(o => o.id === orgId);
-  return org ? (G.rivalOrgNames?.[orgId] || org.name) : orgId;
+  // i18n P7-60: AI団体名も名前辞書(pn)を通す(サイドバーの団体カード・派閥ゾーン見出し・ノードのツールチップが生JAだった)
+  return org ? WM_I18N.pn(G.rivalOrgNames?.[orgId] || org.name) : orgId;
 }
 
 // ══════════════════════════════════════════════════════════

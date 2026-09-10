@@ -1,5 +1,20 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-10 P7-60 — 英語版販売画像の撮影で見つかった EN 露出4件を修正(相関図の団体名・ライバル方向ラベル・道場のコーチ名・コーチ能力)
+
+Keisuke 指示「itch.io にも売り出すので、画像の英語版と販売画像の英語版を作ってほしい」(09-10)。英語モードで DLsite のサンプル画像10枚相当の画面を撮ったところ(エージェント、Playwright headless、旧セーブ prerefix_S12W45)、ゲーム側の英語化漏れが4件見つかった。**すべて `src/ui-render.js` の表示直前で pn()/t() を通していなかった箇所**(データ・エンジンは無変更、JA出力は不変)。
+
+| # | 画面 | 露出 | 修正 |
+|---|---|---|---|
+| 1 | 相関図(DB)のサイドバー団体カード・派閥ゾーン見出し・ノードのツールチップ | AI団体名が生JA(「凰翔プロレス」等。名前辞書には収録済み) | `_relmapGetOrgNameById` の戻りを `WM_I18N.pn()` に |
+| 2 | 相関図の focus/強調時のライバル方向ラベル(「A→B 71」) | 選手名が生JA | `_relmapNodeDisplayName` を `pn()` 経由に |
+| 3 | 道場(団体タブ)のコーチ吹き出しの名前 | 「中村 紗弓」が生JA(下のスタッフカードは Sayumi Nakamura) | `speakerName` を `pn()` に |
+| 4 | 道場の「→ コーチ能力:」の列挙 | 「弱点克服、才能開花、…」が生JA | 能力名を各々 `t()`、区切りは JA=「、」/ それ以外=", " |
+
+- 検証: `node --check` / ja-golden 完全一致 / npm test(結果は本エントリ末尾) / コーチ能力14種は ui-ledger に収録済み(未訳0)。EN での実機確認は実機確認バックログへ。
+- 旧セーブ(P7-23 以前)の新聞の完成文・決まり手文字列が JA のまま出るのは §14-3 のとおり仕様(保存済み文は書き換えない)。販売画像の撮影には現行データの fixture(`test/ui-walkthrough/fixtures/generated/chronicle-seed42.json`、18季3週)を使い、表示時再生成で EN になる新聞を撮る。
+- **英語版販売画像(進行中)**: 縦長サムネ(858×1640)は `WM素材/販促用/260323販売版サムネ.psd` を psd-tools(+scikit-image)で「背景/スクショ7スロット/上物(キャラ+隠しレイヤーの Impact "Wrestle Manager")」に分解し、スロットに EN スクショを貼って再合成する方式(JA無差し替えでの再合成は元画像と最大1階調差=同一)。副題 "WOMEN'S PRO WRESTLING MANAGEMENT SIM"(Impact 30)と惹句4行(Noto Sans Bold 22、黒縁)は Keisuke 承認済み(09-10「それでOK」)。派生: メイン画像 560×420、itch.io カバー 630×500。サンプル画像9枚は EN モードのスクショ(エージェント撮影、v2 は上記 fixture+本修正後)。素材と生成物は scratchpad(リポジトリ外)、最終版は `WM素材/販促用/en/` に置く予定。
+
 ## 2026-09-10 BOOTH 差し替え(v1.36)完了 — 商品 8121734
 
 - Keisuke が pixiv ログイン(BOOTH への遷移は DLsite 側のタブでのみ許可された)。作品ファイルは「変更する」→ OS ダイアログで Keisuke が `WrestleManager_1.36.zip` を選択。説明文は Claude が textarea に v1.36 行を挿入(React の textarea は form_input の ref が取れない場合、native setter + input イベントで通る)→ Keisuke が「英語モードの選手セリフを校正。」に短縮して公開保存。
