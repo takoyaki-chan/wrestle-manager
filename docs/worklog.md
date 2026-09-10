@@ -1,5 +1,11 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-10 BOOTH 差し替え(v1.36)完了 — 商品 8121734
+
+- Keisuke が pixiv ログイン(BOOTH への遷移は DLsite 側のタブでのみ許可された)。作品ファイルは「変更する」→ OS ダイアログで Keisuke が `WrestleManager_1.36.zip` を選択。説明文は Claude が textarea に v1.36 行を挿入(React の textarea は form_input の ref が取れない場合、native setter + input イベントで通る)→ Keisuke が「英語モードの選手セリフを校正。」に短縮して公開保存。
+- 公開ページで v1.36 行と v1.35 行(BOOTH は 1.35 公開済みなので残す)を確認、編集画面でファイル名 1.36 を確認。体験版商品(8058404)は変更なし。
+- これで v1.36 の店頭反映は DLsite(申請済み・反映待ち)/BOOTH(反映済み)とも完了。次は itch.io 向けの英語版販売画像(メインサムネ+サンプル画像)。
+
 ## 2026-09-10 DLsite 差し替え申請(v1.36)完了 — RJ01592994(v1.35 申請が「申請中」のまま重ねて申請、Keisuke 了承)
 
 - Keisuke 指示: 1.35 が未反映なので **1.36 を「英語モードを追加した版」として書く**。本体 `WrestleManager_1.36.zip`(67,427,237 バイト、裁定反映後の作り直し)は Keisuke がドラッグで投入。
