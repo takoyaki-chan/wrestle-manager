@@ -7,6 +7,7 @@ Keisuke 指示「これで全部完了ということで、もう修正しちゃ
 - **版更新**(Edit ツール): `release/manifest.json` 1.35→1.36 / `src/app.js` `_saveVersion` / `src/index.html` タイトル `VERSION 1.36`。`version-consistency-test` ok(v1.36)、ja-golden 完全一致(e43b8ed4…)、npm test 267/267(検品⑦反映後)。コミット 5827184c → push(Cloudflare Pages 再デプロイ)。
 - **梱包**: `release/package-release.ps1`(製品版)。作業ツリークリーン、進行不能出荷ゲート 30 PASS、39ファイル+2ディレクトリ、1,211ファイル・73.8MB → `release/dist/WrestleManager_1.36.zip`(64.3MB、**67,427,235 バイト**——DLsite の受付メールと突合する数字)。
 - **検証**: 展開物を直接検査(`verify-package.ps1` は非対話環境で Read-Host 停止のため): 1,211ファイル / src 36 / タイトル `VERSION 1.36` / dev-tools・dev-event-catalog 参照0 / セーブ版 1.36 / ルートに START.html・README.txt・ガイド3本 / EN辞書に検品⑤⑥⑦の文字列(I won already / queen bee / sell ol' Fuku-chan here short)。HTTP 配信(python http.server)で Playwright スモーク(JA/EN タイトル・`<html lang>`・新規ゲーム開始・コンソールエラー0)**11/11 PASS**。
+- **同日、裁定(馬入橋 weapon→strongest suit、0f9186ec)を取り込んで zip を作り直した**: push → `package-release.ps1 -Force`。ゲート30 PASS、1,211ファイル、`WrestleManager_1.36.zip` **67,427,237 バイト**(13:44)。展開検査(VERSION 1.36 / dev参照0 / セーブ版1.36 / EN辞書に strongest suit あり・best weapon なし)+ JA/EN スモーク 11/11 PASS。**教訓: 同名 zip が既にあると `package-release.ps1` は Read-Host の上書き確認で止まる(非対話環境では無言でハング、20分気づかず)。作り直しは必ず `-Force`。**
 - ストア用の更新情報の下書き `release/dist/DLsite更新情報_v1.36.txt`(gitignore 領域)。体験版は未梱包(1.31_Trial のまま。必要なら `-Trial`)。
 - 次: DLsite(RJ01592994)/BOOTH(8121734) の差し替え——Keisuke のログインとファイル投入が要る。DLsite は 09-07 の v1.35 申請が反映済みかを先に確認する(未反映なら申請の重複になる可能性)。
 
