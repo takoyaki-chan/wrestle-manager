@@ -5499,7 +5499,7 @@ function renderMatchPreview() {
         else if (result.winner === 'teamB') wNames = `${WM_I18N.pn(tB1.name)} & ${WM_I18N.pn(tB2.name)}`;
         html += `<div class="smc-result">
           <span class="winner-tag">${WM_I18N.t('🏆 {names} 勝利', { names: wNames })}</span>
-          <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t) : ''} / ${result.turns}ターン</span>
+          <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t) : ''} / ${WM_I18N.t('{n}ターン', { n: result.turns })}</span>
           <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">${WM_I18N.t('評価')} ${result.mq}</span>
         </div>`;
       } else if (isNext) {
@@ -5636,7 +5636,7 @@ function renderMatchPreview() {
       const wName = result.winner === 'draw' ? WM_I18N.t('決着つかず') : result.winner === 'left' ? charL.name : charR.name;
       html += `<div class="smc-result">
         <span class="winner-tag">${WM_I18N.t('🏆 {name} 勝利', { name: wName })}</span>
-        <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t) : ''} / ${result.turns}ターン</span>
+        <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t) : ''} / ${WM_I18N.t('{n}ターン', { n: result.turns })}</span>
         <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">${WM_I18N.t('評価')} ${result.mq}</span>
       </div>`;
     } else if (isNext) {
@@ -7912,7 +7912,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         <div class="ptv-flash-band">
           <div class="ptv-flash-kicker">RESULT — ${WM_I18N.t('第{n}試合', { n: pos + 1 })}</div>
           ${resultBlock}
-          <div class="ptv-flash-detail">${r.turns || 0}ターン ${isDraw ? '' : `<b>${escHtml(Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t))}</b>`} ／ ${WM_I18N.t('評価')} <b>${r.mq}</b> ${_pbStars(r.mq)}</div>
+          <div class="ptv-flash-detail">${WM_I18N.t('{n}ターン', { n: r.turns || 0 })} ${isDraw ? '' : `<b>${escHtml(Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t))}</b>`} ／ ${WM_I18N.t('評価')} <b>${r.mq}</b> ${_pbStars(r.mq)}</div>
         </div>
         <div class="ptv-commentary"><div class="ptv-who">${WM_I18N.t('実況')}</div>${_quoteLine(_liveLine(r))}</div>
         <div class="ptv-dots">${dots}</div>

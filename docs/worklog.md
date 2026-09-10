@@ -1,5 +1,21 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-10 英語版販売画像(itch.io 用)を作成 — メインサムネ・メイン画像・カバー・サンプル9枚 → `WM素材/販促用/en/`(リポジトリ外)。P7-60 追補: 「{n}ターン」直書き3件も修正
+
+Keisuke 指示「itch.io にも売り出すので画像の英語版・販売画像の英語版を」(09-10)、文言は「それでOK」で承認済み。
+
+| ファイル | サイズ | 中身 |
+|---|---|---|
+| WM_EN_thumb_858x1640.png(=WM_EN_sample_01.png) | 858×1640 | 縦長サムネ。PSD の隠しレイヤー "Wrestle Manager"(Impact)+副題 "WOMEN'S PRO WRESTLING MANAGEMENT SIM"+惹句4行。背景7スロットは EN スクショに差し替え(スロット別に暗さを付けて JA 版の見え方に寄せた) |
+| WM_EN_main_560x420.jpg | 560×420 | DLsite/BOOTH のメイン画像相当(サムネの 4:3 切り出し) |
+| WM_EN_cover_itch_630x500.png | 630×500 | itch.io カバー |
+| WM_EN_sample_02〜10.png | 1192×1168 ほか | 英語モードのスクショ: 新聞1面 / 経営レポート / 相関図(派閥表示・2派閥) / 相関図(ネットワーク) / ランキング団体プロフィール / 試合結果 WIN / 観戦モード / 興行カード / 団体タブ(道場+スタッフ+ロスター展開) |
+
+- **撮影**: Playwright headless(エージェント2本)。1本目は旧セーブ(prerefix_S12W45)で撮り、新聞の保存済み文が JA・団体名/ライバルラベル/コーチ名/コーチ能力の露出(P7-60)を発見。2本目は修正後のコードで、現行データの headless-sim fixture(3季3週、ライバル団体13/9/7名、派閥2つ。`test/ui-walkthrough/fixtures/headless-sim.js` で scratchpad に生成)を使い9枚とも JA 残り0を確認。chronicle-seed42 fixture は AI団体ロスターが空で店頭画像には不向きだった。
+- **合成パイプライン**(`WM素材/販促用/en/_tools/` に保存): `psd-en-layers.py`(psd-tools+scikit-image で PSD を 背景/スクショ7スロット/上物 に分解、`psd-shot-layers.json` に bbox)→ `en-thumb-swap.py mapping.json`(スロットに EN 画像を cover-fit で貼り、スロット別の明度で再合成。無差し替え時は元画像と最大1階調差)→ `en-thumb-compose.py <素地> <tag>`(副題 Impact 30・惹句 Noto Sans Bold 22 黒縁・4:3 メイン・63:50 カバーを出力)。撮影スクリプト `shots_v2.js`/`shots_v2b.js`/`gen-fixture.js` も同梱。
+- **P7-60 追補**: 2本目のエージェントが興行モーダルで「Spike Piledriver → 3-count / 15ターン」を発見。`src/ui-common.js` の `${result.turns}ターン`(2箇所: 興行結果の finish 表示)と `${r.turns || 0}ターン`(PPV フラッシュ詳細)を `WM_I18N.t('{n}ターン', {n})`(ui-ledger 収録済み)に。JA 出力は不変(ja-golden 完全一致)。
+- 未反映: P7-60 の修正(相関図/道場/ターン)は v1.36 には入っていない。次の配布(1.37)で。Web への push も未実施(指示待ち)。
+
 ## 2026-09-10 P7-60 — 英語版販売画像の撮影で見つかった EN 露出4件を修正(相関図の団体名・ライバル方向ラベル・道場のコーチ名・コーチ能力)
 
 Keisuke 指示「itch.io にも売り出すので、画像の英語版と販売画像の英語版を作ってほしい」(09-10)。英語モードで DLsite のサンプル画像10枚相当の画面を撮ったところ(エージェント、Playwright headless、旧セーブ prerefix_S12W45)、ゲーム側の英語化漏れが4件見つかった。**すべて `src/ui-render.js` の表示直前で pn()/t() を通していなかった箇所**(データ・エンジンは無変更、JA出力は不変)。
