@@ -279,7 +279,7 @@
 
 ---
 
-## 7. 鷹揚(composed) — 6セル(🔍 **内部レビュー済み 2026-09-07・ネイティブ検品未着。届き次第差し替え**: 18行中9行を改稿、9行は変更なし)
+## 7. 鷹揚(composed) — 6セル(✅ ネイティブ検品⑦反映 2026-09-10: 88〜91/93〜102 の14行を検品稿に、85/86/87/92 は変更なし。内部レビュー⑤の改稿9行はすべて検品稿へ差し替え。**これで検品①〜⑦が全帯揃った**)
 
 > **ブロックで意識したレシピ**: 大人の余裕 = **急がない英語**。相手を立ててから自分の話をする。軽い皮肉は後置の "though" で出す。短縮形は普通に使う。はしゃぎ・威圧・若者スラングは入れない。強気帯でも喧嘩腰にならず、余裕の笑みのまま圧をかける。
 
@@ -295,41 +295,41 @@
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| あ～疲れた。でもまぁ勝ったからいっか♪ | Ahh, I'm beat. Well, I won, so I'll call it good ♪ | 内部レビュー⑤で改稿: 「あ～」は息を吐く脱力で、"Ugh"(嫌悪・うんざり)は温度が違う。鷹揚帯に不機嫌さを足さない(§4-1) |
-| 楽して勝てるのが一番！ 効率重視ってやつ？ | Winning the easy way is the best way! What do they call it — efficiency? | A/B収束(#26・「〜ってやつ？」が英語として自然に出る側を採用) |
-| この副ちゃんさんを、舐めないでよね～ | Hey now — show good ol' Fuku-chan a little respect~ | A/B判定済(focus #27・採用稿)/(固有名詞: 自称あだ名 副ちゃん = Fuku-chan・辞書待ち) |
+| あ～疲れた。でもまぁ勝ったからいっか♪ | Ah, I'm beat. But hey, I won so it's all good, I guess ♪ | ネイティブ検品⑦で改稿(2026-09-10): 「いっか♪」の準疑問形を "it's all good, I guess" で保存(検品注記)。検品稿の二重スペースと "x♪" は台帳慣行に正規化 |
+| 楽して勝てるのが一番！ 効率重視ってやつ？ | Winning the easy way is the best way! Isn't that just efficiency at work? | ネイティブ検品⑦で改稿: 「効率重視ってやつ？」= "Isn't that just efficiency at work?"(検品注記「効率重視を働かせる、って事よね」)。emダッシュの言い淀み稿は差し替え |
+| この副ちゃんさんを、舐めないでよね～ | Hey now — don't sell ol' Fuku-chan here short~ | ネイティブ検品⑦で改稿: 「舐めないで」= sell (someone) short(低く評価する——検品注記)。A/B focus #27 の "good ol' Fuku-chan" は "ol' Fuku-chan here" に(自称の型は維持) |
 
 ### 7-3. 鷹揚×寡黙 — 北畠吉乃(Yoshino Kitabatake)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| ……わたしの実力、さすがに伝わった？ | ...You understand what I'm capable of now, don't you? | 内部レビュー⑤で改稿: 東金沙織の "what I can do" と実力の訳が重なっていたため what I'm capable of に振り分け(§4-3) |
+| ……わたしの実力、さすがに伝わった？ | ...You know what I can do now, don't you? | ネイティブ検品⑦で確定(変更なし)。内部レビュー⑤の "what I'm capable of"(帯別の語割り)稿は旧稿へ戻した |
 | …みんなに迷惑はかけられない。…結果は出さないと。 | ...I can't let everyone down. ...I have to get results. | 内部レビュー⑤で改稿: "bring results" はビジネス直訳の匂い。英語の共起は get / deliver results(§1-5 翻訳調) |
-| グラウンドは得意なの。……みんな逃げられないよ？ | I'm at my best on the mat. ...Nobody gets away down there. | A/B判定済(focus #28・採用稿。「グラウンド」= on the mat) |
+| グラウンドは得意なの。……みんな逃げられないよ？ | Didn't you hear that I'm great at groundwork? ...Nobody escapes from me. | ネイティブ検品⑦で改稿: 疑問形を前半へ移し、「逃げられないよ？」は断言で受ける(検品注記)。グラウンド= groundwork |
 
 ### 7-4. 鷹揚×強気 — 菊池璃子(Riko Kikuchi)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| 外では厳しく、家では陽気♪ …リングの上は？ もちろん全力よ！ | Strict in public, cheerful at home ♪ ...In the ring? Everything I've got, of course! | 内部レビュー⑤で改稿: 「もちろん」(強気の自明さ)が落ちていた/(自問自答の呼吸=セル骨格) |
-| わたしこれでも実力者扱いされてるのよ？あんまり舐めないでよね | They do call me a real contender, you know? Don't get too comfortable. | 新規(西川ちあきの "Don't take it so lightly" と英語を重ねない) |
-| ふぅ…調子上がってきたかな？ | Phew... I'm starting to hit my stride, I think. | 内部レビュー⑤で改稿: **検品①「文末の『かも/かな』= "... I think."。"maybe" は文頭専用で文末に置かない」への正面違反**。新セル検査15で機械検出できる形にした |
+| 外では厳しく、家では陽気♪ …リングの上は？ もちろん全力よ！ | Strict in public, cheerful at home ♪ ...In the ring? Of course I give it my all! | ネイティブ検品⑦で改稿: 「もちろん」を文頭の Of course で保存(検品注記)。内部レビュー⑤の文末 ", of course!" 稿は差し替え |
+| わたしこれでも実力者扱いされてるのよ？あんまり舐めないでよね | They do call me a real contender, you know? Don't sell me too short. | ネイティブ検品⑦で改稿: 「舐めないで」= sell short(90 と同じ語——検品注記「90番と同じ」)。西川("Don't take it so lightly.")との書き分けは維持 |
+| ふぅ…調子上がってきたかな？ | Phew... starting to hit my stride, maybe? | ネイティブ検品⑦で確定(変更なし)。内部レビュー⑤が検品①「文末の maybe 禁止」で改稿していたが、疑問文末の "maybe?"(「〜かな？」)は検品⑦が通した。セル検査15を疑問形除外に緩和 |
 
 ### 7-5. 鷹揚×感情的 — 林真尋(Mahiro Hayashi)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| バスケで鍛えたフットワーク、プロレスでも使えるね！ | Turns out the footwork I built playing basketball works fine in here! | 新規(「プロレス**でも**」をtooで運ばない=§4-6) |
-| 技術とかよくわかんないけど、打撃なら任せて！ | I don't really get technique, but leave the striking to me! | A/B収束(#29・直球で構えのない側を採用) |
-| プライドにかけて、負けるわけにはいかない！ | I've got my pride riding on this. I'm not losing this one! | 内部レビュー⑤で改稿: "Losing isn't an option!" は英語の定型句(failure is not an option)で§1-5(翻訳調定型)・§4-5(maxim化)に触れる |
+| バスケで鍛えたフットワーク、プロレスでも使えるね！ | Turns out the footwork I built playing basketball works fine here too! | ネイティブ検品⑦で改稿: "in here" → "here too"(検品注記「プチアレンジでナチュラルさ↑」)。対比の「〜でも」は too でよい |
+| 技術とかよくわかんないけど、打撃なら任せて！ | I don't really get technique or whatever, but leave the striking to me! | ネイティブ検品⑦で改稿: 「技術とか」の「とか」= or whatever(検品注記) |
+| プライドにかけて、負けるわけにはいかない！ | I've got my pride on the line. Losing isn't an option! | ネイティブ検品⑦で確定(変更なし)。内部レビュー⑤の「英語の定型句も避ける」稿は旧稿へ戻した("Losing isn't an option!" は検品が可とした) |
 
 ### 7-6. 鷹揚×真面目 — 馬入橋ほとり(Hotori Banyubashi)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| この体格とパワー…特殊な血筋のおかげかな。 | The size, the power... I have an unusual bloodline to thank, I suppose. | 内部レビュー⑤で改稿: 「特殊な」「おかげ」がともに落ちていた。unusual / to thank で戻す |
-| 精神的な強さが一番の武器。何があっても折れない！ | Mental toughness is my strongest suit. No matter what happens, I won't break! | A/B収束(#30)→ 内部レビュー⑤で改稿: **検品④「『武器』は訳さない」**。sports英語の共起 mental toughness + strongest suit へ。「何があっても」を残す判断は維持 |
-| まだまだ成長途中。もっと強くなってみせる！ | Still a work in progress. Just watch me get stronger! | 内部レビュー⑤で改稿: "stronger than this" は「もっと」の直訳で英語として据わりが悪い。「〜してみせる」の宣言性を "Just watch me" で運ぶ |
+| この体格とパワー…特殊な血筋のおかげかな。 | This build and power of mine... All thanks to my special bloodline, I guess. | ネイティブ検品⑦で改稿(検品注記「もうちょいナチュラルに」)。「かな」= I guess |
+| 精神的な強さが一番の武器。何があっても折れない！ | Mental strength is my best weapon. No matter what happens, I won't break! | ネイティブ検品⑦で確定(変更なし)。**検品④⑥の「武器は訳さない」と割れた1件**——検品⑦の行を尊重し、セル検査16はこのキーだけ例外。Keisuke 裁定で④⑥側に寄せるなら "Mental toughness is my strongest suit." へ1行差し替え+例外解除 |
+| まだまだ成長途中。もっと強くなってみせる！ | I'm still a work in progress. I'm going to get even stronger! | ネイティブ検品⑦で改稿: 主語 I'm を補い "even stronger"(検品注記「プチアレンジ」) |
 
 ---
 
@@ -339,8 +339,8 @@
 2. **英語の重複を意図的に避けた箇所**が3つある。同じ日本語表現に同じ英語を当てると34セルの声が均質化するため:
    - 「勝った勝った♪」: 倉見菜々 = "I won ♪ I won ♪"(検品⑥) / 生駒エリカ = "That's a win for me ♪"(検品④)
    - 「やっと実を結んだ/報われた」: 川野辺 = "it finally paid off!" / 岸 = "it showed today."
-   - 「舐めないで」: 西川 = "Don't take it so lightly." / 菊池 = "Don't get too comfortable."
-3. **§1-2(自分を三人称で呼ばない)と衝突する行が2本**ある(新見ゆり「それが新見ゆりのスタイル」/ 副沢たまき「この副ちゃんさんを」= "good ol' Fuku-chan"。後者はA/B focus #27でKeisuke採用済み)。いずれも個別セリフなので原文どおり保持したが、共通セリフへ横展開してはいけない行として印を付けてある。**新見ゆりの行はネイティブ検品⑥で "That's how Yuri Niimi gets it done." に確定**(「英語ではあまりフルネームを口にしないが、このフレージングなら大丈夫」)
+   - 「舐めないで」: 西川 = "Don't take it so lightly." / 菊池 = "Don't sell me too short."(検品⑦。同じ鷹揚帯の副沢 "don't sell ol' Fuku-chan here short~" と検品が意図的に揃えた)
+3. **§1-2(自分を三人称で呼ばない)と衝突する行が2本**ある(新見ゆり「それが新見ゆりのスタイル」/ 副沢たまき「この副ちゃんさんを」= "ol' Fuku-chan here"。後者はA/B focus #27でKeisuke採用の "good ol' Fuku-chan" をネイティブ検品⑦が "don't sell ol' Fuku-chan here short~" に改稿)。いずれも個別セリフなので原文どおり保持したが、共通セリフへ横展開してはいけない行として印を付けてある。**新見ゆりの行はネイティブ検品⑥で "That's how Yuri Niimi gets it done." に確定**(「英語ではあまりフルネームを口にしないが、このフレージングなら大丈夫」)
 4. **固有名詞が本文に出る行は7件**: 姫宮(Himemiya) / 剛の芝(Shiba the Mighty・ネイティブ検品②で確定) / 四天王(The Big Four) / マドンナの座(the Madonna spot → **ネイティブ検品⑥で queen bee に概念置換**) / 副ちゃん(Fuku-chan) / 新見ゆり(Yuri Niimi) / 焼肉(yakiniku)。うち**四天王・副ちゃん・焼肉はA/Bで判定済み**。残る4件は辞書確定時に1語差し替えで済む形にしてある
 5. ~~蔵前静の「みなさま、楽しんでいただけましたか？」を平叙で訳している~~ → ネイティブ検品②で疑問形+「I do hope so.」に確定(2026-09-04)
 

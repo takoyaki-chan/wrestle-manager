@@ -22415,7 +22415,7 @@
   },
   {
     "key": "……わたしの実力、さすがに伝わった？",
-    "en": "...You understand what I'm capable of now, don't you?",
+    "en": "...You know what I can do now, don't you?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -103697,7 +103697,7 @@
   },
   {
     "key": "あ～疲れた。でもまぁ勝ったからいっか♪",
-    "en": "Ahh, I'm beat. Well, I won, so I'll call it good ♪",
+    "en": "Ah, I'm beat. But hey, I won so it's all good, I guess ♪",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -122184,7 +122184,7 @@
   },
   {
     "key": "この体格とパワー…特殊な血筋のおかげかな。",
-    "en": "The size, the power... I have an unusual bloodline to thank, I suppose.",
+    "en": "This build and power of mine... All thanks to my special bloodline, I guess.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -122449,7 +122449,7 @@
   },
   {
     "key": "この副ちゃんさんを、舐めないでよね～",
-    "en": "Hey now — show good ol' Fuku-chan a little respect~",
+    "en": "Hey now — don't sell ol' Fuku-chan here short~",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -137905,7 +137905,7 @@
   },
   {
     "key": "ふぅ…調子上がってきたかな？",
-    "en": "Phew... I'm starting to hit my stride, I think.",
+    "en": "Phew... starting to hit my stride, maybe?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -143840,7 +143840,7 @@
   },
   {
     "key": "まだまだ成長途中。もっと強くなってみせる！",
-    "en": "Still a work in progress. Just watch me get stronger!",
+    "en": "I'm still a work in progress. I'm going to get even stronger!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -155560,7 +155560,7 @@
   },
   {
     "key": "わたしこれでも実力者扱いされてるのよ？あんまり舐めないでよね",
-    "en": "They do call me a real contender, you know? Don't get too comfortable.",
+    "en": "They do call me a real contender, you know? Don't sell me too short.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -156414,7 +156414,7 @@
   },
   {
     "key": "グラウンドは得意なの。……みんな逃げられないよ？",
-    "en": "I'm at my best on the mat. ...Nobody gets away down there.",
+    "en": "Didn't you hear that I'm great at groundwork? ...Nobody escapes from me.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -159191,7 +159191,7 @@
   },
   {
     "key": "バスケで鍛えたフットワーク、プロレスでも使えるね！",
-    "en": "Turns out the footwork I built playing basketball works fine in here!",
+    "en": "Turns out the footwork I built playing basketball works fine here too!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -160683,7 +160683,7 @@
   },
   {
     "key": "プライドにかけて、負けるわけにはいかない！",
-    "en": "I've got my pride riding on this. I'm not losing this one!",
+    "en": "I've got my pride on the line. Losing isn't an option!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -184714,7 +184714,7 @@
   },
   {
     "key": "外では厳しく、家では陽気♪ …リングの上は？ もちろん全力よ！",
-    "en": "Strict in public, cheerful at home ♪ ...In the ring? Everything I've got, of course!",
+    "en": "Strict in public, cheerful at home ♪ ...In the ring? Of course I give it my all!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -193829,7 +193829,7 @@
   },
   {
     "key": "技術とかよくわかんないけど、打撃なら任せて！",
-    "en": "I don't really get technique, but leave the striking to me!",
+    "en": "I don't really get technique or whatever, but leave the striking to me!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -199881,7 +199881,7 @@
   },
   {
     "key": "楽して勝てるのが一番！ 効率重視ってやつ？",
-    "en": "Winning the easy way is the best way! What do they call it — efficiency?",
+    "en": "Winning the easy way is the best way! Isn't that just efficiency at work?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -215618,7 +215618,7 @@
   },
   {
     "key": "精神的な強さが一番の武器。何があっても折れない！",
-    "en": "Mental toughness is my strongest suit. No matter what happens, I won't break!",
+    "en": "Mental strength is my best weapon. No matter what happens, I won't break!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],

@@ -1,5 +1,33 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-10 ネイティブ検品⑦(鷹揚 18行)を反映 — 改稿14本、変更なし4本(85/86/87 阿武隈、92 北畠「結果は出さないと」)。**これで検品①〜⑦が全帯完了**
+
+Keisuke から検品⑦(鷹揚ブロック 85〜102、`docs/en-anchor-samples-draft-v0.1.md` §7)が到着。検品が読んだのは P7-57 内部レビュー**前**の稿。内部レビュー⑤が改稿していた9行のうち、検品稿が旧稿と一致した4行(91/96/99/101)は旧稿へ戻し、5行(88/94/100/102 と 92)は検品稿へ——92 は内部レビューの bring→get と検品が一致したので実質変更なし。内部レビューが触っていなかった9行のうち8行も検品稿へ。**JAは1バイトも触っていない。**
+
+| # | セル | JA | 反映前(内部=内部レビュー稿、無印=旧稿) | 反映後(検品稿) | 検品の注記(要約) |
+|---|---|---|---|---|---|
+| 88 | 7-2 副沢 | あ～疲れた。でもまぁ勝ったからいっか♪ | Ahh, I'm beat. Well, I won, so I'll call it good ♪(内部) | Ah, I'm beat. But hey, I won so it's all good, I guess ♪ | 準疑問形な感じを保存 |
+| 89 | 7-2 副沢 | 楽して勝てるのが一番！ 効率重視ってやつ？ | Winning the easy way is the best way! What do they call it — efficiency? | Winning the easy way is the best way! Isn't that just efficiency at work? | 「効率重視を働かせる、って事よね」 |
+| 90 | 7-2 副沢 | この副ちゃんさんを、舐めないでよね～ | Hey now — show good ol' Fuku-chan a little respect~ | Hey now — don't sell ol' Fuku-chan here short~ | sell short=低く評価する |
+| 91 | 7-3 北畠 | ……わたしの実力、さすがに伝わった？ | ...You understand what I'm capable of now, don't you?(内部) | ...You know what I can do now, don't you? | 変更なし(旧稿) |
+| 93 | 7-3 北畠 | グラウンドは得意なの。……みんな逃げられないよ？ | I'm at my best on the mat. ...Nobody gets away down there. | Didn't you hear that I'm great at groundwork? ...Nobody escapes from me. | 疑問形を前半へ移動 |
+| 94 | 7-4 菊池 | 外では厳しく、家では陽気♪ …リングの上は？ もちろん全力よ！ | Strict in public, cheerful at home ♪ ...In the ring? Everything I've got, of course!(内部) | Strict in public, cheerful at home ♪ ...In the ring? Of course I give it my all! | 「もちろん」を保存 |
+| 95 | 7-4 菊池 | わたしこれでも実力者扱いされてるのよ？あんまり舐めないでよね | They do call me a real contender, you know? Don't get too comfortable. | They do call me a real contender, you know? Don't sell me too short. | 90番と同じ |
+| 96 | 7-4 菊池 | ふぅ…調子上がってきたかな？ | Phew... I'm starting to hit my stride, I think.(内部) | Phew... starting to hit my stride, maybe? | 変更なし(旧稿) |
+| 97 | 7-5 林 | バスケで鍛えたフットワーク、プロレスでも使えるね！ | Turns out the footwork I built playing basketball works fine in here! | Turns out the footwork I built playing basketball works fine here too! | プチアレンジ |
+| 98 | 7-5 林 | 技術とかよくわかんないけど、打撃なら任せて！ | I don't really get technique, but leave the striking to me! | I don't really get technique or whatever, but leave the striking to me! | 「とか」を保存 |
+| 99 | 7-5 林 | プライドにかけて、負けるわけにはいかない！ | I've got my pride riding on this. I'm not losing this one!(内部) | I've got my pride on the line. Losing isn't an option! | 変更なし(旧稿) |
+| 100 | 7-6 馬入橋 | この体格とパワー…特殊な血筋のおかげかな。 | The size, the power... I have an unusual bloodline to thank, I suppose.(内部) | This build and power of mine... All thanks to my special bloodline, I guess. | もうちょいナチュラルに |
+| 101 | 7-6 馬入橋 | 精神的な強さが一番の武器。何があっても折れない！ | Mental toughness is my strongest suit. No matter what happens, I won't break!(内部) | Mental strength is my best weapon. No matter what happens, I won't break! | 変更なし(旧稿)——検品④⑥と割れ |
+| 102 | 7-6 馬入橋 | まだまだ成長途中。もっと強くなってみせる！ | Still a work in progress. Just watch me get stronger!(内部) | I'm still a work in progress. I'm going to get even stronger! | プチアレンジ |
+
+- 反映先: `i18n/dialogue-ledger.json`(14行、テキスト置換・現行EN一致をassert)→ `src/lang-en-dialogue.js` 再生成(**セル検査違反0**、未訳0)/ `i18n-ledger-consistency-test` ok / `i18n-ratchet` 増加なし / npm test。
+- **セル検査2箇所を改定**(`test/i18n-build-dialogue-dict.js`): (1) 規則15「文末の maybe」を**疑問形除外**に——96「調子上がってきたかな？」= "starting to hit my stride, maybe?" を検品⑦が変更なしで通した。検品①の禁止は平叙の「…かも」= "... maybe." についてのもの。(2) 規則16「比喩の武器」に**キー単位の例外集合** `WEAPON_NATIVE_APPROVED_KEYS`(1件)——101 馬入橋 "Mental strength is my best weapon." を検品⑦が変更なしで通し、検品④(「武器は訳さない」)⑥(「武器より強さ」)と割れた。**ネイティブ同士が割れた唯一の項目。台帳は⑦の行を尊重、最終判断は Keisuke**(④⑥側に寄せるなら "Mental toughness is my strongest suit." に1行差し替え+例外解除)。specs `i18n-runtime-spec-v1.0.md` に改定を追記。
+- 正規化: 検品稿の二重スペース(88/90)は1つに、カーリーアポストロフィは直線に、"x♪" は " ♪" に。文字列そのものは検品稿のまま。
+- **内部レビュー第5弾の鷹揚帯根拠の規則は検品⑦で上書き**: 文末 maybe(→疑問形は可)/英語の定型句("Losing isn't an option!" は可)/帯別の語割り(北畠 what I'm capable of → what I can do)。一致したもの: 北畠 bring→get results、菊池「もちろん」の訳出。検品⑤⑥⑦を通した総括——**内部レビューが帯の「らしさ」を根拠に変えた行は、ネイティブにはほぼ通らなかった**(⑤ 0/10、⑥ 0/9、⑦ 1/9=get results のみ)。通ったのは「意味が英語に届いていない」型の指摘だけ。
+- docs: アンカー §7 見出し+14行の出所欄+§8メモ2(菊池=sell short)・メモ3(副沢=ol' Fuku-chan here)/ トーンバイブル §4-6 に「検品第7弾」8項目+第5弾の上書き明記5箇所 / 裁定文書 §D-1 を全帯完了に(残る裁定は武器1件)・D-2 PDF は用途がなければ不要 / ロードマップ🌐 / 実機確認バックログ1セクション。
+- 次: Keisuke 指示「全部完了ということで修正」(09-10)により、v1.36 として版更新→push→製品版梱包→DLsite/BOOTH 差し替えへ(同日、別エントリ)。
+
 ## 2026-09-09 ネイティブ検品⑥(蠱惑 18行)を反映 — 改稿16本、変更なし2本(68 橘「関節が軋む音」/ 77 浅見「策略を巡らせるのは得意なの」)
 
 Keisuke から検品⑥(蠱惑ブロック 67〜84、`docs/en-anchor-samples-draft-v0.1.md` §6)が到着。検品が読んだのは P7-57 内部レビュー**前**の稿。⑤と違い**18行中16行に手が入った**(検品②の「お嬢様」以来の改稿率)。内部レビュー⑤が改稿していた9行はすべて検品稿へ差し替え、内部レビューが触っていなかった7行も検品稿へ。**JAは1バイトも触っていない。**
