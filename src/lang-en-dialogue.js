@@ -15715,7 +15715,7 @@
     "精一杯の試合を、お見せいたします": "I'll show you the best match I have in me.",
     "精一杯やります！応援してください！": "I'll give it all I have! Please support me!",
     "精一杯やれました…！ この経験を活かしたい": "I gave it everything...! I want to put this to use.",
-    "精神的な強さが一番の武器。何があっても折れない！": "Mental strength is my best weapon. No matter what happens, I won't break!",
+    "精神的な強さが一番の武器。何があっても折れない！": "Mental toughness is my strongest suit. No matter what happens, I won't break!",
     "精進の成果、すべてお見せいたしますわ": "Everything my training has made of me, I shall show you.",
     "精進を続けます。これで終わりではない": "I'll keep at the work. This isn't the end of it.",
     "約束…守れたわね、{partner}…っ！": "The promise... we kept it, {partner}...!",

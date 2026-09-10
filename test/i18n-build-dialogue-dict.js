@@ -155,11 +155,8 @@ const YOUTH_SLANG_RE = /\b(lol|lmao|omg|omfg|bruh|sus|totes|fam|bae|yeet|deadass
 const TRAILING_MAYBE_RE = /(,\s*[Mm]aybe\b[.!…]*\s*$)|(\.{2,}\s*maybe\b[.!…]*\s*$)/;
 // 16. 比喩の「武器」= weapon。限定詞+(最大2語の修飾)+weapon、または be/become + 冠詞 + weapon。
 const METAPHORICAL_WEAPON_RE = /\b(?:my|your|her|his|our|their|the)\s+(?:[A-Za-z]+\s+){0,2}weapons?\b|\b(?:is|are|was|were|becomes?|became)\s+(?:a|an|my|the)\s+(?:[A-Za-z]+\s+){0,2}weapons?\b/i;
-//     ネイティブ検品が weapon を明示的に「変更なし」で通した行(検品④⑥の「武器は訳さない」と
-//     検品⑦の裁定が割れた1件。2026-09-10、Keisuke 裁定待ちの間は検品⑦の行を尊重する)。
-const WEAPON_NATIVE_APPROVED_KEYS = new Set([
-  '精神的な強さが一番の武器。何があっても折れない！', // 馬入橋ほとり(鷹揚×真面目)・検品⑦ #101
-]);
+//     検品⑦が馬入橋「精神的な強さが一番の武器」= "my best weapon" を変更なしで通し検品④⑥と割れたが、
+//     2026-09-10 Keisuke 裁定「④⑥側に寄せる」で例外なし(行は "my strongest suit" へ)。
 // 17. 翻訳調定型句(§1-5に列挙されている型)。
 const TRANSLATIONESE_RE = /\b(it can'?t be helped|it cannot be helped|as expected of|i'?ll do my best|i will do my best)\b/i;
 
@@ -244,7 +241,7 @@ function checkCellRules(entry, en, violations) {
     violations.push(`[全帯]文末の"maybe"禁止(検品①: 文末の「かも」は "... I think."。maybeは文頭専用): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${mm[0].trim()}")`);
   }
   const wm = en.match(METAPHORICAL_WEAPON_RE);
-  if (wm && !WEAPON_NATIVE_APPROVED_KEYS.has(entry.key)) {
+  if (wm) {
     violations.push(`[全帯]比喩の「武器」をweaponと訳さない(検品④): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${wm[0]}")`);
   }
   const tm = en.match(TRANSLATIONESE_RE);

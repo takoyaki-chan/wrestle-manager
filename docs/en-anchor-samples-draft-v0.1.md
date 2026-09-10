@@ -279,7 +279,7 @@
 
 ---
 
-## 7. 鷹揚(composed) — 6セル(✅ ネイティブ検品⑦反映 2026-09-10: 88〜91/93〜102 の14行を検品稿に、85/86/87/92 は変更なし。内部レビュー⑤の改稿9行はすべて検品稿へ差し替え。**これで検品①〜⑦が全帯揃った**)
+## 7. 鷹揚(composed) — 6セル(✅ ネイティブ検品⑦反映 2026-09-10: 88〜91/93〜100/102 の13行を検品稿に、85/86/87/92 は変更なし、101 は Keisuke 裁定で検品④⑥側(strongest suit)。**これで検品①〜⑦が全帯揃った**)
 
 > **ブロックで意識したレシピ**: 大人の余裕 = **急がない英語**。相手を立ててから自分の話をする。軽い皮肉は後置の "though" で出す。短縮形は普通に使う。はしゃぎ・威圧・若者スラングは入れない。強気帯でも喧嘩腰にならず、余裕の笑みのまま圧をかける。
 
@@ -328,7 +328,7 @@
 | 日本語 | EN | 出所 |
 |---|---|---|
 | この体格とパワー…特殊な血筋のおかげかな。 | This build and power of mine... All thanks to my special bloodline, I guess. | ネイティブ検品⑦で改稿(検品注記「もうちょいナチュラルに」)。「かな」= I guess |
-| 精神的な強さが一番の武器。何があっても折れない！ | Mental strength is my best weapon. No matter what happens, I won't break! | ネイティブ検品⑦で確定(変更なし)。**検品④⑥の「武器は訳さない」と割れた1件**——検品⑦の行を尊重し、セル検査16はこのキーだけ例外。Keisuke 裁定で④⑥側に寄せるなら "Mental toughness is my strongest suit." へ1行差し替え+例外解除 |
+| 精神的な強さが一番の武器。何があっても折れない！ | Mental toughness is my strongest suit. No matter what happens, I won't break! | ネイティブ検品⑦は "Mental strength is my best weapon." を変更なしで通したが、検品④⑥「武器は訳さない」と割れたため **Keisuke 裁定(2026-09-10)で④⑥側に寄せた**(内部レビュー⑤の稿を採用)。セル検査16の例外なし |
 | まだまだ成長途中。もっと強くなってみせる！ | I'm still a work in progress. I'm going to get even stronger! | ネイティブ検品⑦で改稿: 主語 I'm を補い "even stronger"(検品注記「プチアレンジ」) |
 
 ---
