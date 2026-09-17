@@ -48,6 +48,10 @@ function record(args) {
   const anchor = code.includes('return awards;\r\n};') ? 'return awards;\r\n};' : 'return awards;\n};';
   code = replaceExactly(code, anchor, PROBE + anchor, 1);
 
+  // 試合・王座戦フック(エンジン読込後・表彰ラッパ定義の直前に差す)
+  const hookAnchor = 'const generateAwardsForUnifiedRecordsI6 = Engine.awards.generate;';
+  code = replaceExactly(code, hookAnchor, MATCH_HOOKS + hookAnchor, 1);
+
   code = `process.on('exit', () => {
     require('fs').writeFileSync(${JSON.stringify(outJson)}, JSON.stringify(globalThis.__mvpCal || []));
     console.log('[mvp-cal] seasons=' + (globalThis.__mvpCal || []).length + ' -> ' + ${JSON.stringify(outJson)});
@@ -59,6 +63,50 @@ function record(args) {
   (r.stdout || '').split('\n').filter(l => /Result:|mvp-cal|\[probe\]/.test(l)).forEach(l => console.log(l));
   if (r.status !== 0) { console.error(r.stderr || ''); process.exit(r.status || 1); }
 }
+
+// シングル全試合の要点をリングバッファに控え、王座戦の記録関数が呼ばれた瞬間に「直前のその選手の試合」を
+// 王座戦の中身(相手の格・MQ)として結び付ける。格上撃破は表彰時にバッファから季単位で集計する。
+const MATCH_HOOKS = `
+globalThis.__mBuf = [];
+globalThis.__tEv = {};
+{
+  const sm = Engine.battle.simulateMatch;
+  Engine.battle.simulateMatch = function (l, r, rng, tier, opts) {
+    const res = sm.apply(this, arguments);
+    try {
+      globalThis.__mBuf.push({ l: l.id, r: r.id, ovL: Engine.util.ov(l), ovR: Engine.util.ov(r),
+        w: res && res.winner, mq: res && res.mq, tier: tier || 1 });
+    } catch (e) {}
+    return res;
+  };
+  const lastMatchOf = id => {
+    const b = globalThis.__mBuf;
+    for (let i = b.length - 1; i >= 0 && i >= b.length - 400; i--) if (b[i].l === id || b[i].r === id) return b[i];
+    return null;
+  };
+  const note = (season, id, kind) => {
+    const m = lastMatchOf(id);
+    const e = { kind, selfOv: null, oppOv: null, mq: null };
+    if (m) { const left = m.l === id; e.selfOv = left ? m.ovL : m.ovR; e.oppOv = left ? m.ovR : m.ovL; e.mq = m.mq; }
+    ((globalThis.__tEv[season] = globalThis.__tEv[season] || {})[id] = globalThis.__tEv[season][id] || []).push(e);
+  };
+  const rtd = Engine.career.recordTitleDefense;
+  Engine.career.recordTitleDefense = function (fighter, beltId, season) { try { note(season, fighter.id, 'tDef'); } catch (e) {} return rtd.apply(this, arguments); };
+  const rtw = Engine.career.recordTitleWin;
+  Engine.career.recordTitleWin = function (fighter, beltId, season) { try { note(season, fighter.id, 'tWin'); } catch (e) {} return rtw.apply(this, arguments); };
+  // 統一王座戦は resolveMatch が防衛/奪取の両方を裁く(防衛は _recordUnifiedWin を通らない)
+  const urm = Engine.unifiedTitle.resolveMatch;
+  Engine.unifiedTitle.resolveMatch = function (state, details) {
+    try {
+      if (state.unifiedTitle && state.unifiedTitle.championId === details.championId) {
+        const champWon = details.winnerId == null || details.winnerId === details.championId;
+        note(state.season, champWon ? details.championId : details.challengerId, champWon ? 'uDef' : 'uCap');
+      }
+    } catch (e) {}
+    return urm.apply(this, arguments);
+  };
+}
+`;
 
 const PROBE = `
   try {
@@ -82,6 +130,19 @@ const PROBE = `
         });
       }
     }
+    // 格上撃破: 前回の表彰以降の全シングルから、勝者OVR < 敗者OVR の勝利を [格差, tier, mq] で集める
+    const upsets = new Map(); let matchCount = 0;
+    (globalThis.__mBuf || []).forEach(m => {
+      matchCount++;
+      if (m.w !== 'left' && m.w !== 'right') return;
+      const wId = m.w === 'left' ? m.l : m.r, wOv = m.w === 'left' ? m.ovL : m.ovR, lOv = m.w === 'left' ? m.ovR : m.ovL;
+      if (lOv - wOv >= 1) { if (!upsets.has(wId)) upsets.set(wId, []); upsets.get(wId).push([lOv - wOv, m.tier, Math.round(m.mq || 0)]); }
+    });
+    globalThis.__mBuf = [];
+    const tEv = (globalThis.__tEv || {})[state.season] || {};
+    const popPrev = globalThis.__popPrev || {}; const popNow = {};
+    const rankPrev = globalThis.__rankPrev || {}; const rankNow = {};
+    (state.rankings || []).forEach(r => { rankNow[r.orgId] = r.rank; });
     const rows = [];
     const push = (f, orgId) => {
       if (!f || f.id == null || f.isIntrusion || f.isRental) return;
@@ -94,15 +155,22 @@ const PROBE = `
         role: m.role, age: m.age, ppvSynth: ppvSynth.get(f.id) || 0,
         ovrGain: typeof f.seasonStartOvr === 'number' ? b.ovr - f.seasonStartOvr : 0,
         pop: f.popularity || 0,
+        popGain: popPrev[f.id] != null ? (f.popularity || 0) - popPrev[f.id] : 0,
+        orgRank: rankNow[orgId] || 0, orgRankPrev: rankPrev[orgId] || 0,
+        upsets: upsets.get(f.id) || [], tEv: tEv[f.id] || [],
+        jt: (((f.careerRecord || {}).history || []).find(e => e && e.type === 'juniorTournament' && e.season === state.season) || {}).result || null,
+        tag: m.springTagResult || null, aw: m.autumnWarResult || null, awWins: m.autumnWarWins || 0,
       });
+      popNow[f.id] = f.popularity || 0;
     };
     (state.roster || []).forEach(f => push(f, 'player'));
     Object.entries(state.aiOrgs || {}).forEach(([orgId, od]) => (od.roster || []).forEach(f => push(f, orgId)));
     rows.sort((a, b) => (b.pts + b.ppvSynth) - (a.pts + a.ppvSynth));
     (globalThis.__mvpCal = globalThis.__mvpCal || []).push({
       season: state.season, champId: state.unifiedTitle ? state.unifiedTitle.championId : null,
-      rows: rows.slice(0, 25),
+      matchCount, rows: rows.slice(0, 60),
     });
+    globalThis.__popPrev = popNow; globalThis.__rankPrev = rankNow;
   } catch (e) { console.error('[probe]', e.message); }
   `;
 
