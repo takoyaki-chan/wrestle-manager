@@ -143,7 +143,20 @@ assert.strictEqual(Engine.awards.calcHofPoints(legacyHofFixture), 35.5);
   assert.strictEqual(Object.hasOwn(result.breakdown, 'unified'), false);
 }
 
-// C: MVPは防衛20/奪取20/年末保持12、wonは0。
+// C: MVPは防衛13/奪取13/年末保持12、wonは0(2026-09-17再較正: 20→13)。
+// 再較正の不変条件 — 数字を動かすときはここが鳴る:
+//   (1) 奪取=防衛(1勝対称。「取ったり返したり」に旨みなし)
+//   (2) 統一王座戦の1勝は団体王座防衛1回を下回らない
+//   (3) 年末保持は団体王座の年末保持を下回らない
+//   (4) 統一戦線フル稼働の1年(4勝+保持)は、団体王座を守り抜いた1年(戴冠+4防衛+保持)を超えない
+{
+  const P = Engine.mvpRace.POINTS;
+  assert.strictEqual(P.UNIFIED_CAPTURE, P.UNIFIED_DEFENSE);
+  assert.ok(P.UNIFIED_DEFENSE >= P.TITLE_DEFENSE_PER);
+  assert.ok(P.UNIFIED_HOLD_AT_END >= P.TITLE_HOLD_AT_END);
+  assert.ok(P.UNIFIED_DEFENSE * 4 + P.UNIFIED_HOLD_AT_END
+    <= P.TITLE_WIN + P.TITLE_DEFENSE_PER * 4 + P.TITLE_HOLD_AT_END);
+}
 {
   const fighter = {
     id: 91, pw: 60, sp: 60, te: 60, st: 60, mn: 60,
@@ -167,8 +180,8 @@ assert.strictEqual(Engine.awards.calcHofPoints(legacyHofFixture), 35.5);
   const result = Engine.mvpRace.calcSeasonPoints(fighter, 'player', 5, {
     ...baseState, unifiedTitle: { championId: fighter.id },
   });
-  assert.strictEqual(result.breakdown.unified, 72);
-  assert.strictEqual(result.points - withoutUnified.points, 72);
+  assert.strictEqual(result.breakdown.unified, 51);
+  assert.strictEqual(result.points - withoutUnified.points, 51);
   assert.deepStrictEqual(
     Engine.mvpRace._collectFactChips(fighter, 5, result.breakdown.meta).slice(0, 3),
     [

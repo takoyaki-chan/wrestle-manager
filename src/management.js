@@ -19647,8 +19647,11 @@ Engine.mvpRace = {
     TITLE_WIN: 11,
     TITLE_DEFENSE_PER: 13,
     TITLE_HOLD_AT_END: 8,
-    UNIFIED_DEFENSE: 20,
-    UNIFIED_CAPTURE: 20,
+    // 2026-09-17 再較正(20→13): 統一王座戦の1勝は団体王座防衛(TITLE_DEFENSE_PER)と同格。
+    // 統一戦線フル稼働の1年(13×4+12)が団体王座を守り抜いた1年(11+13×4+8)を超えない —
+    // ベルトの格は殿堂pt・人気・動員が背負い、MVPは「その年の働き」を測る。奪取=防衛の1勝対称は維持
+    UNIFIED_DEFENSE: 13,
+    UNIFIED_CAPTURE: 13,
     UNIFIED_HOLD_AT_END: 12,
     DOME_MAIN_APPEARANCE: 4,
     BIG_MATCH_MQ85: 3,
