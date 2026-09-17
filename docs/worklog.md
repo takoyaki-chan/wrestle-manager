@@ -1,5 +1,17 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-17 v1.37 リリース — MVP配点再較正+P7-60(EN露出修正)を配布（Fable）
+
+Keisuke指示「1.37を出して」。リリース一括フロー(テスト→版上げ→push→梱包→検証→店頭差し替え)。
+
+- **内容**: MVPレースの統一王座配点 20→13(下の09-17エントリ) / P7-60+追補(相関図の団体名・ライバル方向ラベル、道場のコーチ名・コーチ能力、「{n}ターン」のEN露出修正。v1.36未収録だった分)
+- **テストバッテリー(全PASS)**: npm test 267/267 / auto-sim 100季seed42 ALL CLEAR(台帳違反0・資金恒等式10,600回違反0) / auto-sim 40季seed42 --care ALL CLEAR / UI走破 PASS(337操作・Issues 0・S2W1到達) / レア画面点火 tenchosen PASS(89操作)・gameover PASS / bug:audit(差分=management.jsの既存パターン列挙のみ・今回変更への指摘なし) / version-consistency ok (v1.37)
+- **版更新**: manifest / タイトル画面 / _saveVersion の3箇所(Editツール) → 22388393。push済み(bab8a9e9..f7b1c028・Cloudflare Pages自動デプロイ)
+- **梱包**: `release/dist/WrestleManager_1.37.zip`(**67,427,687 バイト**・出荷ゲート30/30 PASS・manifest未記載警告なし) / `WrestleManager_1.37_Trial.zip`(67,442,370 バイト・ゲート30/30)
+- **検証(製品版)**: ファイル完全性 39+2 OK。手動チェック4項目はブラウザペインで代行 — タイトル表示(VERSION 1.37)✓ / 新規ゲーム開始(旗揚げ→メンバー選択→事務所)✓ / 第1週→第2週✓ / コンソールエラーなし✓。検証後に http.server(8080) 停止・verify-tmp 削除済み。体験版は同一パイプラインのためブラウザ確認は省略
+- 更新情報の下書き: `release/dist/DLsite更新情報_v1.37.txt`(店頭用1行つき)
+- **残: DLsite/BOOTH 差し替え**(DLsiteはログイン切れ=Keisukeのログイン+ファイル投入が必要)
+
 ## 2026-09-17 アンケート要望対応: MVPレースの統一王座配点を再較正(20→13) — 「MVPが統一王者の条件みたい」の実測と是正（Fable直実装）
 
 アンケート新規回答(09/16・Maritsu氏・要望)「5年目以降も統一王者が存在しないモードで遊びたい。統一王者になるのがMVPの条件みたいで、MVPを狙う戦略の多様性が少ない」への対応。Keisuke裁定(09-17): **A案=MVP配点の再較正でいく**(「統一王座なしモード」Bは見送り。本音は2文目の戦略の多様性)。
