@@ -92,6 +92,8 @@ const PROBE = `
         cap: m.unifiedCaptures || 0, def: m.unifiedDefenses || 0, hold: !!m.isUnifiedChamp,
         tDef: m.titleDefenses || 0, tWin: m.titleWins || 0, tHold: !!m.isCurrentChamp,
         role: m.role, age: m.age, ppvSynth: ppvSynth.get(f.id) || 0,
+        ovrGain: typeof f.seasonStartOvr === 'number' ? b.ovr - f.seasonStartOvr : 0,
+        pop: f.popularity || 0,
       });
     };
     (state.roster || []).forEach(f => push(f, 'player'));
