@@ -60,7 +60,11 @@ function functionSource(source, name) {
     championId: champion.id, challengerId: challenger.id, winnerId: challenger.id,
   });
   const captured = state.aiOrgs.org_s.roster.find(f => f.id === challenger.id).careerRecord.history.at(-1);
-  assert.deepStrictEqual(captured, {
+  // MVPレース v3(2026-09-17): 奪取・防衛イベントはその時点の格(selfOvr/oppOvr)を持つ
+  assert.strictEqual(typeof captured.selfOvr, 'number');
+  assert.strictEqual(typeof captured.oppOvr, 'number');
+  const { selfOvr: _so, oppOvr: _oo, ...capturedCore } = captured;
+  assert.deepStrictEqual(capturedCore, {
     type: 'unifiedTitle', result: 'captured', season: 5, week: 24,
   });
   assert.strictEqual(Object.hasOwn(state.unifiedTitle.history.at(-1), 'generation'), false);
@@ -115,8 +119,9 @@ assert.strictEqual(Engine.awards.calcHofPoints(legacyHofFixture), 35.5);
     DRAW_THRESHOLD: 30, DRAW_MULT: 0.3,
     TENCHOSEN_WIN_R1: 3, TENCHOSEN_WIN_QF: 5, TENCHOSEN_WIN_SF: 8,
     TENCHOSEN_WIN_FINAL: 12, TENCHOSEN_CHAMPION_BONUS: 6, TENCHOSEN_RUNNER_UP_BONUS: 3,
-    AUTUMN_WAR_PER_WIN: 3, AUTUMN_WAR_TEAM_CHAMPION: 7, AUTUMN_WAR_TEAM_RUNNER_UP: 3,
-    SPRING_TAG_CHAMPION: 8, SPRING_TAG_RUNNER_UP: 4, MQ_RECORD_BREAK: 5,
+    // v3(2026-09-17 MVPルート再較正)で大会点だけ意図的に更新: 秋 3/7/3→8/20/10、春タッグ 8/4→30/15
+    AUTUMN_WAR_PER_WIN: 8, AUTUMN_WAR_TEAM_CHAMPION: 20, AUTUMN_WAR_TEAM_RUNNER_UP: 10,
+    SPRING_TAG_CHAMPION: 30, SPRING_TAG_RUNNER_UP: 15, MQ_RECORD_BREAK: 5,
   };
   Object.entries(existingPoints).forEach(([key, value]) => assert.strictEqual(Engine.mvpRace.POINTS[key], value, key));
   const fighter = {
@@ -139,7 +144,8 @@ assert.strictEqual(Engine.awards.calcHofPoints(legacyHofFixture), 35.5);
     mqRecord: null, mqRecordTag: null, unifiedTitle: null,
   };
   const result = Engine.mvpRace.calcSeasonPoints(fighter, 'player', 5, state);
-  assert.strictEqual(result.points, 158.5);
+  // 158.5(導入時) → 197.5: v3の大会点更新ぶん(秋 準優勝2勝 9→26 / 春タッグ優勝 8→30 = +39)。統一以外は不変
+  assert.strictEqual(result.points, 197.5);
   assert.strictEqual(Object.hasOwn(result.breakdown, 'unified'), false);
 }
 

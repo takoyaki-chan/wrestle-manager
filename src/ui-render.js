@@ -9936,6 +9936,9 @@ function _npMvpRaceMinorCard(entry, rank) {
     { icon: '🏟', label: WM_I18N.t('ドーム'), val: bd.dome },
     { icon: '🥊', label: WM_I18N.t('大試合'), val: bd.mq },
     { icon: '⭐', label: WM_I18N.t('人気'), val: Math.round(bd.draw || 0) },
+    // MVPレース v3(2026-09-17): 大会(天頂戦+秋の対抗戦+春タッグ+JT)と格上撃破もピル候補に
+    { icon: '🏅', label: WM_I18N.t('大会'), val: Math.round((bd.tenchosen || 0) + (bd.autumnWar || 0) + (bd.springTag || 0) + (bd.junior || 0)) },
+    { icon: '⚡', label: WM_I18N.t('格上撃破'), val: bd.upset || 0 },
   ];
   pillCandidates.sort((a, b) => Math.abs(b.val) - Math.abs(a.val));
   const pills = pillCandidates.slice(0, 4).map(p => {

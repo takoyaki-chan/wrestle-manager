@@ -1,5 +1,20 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-18 MVPレース v3 実装 — 王座戦の難度制+格上撃破+今年の伸び+大会ルート厚め(Keisuke裁定「中」)（Fable直実装）
+
+09-17の提案(`docs/mvp-route-proposal-v0.1.md`)に対するKeisuke裁定: 案B(連続MVPの票離れ)は「作為的すぎる」で却下、案1(防衛の中身で点が変わる)採用、伸びは大きくしない、大会ルートは補助にとどめず全体のバランスで厚く、格上撃破は多少。強度3案(弱/中/強)の受動評価から**「中」で実装**の指示(「推奨中で進めてください」「保存したMVP2の実装計画、これで進めていいよ」)。
+
+- **確定仕様: `specs/mvp-race-spec-v1.0.md`(新規・INDEX追記)**。unified-title-spec §7 と newspaper-spec §5 からポインタ
+- **記録の追加(エンジン)**: ①季首の人気 `seasonStartPop`(seasonStartOvr と同じ6箇所) ②王座戦の戦歴イベントに試合時点の `selfOvr`/`oppOvr`(団体王座=`Engine.career.recordTitleDefense` の opts。自団体は `Engine.title.recordDefense` に `challengerId` を渡して roster から算出(app.js 2箇所+management.js 2箇所の呼び出し元を全部更新)、AI団体は champResult のスナップショット。統一王座=resolveMatch の防衛イベント+`_recordUnifiedWin(…,'captured', ovrs)`) ③格上撃破の季カウンタ `seasonUpsets={season,normal,big}`(`Engine.mvpRace.creditUpset`・AI興行の成長ループ+自団体の `processSettlement` に配線。r.left/right の試合前スナップショットで判定)
+- **配点(`Engine.mvpRace.POINTS` v3)**: 王座戦1勝=13×難度 `clamp(1−0.05×(自OVR−相手OVR), 0.3, 1.5)`(記録なし=1.0で旧セーブ互換・移行なし) / 格上撃破(差≥5) 通常8・ビッグマッチ20 / 人気の伸び×0.5・上限12 / 春タッグ 8/4→30/15・秋対抗戦 1勝3→8・優勝7→20・準優勝3→10 / JT優勝20・準優勝10(新設)。title/unified は整数丸め(新聞が `+${bd.title}` と直出しするため)
+- **表示**: 実績チップ「格上撃破{n}回」⚡/「ジュニアトーナメント優勝・準優勝」🌱、2位以下のピル候補に「🏅大会」「⚡格上撃破」。EN: template-ledger に3キー(Junior Tournament Winner/runner-up・Upset win ×{n})、ui-ledger に2キー(Tournaments/Upsets)。**ui-ledger の再生成(i18n-extract-ui.js)は台帳とのズレで既存キー数十件を削るので使わず、末尾追記で対応**(要調査: 抽出器と台帳の乖離)
+- **テスト**: mvp-race-new-events-test に v3 不変条件(旧イベント=1.0/難度の単調性と上下限/防衛は必ず正/奪取=防衛/撃破の単調性・負け無減点・季リセット・閾値/伸びの上限・無減点・スナップショット無し=0/新カテゴリ該当なし=0)+大会点の期待値更新 / unified-title-p4-test は奪取イベントの格フィールドと大会点(158.5→197.5)の期待値更新 / npm test **267/267** / UI走破 PASS(337操作・Issues 0) / ui-baseline-guard ok / auto-sim 100季seed42(較正記録時=v3エンジン)ALL CLEAR
+- **実測(100季 seed42・v3実装の本番値・PPV合成)**: 統一絡みMVP 67→**57** / 団体王座だけの選手のMVP 33→**39** / 王座に絡まないMVP 0→**4** / 前年と同じ 47→**30** / 最長連続 7→**4年** / MVP人数 24→**27**。09-17の受動評価「中」(2/56/42/31/6/31)とほぼ一致=実装は較正どおり
+- **格上撃破のカバー率 88%**(本番カウンタ38,740点 vs 全シングル経路の計測43,908点)。未カバー=PPV・天頂戦・JT・春タッグ・秋対抗戦・AI間統一戦。任意の改修候補としてspecに明記
+- **発見した既存バグ(別起票・チップ)**: AI団体の興行でシングルの勝敗が2箇所で加算(成長ループ内 `nc.wins++` と後段の streak 更新)→ AI選手の通算成績が2倍の疑い。creditUpset は1箇所目にだけ入れてある
+- **触ったファイル**: src/management.js(POINTS/titleDifficulty/creditUpset/calcSeasonPoints/_collectFactChips/recordTitleDefense/recordDefense/AI防衛記録/unified resolveMatch・_recordUnifiedWin/季首スナップショット/processSettlement) / src/app.js(recordDefense呼び出し2箇所に challengerId) / src/ui-render.js(ピル2種) / src/data.js(factChip 3キー) / i18n/template-ledger.json・ui-ledger.json / src/lang-en-templates.js・lang-en.js(生成) / test 2本 / specs 3本+INDEX / docs/game-system-roadmap.md
+- **残**: Keisuke実機確認(新聞4面: 王者の点が相手の格で変わる・⚡格上撃破チップ・🏅大会ピル。既存セーブは次の週処理で新配点)。未カバー経路の撃破配線は任意
+
 ## 2026-09-17 v1.37 リリース — MVP配点再較正+P7-60(EN露出修正)を配布（Fable）
 
 Keisuke指示「1.37を出して」。リリース一括フロー(テスト→版上げ→push→梱包→検証→店頭差し替え)。

@@ -12,6 +12,7 @@ specs/ = 確定仕様(現在の真実)。新規specを作成したら**必ずこ
 | i18n-runtime-spec-v1.0.md | **i18n実行基盤**: WM_I18N.t()/wm_lang/data-i18n/構造規約7条(Engine非依存・断片連結禁止・gameLog type形式等)/常設ガード(JAゴールデン・ラチェット・擬似ロケール)/§1 名前辞書PN_EN(Stage B P6-1: addNames/pn()/t()パラメータ値自動変換、生成元i18n/names-ledger.json→lang-en-names.js)+§5 EN辞書生成パイプライン(Stage B P3b: 抽出台帳i18n/ui-ledger.json・機械検査・lang-en.js)+§6 テンプレ辞書生成パイプライン(Stage B P4-2: data.js14テーブル抽出i18n/template-ledger.json・黒田禁止語grep・lang-en-templates.js・Engine opts.lang糸通し規約) |
 | dialogue-tone-spec-v1.0.md | **セリフ口調の確定仕様**(archetype×personality二軸/アンカー制/全セル共通の鉄則10項/口調シート34枚を規範文書化) |
 | contract-negotiation-spec-v2.0.md | シーズン開幕の契約交渉イベント |
+| mvp-race-spec-v1.0.md | **年間MVPレース配点の確定仕様 v3**(王座戦の難度制/格上撃破/今年の伸び/大会ルート/内訳・チップ表示/不変条件/100季較正記録。2026-09-18) |
 | unified-title-spec-v1.0.md | **全国統一王座の確定仕様**(天頂戦優勝ベルト/四半期挑戦サイクル/殿堂・MVP・表彰・記録タブ/戴冠式ほか演出/オーロラトークン) |
 | economy-spec-v2.0.md | 収支バランス(グッズ/メディア/給与/精算) |
 | flight-recorder-spec-v1.0.md | **フライトレコーダー確定仕様**(常駐エラー捕捉/操作トレース永続化/⚠バッジ+報告バンドルv1/配布物同梱) |

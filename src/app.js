@@ -7826,7 +7826,7 @@ const App = {
       const challengerName = challengerId != null ? (roster.find(f => f.id === challengerId)?.name) : undefined;
       const tempState = { ...s, titles, roster };
       if (r.winner === 'draw') {
-        if (champId) { const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg); }
+        if (champId) { const def = Engine.title.recordDefense(tempState, { challengerName, challengerId }); titles = def.titles; roster = def.roster; events.push(def.msg); }
         titleMatchOutcomes.push({ outcome: 'defense', champId, challengerId });
       } else {
         const winnerId = r.winner === 'left' ? m.left : m.right;
@@ -7836,7 +7836,7 @@ const App = {
           if (crown.newsEvent) App._pushIndustryNews(crown.newsEvent);
           titleMatchOutcomes.push({ outcome: 'change', newChampId: winnerId, prevChampId: champId, challengerId });
         } else {
-          const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg);
+          const def = Engine.title.recordDefense(tempState, { challengerName, challengerId }); titles = def.titles; roster = def.roster; events.push(def.msg);
           titleMatchOutcomes.push({ outcome: 'defense', champId, challengerId });
         }
       }

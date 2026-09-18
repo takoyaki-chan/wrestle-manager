@@ -17280,10 +17280,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "ジュニアトーナメント優勝",
+    "en": "Junior Tournament Winner",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ジュニアトーナメント制覇",
     "en": "a Junior Tournament win",
     "files": [
       "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメント準優勝",
+    "en": "Junior Tournament runner-up",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -27345,6 +27365,16 @@
     "en": "Punching up! {name1} takes on {name2} of {org2}!",
     "files": [
       "PPV_HYPE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "格上撃破{n}回",
+    "en": "Upset win ×{n}",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,

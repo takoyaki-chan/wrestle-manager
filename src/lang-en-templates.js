@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3534件、訳文あり3534件)
+//  生成元: i18n/template-ledger.json (総キー3537件、訳文あり3537件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1742,7 +1742,9 @@
     "ジュニアトーナメントを制した。": "Took the Junior Tournament.",
     "ジュニアトーナメントを制したその日、彼女の名前が{orgName}に刻まれた。": "The day she took the Junior Tournament, her name was written into {orgName}.",
     "ジュニアトーナメント三連覇。その壁を越えた挑戦者は、ついに現れなかった。": "Three straight Junior Tournaments. No challenger ever got over that wall.",
+    "ジュニアトーナメント優勝": "Junior Tournament Winner",
     "ジュニアトーナメント制覇": "a Junior Tournament win",
+    "ジュニアトーナメント準優勝": "Junior Tournament runner-up",
     "スカウト入団": "Scouted and signed",
     "スカウト基準が他団体と違いすぎる。根本的な分析が要る": "Their scouting criteria are way off what everyone else uses. Needs analysis from the ground up",
     "スカウト陣が推したのは{styleJa}の{rookieName}。{h}cm、{age}歳。すぐ上位に食い込む種類ではないが、二、三年で計算が立つという読みだった。": "The scouts pushed for {rookieName} and her {styleJa} game. {h}cm, age {age}. Not the type to cut into the upper card right away, but the read was that she becomes something you can count on in two or three years.",
@@ -2749,6 +2751,7 @@
     "根性練習": "Grind Sessions",
     "格の違いってやつですわ": "This is what a difference in class looks like, folks",
     "格上挑戦！{name1}が{org2}の{name2}に挑む！": "Punching up! {name1} takes on {name2} of {org2}!",
+    "格上撃破{n}回": "Upset win ×{n}",
     "業界1位の座を奪取した「{orgName}」の快挙に触発され、ライバル団体が選手強化策とコーチ招聘に乗り出した。A級・B級団体が大型補強に動き、もはや安泰の時代は終わった。真の群雄割拠が始まる——。": "{orgName} taking the top spot in the business has moved everyone else. Rival promotions have opened their wallets on training programs and on coaching staff, and the Class A and Class B promotions are signing hard. The safe years are over. No promotion's position is settled now.",
     "業界が待つ、二人の対峙": "The meeting the business is waiting for",
     "業界では「組ませるべきではない」という声もある。だが本紙としては、この緊張感こそ商品価値の源泉だと書いておく。皮肉な話だが、それが現実である。": "There are voices in the business saying the two of them should not be put together. This paper will put it on record that the tension is exactly where the value comes from. An ironic thing to write, and it is the reality.",

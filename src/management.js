@@ -2215,6 +2215,8 @@ const Engine = {
       // v0.99: Reassess value on 3rd defense (pricing-balance-spec §4.2)
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, champId, 333));
       const titleOrgName = `${G.orgName || '団体'}王座`;
+      // MVPレース v3: 挑戦者の格を防衛記録に残す(ゲスト挑戦者も興行中はrosterに居る)
+      const challenger = opts.challengerId != null ? G.roster.find(c => c.id === opts.challengerId) : null;
       const newRoster = G.roster.map(c => {
         if (c.id !== champId) return c;
         let updated = { ...c, popularity: Math.min(100, c.popularity + Engine.popularity.applyDiminishing(2, c.popularity)) };
@@ -2223,7 +2225,8 @@ const Engine = {
           updated = { ...updated, ...reassessed };
         }
         // v1.3: Record titleDefense
-        updated = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(updated, 'world', G.season, G.week, newDefenses, { orgName: titleOrgName, lastChallengerName: opts.challengerName }), G.season);
+        const defenseOvrs = challenger ? { selfOvr: Engine.util.ov(c), oppOvr: Engine.util.ov(challenger) } : {};
+        updated = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(updated, 'world', G.season, G.week, newDefenses, { orgName: titleOrgName, lastChallengerName: opts.challengerName, ...defenseOvrs }), G.season);
         return updated;
       });
       const c = G.roster.find(r => r.id === champId);
@@ -2525,10 +2528,10 @@ const Engine = {
       };
     },
 
-    _recordUnifiedWin(state, fighterId, result = 'won') {
+    _recordUnifiedWin(state, fighterId, result = 'won', ovrs = null) {
       return this._updateFighter(state, fighterId, fighter => {
         const gain = Engine.popularity.applyDiminishing(8, fighter.popularity || 0);
-        const event = { type: 'unifiedTitle', result, season: state.season, week: state.week };
+        const event = { type: 'unifiedTitle', result, season: state.season, week: state.week, ...(ovrs || {}) };
         const careerRecord = fighter.careerRecord || {};
         const updated = {
           ...fighter,
@@ -3068,7 +3071,11 @@ const Engine = {
         next = this._updateFighter(next, champion.fighter.id, fighter => {
           const gain = Engine.popularity.applyDiminishing(3, fighter.popularity || 0);
           const careerRecord = fighter.careerRecord || {};
-          const careerEvent = { type: 'unifiedTitle', result: 'defense', season: state.season, week: state.week };
+          // MVPレース v3: 防衛の中身(王者と挑戦者の格)を記録
+          const careerEvent = {
+            type: 'unifiedTitle', result: 'defense', season: state.season, week: state.week,
+            selfOvr: Engine.util.ov(champion.fighter), oppOvr: Engine.util.ov(challenger.fighter),
+          };
           return Engine.career.updatePeakPopularity({
             ...fighter,
             popularity: Math.min(100, (fighter.popularity || 0) + gain),
@@ -3108,7 +3115,10 @@ const Engine = {
           history: [...(title.history || []), event],
         },
       };
-      next = this._recordUnifiedWin(next, challenger.fighter.id, 'captured');
+      // MVPレース v3: 奪取の中身(新王者と旧王者の格)を記録
+      next = this._recordUnifiedWin(next, challenger.fighter.id, 'captured', {
+        selfOvr: Engine.util.ov(challenger.fighter), oppOvr: Engine.util.ov(champion.fighter),
+      });
       const movedStats = this._cycleStats(next.unifiedTitle);
       next = this._pushNews(next, 'unifiedTitleMove', {
         winner: challenger.fighter.name,
@@ -4112,6 +4122,10 @@ const Engine = {
       const ev = { type: 'titleDefense', season, week, beltId, count };
       if (opts.orgName) ev.orgName = opts.orgName;
       if (opts.lastChallengerName) ev.lastChallengerName = opts.lastChallengerName;
+      // MVPレース v3: 防衛の「中身」= その時点の王者と挑戦者の格(OVR)。無ければ難度1.0扱い(旧セーブ互換)
+      if (typeof opts.selfOvr === 'number' && typeof opts.oppOvr === 'number') {
+        ev.selfOvr = opts.selfOvr; ev.oppOvr = opts.oppOvr;
+      }
       let f = Engine.career.addEvent(fighter, ev);
       f = { ...f, careerRecord: { ...f.careerRecord, totalDefenses: f.careerRecord.totalDefenses + 1 } };
       return f;
@@ -11020,6 +11034,11 @@ const Engine = {
             else if (isDraw) nc.draws = (nc.draws || 0) + 1;
             else nc.losses = (nc.losses || 0) + 1;
             nc.lastMatchResult = won ? 'win' : (isDraw ? 'draw' : 'loss');
+            // MVPレース v3: 格上撃破(自団体の興行と同じ物差し)
+            if (won) {
+              const credited = Engine.mvpRace.creditUpset(nc, selfOvr, oppOvr, aiMatchTier >= 2, state.season);
+              if (credited !== nc) nc.seasonUpsets = credited.seasonUpsets;
+            }
 
             const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
               matchRng, nc, result.mq, oppOvr,
@@ -11285,7 +11304,11 @@ const Engine = {
                 const aiTitleOrgNameDef = `${org.name || '団体'}王座`;
                 const aiChallengerName = oppId != null ? (roster.find(f => f.id === oppId)?.name) : undefined;
                 const champIdx = roster.findIndex(f => f.id === champId);
-                if (champIdx >= 0) roster[champIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(roster[champIdx], beltId, state.season, state.week, newDefenses, { orgName: aiTitleOrgNameDef, lastChallengerName: aiChallengerName }), state.season);
+                // MVPレース v3: 防衛の中身(王者と挑戦者の格)を記録。自団体(Engine.title.recordDefense)と同じ物差し
+                const aiChallenger = oppId != null ? roster.find(f => f.id === oppId) : null;
+                const aiDefenseOvrs = (champIdx >= 0 && aiChallenger)
+                  ? { selfOvr: Engine.util.ov(roster[champIdx]), oppOvr: Engine.util.ov(aiChallenger) } : {};
+                if (champIdx >= 0) roster[champIdx] = Engine.career.updatePeakPopularity(Engine.career.recordTitleDefense(roster[champIdx], beltId, state.season, state.week, newDefenses, { orgName: aiTitleOrgNameDef, lastChallengerName: aiChallengerName, ...aiDefenseOvrs }), state.season);
               } else {
                 // 王座交代
                 const winnerId = champResult.winner === 'left' ? champResult.left?.id : champResult.right?.id;
@@ -13677,8 +13700,14 @@ const Engine = {
           const wId = r.winner === 'left' ? r.left.id : r.winner === 'right' ? r.right.id : null;
           if (wId) {
             const lId = wId === r.left.id ? r.right.id : r.left.id;
+            // MVPレース v3: 格上撃破。r.left/right は試合前スナップショットなので成長後の値に汚染されない
+            const wSnap = wId === r.left.id ? r.left : r.right;
+            const lSnap = wId === r.left.id ? r.right : r.left;
             roster = roster.map(c => {
-              if (c.id === wId) return { ...c, wins: c.wins + 1, streak: (c.streak > 0 ? c.streak : 0) + 1 };
+              if (c.id === wId) {
+                const credited = Engine.mvpRace.creditUpset(c, Engine.util.ov(wSnap), Engine.util.ov(lSnap), !!r.isTitleMatch, G.season);
+                return { ...credited, wins: c.wins + 1, streak: (c.streak > 0 ? c.streak : 0) + 1 };
+              }
               if (c.id === lId) return { ...c, losses: c.losses + 1, streak: (c.streak < 0 ? c.streak : 0) - 1 };
               return c;
             });
@@ -14659,14 +14688,14 @@ const Engine = {
       const challengerId = champId ? (m.left === champId ? m.right : (m.right === champId ? m.left : null)) : null;
       const challengerName = challengerId != null ? (roster.find(f => f.id === challengerId)?.name) : undefined;
       if (r.winner === 'draw') {
-        if (champId) { const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg); }
+        if (champId) { const def = Engine.title.recordDefense(tempState, { challengerName, challengerId }); titles = def.titles; roster = def.roster; events.push(def.msg); }
       } else {
         const winnerId = r.winner === 'left' ? m.left : m.right;
         if (!champId || winnerId !== champId) {
           const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
           if (crown.newsEvent) s = Engine.industryNews.push(s, crown.newsEvent);
         } else {
-          const def = Engine.title.recordDefense(tempState, { challengerName }); titles = def.titles; roster = def.roster; events.push(def.msg);
+          const def = Engine.title.recordDefense(tempState, { challengerName, challengerId }); titles = def.titles; roster = def.roster; events.push(def.msg);
         }
       }
     });
@@ -18380,16 +18409,16 @@ const Engine = {
         s = { ...s, orgPopHistory: oph };
 
         // seasonStartOvr: 新シーズン開幕時のOVRを記録（ovrGainThisSeason算出用）
-        s = { ...s, roster: s.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+        s = { ...s, roster: s.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f), seasonStartPop: f.popularity || 0 })) };
         const updatedAiOrgs = { ...(s.aiOrgs || {}) };
         for (const org of RIVAL_ORGS) {
           const aiOrg = updatedAiOrgs[org.id];
           if (!aiOrg?.roster) continue;
-          updatedAiOrgs[org.id] = { ...aiOrg, roster: aiOrg.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+          updatedAiOrgs[org.id] = { ...aiOrg, roster: aiOrg.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f), seasonStartPop: f.popularity || 0 })) };
         }
         s = { ...s, aiOrgs: updatedAiOrgs };
         if (s.freeAgents) {
-          s = { ...s, freeAgents: s.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+          s = { ...s, freeAgents: s.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f), seasonStartPop: f.popularity || 0 })) };
         }
 
         // ai-draft-balance §4: シーズン気分の抽選
@@ -19291,15 +19320,15 @@ const Engine = {
     }
     initState.orgPopHistory = initOph;
     // seasonStartOvr: シーズン1開幕時のOVRを記録
-    initState.roster = initState.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) }));
+    initState.roster = initState.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f), seasonStartPop: f.popularity || 0 }));
     for (const org of RIVAL_ORGS) {
       const aiOrg = initState.aiOrgs?.[org.id];
       if (aiOrg?.roster) {
-        initState.aiOrgs[org.id] = { ...aiOrg, roster: aiOrg.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) })) };
+        initState.aiOrgs[org.id] = { ...aiOrg, roster: aiOrg.roster.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f), seasonStartPop: f.popularity || 0 })) };
       }
     }
     if (initState.freeAgents) {
-      initState.freeAgents = initState.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f) }));
+      initState.freeAgents = initState.freeAgents.map(f => ({ ...f, seasonStartOvr: Engine.util.ov(f), seasonStartPop: f.popularity || 0 }));
     }
     initState.rankings = Engine.ranking.updateRankings(initState);
     // skipDraft 経路 (legacy/load/auto-sim) でも序章を初期化
@@ -19674,12 +19703,44 @@ Engine.mvpRace = {
     TENCHOSEN_WIN_FINAL: 12,
     TENCHOSEN_CHAMPION_BONUS: 6,
     TENCHOSEN_RUNNER_UP_BONUS: 3,
-    AUTUMN_WAR_PER_WIN: 3,
-    AUTUMN_WAR_TEAM_CHAMPION: 7,
-    AUTUMN_WAR_TEAM_RUNNER_UP: 3,
-    SPRING_TAG_CHAMPION: 8,
-    SPRING_TAG_RUNNER_UP: 4,
+    // v3(2026-09-17 較正): 大会ルートを厚く。春タッグ優勝はPPV優勝と同格、JTは新設
+    AUTUMN_WAR_PER_WIN: 8,
+    AUTUMN_WAR_TEAM_CHAMPION: 20,
+    AUTUMN_WAR_TEAM_RUNNER_UP: 10,
+    SPRING_TAG_CHAMPION: 30,
+    SPRING_TAG_RUNNER_UP: 15,
+    JUNIOR_TOURNAMENT_CHAMPION: 20,
+    JUNIOR_TOURNAMENT_RUNNER_UP: 10,
     MQ_RECORD_BREAK: 5,
+    // v3: 王座戦1勝の点 = 基礎点 × 難度。難度 = clamp(1 − SLOPE×(自分OVR−相手OVR), MIN, MAX)。
+    // 互角=1.0 / 格下を退けるほど安く / 格上に勝つほど高い。記録の無い旧イベントは1.0
+    TITLE_DIFFICULTY_SLOPE: 0.05,
+    TITLE_DIFFICULTY_MIN: 0.3,
+    TITLE_DIFFICULTY_MAX: 1.5,
+    // v3: 格上撃破(試合時点でOVRが UPSET_MIN_GAP 以上、上の相手にシングルで勝利)
+    UPSET_MIN_GAP: 5,
+    UPSET_NORMAL: 8,
+    UPSET_BIG_MATCH: 20,
+    // v3: 今年の人気の伸び(水準ではなく伸び。決め手にならない大きさに抑える)
+    POP_GROWTH_MULT: 0.5,
+    POP_GROWTH_CAP: 12,
+  },
+
+  /** 王座戦の難度係数。ev = { selfOvr, oppOvr } を持つ戦歴イベント(無ければ1.0) */
+  titleDifficulty(ev) {
+    const P = Engine.mvpRace.POINTS;
+    if (!ev || typeof ev.selfOvr !== 'number' || typeof ev.oppOvr !== 'number') return 1;
+    return Engine.util.clamp(1 - P.TITLE_DIFFICULTY_SLOPE * (ev.selfOvr - ev.oppOvr), P.TITLE_DIFFICULTY_MIN, P.TITLE_DIFFICULTY_MAX);
+  },
+
+  /** 格上撃破を季単位で数える(該当しなければ同じ参照を返す)。自団体・AI団体で共通 */
+  creditUpset(fighter, selfOvr, oppOvr, isBigMatch, season) {
+    const P = Engine.mvpRace.POINTS;
+    if (!fighter || !(oppOvr - selfOvr >= P.UPSET_MIN_GAP)) return fighter;
+    const cur = (fighter.seasonUpsets && fighter.seasonUpsets.season === season)
+      ? fighter.seasonUpsets : { season, normal: 0, big: 0 };
+    const key = isBigMatch ? 'big' : 'normal';
+    return { ...fighter, seasonUpsets: { ...cur, [key]: (cur[key] || 0) + 1 } };
   },
 
   /** orgId が S/A/B どのランキングか取得 */
@@ -19717,6 +19778,9 @@ Engine.mvpRace = {
     let tenchosenResult = null;
     let autumnWarResult = null, autumnWarWins = 0;
     let springTagResult = null;
+    let juniorResult = null;
+    // v3: 王座戦の勝利は件数でなく難度の合計で点にする
+    let titleDefenseDifficulty = 0, unifiedCaptureDifficulty = 0, unifiedDefenseDifficulty = 0;
 
     hist.forEach(ev => {
       if (!ev || ev.season !== season) return;
@@ -19729,9 +19793,10 @@ Engine.mvpRace = {
           else ppvOtherLoss++; // 旧データ(won未定義)は敗北扱いで安全側
         }
       } else if (ev.type === 'titleWin') titleWins++;
-      else if (ev.type === 'titleDefense') titleDefenses++;
-      else if (ev.type === 'unifiedTitle' && ev.result === 'captured') unifiedCaptures++;
-      else if (ev.type === 'unifiedTitle' && ev.result === 'defense') unifiedDefenses++;
+      else if (ev.type === 'titleDefense') { titleDefenses++; titleDefenseDifficulty += Engine.mvpRace.titleDifficulty(ev); }
+      else if (ev.type === 'unifiedTitle' && ev.result === 'captured') { unifiedCaptures++; unifiedCaptureDifficulty += Engine.mvpRace.titleDifficulty(ev); }
+      else if (ev.type === 'unifiedTitle' && ev.result === 'defense') { unifiedDefenses++; unifiedDefenseDifficulty += Engine.mvpRace.titleDifficulty(ev); }
+      else if (ev.type === 'juniorTournament') juniorResult = ev.result || null;
       else if (ev.type === 'domeMain') domeAppearances++;
       else if (ev.type === 'bigMatch') {
         const mq = typeof ev.mq === 'number' ? ev.mq : 0;
@@ -19794,10 +19859,23 @@ Engine.mvpRace = {
 
     const ppv = ppvChampion * P.PPV_CHAMPION + ppvRunnerUp * P.PPV_RUNNER_UP
               + ppvOtherWin * P.PPV_OTHER_WIN + ppvOtherLoss * P.PPV_OTHER_LOSS;
-    const title = titleWins * P.TITLE_WIN + titleDefenses * P.TITLE_DEFENSE_PER + (isCurrentChamp ? P.TITLE_HOLD_AT_END : 0);
+    // v3: 防衛・統一戦の勝利は「件数×基礎点」でなく「難度の合計×基礎点」(相手不在の防衛は安く、死闘は高い)
+    // (新聞4面は内訳を `+${bd.title}` とそのまま出すので整数に丸める)
+    const r1 = v => Math.round(v);
+    const title = r1(titleWins * P.TITLE_WIN + titleDefenseDifficulty * P.TITLE_DEFENSE_PER + (isCurrentChamp ? P.TITLE_HOLD_AT_END : 0));
     const isUnifiedChamp = state.unifiedTitle?.championId === fighter.id;
-    const unified = unifiedCaptures * P.UNIFIED_CAPTURE + unifiedDefenses * P.UNIFIED_DEFENSE
-      + (isUnifiedChamp ? P.UNIFIED_HOLD_AT_END : 0);
+    const unified = r1(unifiedCaptureDifficulty * P.UNIFIED_CAPTURE + unifiedDefenseDifficulty * P.UNIFIED_DEFENSE
+      + (isUnifiedChamp ? P.UNIFIED_HOLD_AT_END : 0));
+    // v3: 格上撃破・今年の人気の伸び・ジュニアトーナメント
+    const su = (fighter.seasonUpsets && fighter.seasonUpsets.season === season) ? fighter.seasonUpsets : null;
+    const upsetsNormal = su ? (su.normal || 0) : 0;
+    const upsetsBig = su ? (su.big || 0) : 0;
+    const upset = upsetsNormal * P.UPSET_NORMAL + upsetsBig * P.UPSET_BIG_MATCH;
+    const popGain = (season === state.season && typeof fighter.seasonStartPop === 'number')
+      ? Math.max(0, (fighter.popularity || 0) - fighter.seasonStartPop) : 0;
+    const growth = r1(Math.min(P.POP_GROWTH_CAP, popGain * P.POP_GROWTH_MULT));
+    const junior = juniorResult === 'champion' ? P.JUNIOR_TOURNAMENT_CHAMPION
+      : juniorResult === 'runnerUp' ? P.JUNIOR_TOURNAMENT_RUNNER_UP : 0;
     const hasUnifiedContext = !!state.unifiedTitle || unifiedCaptures > 0 || unifiedDefenses > 0;
     const dome = domeAppearances * P.DOME_MAIN_APPEARANCE;
     const mq = bigMatchPoints + seasonBestMQBonus + mqRecordBroken * P.MQ_RECORD_BREAK;
@@ -19806,14 +19884,17 @@ Engine.mvpRace = {
     const orgRank = Engine.mvpRace._orgRankPoints(state, orgId);
     const draw = popBonus + drawBonus;
 
-    const points = ovr + ppv + title + unified + dome + mq + war + b3 + orgRank + draw + tenchosen + autumnWar + springTag;
+    const points = ovr + ppv + title + unified + dome + mq + war + b3 + orgRank + draw + tenchosen + autumnWar + springTag
+      + upset + growth + junior;
 
     return {
       points,
       breakdown: {
         ovr, ppv, title, ...(hasUnifiedContext ? { unified } : {}), dome, mq, war, b3, orgRank, draw, tenchosen, autumnWar, springTag,
+        upset, growth, junior,
         meta: {
           titleWins, titleDefenses, isCurrentChamp,
+          upsetsNormal, upsetsBig, popGain, juniorResult,
           ...(hasUnifiedContext ? { unifiedCaptures, unifiedDefenses, isUnifiedChamp } : {}),
           ppvChampion, ppvRunnerUp, ppvOtherWin, ppvOtherLoss,
           bigMatch85, bigMatch90, bigMatch95,
@@ -20278,6 +20359,10 @@ Engine.mvpRace = {
     }
     if (m.springTagResult === 'champion') chips.push({ icon: '🌸', text: _wmDictLabel(dict, '春のタッグリーグ優勝') });
     else if (m.springTagResult === 'runnerUp') chips.push({ icon: '🌸', text: fill(FC.springTagRunnerUp) });
+    if (m.juniorResult === 'champion') chips.push({ icon: '🌱', text: fill(FC.juniorChampion) });
+    else if (m.juniorResult === 'runnerUp') chips.push({ icon: '🌱', text: fill(FC.juniorRunnerUp) });
+    const upsetTotal = (m.upsetsNormal || 0) + (m.upsetsBig || 0);
+    if (upsetTotal > 0) chips.push({ icon: '⚡', text: fill(FC.upsets, { n: upsetTotal }) });
     if (m.mqRecordBroken > 0) chips.push({ icon: '🥊', text: m.mqRecordBroken > 1 ? fill(FC.mqRecord2) : fill(FC.mqRecord) });
     const warTotal = (m.warWins || 0) + (m.warLosses || 0) + (m.warDraws || 0);
     if (warTotal > 0) {

@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4750件、訳文あり4750件)
+//  生成元: i18n/ui-ledger.json (総キー4752件、訳文あり4752件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -4763,7 +4763,9 @@
     "天頂戦 優勝": "Tenchosen Winner",
     "引き止め確定、キャップ発動": "Retention locked in — the cap kicks in",
     "業界紙報道: {name}、{orgName} と電撃契約": "From the trade press: {name} signs with {orgName} out of nowhere",
-    "スカウト合戦の裏で進められていた極秘交渉が明らかに": "Talks had been running in secret behind the scouting war"
+    "スカウト合戦の裏で進められていた極秘交渉が明らかに": "Talks had been running in secret behind the scouting war",
+    "大会": "Tournaments",
+    "格上撃破": "Upsets"
   }
   );
 })();
