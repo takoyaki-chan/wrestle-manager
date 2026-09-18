@@ -11030,9 +11030,9 @@ const Engine = {
               }
             });
 
-            if (won) nc.wins = (nc.wins || 0) + 1;
-            else if (isDraw) nc.draws = (nc.draws || 0) + 1;
-            else nc.losses = (nc.losses || 0) + 1;
+            // 勝敗数(wins/losses/draws)はこの後段の「AI団体 wins/losses/draws/streak 更新」で1回だけ数える。
+            // 2026-09-18: ここでも加算していたため AI選手の通算成績が毎試合2重に増えていた(実測: 8試合で+32)。
+            // 過去セーブの通算値は遡って直さない(半減させると別の混乱を生む)。以後の試合から正しく数える
             nc.lastMatchResult = won ? 'win' : (isDraw ? 'draw' : 'loss');
             // MVPレース v3: 格上撃破(自団体の興行と同じ物差し)
             if (won) {

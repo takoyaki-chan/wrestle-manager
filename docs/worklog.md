@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-18 AI団体選手の勝敗数が1試合で2重に加算されていたバグを修正（Fable直実装・Keisuke「実装してください」）
+
+MVPルート v3 の配線中に発見。`Engine.rival.processAIWeek`(management.js)で、シングル戦の wins/losses/draws が (1) 成長ループ内 `nc.wins++` と (2) 後段「AI団体 wins/losses/draws/streak 更新」の2箇所で加算されていた。実測: org_s の1興行(シングル8試合)で通算成績の増分が期待16に対し**32**。ファイル分割(90216386)より前からの既存バグで、AI選手の通算成績(勝敗)が実際の2倍で表示されていた(勝率は不変)。
+
+- **修正**: (1) の加算を削除し、streak と同じ後段で1回だけ数える(自団体の processSettlement と同じ構造)。`lastMatchResult` と格上撃破(`creditUpset`)は (1) の位置のまま(1試合1回)
+- **過去セーブの通算値は遡って直さない**(半減させると別の混乱を生む)。以後の試合から正しく数える
+- **回帰テスト常設**: `test/ai-show-record-count-test.js`(AI興行1回で wins+losses+draws の増分=シングル×2+タッグ×4、2以上増える選手がいない)
+- **検証**: npm test **268/268** / auto-sim 20季 seed42 ALL CLEAR
+- 触ったファイル: src/management.js(4行→コメント3行) / test/ai-show-record-count-test.js(新規)
+
 ## 2026-09-18 MVPレース v3 実装 — 王座戦の難度制+格上撃破+今年の伸び+大会ルート厚め(Keisuke裁定「中」)（Fable直実装）
 
 09-17の提案(`docs/mvp-route-proposal-v0.1.md`)に対するKeisuke裁定: 案B(連続MVPの票離れ)は「作為的すぎる」で却下、案1(防衛の中身で点が変わる)採用、伸びは大きくしない、大会ルートは補助にとどめず全体のバランスで厚く、格上撃破は多少。強度3案(弱/中/強)の受動評価から**「中」で実装**の指示(「推奨中で進めてください」「保存したMVP2の実装計画、これで進めていいよ」)。
