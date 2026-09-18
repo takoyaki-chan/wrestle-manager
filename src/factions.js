@@ -2205,6 +2205,17 @@ Engine.factions = {
       },
     };
   },
+  // state を直接書き換える関数群(checkRivalryResolution / applyRivalryVictory / applyF09SweepBonus)用。
+  // 2026-09-18: これらが純関数版 _markCooldown の戻り値を捨てていたため、F09/F08 のクールダウンが
+  // 一度も記録されず、対抗戦の翌週に同じ2派閥で対抗戦が再発火していた(Keisuke実機報告)
+  _markCooldownInPlace(state, key) {
+    state.factionEventCooldowns = {
+      ...(state.factionEventCooldowns || {}),
+      [key]: { lastTriggeredWeek: this._absWeek(state) },
+    };
+    return state;
+  },
+  _f09Key(fAId, fBId) { return `F09_${Math.min(fAId, fBId)}_${Math.max(fAId, fBId)}`; },
 
   // ── §9.4 F04 寝返り候補検出 ──
   // 「敵対派閥メンバーとのbond平均70+」かつ「自派閥リーダーへのbond40-」
@@ -5605,9 +5616,9 @@ Engine.factions = {
     // ペアエントリ削除
     const key = this._pairKey(winF.id, losF.id);
     if (state.factionRivalryPoints) delete state.factionRivalryPoints[key];
-    // F08/F09 cooldown リセット
-    this._markCooldown(state, `F08_${winF.id}_${losF.id}`);
-    this._markCooldown(state, `F09_${winF.id}_${losF.id}`);
+    // F08/F09 cooldown リセット(判定側 _f08Key / _f09Key と同じキー。旧コードは勝者/敗者順で不一致だった)
+    this._markCooldownInPlace(state, this._f08Key(winF.id, losF.id));
+    this._markCooldownInPlace(state, this._f09Key(winF.id, losF.id));
     // タイムライン
     if (Array.isArray(state.factionTimeline)) {
       state.factionTimeline = [...state.factionTimeline, {
@@ -5644,7 +5655,7 @@ Engine.factions = {
         if (big <= 0) continue;
         if ((big - small) / big > cfg.f09OvrDiffMaxRatio) continue;
         // クールダウン
-        const cdKey = `F09_${Math.min(fA.id, fB.id)}_${Math.max(fA.id, fB.id)}`;
+        const cdKey = this._f09Key(fA.id, fB.id);
         if (!this._isCooldownReady(state, cdKey, cfg.f09Cooldown)) continue;
         return { factionAId: fA.id, factionBId: fB.id };
       }
@@ -5822,8 +5833,8 @@ Engine.factions = {
     else entry.pointsB += cfg.f09SweepBonus;
     entry.lastUpdatedSeason = state.season;
     entry.lastUpdatedWeek = state.week;
-    // F09 cooldown セット
-    this._markCooldown(state, `F09_${Math.min(factionAId, factionBId)}_${Math.max(factionAId, factionBId)}`);
+    // F09 cooldown セット(破壊的更新。戻り値を捨てる純関数版では記録されなかった)
+    this._markCooldownInPlace(state, this._f09Key(factionAId, factionBId));
     return state;
   },
 

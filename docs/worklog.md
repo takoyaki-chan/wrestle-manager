@@ -1,5 +1,16 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-18 派閥対抗戦(F09)が翌週に再発火するバグを修正 — クールダウンが一度も記録されていなかった（Fable直実装・Keisuke実機報告）
+
+Keisuke報告「派閥が対抗戦を制した(1週間後また対抗が勃発した)。結構起こる」。
+
+- **原因**: `src/factions.js` の `applyF09SweepBonus`(対抗戦の集計)と `applyRivalryVictory`(先取100ptなどの決着)が、**純関数版 `_markCooldown` の戻り値を捨てていた**(state を直接書き換える関数群の中で `this._markCooldown(state, key);` と呼ぶだけ)。そのため F09 の52週クールダウン(spec §3.6)も決着後の F08/F09 クールダウン(§5.3)も一度も記録されず、対抗戦後に対立度が65以上のままなら翌週にまた F09 が組まれていた。加えて決着後のキーが `F09_勝者_敗者` で、判定側(`F09_min_max`)と食い違っていた
+- **修正**: 破壊的更新版 `_markCooldownInPlace(state, key)` を追加し3箇所で使用。キーは判定側と同じ `_f09Key`(min/max)/`_f08Key` に統一。純関数版 `_markCooldown` はそのまま(他の呼び出しは戻り値を使っている)
+- **回帰テスト**: `test/faction-f09-cooldown-test.js`(集計後の翌週は同ペアで F09 不発・52週後は可 / 決着後に F08/F09 のCDが判定キーで立つ・孤立キーなし・対立が再燃しても翌週は不発 / 純関数版の非破壊性)
+- **検証**: npm test **269/269** / auto-sim 20季 seed42 ALL CLEAR
+- **旧セーブ**: 修正は次の対抗戦・決着から効く。すでに連発した状態のセーブは、次の対抗戦のあと52週止まる
+- 触ったファイル: src/factions.js / test/faction-f09-cooldown-test.js(新規) / specs/faction-rivalry-points-spec-v0.1.md §3.6
+
 ## 2026-09-18 AI団体選手の勝敗数が1試合で2重に加算されていたバグを修正（Fable直実装・Keisuke「実装してください」）
 
 MVPルート v3 の配線中に発見。`Engine.rival.processAIWeek`(management.js)で、シングル戦の wins/losses/draws が (1) 成長ループ内 `nc.wins++` と (2) 後段「AI団体 wins/losses/draws/streak 更新」の2箇所で加算されていた。実測: org_s の1興行(シングル8試合)で通算成績の増分が期待16に対し**32**。ファイル分割(90216386)より前からの既存バグで、AI選手の通算成績(勝敗)が実際の2倍で表示されていた(勝率は不変)。

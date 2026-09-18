@@ -173,7 +173,7 @@ v0.1 で導入予定だった「小さい方の派閥サイズによる救済倍
 ### §3.6 F09 後の状態
 
 - F09 で動いたポイントを `factionRivalryPoints` に加算後、§4 の決着判定を実行
-- F09 cooldown 52週セット
+- F09 cooldown 52週セット(**2026-09-18 修正**: applyF09SweepBonus/applyRivalryVictory が純関数版 _markCooldown の戻り値を捨てていたため一度も記録されず、対抗戦の翌週に同じ2派閥で再発火していた。破壊的更新版 _markCooldownInPlace + 判定側と同じキー(_f09Key/_f08Key=min/max順)に統一。回帰: test/faction-f09-cooldown-test.js)
 - 抗争未決着の場合、抗争は継続（F09 だけで必ず決着するわけではない）
 
 ---
