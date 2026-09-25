@@ -44,6 +44,8 @@ module.exports = [
       'lastIntrusionWeek', 'showCard[*].right', 'matchupLog', 'lastShowAttendance', 'orgPop',
       '_rivalryResolvedThisWeek', 'n01CooldownWeeks.*', 'n06CooldownWeeks.*', 'roster[*].careerRecord.history[*].*',
       'relationships.*', 'relationships.*.*', 'relationshipCounters.*', 'roster[*].*', 'roster[*].*.*', '_modalQueue',
+      // 2026-09-26 追加(fixture の更新で乱入者が王座を奪う結果になった): 王座・興行評価・熱
+      'titles.world.*', 'lastShowRating.*', 'heatScore',
     ],
     mustAppear: true, refs: 'app.js:7004-7047(判定・差し替え), 7845-7890(結果処理) / エンジン側なし',
     note: '乱入は App.executeShow の中でだけ判定される。王座戦の対戦相手そのものが変わるので、この興行の結果は全面的に別物になる。',
@@ -61,6 +63,9 @@ module.exports = [
       'chronicle.fighterArchive[*](presence)', 'relationships.*.frozen', 'relationships.*.bond', 'relationships.*.rivalry',
       'relationshipCounters.*', '_pendingInjuryRetirements', 'factions[*].memberIds', 'newsSeen.**',
       'roster[*].pw', 'roster[*].sp', 'roster[*].te', 'roster[*].st', 'roster[*].mn', 'roster[*].seasonGrowth.*',
+      // 2026-09-26 追加(B): 引退した選手の挑戦試合の打診が消える・ロスターが変わって派閥イベントが変わる・
+      // 怪我引退のポップアップ(M-22)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
+      'challengeRequest.pendingThisWeek', '_pendingFactionEvent', 'relModalWindow[*].own',
     ],
     sides: { A: ['engOnly', 'appOnly', 'both'] },
     mustAppear: true, refs: 'management.js:15084-15190(引退・O-04・信頼・王座) / app.js:8317-8331(怪我だけ付けて残す)',
@@ -74,14 +79,20 @@ module.exports = [
       'roster[*](presence)', 'freeAgents[*](presence)', '_pendingSuddenDepartures[*](presence)', 'lockerRoomMorale',
       'relationships.*', 'relationships.*.*', 'rivalries.*', 'roster[*].pw', 'roster[*].sp', 'roster[*].te', 'roster[*].st',
       'roster[*].seasonGrowth.*',
+      // 2026-09-26 追加: 退団者が他団体へ移る(A)。移った先の週次興行・対戦成績が変わる(B)。残った選手の信頼への波及
+      'aiOrgs.*.roster[*](presence)', 'roster[*]._departureBondImpact', 'roster[*].trust',
+      'aiOrgs.*.roster[*].*', 'aiOrgs.*.roster[*].*.*', 'aiOrgs.*.matchupLog', 'h2h.*', 'h2h.*.*', 'h2h.*.lastMatch.*',
+      // 退団のポップアップ(M-23)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
+      'relModalWindow[*].own',
     ],
     mustAppear: true, refs: 'management.js:15494-15561 / app.js なし(表示だけ app.js:12045 にある)',
     note: 'Engine.trust.checkSuddenDepartures の呼び出しはエンジンの executeShow だけ。実プレイでは表示コードだけが残っていて、発生源が無い。',
   },
   {
     id: 'K1-E05', title: '派閥抗争ポイント・派閥内ポイントの試合ごとの加点',
-    category: 'processing', side: 'engine', impact: '数値', scenarios: ['factions'], checkpoints: ['A', 'B'],
-    patterns: ['factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB', 'factionInternalPoints.*', '_rivalryPointsWeekly'],
+    // title-defense: 2026-09-26 の fixture 更新で派閥員(66)が派閥外の王者と戦うようになり、派閥内ポイントの差が出る
+    category: 'processing', side: 'engine', impact: '数値', scenarios: ['factions', 'title-defense'], checkpoints: ['A', 'B'],
+    patterns: ['factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB', 'factionInternalPoints.*', 'factionInternalPoints.*.*', '_rivalryPointsWeekly'],
     mustAppear: true, refs: 'management.js:15263-15292 / app.js なし',
     note: 'accrueRivalryPointsFromMatch / accrueInternalPointsFromExternalMatch は実プレイで一度も呼ばれない。'
       + '実プレイ側の値が動くのは F09 のスイープボーナス(K1-A13)だけ。',
@@ -95,7 +106,8 @@ module.exports = [
   {
     id: 'K1-E06', title: '歴代最高評価(MQ記録)のタッグ別記録と記録更新記事',
     category: 'formula', side: 'both', impact: '表示', scenarios: ['mq-record'], checkpoints: ['A', 'B'],
-    patterns: ['mqRecordTag.*', '_industryNewsEvents'],
+    // mqRecord.*: 実プレイはタッグの評価もシングルの記録と比べるので、タッグの評価がシングル記録を塗り替える
+    patterns: ['mqRecordTag.*', 'mqRecord.*', '_industryNewsEvents'],
     mustAppear: true, refs: 'management.js:14866-14894(matchType・勝者を渡す) / app.js:8146-8159(渡さない)',
     note: '実プレイは updateRecord に matchType と勝者を渡さないので、タッグの記録はシングルの記録として扱われ(タッグ記録は更新されない)、'
       + '記録更新記事(mqAllTimeRecord / mqTagRecord)も勝者不明で出ない。',
@@ -134,12 +146,15 @@ module.exports = [
     patterns: ['_pendingF07Directive.remainingShows'],
     mustAppear: true, refs: 'app.js:8494-8528(_applyTrustToMembers の結果は 8807 の roster 上書きで失われる)',
   },
+  // K1-A15(タッグ不仲ペアの試合後 信頼−1)は、裁定 K-12 の実装(7ba3738e: Engine.showTagMatch に4経路を
+  // 通した)で差が消えたので外した(2026-09-26)。以後この場所に差が出ると「未登録」で落ちる。
   {
-    id: 'K1-A15', title: 'タッグ不仲ペアの試合後 信頼−1(1試合ずつスキップ/観戦のときだけ)',
-    category: 'processing', side: 'app', impact: '数値', scenarios: ['tag-lowbond'], modes: ['skipEach'], checkpoints: ['A'],
-    patterns: ['roster[*].trust'],
-    mustAppear: true, refs: 'app.js:7256-7264, 7404-7412 / skipAllMatches(7670-7690)とエンジンにはない',
-    note: '能力−3(_penalize)は power/speed 等の存在しないキーを下げていて、どの経路でも試合に効かない。lowBondA/B の指定もエンジンは読まない。',
+    id: 'K1-X03', title: '怪我の経歴の日付(実プレイは怪我判定に週・季として 0 を渡すので、中傷・重傷の経歴が「0季0週」になる)',
+    category: 'formula', side: 'both', impact: '表示', scenarios: ['departure'], checkpoints: ['A', 'B'],
+    patterns: ['roster[*].careerHistory'],
+    mustAppear: true, refs: 'app.js _finalizeShowImpl の Engine.injury.check(…, 0, 0, …) / management.js executeShow は s.week, s.season を渡す',
+    note: '報告書 §7 X03(コード読解で確認済み)を 2026-09-26 の fixture 更新で実測した(departure で選手41が中傷)。'
+      + '同じシナリオの選手44のブレークスルーの経歴(K1-A02)もこの項目に数えられる(場所が同じため)。',
   },
   {
     id: 'K1-F01', title: 'タッグの人気・連敗・勝敗の付け方(実プレイは敗者も勝者扱い)',
@@ -183,7 +198,8 @@ module.exports = [
   {
     id: 'K1-A02', title: 'ブレークスルー判定・敗戦スランプ・スランプ/モチベ喪失のモメンタム',
     category: 'processing', side: 'app', impact: '数値', checkpoints: ['A', 'B'],
-    patterns: ['roster[*].slump.recoveryMomentum', 'roster[*].slump', 'roster[*].motivationLoss', 'roster[*].hotStreak', '_pendingGrowthEvents'],
+    patterns: ['roster[*].slump.recoveryMomentum', 'roster[*].slump', 'roster[*].motivationLoss', 'roster[*].hotStreak', '_pendingGrowthEvents',
+      'roster[*].careerRecord.history', 'roster[*].careerHistory'],
     mustAppear: true, refs: 'app.js:8829-8941 / エンジン側なし(乱数ストリーム 0xB818/0x5C6/0x5C7/0x5C8 は実プレイだけが引く)',
   },
   {
@@ -208,7 +224,10 @@ module.exports = [
     id: 'K1-P01', title: '結果画面の先読み tickWeek が G を直接書き換える(逓減カウンター・W-1回数・モーダル・フラグCD)',
     category: 'leak', side: 'app', impact: '数値', checkpoints: ['A', 'B', 'P'],
     patterns: ['relationshipCounters.*', 'relationshipCounters.*.count', 'relationshipCounters.*.lastWeek',
-      'w1FireCount.*', '_modalQueue', 'relationshipFlagCounters.*', 'relationshipFlagCounters.*.lastWeek'],
+      'w1FireCount.*', '_modalQueue', 'relationshipFlagCounters.*', 'relationshipFlagCounters.*.lastWeek',
+      // 2026-09-26 追加(fixture の更新で見えた同じ種類の書き換え): 他団体の怪我引退で経歴の区切り
+      // (orgTimeline の toSeason/toWeek)、ブレークスルーの記録へのスナップショットの台詞
+      'aiOrgs.*.roster[*].orgTimeline[*].toSeason', 'aiOrgs.*.roster[*].orgTimeline[*].toWeek', '_pendingGrowthEvents[*].*'],
     sides: { P: ['changed'] },
     mustAppear: true, refs: 'app.js:10286-10288(prepareShowResultInlinePopups) → relationships.js:784-798(カウンターを直接減らす), 886/936(w1FireCount), 2754-2770(_modalQueue / flagCounters)',
     note: 'W-1 回数は実プレイの興行週だけ二重に数えられ、「慢性的険悪ペア(累計4回)」の書類が早く出る。関係性モーダルも1件重複して積まれる。',
@@ -264,7 +283,8 @@ module.exports = [
   {
     id: 'K1-B06', title: '自団体選手の週次状態の波及(練習/プロモ/休養・コンディション・人気・信頼・警告デバフ など)',
     category: 'propagation', side: 'both', impact: '数値', checkpoints: ['B'],
-    patterns: ['roster[*].*', 'roster[*].*.*'], mustAppear: false, refs: 'K1-E01・K1-A01・K1-E02 などの波及',
+    // _milestoneBaseline: 成長の節目の比較基準(2026-09-25 通知・ログの修正で新設)。週末のロスターの写しなので同じ波及を受ける
+    patterns: ['roster[*].*', 'roster[*].*.*', '_milestoneBaseline.**', '_milestoneQueue'], mustAppear: false, refs: 'K1-E01・K1-A01・K1-E02 などの波及',
   },
 
   // ════════════════ 実プレイだけの週送り前処理(C: closeShowResult の後半) ════════════════
@@ -305,7 +325,8 @@ module.exports = [
   {
     id: 'K1-C06', title: '表示キューの消化・週送り準備(Glimpse・週ログ・大ニュース通知・カード初期化・weekPhase)',
     category: 'transient', side: 'app', impact: '一時', checkpoints: ['C'],
-    patterns: ['_pendingGlimpseA', '_pendingGlimpseB', 'weekLogFeed', 'gameLog', '_bigNewsNotifiedWeek', '_bigNewsUnread', 'showCard', 'weekPhase'],
+    patterns: ['_pendingGlimpseA', '_pendingGlimpseB', 'weekLogFeed', 'gameLog', '_bigNewsNotifiedWeek', '_bigNewsUnread', 'showCard', 'weekPhase',
+      '_pendingGrowthEvents'],
     mustAppear: true, refs: 'app.js:11053-11298',
   },
 ];
