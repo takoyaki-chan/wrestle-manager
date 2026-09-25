@@ -11022,7 +11022,7 @@ const App = {
     if (showFlavorEvents.length > 0) {
       showFlavorEvents.forEach((ev, i) => {
         hasEventPopups = true;
-        const detail = ev.type === 'magazine' ? WM_I18N.t('人気 +{n}', { n: ev.popGain }) : WM_I18N.t('ヒート +{n}', { n: ev.heatGain });
+        const detail = App._flavorEventDetail(ev);
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone: 'positive', message: ev.headline, detail
@@ -11372,9 +11372,10 @@ const App = {
     const oppOrg = opponentOrgId != null ? opponentOrgId : 'player';
     if (g.vsOrgId !== oppOrg) return false;
     if (!g.intensity || g.intensity < 60) return false;
-    const nowAbs = (season - 1) * 20 + (week || 1);
-    const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
-    if (nowAbs - firedAbs > 24 || nowAbs - firedAbs < 0) return false;
+    // 解雇からの週数は Engine.relationships.grudgeWeeksSince(48週/季)で数える(2026-09-25 総点検04⑪。
+    // 以前は20週/季の換算で、季をまたぐと窓の計算がずれていた)
+    const weeksSinceFired = Engine.relationships.grudgeWeeksSince(g, season, week);
+    if (weeksSinceFired > 24 || weeksSinceFired < 0) return false;
     if (typeof VS_EX_EMPLOYER_LINES === 'undefined') return false;
     return true;
   },
@@ -11407,6 +11408,15 @@ const App = {
     return hitArr.length > 0 ? hitArr : null;
   },
 
+  // 雑誌取材・TV出演ポップアップの効果欄。2026-09-25 総点検06⑩: 以前は「人気 +2」「ヒート +1」と
+  // 数値をそのまま見せていた(数値の丸見せ)。効果の値(Engine.flavor の popGain/heatGain)は変えず、
+  // 何が起きたかだけを質的な一文で伝える
+  _flavorEventDetail(ev) {
+    return ev && ev.type === 'magazine'
+      ? WM_I18N.t('記事の反響で、ファンの間で名前が広まった')
+      : WM_I18N.t('オンエアの反響で、団体に注目が集まった');
+  },
+
   // 業界ニュースキューに追加（毎週の新聞画面・業界ニュース欄に流れる）
   _pushIndustryNews(ev) {
     if (!ev || !ev.type) return;
@@ -11426,11 +11436,9 @@ const App = {
     const g = fighter && fighter.grudge;
     if (!g || !g.vsOrgId || g.vsOrgId !== foeOrgId) return state;
     if (!g.intensity || g.intensity < 60) return state;
-    const nowAbs = Engine.util && Engine.util.absWeek
-      ? Engine.util.absWeek(state.season, state.week)
-      : ((state.season - 1) * 20 + state.week);
-    const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
-    const weeksSinceFired = nowAbs - firedAbs;
+    // 2026-09-25 総点検04⑪: 以前は今の週を48週/季・解雇の週を20週/季で換算しており、
+    // 解雇から2季目以降は差が必ず24週を超えて一度も出なかった。換算を1か所(48週/季)にまとめる
+    const weeksSinceFired = Engine.relationships.grudgeWeeksSince(g, state.season, state.week);
     if (weeksSinceFired > 24 || weeksSinceFired < 0) return state;
     const _orgNameOf = (orgId) => {
       if (orgId === 'player') return state.orgName || 'プレイヤー団体';
@@ -11802,9 +11810,7 @@ const App = {
       const baseDelay = newInjuries.length * 100 + 50;
       flavorEvents.forEach((ev, i) => {
         const tone = ev.type === 'magazine' ? 'positive' : 'positive';
-        const detail = ev.type === 'magazine'
-          ? WM_I18N.t('人気 +{n}', { n: ev.popGain })
-          : WM_I18N.t('ヒート +{n}', { n: ev.heatGain });
+        const detail = App._flavorEventDetail(ev);
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone, message: ev.headline, detail

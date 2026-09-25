@@ -1,5 +1,19 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-25 面白さ総点検 — 通知・ログ・スナップショットの「書いてあるのに出ていない/数値と食い違う」6件を修正(Claude/Opus 5.5・worktree)
+
+根拠: docs/fun-audit-v0.1/03-career-lifecycle.md ⑥、04-drama-engine.md ⑦⑨⑪§5、06-narrative-spotlight.md ⑧⑨⑩。ゲームの数値は変えていない(遺恨の強さの換算だけは数値が動きうるので変化量を計測)。
+
+- **成長の節目通知**(9bda250d): 比較の基準を「tickWeek冒頭」から「前回の検出時(同じシーズンの前週以前)」へ(`_milestoneBaseline`)。興行で越えた閾値も拾う。同じ週に重なった節目は選手×種別の保留列(`_milestoneQueue`)へ積み、2週に1件の枠が空いたら出す(頻度の上限は不変)。古い節目は新しい節目へ畳む。30季seed42: 通知 総合力29→77/人気90→103/限界到達0→8(季中の通過は77/103/8)
+- **週のログ**(b0694928): `checkRivalryTitles` のログを自団体が絡むペアだけに。引退者・休眠者のペアは団体判定・帯の判定・ログから外し、記録(lastBand/oneSided)だけ従来の式で更新(`getRivalryPairCore` を切り出し)。30季: tickWeekのログ 15,301→7,956行、因縁帯の行 8,853→1,673、「?」2,553→0
+- **スナップショット**(5759e3ea): 同世代は両方向 bond≥45 かつ両方向 rivalry<50、相性の摩擦は両方向 bond≥60 を除外(`Engine.snapshot.SCENE_FIT`)。抽選の後ろで絞り乱数の引き順は不変。30季: 同世代 292→106(険悪ペア21→0)、摩擦 55→50
+- **古巣対決・遺恨**(e05b61ab): 解雇からの週数を `Engine.relationships.grudgeWeeksSince`(48週/季)に統一(新聞 firedReturn / 試合中の元雇用主セリフ / 対抗戦の勝利セリフ)。在籍年数も48週で1年に。変化量: 実際の解雇15件は差0、受動ペア計測で強さが変わるのは自団体2.6%(全て−10)・他団体4.5%(+10:83/−10:119)
+- **雑誌・TV/関係修復の文面**(eaa91425): ポップアップの「人気 +{n}」「ヒート +{n}」を質的な一文に、雑誌見出しの名指し『』セリフ2本を地の文に(本数・並びは不変)、関係修復斡旋書の「双方向 bond」「W-1(憎い敵ゾーン)」とログ・決裁結果の bond 表記を質的に。i18n は台帳の該当行だけ差し替え+lang-en*.js 再生成
+- **検証**: 修正ごとに test/ へ5本追加(growth-milestone-queue / rivalry-band-log-filter / snapshot-scene-relation-fit / firing-grudge-week-conversion / player-text-no-numeric-exposure)。auto-sim 30季seed42 ALL CLEAR、npm test 274/274 PASS。auto-simの複製+読み取り専用フックで、週ごとの数値の指紋(能力・人気・資金・関係値・因縁記録・他団体)が全1,590週で main と一致
+- **specs**: snapshot-notification-spec §1.3(条件と重みを実装に合わせた)、firing-grudge-spec(週の数え方)を更新
+- **既存の不一致(今回の変更とは無関係)**: `node test/i18n-ratchet.js` は main の時点で data.js+3/ui-render.js+3/management.js+2 で NG(今回は app.js −2のみ)。`node test/ja-golden.js` も main の時点で基準と不一致(生成テキストは main と今回で全7,558行一致)
+- **残課題**: 雑誌・TVの週のログ行「（名前 人気+2）」「（ヒート+1）」は数値のまま(今回はポップアップのみ)。険悪な同世代ペア向けの文面は未作成。オフ中の成長は従来どおり通知しない
+
 ## 2026-09-25 K-9(A) 追補 — AI団体の興行の人気変化にも自団体と同じ低人気の下支えを掛けた（Claude/Opus 5.5・worktreeブランチ・未マージ）
 
 直前のK-9+K-13コミットの副作用①「B団体の人気が0付近に張り付く」への対応。裁定K-9の趣旨「AIの人気の扱いを自団体と揃える」に従い、年次減衰に続いて低人気の下支えもAIに揃えた。

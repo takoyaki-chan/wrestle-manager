@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4752件、訳文あり4752件)
+//  生成元: i18n/ui-ledger.json (総キー4751件、訳文あり4751件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -232,8 +232,6 @@
     "TV番組出演": "TV appearance",
     "Traits — 特性": "Traits",
     "U-20ジュニアトーナメント進行中": "U-20 Junior Tournament in progress",
-    "W-1(憎い敵ゾーン)が累計4回以上発火したペアに対して使用できる。慢性化する前に手を打てば、亀裂が修復可能になることもある。": "Available for any pair whose W-1 (Hated Rival zone) has fired 4 or more times total. Act before it turns chronic, and the rift can still be mended.",
-    "W-1（憎い敵ゾーン）が累計4回以上発火したペアに対して使用できる。慢性化する前に手を打てば、亀裂が修復可能になることもある。": "Available for any pair whose W-1 (Hated Rival zone) has fired 4 or more times total. Act before it turns chronic, and the rift can still be mended.",
     "WRESTLE MANAGER — 女子プロレス団体経営シミュレーション": "WRESTLE MANAGER — A women's pro wrestling management simulation",
     "Week 1 — 非興行週": "Week 1 — Non-show week",
     "YEAR {season} ・ WEEK {week} ・ 第{n}試合 / 全{total}試合": "YEAR {season} · WEEK {week} · Match {n} of {total}",
@@ -362,8 +360,8 @@
     "{monthIdx}月 第{weekInMonth}週": "Month {monthIdx}, Week {weekInMonth}",
     "{move} ({type})": "{move} ({type})",
     "{n1}と{n2}——\nリング上で何度も火花を散らしたふたりの間に、\n特別な空気が漂い始めている。\nこの因縁、どう活かしていくか——": "{n1} and {n2}—\nTwo wrestlers who've traded sparks again and again in the ring.\nSomething between them has started to feel different.\nThis rivalry — where do you take it from here—",
-    "{nameA}と{nameB}の bond +{delta}（双方向）": "{nameA} and {nameB}, bond +{delta} (both directions)",
     "{nameA}と{nameB}の溝は埋まらなかった": "The rift between {nameA} and {nameB} wasn't closed",
+    "{nameA}と{nameB}の間のわだかまりが、いくらか解けた": "Some of the ill feeling between {nameA} and {nameB} has eased.",
     "{names} — 今後のFA市場で動きがあるか注目。": "{names} — watch for movement on the free agent market from here.",
     "{names} — 新シーズンの台風の目となるか。": "{names} — the eye of the storm in the new season?",
     "{names}。第{w}週、大会導入の直後に代表3名と出場順を決定します。": "{names}. In Week {w}, right after the tournament opens, you choose your three representatives and their order.",
@@ -1298,6 +1296,7 @@
     "オフシーズン中は決裁できません": "Approvals cannot be made during the off-season",
     "オフシーズン突入": "Into the Off-season",
     "オフシーズン第{n}週へ →": "To Off-season Week {n} →",
+    "オンエアの反響で、団体に注目が集まった": "The broadcast got noticed, and more eyes are on the promotion.",
     "オートセーブ": "Autosave",
     "オートセーブからロードしますか？\\n現在の進行は失われます。": "Load from the autosave?\\nYour current progress will be lost.",
     "オートセーブの読み込みに失敗しました。": "The autosave could not be loaded.",
@@ -1333,6 +1332,9 @@
     "グッズ収入（プロモ連動）": "Merch Income (Promo Tie-in)",
     "グッズ収入（興行ブースト）": "Merch Income (Show Boost)",
     "グッズ収入（週次）": "Merch Income (Weekly)",
+    "対立が何度も重なってきた二人に使える。慢性化する前に手を打てば、亀裂が修復可能になることもある。": "For two wrestlers whose clashes keep piling up. Act before it turns chronic, and the rift can still be mended.",
+    "成功すれば、二人の間のわだかまりがいくらか解ける。失敗しても関係は変わらない。": "If it works, some of the ill feeling between the two eases. If it fails, nothing changes between them.",
+    "記事の反響で、ファンの間で名前が広まった": "The piece got people talking, and her name is spreading among the fans.",
     "集客力とグッズ売上にボーナス。興行出場で人気が上がりやすい": "Bonus to draw power and merch income. Popularity climbs more easily from working shows",
     "グッズ販売会": "Merch sale event",
     "グラウンド攻撃": "Ground Attack",
@@ -1555,7 +1557,6 @@
     "パートナー": "Partner",
     "パートナーが間一髪で救出！ これがタッグマッチ！": "The partner breaks it up with no time to spare! This is what tag wrestling is!",
     "パートナーと呼吸を合わせ、二人の動きを一つの攻撃へつなげる。": "Times it with her partner so that two sets of movement become one attack.",
-    "ヒート +{n}": "Heat +{n}",
     "ヒール": "Heel",
     "ヒール派閥": "Heel faction",
     "ヒール派閥として承認。絆 +3〜+4、次回興行の集客が一時的に上がる。": "Approve as a heel faction. Bond +3 to +4, and a one-time bump in attendance at the next show.",
@@ -1951,7 +1952,6 @@
     "人数": "Headcount",
     "人望": "Respect",
     "人気": "Popularity",
-    "人気 +{n}": "Popularity +{n}",
     "人気 1位": "Popularity — 1st",
     "人気 {n} 到達": "Popularity {n} reached",
     "人気 {pop}": "Popularity {pop}",
@@ -2827,7 +2827,6 @@
     "成 長 と 陰 り": "Growth and Decline",
     "成り行きに任せる": "Let It Play Out",
     "成功時　給与+{n}万/週": "If successful: +¥{n:man}/wk",
-    "成功時、双方向 bond +5〜+10。失敗時は据え置き。": "On success, bond +5 to +10 in both directions. On failure, nothing changes.",
     "成功率": "Success rate",
     "成果: 並": "Result: Fair",
     "成果: 大": "Result: Big",

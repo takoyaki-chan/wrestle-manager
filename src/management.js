@@ -1883,7 +1883,9 @@ const Engine = {
       if (rivalry < 80) return 3;
       return 4;
     },
-    getRivalryPairState(G, id1, id2) {
+    // 関係値と因縁記録だけで決まる部分(所属団体の判定を含まない)。getRivalryPairState と、
+    // checkRivalryTitles が引退者・休眠者のペアの記録だけを更新するときの共通部分(2026-09-25)
+    getRivalryPairCore(G, id1, id2) {
       const entry = Engine.title.getRivalry(G, id1, id2) || null;
       const keyAB = `${id1}>${id2}`;
       const keyBA = `${id2}>${id1}`;
@@ -1903,6 +1905,13 @@ const Engine = {
         ? (rivalryAB >= rivalryBA ? id1 : id2)
         : null;
       const band = Engine.title.getRivalryBand(minRivalry);
+      return {
+        entry, rivalryAB, rivalryBA, bondAB, bondBA, minRivalry, maxRivalry, minBond, avgBond,
+        band, resolvedType, isOneSided, aggressor,
+      };
+    },
+    getRivalryPairState(G, id1, id2) {
+      const core = Engine.title.getRivalryPairCore(G, id1, id2);
       const _findOrgId = (id) => {
         if (G.roster?.find(c => c.id === id)) return G.orgId || 'player';
         for (const [aoId, ao] of Object.entries(G.aiOrgs || {})) {
@@ -1914,20 +1923,8 @@ const Engine = {
       const _orgB = _findOrgId(id2);
       const isCrossOrg = !!(_orgA && _orgB && _orgA !== _orgB);
       return {
-        entry,
-        rivalryAB,
-        rivalryBA,
-        bondAB,
-        bondBA,
-        minRivalry,
-        maxRivalry,
-        minBond,
-        avgBond,
-        band,
-        resolvedType,
-        isOneSided,
-        aggressor,
-        matches: entry?.matches || 0,
+        ...core,
+        matches: core.entry?.matches || 0,
         isCrossOrg,
         // 決着に必要な対戦回数をペアごとに散らすために使う（checkResolution）
         idA: id1,
@@ -2092,6 +2089,13 @@ const Engine = {
     },
     // Phase 5: 週次ライバル表示更新
     // Returns { state, events }
+    // 2026-09-25 総点検04⑨/06⑨: 週のログの約3分の2がこの帯の上下で、その8割は自団体と無関係なペア、
+    // 名前が引けない相手(引退者・休眠者)は「?」で出ていた。
+    // - ログは自団体の選手が絡むペアだけに出す
+    // - 名前が引けない相手(=自団体・他団体・FAのどこにもいない引退者・休眠者)が絡むペアは、
+    //   団体の判定・帯の変化の判定・ログから外す。ただし記録(lastBand/oneSided)は関係値だけで
+    //   決まる従来と同じ式で更新し続ける — 復帰した選手の試合(認知イベント)が oneSided を読むため、
+    //   止めると数値が変わる。帯の判定そのもの(getRivalryPairCore)は変えていない
     checkRivalryTitles(state) {
       const rivalries = { ...(state.rivalries || {}) };
       const events = [];
@@ -2101,7 +2105,7 @@ const Engine = {
         (org.roster || []).forEach(c => nameMap.set(c.id, c.name));
       });
       (state.freeAgents || []).forEach(c => nameMap.set(c.id, c.name));
-      const getName = (id) => nameMap.get(id) || '?';
+      const playerIds = new Set((state.roster || []).map(c => c.id));
       const pairsToCheck = new Set(Object.keys(rivalries));
 
       Object.keys(state.relationships || {}).forEach(key => {
@@ -2113,19 +2117,24 @@ const Engine = {
 
       for (const key of pairsToCheck) {
         const [id1, id2] = key.split('-').map(Number);
-        const pairState = Engine.title.getRivalryPairState(state, id1, id2);
         const entry = rivalries[key] || { matches: 0, lastWeek: 0, resolutionCount: 0, lastBand: 0, oneSided: null };
+        const active = nameMap.has(id1) && nameMap.has(id2);
+        const pairState = active
+          ? Engine.title.getRivalryPairState(state, id1, id2)
+          : Engine.title.getRivalryPairCore(state, id1, id2);
         const prevBand = entry.lastBand || 0;
         const nextBand = pairState.band ? pairState.band.tier : 0;
 
-        if (!pairState.resolvedType && nextBand !== prevBand) {
+        if (active && (playerIds.has(id1) || playerIds.has(id2))
+            && !pairState.resolvedType && nextBand !== prevBand) {
+          const n1 = nameMap.get(id1), n2 = nameMap.get(id2);
           if (nextBand > prevBand && pairState.band) {
-            events.push(`${pairState.band.emoji} ${getName(id1)} vs ${getName(id2)} — ${pairState.band.label}が深まっている`);
+            events.push(`${pairState.band.emoji} ${n1} vs ${n2} — ${pairState.band.label}が深まっている`);
           } else if (nextBand > 0) {
             const labelInfo = pairState.band || RIVALRY_THRESHOLDS.find(t => t.tier === nextBand);
-            if (labelInfo) events.push(`${labelInfo.emoji} ${getName(id1)} vs ${getName(id2)} — ${labelInfo.label}に落ち着いた`);
+            if (labelInfo) events.push(`${labelInfo.emoji} ${n1} vs ${n2} — ${labelInfo.label}に落ち着いた`);
           } else if (prevBand > 0) {
-            events.push(`… ${getName(id1)} vs ${getName(id2)} — 因縁はひとまず静まった`);
+            events.push(`… ${n1} vs ${n2} — 因縁はひとまず静まった`);
           }
         }
 
@@ -3914,13 +3923,16 @@ const Engine = {
     // test/i18n-extract-templates.js がこの2配列をmanagement.jsソースから直接切り出して
     // i18n/template-ledger.json へ載せる(app.js:_NEWSPAPER_HEADLINES と同じ作法)。
     // **配列の並び順は変えないこと** — Engine.rng.int が引く添字が変わるとJA出力が変わる。
+    // 2026-09-25 総点検06⑩: 誰が取材されても同じ『』の決め台詞(「まだまだ頂点を譲る気はない」等)が
+    // 付き、挑戦者にも王者の台詞が出ていた。汎用テンプレに名指しの鉤括弧セリフを入れない方針により、
+    // 0番と5番は台詞を地の文(記事の中身の紹介)に畳んだ。添字と本数は変えていない
     MAGAZINE_HEADLINES: [
-      '📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。『まだまだ頂点を譲る気はない』」',
+      '📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。いま見据えているもの」',
       '📰 月刊プロレスマガジン — 「特集：{name}の素顔に迫る」',
       '📰 週刊女子プロレス — 「{name}、表紙＆巻頭グラビア！ファン歓喜」',
       '📰 スポーツ報知 — 「{name}が語る"強さの秘密"」',
       '📰 週刊女子プロレス — 「{name}密着ルポ。練習場から見えた執念」',
-      '📰 月刊プロレスマガジン — 「{name}インタビュー。『ファンの声援が力になる』」',
+      '📰 月刊プロレスマガジン — 「{name}インタビュー。客席の声援をどう聞いているか」',
     ],
     TV_HEADLINES: [
       '📺 スポーツニュース — 「{name}がゴールデンタイムに登場。業界への注目が高まっている」',
@@ -8377,87 +8389,167 @@ const Engine = {
     },
 
     /**
-     * tickWeek末尾で呼ぶ。前後比較 + _milestonesNotified照合で新規マイルストーンを検出。
+     * 比較の基準点(tickWeek冒頭で呼ぶ)。[{id, ovr, pop, stats}] を返す。
+     * 2026-09-25 総点検03⑥(i): 試合成長は tickWeek の**外**(興行処理)で入るため、tickWeek冒頭の
+     * 値と比べるだけでは興行で閾値を越えた分が一度も差分に現れなかった。前回の検出時に
+     * 記録した値(`_milestoneBaseline`)が同じシーズン・前週以前のものならそれを基準に使い、
+     * 興行・決裁・大会など検出と検出の間に入った伸びを全部拾う。記録に無い選手(その後の加入)と、
+     * 使えない基準(開幕週・オフ明け・旧セーブ)は従来どおり冒頭の値で補う。
+     */
+    baselineFor(state) {
+      const b = state._milestoneBaseline;
+      const usable = !!(b && b.entries && !state.offSeason
+        && b.season === state.season && Number.isFinite(b.week) && b.week < state.week);
+      return (state.roster || []).map(c => {
+        const e = usable ? b.entries[c.id] : null;
+        if (e && e.stats) return { id: c.id, ovr: e.ovr, pop: e.pop, stats: { ...e.stats } };
+        return {
+          id: c.id,
+          ovr: Engine.util.ov(c),
+          pop: c.popularity || 0,
+          stats: { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn },
+        };
+      });
+    },
+
+    /** 検出時点の値を次回の基準として記録する(detect と同じ週に呼ぶ) */
+    captureBaseline(state) {
+      const entries = {};
+      (state.roster || []).forEach(c => {
+        entries[c.id] = {
+          ovr: Engine.util.ov(c),
+          pop: c.popularity || 0,
+          stats: { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn },
+        };
+      });
+      return { season: state.season, week: state.week, entries };
+    },
+
+    /** 閾値ごとの優先度と台詞プール(従来の値のまま) */
+    _grade(type, value) {
+      if (type === 'ovr') {
+        if (value >= 95) return { priority: 100 + value, linePool: 'ovr_legend' };
+        if (value >= 80) return { priority: 80 + value, linePool: 'ovr_elite' };
+        return { priority: 50 + value, linePool: 'ovr_growth' };
+      }
+      if (type === 'pop') {
+        if (value >= 70) return { priority: 60 + value, linePool: 'pop_star' };
+        return { priority: 40 + value, linePool: 'pop_growth' };
+      }
+      return { priority: 75, linePool: 'cap_reached' };
+    },
+
+    /**
+     * tickWeek内(sanitizeFloats前)で呼ぶ。前後比較 + _milestonesNotified照合で新規マイルストーンを検出し、
+     * 保留列 `_milestoneQueue` に合流させてから、通知枠が空いていれば1件だけ出す。
+     * 2026-09-25 総点検03⑥(ii): 従来は同じ週の候補から1件だけ選び、残りは保留されずに消えていた。
+     * 通知の頻度(COOLDOWN_WEEKS に1件)は変えず、落ちた節目を選手×種別ごとに保留して翌週以降に出す。
+     * 同じ選手・同じ種別(総合力/人気)の古い節目は新しい(高い)節目へ畳む(通知時に下の閾値も通知済みにする)。
+     * 限界到達は能力ごとに1件。
      * @param {object} rng
      * @param {object} state - 現在のGameState
-     * @param {Array} prevSnapshot - tickWeek冒頭で取得した [{id, ovr, pop, stats}]
-     * @returns {object|null} マイルストーン情報 + 更新済みroster、またはnull
+     * @param {Array} prevSnapshot - baselineFor(state) の戻り値 [{id, ovr, pop, stats}]
+     * @returns {{roster: Array, queue: Array, milestone: object|null}}
+     *   milestone は今週出す1件(無ければnull)。roster は通知済み閾値を更新したもの
      */
     detect(rng, state, prevSnapshot) {
+      const GM = Engine.growthMilestone;
       const absWeek = (state.season - 1) * 48 + state.week;
-      if (absWeek - (state._lastMilestoneAbsWeek || 0) < Engine.growthMilestone.COOLDOWN_WEEKS) return null;
-
       const prevMap = {};
-      prevSnapshot.forEach(p => { prevMap[p.id] = p; });
-      const OVR_TH = Engine.growthMilestone.OVR_THRESHOLDS;
-      const POP_TH = Engine.growthMilestone.POP_THRESHOLDS;
+      (prevSnapshot || []).forEach(p => { prevMap[p.id] = p; });
+      const OVR_TH = GM.OVR_THRESHOLDS;
+      const POP_TH = GM.POP_THRESHOLDS;
       const STAT_NAMES = ['pw', 'sp', 'te', 'st', 'mn'];
+      const rosterById = new Map((state.roster || []).map(c => [c.id, c]));
+      const notifiedOf = (c) => {
+        const n = c._milestonesNotified || {};
+        return { ovr: n.ovr || [], pop: n.pop || [], cap: n.cap || [] };
+      };
 
+      // ── 1. 今回の通過(判定は従来どおり: 基準 < 閾値 ≤ 現在 かつ未通知) ──
       const candidates = [];
-
-      for (const c of state.roster) {
+      for (const c of (state.roster || [])) {
         const prev = prevMap[c.id];
         if (!prev) continue; // 今週加入した新人はスキップ
-        const notified = c._milestonesNotified || { ovr: [], pop: [], cap: [] };
+        const notified = notifiedOf(c);
         const curOvr = Engine.util.ov(c);
         const curPop = c.popularity || 0;
-
-        // OVR閾値超え: prevOVR < threshold <= curOVR かつ未通知
         for (const th of OVR_TH) {
           if (prev.ovr < th && curOvr >= th && !notified.ovr.includes(th)) {
-            let priority, linePool;
-            if (th >= 95) { priority = 100 + th; linePool = 'ovr_legend'; }
-            else if (th >= 80) { priority = 80 + th; linePool = 'ovr_elite'; }
-            else { priority = 50 + th; linePool = 'ovr_growth'; }
-            candidates.push({ type: 'ovr', fighterId: c.id, fighterName: c.name,
-              value: th, stat: null, linePool, priority });
+            candidates.push({ type: 'ovr', fighterId: c.id, fighterName: c.name, value: th, stat: null });
           }
         }
-        // 人気閾値超え
         for (const th of POP_TH) {
           if (prev.pop < th && curPop >= th && !notified.pop.includes(th)) {
-            let priority, linePool;
-            if (th >= 70) { priority = 60 + th; linePool = 'pop_star'; }
-            else { priority = 40 + th; linePool = 'pop_growth'; }
-            candidates.push({ type: 'pop', fighterId: c.id, fighterName: c.name,
-              value: th, stat: null, linePool, priority });
+            candidates.push({ type: 'pop', fighterId: c.id, fighterName: c.name, value: th, stat: null });
           }
         }
-        // trainCap到達
         if (c.trainCap) {
           for (const s of STAT_NAMES) {
             if (prev.stats[s] < c.trainCap[s] && c[s] >= c.trainCap[s] && !notified.cap.includes(s)) {
-              candidates.push({ type: 'cap', fighterId: c.id, fighterName: c.name,
-                value: c.trainCap[s], stat: s, linePool: 'cap_reached', priority: 75 });
+              candidates.push({ type: 'cap', fighterId: c.id, fighterName: c.name, value: c.trainCap[s], stat: s });
             }
           }
         }
       }
 
-      if (candidates.length === 0) return null;
+      // ── 2. 保留列へ合流(選手×種別で1件。総合力/人気は高い閾値に畳む) ──
+      const keyOf = (e) => `${e.fighterId}|${e.type}${e.type === 'cap' ? '|' + e.stat : ''}`;
+      const merged = new Map();
+      const put = (e) => {
+        const k = keyOf(e);
+        const cur = merged.get(k);
+        if (!cur) { merged.set(k, e); return; }
+        if (e.type === 'cap' || e.value <= cur.value) return;
+        merged.set(k, { ...e, detectedAbs: Math.min(cur.detectedAbs, e.detectedAbs) });
+      };
+      (Array.isArray(state._milestoneQueue) ? state._milestoneQueue : []).forEach(e => {
+        if (e && e.fighterId != null && e.type) put(e);
+      });
+      candidates.forEach(c => put({ ...c, ...GM._grade(c.type, c.value), detectedAbs: absWeek }));
 
-      // 最も重要な1件を選出
-      candidates.sort((a, b) => b.priority - a.priority);
-      const best = candidates[0];
+      // ── 3. 保留の掃除: 団体を去った選手、既に通知済み、値が閾値を下回った節目は出さない ──
+      // (下回った分は通知済みにしないので、また越えたときに改めて拾われる)
+      const queue = [...merged.values()].filter(e => {
+        const c = rosterById.get(e.fighterId);
+        if (!c) return false;
+        const notified = notifiedOf(c);
+        if (e.type === 'ovr') return Engine.util.ov(c) >= e.value && !notified.ovr.includes(e.value);
+        if (e.type === 'pop') return (c.popularity || 0) >= e.value && !notified.pop.includes(e.value);
+        if (e.type === 'cap') return !!c.trainCap && c[e.stat] >= c.trainCap[e.stat] && !notified.cap.includes(e.stat);
+        return false;
+      }).map(e => ({ ...e, fighterName: rosterById.get(e.fighterId).name }));
 
-      // _milestonesNotified を更新したロスターを構築
+      // ── 4. 通知枠(COOLDOWN_WEEKS に1件)が空いていれば、最優先の1件を出す ──
+      if (queue.length === 0 || absWeek - (state._lastMilestoneAbsWeek || 0) < GM.COOLDOWN_WEEKS) {
+        return { roster: state.roster, queue, milestone: null };
+      }
+      queue.sort((a, b) => (b.priority - a.priority) || (a.detectedAbs - b.detectedAbs));
+      const best = queue[0];
+      const rest = queue.slice(1);
+
+      // _milestonesNotified を更新したロスターを構築(畳んだ下の閾値も通知済みにする)
       const updatedRoster = state.roster.map(c => {
         if (c.id !== best.fighterId) return c;
-        const n = { ...(c._milestonesNotified || { ovr: [], pop: [], cap: [] }) };
-        if (best.type === 'ovr') n.ovr = [...n.ovr, best.value];
-        else if (best.type === 'pop') n.pop = [...n.pop, best.value];
+        const n = { ...(c._milestonesNotified || {}), ...notifiedOf(c) };
+        const addUpTo = (list, ths) => [...list, ...ths.filter(t => t <= best.value && !list.includes(t))];
+        if (best.type === 'ovr') n.ovr = addUpTo(n.ovr, OVR_TH);
+        else if (best.type === 'pop') n.pop = addUpTo(n.pop, POP_TH);
         else if (best.type === 'cap') n.cap = [...n.cap, best.stat];
         return { ...c, _milestonesNotified: n };
       });
 
       return {
-        type: best.type,
-        fighterId: best.fighterId,
-        fighterName: best.fighterName,
-        value: best.value,
-        stat: best.stat,
-        linePool: best.linePool,
         roster: updatedRoster,
+        queue: rest,
+        milestone: {
+          type: best.type,
+          fighterId: best.fighterId,
+          fighterName: best.fighterName,
+          value: best.value,
+          stat: best.stat,
+          linePool: best.linePool,
+        },
       };
     },
   },
@@ -13813,13 +13905,9 @@ const Engine = {
         week: state.week, season: state.season, type: 'invariant_violation', message: msg, timestamp: Date.now(),
       }] };
     }
-    // ★ 成長マイルストーン: 冒頭スナップショット（tickWeek末尾で前後比較に使用）
-    const _milestoneSnapshot = state.roster.map(c => ({
-      id: c.id,
-      ovr: Engine.util.ov(c),
-      pop: c.popularity || 0,
-      stats: { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn },
-    }));
+    // ★ 成長マイルストーン: 比較の基準点（tickWeek末尾で前後比較に使用）。
+    // 前回の検出時の値が使えればそれ(=興行など tickWeek の外で入った伸びも含む)、無ければ冒頭の値
+    const _milestoneSnapshot = Engine.growthMilestone.baselineFor(state);
     // MQ再設計P5 §5.4: topChampionInjury — 週内処理前の各団体王者の怪我状態スナップショット
     const _championInjurySnapshot = Engine.mq.snapshotChampionInjuries(state);
     const _unifiedChampionSnapshot = state.unifiedTitle?.championId
@@ -14553,20 +14641,18 @@ const Engine = {
     if (!s.offSeason) s = Engine.streak.refresh(s);
 
     // ★ 成長マイルストーン検出（sanitizeFloats前、全処理完了後）
+    // 今週の通過を保留列へ合流し、枠が空いていれば1件出す。検出時点の値を次回の基準として残す
     if (!s.offSeason) {
       const milestoneRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xCD01));
       const milestoneResult = Engine.growthMilestone.detect(milestoneRng, s, _milestoneSnapshot);
-      if (milestoneResult) {
+      s = { ...s,
+        roster: milestoneResult.roster,
+        _milestoneQueue: milestoneResult.queue,
+        _milestoneBaseline: Engine.growthMilestone.captureBaseline(s),
+      };
+      if (milestoneResult.milestone) {
         s = { ...s,
-          roster: milestoneResult.roster,
-          _pendingMilestone: {
-            type: milestoneResult.type,
-            fighterId: milestoneResult.fighterId,
-            fighterName: milestoneResult.fighterName,
-            value: milestoneResult.value,
-            stat: milestoneResult.stat,
-            linePool: milestoneResult.linePool,
-          },
+          _pendingMilestone: { ...milestoneResult.milestone },
           _lastMilestoneAbsWeek: (s.season - 1) * 48 + s.week,
         };
       }
@@ -24181,8 +24267,9 @@ Engine.shachoshitsu = {
         rels[keyAB] = { ...curAB, bond: Engine.util.clamp((curAB.bond != null ? curAB.bond : 50) + delta, 0, 100) };
         rels[keyBA] = { ...curBA, bond: Engine.util.clamp((curBA.bond != null ? curBA.bond : 50) + delta, 0, 100) };
         pairRepairResult = { success: true, delta, idA, idB, nameA: fA.name, nameB: fB.name, relationships: rels };
-        events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功（双方向 bond +${delta}）`);
-        changes.push({ label: _wmFillWithDict(dict, '関係修復'), emoji: '🤝', text: _wmFillWithDict(dict, '{nameA}と{nameB}の bond +{delta}（双方向）', { nameA: fA.name, nameB: fB.name, delta }) });
+        // 2026-09-25 総点検04§5: ログと決裁結果に内部変数名(bond)と増減の数値を出していた。質的に書く(効果の値は不変)
+        events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功。わだかまりがいくらか解けた`);
+        changes.push({ label: _wmFillWithDict(dict, '関係修復'), emoji: '🤝', text: _wmFillWithDict(dict, '{nameA}と{nameB}の間のわだかまりが、いくらか解けた', { nameA: fA.name, nameB: fB.name }) });
         // 因縁列伝 v1.1: 修復タイムスタンプを h2h に刻む（context narrative のため）
         const h2hKey = `${Math.min(idA, idB)}>${Math.max(idA, idB)}`;
         const curH2h = (state.h2h || {})[h2hKey];
