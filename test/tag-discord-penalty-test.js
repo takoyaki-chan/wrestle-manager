@@ -63,6 +63,12 @@ function eq(actual, expected, msg) { checks++; assert.deepStrictEqual(actual, ex
   eq(ST.pairBond(state, 9, 3), 12, '絆は小さいID>大きいIDのキーで読む(並び順に依らない)');
   eq(ST.pairBond(state, 1, 2), 50, '関係が未登録なら50');
   eq(ST.pairBond({}, 1, 2), 50, 'relationships が無くても50');
+  // 絆0は完全に冷え切った仲。以前の `bond || 50` は0を50に化けさせ、⚠ 不仲 からも漏れていた
+  const zero = { relationships: { [relKey(4, 8)]: { bond: 0 } } };
+  eq(ST.pairBond(zero, 8, 4), 0, '絆0は0のまま(50に化けない)');
+  ok(ST.isLowBond(ST.pairBond(zero, 4, 8)), '絆0のペアは不仲');
+  eq(ST.pairBond({ relationships: { [relKey(4, 8)]: { bond: null } } }, 4, 8), 50, '絆が null なら50');
+  eq(ST.pairBond({ relationships: { [relKey(4, 8)]: { bond: NaN } } }, 4, 8), 50, '絆が NaN なら50');
 })();
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -246,6 +252,17 @@ function runAllPaths(bondA, bondB) {
   }
   const ref = JSON.stringify(pick(out.skip.call.raw));
   ['watch', 'skipAll', 'headless'].forEach(name => eq(JSON.stringify(pick(out[name].call.raw)), ref, `${name} の試合結果が一致(teamB 不仲)`));
+})();
+
+(function fourPathsTreatBondZeroAsDiscord() {
+  // 絆ちょうど0のペアも4経路すべてで不仲扱い(能力-3・連携不可・trust-1)
+  const { out, base, pairA, pairB } = runAllPaths(0, 60);
+  for (const [name, { call, roster }] of Object.entries(out)) {
+    eq(call.opts.bond_A, 0, `${name}: 絆0をそのままエンジンへ渡す(50に化けない)`);
+    call.teamA.forEach(f => eq(PENALIZED.map(k => f[k]), PENALIZED.map(k => base[f.id][k] - 3), `${name}: 絆0のペアに -3`));
+    pairA.forEach(id => eq(roster.find(f => f.id === id).trust, base[id].trust - 1, `${name}: 絆0のペアの trust -1`));
+    pairB.forEach(id => eq(roster.find(f => f.id === id).trust, base[id].trust, `${name}: 相手ペアの trust 据え置き`));
+  }
 })();
 
 (function fourPathsLeaveGoodPairsAlone() {

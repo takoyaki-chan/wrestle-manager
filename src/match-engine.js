@@ -1967,7 +1967,9 @@ Engine.showTagMatch = {
   pairBond(state, id1, id2) {
     const rels = state && state.relationships;
     const rel = rels ? rels[`${Math.min(id1, id2)}>${Math.max(id1, id2)}`] : null;
-    return (rel && rel.bond) || 50;
+    // 絆0は正当な値(完全に冷え切った仲)。以前の `bond || 50` は0を50に化けさせ、
+    // いちばん険悪なペアが「🤝 50」と表示されて不仲判定からも漏れていた。
+    return (rel && Number.isFinite(rel.bond)) ? rel.bond : 50;
   },
 
   isLowBond(bond) {
