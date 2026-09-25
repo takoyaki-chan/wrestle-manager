@@ -8434,8 +8434,11 @@ const ACHIEVEMENT_CONFIG = {
     autumnWar: 10,      // 4団体勝ち残り対抗戦 優勝団体 (autumn-gauntlet-war-spec-v0.1 §5.2)
   },
   // 減衰: age <= graceAge までは満額、その後 decayRate^(age-graceAge) で減衰
+  // age は季をまたぐたびに+1(獲得した季が0)。graceAge 0 = 満額は獲得したその季だけ、
+  // 翌季50%・2季後25%…。K-9(A) 2026-09-25: 旧1(翌季まで2年満額)は今の王者を固定する
+  // 仕組みの1つだったため0へ(S団体の評価の約1/4が実績ptで、序列が70季入れ替わらなかった)。
   decayRate: 0.5,
-  graceAge: 1,
+  graceAge: 0,
   removeBelow: 1,       // 1pt 未満で除去
 };
 // ── 殿堂盾バリアント ──────
