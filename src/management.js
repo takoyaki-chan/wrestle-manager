@@ -14380,6 +14380,9 @@ const Engine = {
       titleResult.events.forEach(e => events.push(e));
     }
     // ★★★ A層 Glimpse（bond/rivalry/trust閾値跨ぎ）★★★
+    // B層の GL-03(信頼度の揺れ)は前週→今週の trust の差を見る。checkALayer が _glimpseAPrevTrust を
+    // 今週値で上書きするので、前週値をここで取り分けて checkBLayer へ渡す(K-14 付随修正)
+    const glimpsePrevTrust = s._glimpseAPrevTrust || null;
     const glimpseARng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE01));
     const glimpseAResult = Engine.glimpse.checkALayer(s, glimpseARng);
     s = glimpseAResult.state;
@@ -14457,7 +14460,7 @@ const Engine = {
     // i18n(2026-09-03): GL-12ナレーション({nameA}/{nameB}入り)を生成時言語で確定させるため、
     // tickWeekのopts.dictを糸通し(未指定=ja=従来と同一文字列)
     const glimpseBResult = Engine.glimpse.checkBLayer(s, glimpseBRng,
-      (opts && typeof opts.dict === 'function') ? opts.dict : null);
+      (opts && typeof opts.dict === 'function') ? opts.dict : null, glimpsePrevTrust);
     s = glimpseBResult.state;
     if (glimpseBResult.glimpses.length > 0) {
       s = { ...s, _pendingGlimpseB: glimpseBResult.glimpses };

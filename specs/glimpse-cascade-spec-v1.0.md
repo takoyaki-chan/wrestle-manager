@@ -30,6 +30,25 @@
 旧表示経路(showGlimpseCascade / showGlimpseAModal / .gc-* CSS / #glimpseCascadeOverlay)は
 呼ばれないまま残置 — 撤去は別途クリーンアップタスクで行う(安全網テストの追随が要るため)。
 
+### 0.1 道場「休憩中の選手」に出る Glimpse の種類 (2026-09-25 K-14裁定)
+
+候補は `G.weekLogFeed` のうち `_isDojoRestEligibleGlimpse`(ui-render.js)を通るもの。1週に出すのは1人だけ。
+
+| 層 | 出す | 出さない |
+|---|---|---|
+| A層 | axis が bond / rivalry / trust の閾値通過(gold/danger 級はその週の確定枠、他は18%抽選) | — |
+| B層 | GL-01 試合後の感情 / GL-02 練習中のひとこと / GL-03 信頼度の揺れ / GL-04 仲間への想い / GL-05 ライバルへの意識 / GL-06 不出場の鬱憤 / GL-07 コンディション不良 / GL-08 連敗のストレス / GL-09 連勝の自信 / GL-10 怪我中の焦り / GL-11 冷たい距離 / GL-12 第三者の証言 | hotstreak_end(絶好調の終わりの告知) |
+
+- K-14 で GL-01・GL-08 を追加した(旧: 勝敗・連敗という成績記録が主題として除外)。同じ理由で除外していた GL-09 も同時に追加した。連敗だけを見せ、連勝を見せない偏りを避けるため
+- B層の発火条件(relationships.js `Engine.glimpse.checkBLayer`。同日に不具合を修正)
+  - GL-01: 勝敗は `f.lastMatchResult` を使う。試合評価は今週の `lastShowResults[].mq` を使い、70以上なら greatWin / goodLoss。引き分けは積まない。旧実装は存在しない `f._lastMatchResult` を見ており、常に win だった
+  - GL-03: 前週から trust が±3以上動いたら up/down。前週値は、tickWeek が checkALayer の前に取り分けた `_glimpseAPrevTrust` を第4引数 `prevTrust` で受け取る。前週値の無い選手(初週・新加入)は比べない。旧実装は上書き後の値と比べていたため、差が常に0だった
+  - GL-09: 連勝数は `f.streak` を使い、3以上で発火する。旧実装は存在しない `f.winStreak` を見ていた
+- 表示量の実測(auto-sim 30季の複製で道場の抽選を実コードで再現。1季あたり): 休憩中の表示は 14.3→15.5件(seed 424242)、12.4→14.0件(seed 9001)
+  - 抽選枠で最も多いのは GL-05(約20%)で、1種類が大半を占める偏りは無い。このため重みは据え置いた
+  - 表示全体で最も多いのは節目の確定枠の「宿命のライバル」(約28〜36%)。表示回数は本変更の前後で変わらない
+- 回帰テスト: `test/glimpse-dojo-k14-test.js`
+
 ---
 
 以下は廃止までの記録(v1.x)。
