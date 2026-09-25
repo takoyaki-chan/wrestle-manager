@@ -15282,7 +15282,7 @@ const Engine = {
     //   舞台の格 stage(前座 undercard < メイン main < 王座戦 title。壮絶な幕切れの重み)と王者ID(幕切れの型)
     // opts.hostileMult: 呼び出し側が1試合に1回計算した倍率(省略時はここで計算)
     // opts.titleChampionId: 幕切れの型の判定に使う王者(両経路とも興行前の王者を渡す)
-    // 引退の扱い(retireType が付いたときの処理)は呼び出し側。実プレイはまだ引退させない(4-B-6 / K1-E03 で扱う)
+    // 引退の扱い(retireType が付いたときの処理)は resolveMatchInjury(両経路が呼ぶ)
     rollMatchInjury(state, result, matchIdx, fighter, opts = {}) {
       if (!fighter || !result || !result.left || !result.right) return null;
       const s = state;
@@ -15295,6 +15295,151 @@ const Engine = {
       if (hostileMult !== 1.0) flavorOpts = { ...flavorOpts, injuryMult: (flavorOpts.injuryMult || 1.0) * hostileMult };
       return Engine.injury.check(rng, fighter, result, Engine.coach.getInjuryMult(s, fighter.id), s.week, s.season,
         Engine.coach.getInjurySeverityDowngrade(s, fighter.id), flavorOpts);
+    },
+
+    // シングル戦の怪我1人分の判定と、怪我による引退(K-1 4-B-6 / K1-E03。v1.3-1 §4.2/§4.3、
+    // retirement-drama-spec §3-C「壮絶な幕切れ」)。rollMatchInjury で判定し、retireType が付いたら
+    // retireInjuredFighter で引退させる。怪我が無ければ null。
+    // 乱入選手(isIntrusion。他団体からの一時参加)は判定しない(エンジンの興行には乱入が無い)。
+    // 戻り値: { state, roster, entry, retired }
+    //   entry  : 結果画面・怪我ポップアップ・引退演出が読む { id, name, injury, retireType, farewellKind }
+    //   retired: 引退したときだけ { name, age, retireType }(ログの一文は呼び出し側が組む)
+    // 以前の実プレイは retireType を記録するだけで引退させず、重傷の選手が長期離脱のままロスターに残っていた
+    resolveMatchInjury(state, roster, result, matchIdx, fighter, opts = {}) {
+      if (!fighter || fighter.isIntrusion) return null;
+      const chk = Engine.show.rollMatchInjury(state, result, matchIdx, fighter, opts);
+      if (!chk) return null;
+      const entry = { id: fighter.id, name: fighter.name, injury: chk.newFighter.injury, retireType: chk.retireType || null, farewellKind: chk.farewellKind || null };
+      if (!chk.retireType) {
+        return { state, roster: roster.map(c => c.id === fighter.id ? chk.newFighter : c), entry, retired: null };
+      }
+      const ret = Engine.show.retireInjuredFighter(state, roster, fighter.id, chk);
+      return { state: ret.state, roster: ret.roster, entry, retired: { name: fighter.name, age: fighter.age, retireType: chk.retireType } };
+    },
+
+    // 怪我による引退1人分の後始末(K-1 4-B-6 / K1-E03)。chk は Engine.injury.check の戻り値(retireType つき)。
+    // 経歴(careerHistory の injury_retirement・careerRecord の retire)、ロスターから外す、引退者の記録
+    // (retiredFighters / retiredIds / retiredSeasons)、コーチ担当・レンタルの解除、年代記(アーカイブ・気風・章)、
+    // 関係値の凍結(§2.3)。仲の良い選手の気落ち・信頼・王座は興行の全員を判定した後の applyInjuryRetirementAftermath。
+    // roster は呼び出し側のローカルのロスター(state.roster ではない)。戻り値: { state, roster, retiredFighter }
+    retireInjuredFighter(state, roster, fighterId, chk) {
+      const nf = chk.newFighter;
+      let retiredF = { ...nf, careerHistory: [...(nf.careerHistory || []), { type: 'injury_retirement', week: state.week, season: state.season, detail: `${injuryLabel(chk.injuryInfo.injury.type)}により引退` }] };
+      retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: chk.retireType, season: state.season, week: state.week, age: nf.age });
+      delete retiredF.growthLog;
+      const out = roster.filter(c => c.id !== fighterId);
+      let s = { ...state, retiredFighters: [...(state.retiredFighters || []), retiredF], retiredIds: [...(state.retiredIds || []).filter(id => id !== fighterId), fighterId], retiredSeasons: { ...(state.retiredSeasons || {}), [fighterId]: state.season } };
+      // 退場者の後始末: コーチ担当から外す(roster はローカル変数のため合成して渡す)
+      s = { ...s, coachAssign: Engine.coach.sanitizeAssignments({ ...s, roster: out }) };
+      s = Engine.rental.terminateForRetirement(s, fighterId);
+      // 団体年代記: アーカイブ + 気風寄与
+      s = Engine.chronicle.archiveFighter(s, retiredF);
+      s = Engine.chronicle.applySpiritContribution(s, retiredF);
+      s = Engine.chronicle.refreshChapters(s);
+      // §2.3: 引退者の関係値を凍結
+      if (s.relationships) s = Engine.relationships.freezeRelationships(s, fighterId);
+      return { state: s, roster: out, retiredFighter: retiredF };
+    },
+
+    // 怪我による引退の波及(K-1 4-B-6 / K1-E03)。興行の全試合の怪我判定が済んでから1回呼ぶ。
+    //   O-04: 引退者と仲の良い(bond が正の帯)選手 → 引退者の bond −8〜−15(乱数 0xBE3C)+ポップアップ M-22(引退の置き土産)
+    //   Phase 3 R3: 仲の良い選手を失った信頼の影響(Engine.trust.applyDepartureTrustImpact)
+    //   王座の返上: 王者がロスターから消えたら空位にする。興行前の王者(state.titles)と、この興行の王座戦の結果
+    //   (titles。防衛・戴冠した直後の試合で引退した場合)の両方を見る。以前のエンジンは興行前の王者しか見ず、
+    //   あとで titles を書き戻すと引退者が王者のまま残った(auto-sim には王座が無いので表に出なかった)
+    // injuryResults は resolveMatchInjury の entry の配列。戻り値: { state, roster, titles, events }(events は文字列)
+    applyInjuryRetirementAftermath(state, roster, titles, injuryResults) {
+      let s = state;
+      let out = roster;
+      let outTitles = titles;
+      const events = [];
+      const injRetRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3C, s.season, s.week));
+      const injRetirees = injuryResults.filter(ir => ir.retireType);
+      if (injRetirees.length > 0 && s.relationships) {
+        const rosterIdsForRetire = out.map(c => c.id);
+        for (const ir of injRetirees) {
+          const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
+          if (!retiredF) continue;
+          const highBondIds = rosterIdsForRetire.filter(cid => {
+            const key = Engine.relationships._key(cid, retiredF.id);
+            const r = s.relationships?.[key];
+            return r && Engine.relationships.isPositiveBond(r.bond);
+          });
+          if (highBondIds.length > 0) {
+            s = Engine.relationships.applyFromRoster(s, highBondIds, retiredF.id, { min: -15, max: -8 }, { min: 0, max: 0 }, injRetRelRng);
+            if (Engine.relationships.flags) {
+              s = Engine.relationships.flags._enqueueModal(s, 'M-22', {
+                fromId: highBondIds[0],
+                toId: retiredF.id,
+                fighterId: retiredF.id,
+                affectedIds: highBondIds.slice(0, 3),
+                mode: 'injury_retire',
+              });
+            }
+          }
+        }
+        // Phase 3 R3: 仲の良い選手を失ったtrust影響
+        for (const ir of injRetirees) {
+          const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
+          if (!retiredF) continue;
+          out = Engine.trust.applyDepartureTrustImpact(out, retiredF.id, s.relationships, { name: retiredF.name, reason: '怪我引退' });
+        }
+      }
+      // 怪我引退で王者がロスターから消えた場合、王座を空位化
+      const vc = Engine.title.validateChampion({ ...s, roster: out });
+      if (vc.msg) {
+        s = { ...s, titles: vc.titles };
+        events.push(vc.msg);
+      }
+      if (outTitles && outTitles.world) {
+        const vcPost = Engine.title.validateChampion({ ...s, titles: outTitles, roster: out });
+        if (vcPost.msg) {
+          outTitles = vcPost.titles;
+          if (!vc.msg) events.push(vcPost.msg);
+        }
+      }
+      return { state: s, roster: out, titles: outTitles, events };
+    },
+
+    // 怪我による引退の演出データ(_pendingInjuryRetirements。v1.3-3)。実プレイの closeShowResult が
+    // showRetirementPopups で見せる(本人の引退ポップアップ。壮絶な幕切れは farewellKind で見出しと地の文が変わる)。
+    // preShowState: 興行前の状態(引退セリフの選び方・王者だったか)。opts.dict / opts.summaryState: 経歴の要約の
+    // 訳と団体名(実プレイは WM_I18N.t と状態を渡す。エンジンは渡さない=従来どおり)。戻り値: 新しい状態
+    buildInjuryRetirementPresentations(state, preShowState, injuryResults, opts = {}) {
+      let s = state;
+      const injuryRetirees = injuryResults.filter(ir => ir.retireType);
+      if (injuryRetirees.length === 0) return s;
+      const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFAD2));
+      const pendingInjuryRetirements = injuryRetirees.map(ir => {
+        const route = ir.retireType === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
+        // C の型（あれば）。演出で見出しと地の文を差し替えるために持ち回る
+        const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
+        if (!retiredF) {
+          console.warn('[WM] retired fighter lookup failed for injury popup', ir);
+          return null;
+        }
+        const { line, category } = Engine.retirement.selectLine(retiredF, route, preShowState, lineRng);
+        const summary = opts.dict || opts.summaryState
+          ? Engine.retirement.buildCareerSummary(retiredF, opts.dict, opts.summaryState)
+          : Engine.retirement.buildCareerSummary(retiredF);
+        const wasChampion = preShowState.titles?.world?.championId === retiredF.id;
+        // B4タレント活動§13: チャンピオン怪我引退時の社長への一言
+        let championWorryLine = null;
+        if (category === 'B4_champion_injury') {
+          const trust = retiredF.trust ?? 50;
+          if (trust >= 85 && Engine.rng.float(lineRng) < 0.30) {
+            const a = retiredF.archetype || 'standard';
+            const archetypeLines = typeof RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE : {};
+            const worryPool = archetypeLines[a] || archetypeLines._default || ['…'];
+            championWorryLine = worryPool[Engine.rng.int(lineRng, 0, worryPool.length - 1)];
+          }
+        }
+        return { fighter: retiredF, route, line, category, summary, injuryType: ir.injury?.type, wasChampion, championWorryLine, farewellKind: ir.farewellKind || null };
+      }).filter(Boolean);
+      if (pendingInjuryRetirements.length > 0) {
+        s = { ...s, _pendingInjuryRetirements: pendingInjuryRetirements };
+      }
+      return s;
     },
 
     // 試合成長(K-1 4-B-4 / K1-E02。specs/growth-system-spec-v2.2.md §7)。怪我処理の後、ロスターに残っている出場選手に。
@@ -15913,110 +16058,34 @@ const Engine = {
     // K-1 4-B-3(§7 X03): 怪我判定の引数(週・季・険悪ペア倍率・舞台の格・王者)は実プレイ(app.js)と同じ
     // Engine.show.rollMatchInjury で組む。王者は興行前の王者(s.titles。この興行の王座の結果は titles にある)
     const _titleChampId = (s.titles && s.titles.world) ? s.titles.world.championId : null;
+    // K-1 4-B-6(K1-E03): 怪我の判定と怪我による引退(v1.3-1 §4.2/§4.3)は実プレイ(app.js)と同じ
+    // Engine.show.resolveMatchInjury を通す。左→右の順に判定し、引退者はその場でロスターから外す
     results.forEach((r, idx) => {
       if (r.matchType === 'tag') return; // タッグ試合の怪我はPhase 5で対応
       const hostileMult = Engine.injury.hostileMatchMult(s.relationships, r.left.id, r.right.id);
-      const lc = roster.find(c => c.id === r.left.id);
-      const li = Engine.show.rollMatchInjury(s, r, idx, lc, { hostileMult, titleChampionId: _titleChampId });
-      if (li) {
-        if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id;
-        // v1.3-1: §4.2/§4.3 怪我引退チェック
-        if (li.retireType) {
-          const retiredMsg = li.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
-          // v1.3-2: §4.3 壊滅的怪我による引退を careerHistory に記録
-          let retiredF = { ...li.newFighter, careerHistory: [...(li.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${injuryLabel(li.injuryInfo.injury.type)}により引退` }] };
-          retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: li.retireType, season: s.season, week: s.week, age: li.newFighter.age });
-          delete retiredF.growthLog;
-          roster = roster.filter(c => c.id !== lc.id);
-          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== lc.id), lc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [lc.id]: s.season } };
-          // 退場者の後始末: コーチ担当から外す(roster はローカル変数のため合成して渡す)
-          s = { ...s, coachAssign: Engine.coach.sanitizeAssignments({ ...s, roster }) };
-          s = Engine.rental.terminateForRetirement(s, lc.id);
-          // 団体年代記: アーカイブ + 気風寄与
-          s = Engine.chronicle.archiveFighter(s, retiredF);
-          s = Engine.chronicle.applySpiritContribution(s, retiredF);
-          s = Engine.chronicle.refreshChapters(s);
-          // §2.3: 引退者の関係値を凍結
-          if (s.relationships) s = Engine.relationships.freezeRelationships(s, lc.id);
-          injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury, retireType: li.retireType });
-          events.push(`🏁 ${lc.name}(${lc.age}歳)が${retiredMsg}により引退`);
-        } else {
-          roster = roster.map(c => c.id === lc.id ? li.newFighter : c);
-          injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury });
+      [r.left.id, r.right.id].forEach(fid => {
+        const fighter = roster.find(c => c.id === fid);
+        const res = Engine.show.resolveMatchInjury(s, roster, r, idx, fighter, { hostileMult, titleChampionId: _titleChampId });
+        if (!res) return;
+        s = res.state;
+        roster = res.roster;
+        if (!matchInjuredIds[idx]) matchInjuredIds[idx] = fighter.id;
+        injuryResults.push(res.entry);
+        if (res.retired) {
+          const retiredMsg = res.retired.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
+          events.push(`🏁 ${res.retired.name}(${res.retired.age}歳)が${retiredMsg}により引退`);
         }
-      }
-      const rc = roster.find(c => c.id === r.right.id);
-      const ri = Engine.show.rollMatchInjury(s, r, idx, rc, { hostileMult, titleChampionId: _titleChampId });
-      if (ri) {
-        if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id;
-        // v1.3-1: §4.2/§4.3 怪我引退チェック
-        if (ri.retireType) {
-          const retiredMsg = ri.retireType === 'careerEnding' ? '壊滅的な怪我' : '怪我による引退';
-          // v1.3-2: §4.3 壊滅的怪我による引退を careerHistory に記録
-          let retiredF = { ...ri.newFighter, careerHistory: [...(ri.newFighter.careerHistory || []), { type: 'injury_retirement', week: s.week, season: s.season, detail: `${injuryLabel(ri.injuryInfo.injury.type)}により引退` }] };
-          retiredF = Engine.career.addEvent(retiredF, { type: 'retire', reason: ri.retireType, season: s.season, week: s.week, age: ri.newFighter.age });
-          delete retiredF.growthLog;
-          roster = roster.filter(c => c.id !== rc.id);
-          s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== rc.id), rc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [rc.id]: s.season } };
-          // 退場者の後始末: コーチ担当から外す(roster はローカル変数のため合成して渡す)
-          s = { ...s, coachAssign: Engine.coach.sanitizeAssignments({ ...s, roster }) };
-          s = Engine.rental.terminateForRetirement(s, rc.id);
-          // 団体年代記: アーカイブ + 気風寄与
-          s = Engine.chronicle.archiveFighter(s, retiredF);
-          s = Engine.chronicle.applySpiritContribution(s, retiredF);
-          s = Engine.chronicle.refreshChapters(s);
-          // §2.3: 引退者の関係値を凍結
-          if (s.relationships) s = Engine.relationships.freezeRelationships(s, rc.id);
-          injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType });
-          events.push(`🏁 ${rc.name}(${rc.age}歳)が${retiredMsg}により引退`);
-        } else {
-          roster = roster.map(c => c.id === rc.id ? ri.newFighter : c);
-          injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury });
-        }
-      }
+      });
     });
 
-    // O-04: 怪我引退 — bond 60以上の相手→引退者 に bond -5〜-10
-    const injRetRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3C, s.season, s.week));
-    const injRetirees = injuryResults.filter(ir => ir.retireType);
-    if (injRetirees.length > 0 && s.relationships) {
-      const rosterIdsForRetire = roster.map(c => c.id);
-      for (const ir of injRetirees) {
-        const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
-        if (!retiredF) continue;
-        const highBondIds = rosterIdsForRetire.filter(cid => {
-          const key = Engine.relationships._key(cid, retiredF.id);
-          const r = s.relationships?.[key];
-          return r && Engine.relationships.isPositiveBond(r.bond);
-        });
-        if (highBondIds.length > 0) {
-          s = Engine.relationships.applyFromRoster(s, highBondIds, retiredF.id, { min: -15, max: -8 }, { min: 0, max: 0 }, injRetRelRng);
-          if (Engine.relationships.flags) {
-            s = Engine.relationships.flags._enqueueModal(s, 'M-22', {
-              fromId: highBondIds[0],
-              toId: retiredF.id,
-              fighterId: retiredF.id,
-              affectedIds: highBondIds.slice(0, 3),
-              mode: 'injury_retire',
-            });
-          }
-        }
-      }
-      // Phase 3 R3: 仲の良い選手を失ったtrust影響
-      for (const ir of injRetirees) {
-        const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
-        if (!retiredF) continue;
-        roster = Engine.trust.applyDepartureTrustImpact(roster, retiredF.id, s.relationships, { name: retiredF.name, reason: '怪我引退' });
-      }
-    }
-
-    // 怪我引退で王者がロスターから消えた場合、王座を空位化
+    // O-04(仲の良い選手の気落ち)・信頼への波及・王座の返上 — K-1 4-B-6: 実プレイと同じ
+    // Engine.show.applyInjuryRetirementAftermath。この興行の王座戦の結果(titles)も見て、引退者を王者に残さない
     {
-      const vc = Engine.title.validateChampion({ ...s, roster });
-      if (vc.msg) {
-        s = { ...s, titles: vc.titles };
-        events.push(vc.msg);
-      }
+      const aft = Engine.show.applyInjuryRetirementAftermath(s, roster, titles, injuryResults);
+      s = aft.state;
+      roster = aft.roster;
+      titles = aft.titles;
+      events.push(...aft.events);
     }
 
     // Phase 2: 試合結果の関係値反映（spec §3.1）
@@ -16297,37 +16366,8 @@ const Engine = {
     }
 
     // v1.3-3: Build pending injury retirement presentation data
-    const injuryRetirees = injuryResults.filter(ir => ir.retireType);
-    if (injuryRetirees.length > 0) {
-      const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFAD2));
-      const pendingInjuryRetirements = injuryRetirees.map(ir => {
-        const route = ir.retireType === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
-        // C の型（あれば）。演出で見出しと地の文を差し替えるために持ち回る
-        const retiredF = (s.retiredFighters || []).find(f => ir.id != null ? f.id === ir.id : f.name === ir.name);
-        if (!retiredF) {
-          console.warn('[WM] retired fighter lookup failed for injury popup', ir);
-          return null;
-        }
-        const { line, category } = Engine.retirement.selectLine(retiredF, route, state, lineRng);
-        const summary = Engine.retirement.buildCareerSummary(retiredF);
-        const wasChampion = state.titles?.world?.championId === retiredF.id;
-        // B4タレント活動§13: チャンピオン怪我引退時の社長への一言
-        let championWorryLine = null;
-        if (category === 'B4_champion_injury') {
-          const trust = retiredF.trust ?? 50;
-          if (trust >= 85 && Engine.rng.float(lineRng) < 0.30) {
-            const a = retiredF.archetype || 'standard';
-            const archetypeLines = typeof RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE !== 'undefined' ? RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE : {};
-            const worryPool = archetypeLines[a] || archetypeLines._default || ['…'];
-            championWorryLine = worryPool[Engine.rng.int(lineRng, 0, worryPool.length - 1)];
-          }
-        }
-        return { fighter: retiredF, route, line, category, summary, injuryType: ir.injury?.type, wasChampion, championWorryLine, farewellKind: ir.farewellKind || null };
-      }).filter(Boolean);
-      if (pendingInjuryRetirements.length > 0) {
-        s = { ...s, _pendingInjuryRetirements: pendingInjuryRetirements };
-      }
-    }
+    // K-1 4-B-6(K1-E03): 実プレイと同じ Engine.show.buildInjuryRetirementPresentations(引退セリフは興行前の状態で選ぶ)
+    s = Engine.show.buildInjuryRetirementPresentations(s, state, injuryResults);
 
     // MQ再設計P3c: fp/venueHeatは興行1本につき1値。観測・計測用にトップレベルにも残す。
     return { state: s, results, injuryResults, events, showRivalryResolutions, fp, venueHeat: venueHeatResult.total, pressureFactor: venueHeatResult.pressureFactor };

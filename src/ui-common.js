@@ -6176,7 +6176,9 @@ function _pbHpMini(hpL, hpR, opts = {}) {
 }
 
 function _pbInjuryBlock(injuries) {
-  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(injuryLabel(ir.injury.type, WM_I18N.t))}</span> <span class="name">${escHtml(WM_I18N.pn(ir.name))}</span> ${WM_I18N.t('全治 {n}週間', { n: ir.injury.weeksLeft })}</span>`).join('');
+  // K-1 4-B-6: 怪我で引退した選手(retireType)には全治の週数を出さない(復帰しないので嘘になる)。
+  // 引退そのものは結果画面を閉じた後の本人の引退ポップアップで見せる
+  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(injuryLabel(ir.injury.type, WM_I18N.t))}</span> <span class="name">${escHtml(WM_I18N.pn(ir.name))}</span>${ir.retireType ? '' : ` ${WM_I18N.t('全治 {n}週間', { n: ir.injury.weeksLeft })}`}</span>`).join('');
   return `<div class="pb-injury">
     <span class="pb-injury-label">🏥 Injury</span>
     ${items}

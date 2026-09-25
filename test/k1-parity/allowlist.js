@@ -55,31 +55,24 @@ module.exports = [
     category: 'propagation', side: 'app', impact: '数値', scenarios: ['intrusion'], checkpoints: ['B'],
     patterns: ['**'], mustAppear: false, refs: 'K1-A14 の波及',
   },
+  // K1-E03(怪我による引退の処理一式が実プレイに無い)は K-1 第4段 4-B-6 で解消したので外した(2026-09-26)。
+  // 両経路が Engine.show.resolveMatchInjury / applyInjuryRetirementAftermath / buildInjuryRetirementPresentations を通す。
+  // 実プレイで引退が起きるようになって見えた、画面側だけの後始末を次の2項目に数える
   {
-    id: 'K1-E03', title: '怪我による引退(wear 超過の重傷・壮絶な幕切れ)の処理一式',
-    category: 'processing', side: 'engine', impact: '数値', scenarios: ['injury'], checkpoints: ['A', 'B'],
-    patterns: [
-      'roster[*](presence)', 'retiredFighters[*](presence)', 'retiredIds', 'retiredSeasons.*',
-      'chronicle.fighterArchive[*](presence)', 'relationships.*.frozen', 'relationships.*.bond', 'relationships.*.rivalry',
-      'relationshipCounters.*', '_pendingInjuryRetirements', 'factions[*].memberIds', 'newsSeen.**',
-      'roster[*].pw', 'roster[*].sp', 'roster[*].te', 'roster[*].st', 'roster[*].mn', 'roster[*].seasonGrowth.*',
-      // 第4段 4-B-4 で K1-E02 を外して見えるようになった: 引退者の分だけ試合成長の乱数(1732)がずれ、
-      // 他の選手の成長ログの伸び(deltas)も入れ替わる
-      'roster[*].growthLog',
-      // 2026-09-26 追加(B): 引退した選手の挑戦試合の打診が消える・ロスターが変わって派閥イベントが変わる・
-      // 怪我引退のポップアップ(M-22)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
-      'challengeRequest.pendingThisWeek', '_pendingFactionEvent', 'relModalWindow[*].own',
-      // 怪我引退のポップアップ(M-22)はエンジンだけが積む(第1段で K1-P01 を外して見えるようになった)
-      '_modalQueue',
-      // 2026-09-26(main 取り込み後の fixture): K-11 の件数記録は今週の項目の有無ごと変わる。
-      // 怪我引退の処理が年代記の章を作り直す(Engine.chronicle.refreshChapters)ので、同期の選手紹介文が
-      // その時点の経歴で書き直される(実プレイは引退させないので作り直さない)
-      'relModalWindow', 'chronicle.chaptersCache.**',
-    ],
-    sides: { A: ['engOnly', 'appOnly', 'both'] },
-    mustAppear: true, refs: 'management.js:15084-15190(引退・O-04・信頼・王座) / app.js:8317-8331(怪我だけ付けて残す)',
-    note: '実プレイは retireType を記録するだけで引退させない(ロスターに残って長期離脱になる)。'
-      + 'エンジンは引退者をロスターから外すので、以降の試合成長の乱数(1732)の引き数がずれ、他の選手の伸びる能力も入れ替わる(乱数消費のずれ)。',
+    id: 'K1-T04', title: '怪我引退の演出データ(_pendingInjuryRetirements)— 実プレイは closeShowResult の前半で取り出して本人の引退ポップアップへ回す(エンジンは戻り値の状態に残す)',
+    category: 'transient', side: 'app', impact: '一時', scenarios: ['injury'], checkpoints: ['A', 'B'],
+    patterns: ['_pendingInjuryRetirements'], sides: { A: ['engOnly'], B: ['engOnly'] },
+    mustAppear: true, refs: 'app.js closeShowResult(pendingInjuryRetirements → showRetirementPopups) / management.js Engine.show.buildInjuryRetirementPresentations',
+    note: '中身は両経路とも同じ関数で組む(実プレイは経歴の要約を画面の言語で訳し、団体名を入れる)。auto-sim は取り出さないので G に残り続ける。',
+  },
+  {
+    id: 'K1-A16', title: '引退者の関係値・因縁の整理(archiveRetiredRivalryState: 関係値を消し、因縁を relationshipHistory.retiredRivalries へ移す)',
+    category: 'processing', side: 'app', impact: '数値', scenarios: ['injury'], checkpoints: ['A', 'B'],
+    patterns: ['relationshipHistory.retiredRivalries', 'relationships.*', 'relationships.*.*', 'rivalries.*', 'rivalries.*.*'],
+    mustAppear: true,
+    refs: 'app.js archiveRetiredRivalryState を closeShowResult の前半(怪我引退・ラストラン)・processWeek(モチベ喪失)・季末の引退確定で呼ぶ / エンジンは freezeRelationships(凍結)だけ',
+    note: '第4段 4-B-6 で実プレイでも怪我引退が起きるようになり、injury シナリオで見えるようになった(ラストランの同じ差は K1-A09 に数える)。'
+      + 'B では、消えた関係値の分だけ週次の関係値の減衰・Glimpse・スナップショットの共有乱数の引き方がずれる(K1-B04・K1-B05)。',
   },
   {
     id: 'K1-E04', title: '突然の退団(信頼15未満・1興行2.5%)',
