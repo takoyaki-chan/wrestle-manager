@@ -265,7 +265,13 @@ const scenarios = [
       const existing = (G.factions || []).find(x => Array.isArray(x.memberIds) && x.memberIds.length >= 4 && x.status !== 'dissolved');
       if (!existing) throw new Error(`${this.name}: base state has no faction to pair with`);
       const inExisting = new Set(existing.memberIds);
-      const outsiders = f.filter(x => !inExisting.has(x.id));
+      // 新しい派閥(900)の顔ぶれは、どの派閥にも属していない選手から選ぶ(2026-09-26)。
+      // 基準状態に派閥が2つある fixture で、もう一方の派閥の選手を 900 にも入れてしまい、
+      // validateGameState の「複数派閥に所属」の違反を両経路に出していた(入力の作り方の不具合)
+      const inAnyFaction = new Set((G.factions || [])
+        .filter(x => x.status !== 'dissolved')
+        .flatMap(x => (Array.isArray(x.memberIds) ? x.memberIds : [])));
+      const outsiders = f.filter(x => !inExisting.has(x.id) && !inAnyFaction.has(x.id));
       const insiders = f.filter(x => inExisting.has(x.id) && x.id !== existing.leaderId);
       const leaderA = G.roster.find(x => x.id === existing.leaderId);
       // 使うのは insiders[0..2] の3人(2026-09-26: 基準状態の派閥が4人=リーダー+3人になったので下限を実際の使用数に合わせた)

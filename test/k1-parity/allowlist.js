@@ -68,6 +68,10 @@ module.exports = [
       'challengeRequest.pendingThisWeek', '_pendingFactionEvent', 'relModalWindow[*].own',
       // 怪我引退のポップアップ(M-22)はエンジンだけが積む(第1段で K1-P01 を外して見えるようになった)
       '_modalQueue',
+      // 2026-09-26(main 取り込み後の fixture): K-11 の件数記録は今週の項目の有無ごと変わる。
+      // 怪我引退の処理が年代記の章を作り直す(Engine.chronicle.refreshChapters)ので、同期の選手紹介文が
+      // その時点の経歴で書き直される(実プレイは引退させないので作り直さない)
+      'relModalWindow', 'chronicle.chaptersCache.**',
     ],
     sides: { A: ['engOnly', 'appOnly', 'both'] },
     mustAppear: true, refs: 'management.js:15084-15190(引退・O-04・信頼・王座) / app.js:8317-8331(怪我だけ付けて残す)',
@@ -85,9 +89,13 @@ module.exports = [
       'aiOrgs.*.roster[*](presence)', 'roster[*]._departureBondImpact', 'roster[*].trust',
       'aiOrgs.*.roster[*].*', 'aiOrgs.*.roster[*].*.*', 'aiOrgs.*.matchupLog', 'h2h.*', 'h2h.*.*', 'h2h.*.lastMatch.*',
       // 退団のポップアップ(M-23)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
-      'relModalWindow[*].own',
+      // (今週の項目の有無ごと変わると配列の長さが変わる)
+      'relModalWindow[*].own', 'relModalWindow',
       // 第1段で K1-P01 を外して見えるようになった: M-23 はエンジンだけが積む。移籍先で戦った退団者の逓減カウンター
       '_modalQueue', 'relationshipCounters.*',
+      // 2026-09-26(main 取り込み後の fixture): ロスターが変わって週次ストーリーの共有乱数(0xBE1B)の引き方が
+      // ずれ、嫌悪の伝染が実プレイ側だけで起きた(B)
+      '_contagionLastWeek.*',
     ],
     mustAppear: true, refs: 'management.js:15494-15561 / app.js なし(表示だけ app.js:12045 にある)',
     note: 'Engine.trust.checkSuddenDepartures の呼び出しはエンジンの executeShow だけ。実プレイでは表示コードだけが残っていて、発生源が無い。',
@@ -96,7 +104,9 @@ module.exports = [
     id: 'K1-E05', title: '派閥抗争ポイント・派閥内ポイントの試合ごとの加点',
     // title-defense: 2026-09-26 の fixture 更新で派閥員(66)が派閥外の王者と戦うようになり、派閥内ポイントの差が出る
     category: 'processing', side: 'engine', impact: '数値', scenarios: ['factions', 'title-defense'], checkpoints: ['A', 'B'],
-    patterns: ['factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB', 'factionInternalPoints.*', 'factionInternalPoints.*.*', '_rivalryPointsWeekly'],
+    // factionRivalryPoints.*: 2026-09-26(main 取り込み後の fixture)基準状態に派閥が2つあり、その2派閥の
+    // 選手どうしの試合でエンジンだけが抗争ポイントの記録そのもの(1-2)を作る
+    patterns: ['factionRivalryPoints.*', 'factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB', 'factionInternalPoints.*', 'factionInternalPoints.*.*', '_rivalryPointsWeekly'],
     mustAppear: true, refs: 'management.js:15263-15292 / app.js なし',
     note: 'accrueRivalryPointsFromMatch / accrueInternalPointsFromExternalMatch は実プレイで一度も呼ばれない。'
       + '実プレイ側の値が動くのは F09 のスイープボーナス(K1-A13)だけ。',
@@ -121,6 +131,8 @@ module.exports = [
       'rivalries.*', 'rivalries.*.*', 'roster[*]._departureBondImpact', 'roster[*].trust', 'newsSeen.**',
       // 第1段で K1-P01 を外して見えるようになった(B): 引退した選手は W-1 の回数に数えられない
       'w1FireCount.*',
+      // 2026-09-26(main 取り込み後の fixture)(B): 引退した選手あての挑戦試合の打診は週次処理で取り下げられる
+      'challengeRequest.pendingThisWeek',
     ],
     mustAppear: true, refs: 'app.js:9272-9344(finalize)・10867-10970(closeShowResult 前半) / エンジン側なし',
   },
