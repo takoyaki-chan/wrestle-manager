@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3537件、訳文あり3537件)
+//  生成元: i18n/template-ledger.json (総キー3538件、訳文あり3538件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3449,6 +3449,7 @@
     "📇 秘書に{wanted}を探すよう頼んだ": "📇 Asked your secretary to look for: {wanted}",
     "📈 {name}の動きが明らかに良くなっている": "📈 {name}'s movement is clearly better",
     "📉 団体人気{delta}": "📉 Promotion popularity {delta}",
+    "📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (会場が人気に対して小さく、伸びは控えめ) (現在: {curOrgPop})": "📊 ★{stars} (average rating {avgMQ}) → promotion popularity {popDelta} (the venue is small for your popularity, so the gain is modest) (now {curOrgPop})",
     "📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (現在: {curOrgPop})": "📊 ★{stars} (average rating {avgMQ}) → promotion popularity {popDelta} (now {curOrgPop})",
     "📊 コーチ{coach}の定期報告に{name}の名前が": "📊 {name}'s name appears in Coach {coach}'s regular report",
     "📊 業界{rank}位からの挑戦が始まる。": "📊 The climb starts from number {rank} in the business.",

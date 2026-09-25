@@ -3273,10 +3273,15 @@ function renderShowPrep() {
       <div class="venue-info">${WM_I18N.t('キャパ: {cap}人', { cap: v.cap.toLocaleString() })}</div>
       <div class="venue-info">${WM_I18N.t('コスト: {cost}万', { cost: v.cost })}</div>
       <div class="venue-info">${WM_I18N.t('試合枠: {n}試合', { n: v.maxMatches })}</div>
+      ${Engine.orgPop.isVenueSmallForOrgPop(G.orgPop, i) ? `<div class="venue-info" style="color:var(--c-warning)">${WM_I18N.t('📉 人気の伸び控えめ')}</div>` : ''}
       <div class="venue-risk">${riskLabel}</div>
     </div>`;
   });
   html += '</div>';
+  // K-3(2026-09-25): 人気に対して小さい会場を選んでいるときは、理由を一言だけ添える(数値は出さない)
+  if (Engine.orgPop.isVenueSmallForOrgPop(G.orgPop, G.showVenue)) {
+    html += `<div style="font-size:12px;color:var(--text-sub);margin:6px 0 2px">${WM_I18N.t('📉 人気に対して小さい会場です（人気の伸びが控えめになります）')}</div>`;
+  }
 
   // Match card — 会場規模連動の試合枠
   // pad up OR trim down to match the venue's limit (tag match = 2 slots)
@@ -4501,7 +4506,9 @@ function renderFinance() {
     // ドームまでの距離
     if (curPop < 90) {
       html += `<div style="font-size:12px;color:rgba(241,196,15,0.6);margin-top:6px">${WM_I18N.t('ドーム圏まであと')} <strong style="color:rgba(241,196,15,0.9)">${Math.round((90 - curPop) * 10) / 10}</strong> ${WM_I18N.t('ポイント')}</div>`;
-    } else {
+    } else if (Engine.economy.getDomeSelloutOutlook(G).sellout) {
+      // K-3付随(2026-09-25): 人気90に届いただけでは誘わない。今のロスターの強いカードで
+      // ドームの満員見込みが立つとき(集客予測)だけ案内する(人気90では満枠でも4〜7割で赤字だった)
       html += `<div style="font-size:12px;color:rgba(241,196,15,0.8);margin-top:6px">${WM_I18N.t('🏟️ ドーム圏内です！今シーズン{status}', { status: (G.domeShowsThisSeason || 0) >= 1 ? WM_I18N.t('（今季使用済み）') : WM_I18N.t('の挑戦を検討してください') })}</div>`;
     }
   }
