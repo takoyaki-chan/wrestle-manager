@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4752件、訳文あり4752件)
+//  生成元: i18n/ui-ledger.json (総キー4754件、訳文あり4754件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -4532,6 +4532,8 @@
     "📉 {name}の人気がじわじわ下がっている…（離脱中）": "📉 {name}'s popularity is slipping away... (out of action)",
     "📉 スランプ…": "📉 Slump...",
     "📉 スランプ中（{n}週目 / 回復確率{p}%）": "📉 In a slump (week {n} / {p}% chance to recover)",
+    "📉 人気に対して小さい会場です（人気の伸びが控えめになります）": "📉 This venue is small for your popularity (popularity will grow more slowly)",
+    "📉 人気の伸び控えめ": "📉 Slower popularity growth",
     "📉 契約査定": "📉 Contract Assessment",
     "📉 支出": "📉 Spending",
     "📉 月間平均支出推移 ({n}ヶ月)": "📉 Average Monthly Spending ({n} months)",

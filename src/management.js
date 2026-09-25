@@ -1197,6 +1197,44 @@ const Engine = {
       const pred = ATTENDANCE_PREDICTION.find(p => estOccRate >= p.min) || ATTENDANCE_PREDICTION[ATTENDANCE_PREDICTION.length - 1];
       return { text: pred.text, color: pred.color, estOccRate };
     },
+    // K-3付随(2026-09-25): 「ドーム圏内です」の案内を出してよいかの判定。団体人気90でも、
+    // どう組んでもドーム(22,500席)は4〜7割しか埋まらず赤字になるため、人気の数字ではなく
+    // 集客予測で決める。今のロスターで組める強いカード(集客力の高い順に2人ずつ当てた満枠の
+    // シングル)を仮に組み、getAttendancePrediction(揺らぎなし)の入りが「超満員」の帯
+    // (OCCUPANCY_BONUS[0].min=95%)に届くときだけ sellout:true。表示専用・状態は変えない。
+    getDomeSelloutOutlook(G) {
+      const DOME_IDX = 9;
+      const venue = VENUES[DOME_IDX];
+      const roster = (G && G.roster) || [];
+      const pool = roster.filter(f => f && !f.injury && !f.forcedRest)
+        .map(f => ({ f, draw: Engine.attendanceV2.calcDrawPower(f, G) }))
+        .sort((a, b) => b.draw - a.draw);
+      const pairCount = Math.min(venue.maxMatches, Math.floor(pool.length / 2));
+      if (pairCount < 1) return { sellout: false, estOccRate: 0 };
+      const card = [];
+      for (let i = 0; i < pairCount; i++) card.push({ left: pool[2 * i].f.id, right: pool[2 * i + 1].f.id });
+      const fanExpects = Engine.fanExpect.generate(G) || [];
+      const appeals = card.map(m => {
+        const fA = pool.find(p => p.f.id === m.left).f;
+        const fB = pool.find(p => p.f.id === m.right).f;
+        const rels = G.relationships || {};
+        const rivalry = Math.max(rels[`${m.left}>${m.right}`]?.rivalry || 0, rels[`${m.right}>${m.left}`]?.rivalry || 0);
+        const isFanExpect = fanExpects.some(fe =>
+          (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+        const lvl = Engine.title.getRivalryLevel(G, m.left, m.right);
+        const fr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows || 0, roster.length, null);
+        return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
+          rivalry, isTitle: false, isFanExpect, isChallengeRequest: false,
+          pendingClashBonus: lvl?.pendingClashBonus || 0, isFirstMeet: fr.isFirstMeet,
+          freshnessCount: fr.countInWindow, freshnessRawBonus: fr.bonus,
+        }, G);
+      });
+      const used = new Set(card.flatMap(m => [m.left, m.right]));
+      const promo = roster.filter(c => !used.has(c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
+      const showDraw = Engine.attendanceV2.calcShowDraw(appeals, promo, DOME_IDX);
+      const pred = Engine.economy.getAttendancePrediction(G, DOME_IDX, showDraw, card);
+      return { sellout: pred.estOccRate >= OCCUPANCY_BONUS[0].min, estOccRate: pred.estOccRate };
+    },
     // MQ再設計P3c(mq-redesign-proposal-v0.5 §3.2/§3.2b): 会場の熱 = tierAmp(会場の器) × pressureFactor(fp)。
     // fp = rawDemand(キャパでクランプする前の需要) / capacity。興行一律の値であり、試合ごとの
     // 観客寄与はEngine.mq.finalizeがengagementと掛け合わせて算出する(このtotalはその素材)。
@@ -1609,6 +1647,19 @@ const Engine = {
       const occScore = Math.max(occEntry.score, occPenaltyFloor);
 
       // --- bonusScore ---
+      // K-2(2026-09-25 Keisuke裁定A): 本番の呼び出し元(興行2経路・新聞・週次精算)は
+      // {rivalryResolved(真偽), rivalryCards(件数), fanExpectMatches(件数)} を渡すが、ここは
+      // {hasRivalryResolution, hasRivalryCard, fanExpectCount} しか読んでいなかった。そのため
+      // 因縁決着+6・因縁カード+2・ファン期待+4/件 は 2026-03-29 から一度も加算されていなかった。
+      // 両方の名前を受ける。has系の名前が渡されていればそちらを優先する
+      // (measureShow と大会の精算 specialEventFinance はhas系の名前で渡している)。
+      const ctx = context || {};
+      const hasRivalryResolution = ctx.hasRivalryResolution != null
+        ? !!ctx.hasRivalryResolution : !!ctx.rivalryResolved;
+      const hasRivalryCard = ctx.hasRivalryCard != null
+        ? !!ctx.hasRivalryCard : (ctx.rivalryCards || 0) > 0;
+      const fanExpectCount = ctx.fanExpectCount != null
+        ? (ctx.fanExpectCount || 0) : (ctx.fanExpectMatches || 0);
       let bonusScore = 0;
       // タイトル戦
       const titleMatches = matchResults.filter(r => r.isTitleMatch);
@@ -1617,10 +1668,10 @@ const Engine = {
         bonusScore += bestTitleMQ >= cfg.titleGreatMQThreshold ? cfg.titleGreatBonus : cfg.titleAnyBonus;
       }
       // 因縁決着
-      if (context.hasRivalryResolution) bonusScore += cfg.rivalryResolvedBonus;
-      else if (context.hasRivalryCard) bonusScore += cfg.rivalryCardBonus;
+      if (hasRivalryResolution) bonusScore += cfg.rivalryResolvedBonus;
+      else if (hasRivalryCard) bonusScore += cfg.rivalryCardBonus;
       // ファン期待カード
-      bonusScore += (context.fanExpectCount || 0) * cfg.fanExpectBonus;
+      bonusScore += fanExpectCount * cfg.fanExpectBonus;
       // 試合数充実度
       const minMatches = SHOW_DRAW_CONFIG.minMatchesByVenue[venueIdx] || 2;
       if (matchCount >= minMatches) bonusScore += cfg.matchCountFullBonus;
@@ -1641,6 +1692,28 @@ const Engine = {
         occupancy: Math.round(occupancy * 100),
         matchCount,
       };
+    },
+
+    // K-2(2026-09-25): 1興行の★は1つ。興行の処理(app.js _finalizeShowImpl / Engine.executeShow)で
+    // 決まった★を state.lastShowRating に残し、同じ週の新聞と週次精算(放映収入)はそれを使う。
+    // 以前は興行後の state から★を計算し直していた。因縁・ファン期待の加点が効くようになると、
+    // 興行後に作り直したファン期待カード(直前に組んだ組は鮮度・直後クールダウンで外れる)や
+    // 試合で動いた因縁値のせいで、同じ興行の★が場所ごとに食い違ってしまうため。
+    packShowRating(rating, showNo) {
+      return {
+        stars: rating.stars,
+        totalScore: rating.totalScore,
+        mqScore: rating.mqScore,
+        occScore: rating.occScore,
+        bonusScore: rating.bonusScore,
+        showNo,
+      };
+    },
+    // この興行(G.totalShows 番目)のものとして保存された★があれば返す。無ければ null(旧セーブ等は再計算へ)。
+    getStoredShowRating(G) {
+      const r = G && G.lastShowRating;
+      if (!r || typeof r.stars !== 'number' || r.showNo !== G.totalShows) return null;
+      return r;
     },
 
     // ── 興行全体の計測（auto-sim用ワンショット） ──
@@ -1691,7 +1764,8 @@ const Engine = {
       // ショーレーティング
       const hasRivalryResolution = matchResults.some(r => r.rivalryResolved);
       const hasRivalryCard = matchResults.some(r => r.rivalryBonus);
-      const fanExpectCount = matchResults.filter(r => r.fanExpectMatched).length;
+      // K-2: 興行の2経路が立てるフラグは r.fanExpectMatch(旧コードは存在しない r.fanExpectMatched を数えていた)
+      const fanExpectCount = matchResults.filter(r => r.fanExpectMatch).length;
       const ratingResult = this.calcShowRating(matchResults, attendance, v.cap, venueIdx, {
         hasRivalryResolution,
         hasRivalryCard,
@@ -13597,7 +13671,9 @@ const Engine = {
           }).length,
           fanExpectMatches: settleFanExpects ? Engine.fanExpect.countMatched(settleValidMatches, settleFanExpects) : 0,
         };
-        const settleRating = Engine.attendanceV2.calcShowRating(G.lastShowResults, attendance, VENUES[G.showVenue].cap, G.showVenue, settleRatingCtx);
+        // K-2: 興行の処理で決まった★をそのまま使う(保存が無い旧セーブ等だけ再計算)
+        const settleRating = Engine.attendanceV2.getStoredShowRating(G)
+          || Engine.attendanceV2.calcShowRating(G.lastShowResults, attendance, VENUES[G.showVenue].cap, G.showVenue, settleRatingCtx);
         const settleStars = settleRating.stars;
         const rev = Engine.economy.calcShowRevenue(G.showVenue, attendance);
 
@@ -15030,10 +15106,15 @@ const Engine = {
     };
     const v2Rating = Engine.attendanceV2.calcShowRating(results, preAttendance, VENUES[s.showVenue].cap, s.showVenue, v2RatingContext);
     const showStars = v2Rating.stars;
+    // K-2: この興行の★を残す(同じ週の週次精算=放映収入は再計算せずこれを使う)
+    s = { ...s, lastShowRating: Engine.attendanceV2.packShowRating(v2Rating, s.totalShows) };
 
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
-    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, showStars);
+    // K-3: 会場の器を渡す(プラスの変化だけ、人気に対して小さい会場ほど控えめになる)
+    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, showStars, s.showVenue);
     roster = popResult.roster;
+    const venueSmallNote = (popResult.venueFit != null ? popResult.venueFit : 1) < SHOW_ORGPOP_VENUE_FIT.noteBelow;
+    // 因縁カード編成の加算(getBookedRivalryOrgPopBonus)には会場の器の係数を掛けない(K-3の対象外)
     const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.filter(m => m.matchType !== 'tag').map(m => ({ leftId: m.left, rightId: m.right })));
     if (bookedRivalryOrgPopBonus !== 0) {
       popResult = {
@@ -15043,7 +15124,7 @@ const Engine = {
       };
       events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
     }
-    events.push(`📊 ★${showStars} (平均試合評価 ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
+    events.push(`📊 ★${showStars} (平均試合評価 ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100}${venueSmallNote ? ' (会場が人気に対して小さく、伸びは控えめ)' : ''} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // プロモ改修 v1.0: 試合出場選手の promoStack をリセット
     const matchParticipantIds = new Set(results.flatMap(r =>
@@ -15694,8 +15775,10 @@ const Engine = {
     });
     return { roster: newRoster, popEvents };
   },
-  applyShowPopularity(roster, results, orgPop, rng, stars) {
-    if (results.length === 0) return { roster, orgPop, popDelta: 0 };
+  // venueIdx(任意): K-3 会場の器。渡されたときだけ、プラスの変化に Engine.orgPop.getVenueFitMultiplier を掛ける。
+  // 戻り値の venueFit は実際に掛けた係数(掛けていなければ1)。表示側の「伸びは控えめ」の判定に使う。
+  applyShowPopularity(roster, results, orgPop, rng, stars, venueIdx) {
+    if (results.length === 0) return { roster, orgPop, popDelta: 0, venueFit: 1 };
     // v2: ★ベースorgPop変動
     let rawDelta = SHOW_RATING_CONFIG.orgPopDeltaByStars[stars] || 0;
     // 序盤保護（旧getMQAdjust互換）: 低orgPopでは興行実施自体が成長機会
@@ -15710,8 +15793,14 @@ const Engine = {
       else if (stars >= 2) rawDelta += 0.3;       // 低調でも+0.3
     }
     // v1.5: 施策A — orgPop逓減カーブ適用
-    const popDelta = rng ? Engine.orgPop.applyOrgPopChange(rawDelta, orgPop, rng) : rawDelta;
-    return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
+    let popDelta = rng ? Engine.orgPop.applyOrgPopChange(rawDelta, orgPop, rng) : rawDelta;
+    // K-3(2026-09-25): 人気に対して小さい会場ほど、伸び(プラスの変化)を減らす。マイナスの変化はそのまま
+    let venueFit = 1;
+    if (popDelta > 0 && venueIdx != null) {
+      venueFit = Engine.orgPop.getVenueFitMultiplier(orgPop, venueIdx);
+      popDelta *= venueFit;
+    }
+    return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta, venueFit };
   },
 
   // ╔══════════════════════════════════════════════════════════╗
@@ -17821,10 +17910,13 @@ const Engine = {
 
     /** Apply war outcome to state (v2: battlePoints 対戦ポイント移動) */
     applyWarOutcome(state, playerWins, aiWins, opponentOrgId) {
-      let popDelta = 0;
-      if (playerWins > aiWins) popDelta = EVENT_CONFIG.warPopReward;
-      else if (playerWins === aiWins) popDelta = 2;
-      else popDelta = EVENT_CONFIG.warPopPenalty;
+      let rawPopDelta = 0;
+      if (playerWins > aiWins) rawPopDelta = EVENT_CONFIG.warPopReward;
+      else if (playerWins === aiWins) rawPopDelta = 2;
+      else rawPopDelta = EVENT_CONFIG.warPopPenalty;
+      // K-16(2026-09-25): 節目の大会の加減算は、勝ちにも負けにも節目用のゆるい逓減を掛ける
+      // (人気20未満は係数1.0で従来どおり)。ログの表記も実際の変化量に合わせる
+      const popDelta = Engine.orgPop.applyMilestoneChange(rawPopDelta, state.orgPop || 0);
       const events = [];
       const winLabel = playerWins > aiWins ? '勝ち越し！' : playerWins === aiWins ? '決着つかず' : '負け越し…';
       // 対戦ポイント移動
@@ -17844,7 +17936,7 @@ const Engine = {
         state.orgWarRecord, 'player', opponentOrgId,
         playerWins, aiWins, state.season, state.week
       );
-      events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${popDelta >= 0 ? '+' : ''}${popDelta}${bpMsg}）`);
+      events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${Engine.util.formatSignedStatDelta(popDelta, 1)}${bpMsg}）`);
       const newOrgPop = Math.max(0, Math.min(100, state.orgPop + popDelta));
       const warState = { ...state, orgPop: newOrgPop, battlePoints: bp, warThisSeason: true, pendingEvent: null, orgWarRecord: updOwr };
       if (!warState.ppvUnlocked && Engine.ppv.checkUnlock(newOrgPop)) {
@@ -19499,6 +19591,38 @@ Engine.orgPop = {
       return rawDelta * mult;
     }
     return rawDelta;
+  },
+
+  // K-3(2026-09-25 Keisuke裁定): 会場の器の係数(0.2〜1.0)。人気に対して小さい会場ほど小さい。
+  // 定数と式は data.js の SHOW_ORGPOP_VENUE_FIT。人気20未満(onsetPop未満)は常に1.0。
+  // 呼び出し側は「★で決まった団体人気の変化がプラスのとき」だけ掛ける(applyShowPopularity)。
+  getVenueFitMultiplier(orgPop, venueIdx) {
+    const cfg = (typeof SHOW_ORGPOP_VENUE_FIT !== 'undefined') ? SHOW_ORGPOP_VENUE_FIT : null;
+    const venue = (venueIdx != null) ? VENUES[venueIdx] : null;
+    if (!cfg || !venue) return 1.0;
+    const pop = orgPop || 0;
+    const onset = Engine.util.clamp((pop - cfg.onsetPop) / (cfg.fullPop - cfg.onsetPop), 0, 1);
+    if (onset <= 0) return 1.0;
+    const expected = Engine.economy.calcBaseAttendance(pop);
+    const fit = Engine.util.clamp(venue.cap / Math.max(1, expected * cfg.fillRatio), cfg.floor, 1.0);
+    return 1 - (1 - fit) * onset;
+  },
+  // 会場選択・週のログで「人気に対して小さい会場です」と添えるか(表示専用。数値は出さない)
+  isVenueSmallForOrgPop(orgPop, venueIdx) {
+    const cfg = (typeof SHOW_ORGPOP_VENUE_FIT !== 'undefined') ? SHOW_ORGPOP_VENUE_FIT : null;
+    if (!cfg) return false;
+    return Engine.orgPop.getVenueFitMultiplier(orgPop, venueIdx) < cfg.noteBelow;
+  },
+
+  // K-16(2026-09-25 Keisuke裁定): 節目の大会(対抗戦・秋の4団体戦)の団体人気の加減算は、
+  // 興行の逓減と「逓減なし」のちょうど中間でゆるく逓減させる。勝ちにも負けにも同じ係数を掛ける
+  // (勝ちだけ減らすと、人気の高い団体ほど節目の勝負が損になるため)。人気20未満は1.0で従来どおり。
+  // 例: 人気70〜84は0.61 → 対抗戦の勝ち+5→+3.05/負け−3→−1.83、秋の優勝+4→+2.44/準決勝負け−2→−1.22。
+  getMilestoneMultiplier(orgPop) {
+    return (1 + Engine.orgPop.getDiminishingMultiplier(orgPop || 0)) / 2;
+  },
+  applyMilestoneChange(rawDelta, orgPop) {
+    return rawDelta * Engine.orgPop.getMilestoneMultiplier(orgPop);
   },
 
   // orgPop リバランス v1.1: 年次減衰を緩和（高帯でも登れる坂に）
@@ -30606,10 +30730,12 @@ Engine.autumnWar = {
     const revenueDistribution = Engine.autumnWar.calcRevenueDistribution(s, result);
     const playerEntered = teams.some(t => t.orgId === 'player' && t.available);
     const playerRevenue = revenueDistribution?.shares.find(share => share.orgId === 'player')?.amount || 0;
-    let popDelta = 0, prize = 0;
-    if (champion === 'player') { popDelta = 4; prize = Engine.autumnWar.PRIZE.champion; }
-    else if (runnerUp === 'player') { popDelta = 1; prize = Engine.autumnWar.PRIZE.runnerUp; }
-    else if (playerEntered) popDelta = -2;
+    let rawPopDelta = 0, prize = 0;
+    if (champion === 'player') { rawPopDelta = 4; prize = Engine.autumnWar.PRIZE.champion; }
+    else if (runnerUp === 'player') { rawPopDelta = 1; prize = Engine.autumnWar.PRIZE.runnerUp; }
+    else if (playerEntered) rawPopDelta = -2;
+    // K-16(2026-09-25): 節目の大会の加減算は、勝ちにも負けにも節目用のゆるい逓減を掛ける(人気20未満は従来どおり)
+    const popDelta = Engine.orgPop.applyMilestoneChange(rawPopDelta, s.orgPop || 0);
     if (playerEntered) {
       const totalEventIncome = playerRevenue + prize;
       const seasonStats = s.seasonStats ? {
