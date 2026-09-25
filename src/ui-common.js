@@ -5481,7 +5481,8 @@ function renderMatchPreview() {
           </div>
         </div>`;
       };
-      // 表示と試合で同じ絆・同じ不仲判定を使う(Engine.showTagMatch。K-12「表示どおり効かせる」)
+      // 表示と試合で同じ絆・同じ不仲判定を使う(Engine.showTagMatch。K-12「表示どおり効かせる」)。
+      // 絆は2人の絆の低い方(pairBond)。⚠ 不仲 の数字も判定と同じ値を出す
       const bondA = Engine.showTagMatch.pairBond(G, tA1.id, tA2.id);
       const bondB = Engine.showTagMatch.pairBond(G, tB1.id, tB2.id);
       html += `<div class="match-card ${cardClass}${cardStateClass}" data-match-next="${isNext}" style="opacity:${isResolved ? 1 : isNext ? 1 : 0.62}">`;
@@ -5489,10 +5490,12 @@ function renderMatchPreview() {
         <span class="smc-label" style="font-size:${isMain ? '18px' : '15px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}">${matchLabel}</span>
         ${statusBadge} <span class="smc-tag-badge">TAG MATCH</span>
       </div>`;
-      // bond-rivalry plan P-1: bond ≤ 20 不仲ペアの警告マーカー
+      // bond-rivalry plan P-1: bond ≤ 20 不仲ペアの警告マーカー。
+      // 3つ目は実際の効果(試合後に両者の団体への信頼が1下がる)どおりに書く(K-12 追加 2026-09-26。
+      // 7月の「相手との関係-1」は効果と食い違っていた。trust-system-spec §16 の例外として spec に記載)
       const _chemHtml = (bond) => {
         if (Engine.showTagMatch.isLowBond(bond)) {
-          return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">${WM_I18N.t('⚠ 不仲')} ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">${WM_I18N.t('能力-3 / 連携不可 / 相手との関係-1')}</div></div>`;
+          return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">${WM_I18N.t('⚠ 不仲')} ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">${WM_I18N.t('能力-3 / 連携不可 / 団体への信頼-1')}</div></div>`;
         }
         return `<div class="smc-tag-chem">🤝 ${Math.round(bond)}</div>`;
       };

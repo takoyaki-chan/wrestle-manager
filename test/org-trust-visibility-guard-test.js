@@ -5,7 +5,15 @@ const fs = require('fs');
 const path = require('path');
 
 const read = rel => fs.readFileSync(path.join(__dirname, '..', rel), 'utf8');
-const ui = [read('src/ui-common.js'), read('src/ui-render.js')].join('\n');
+// 唯一の例外(2026-09-26 Keisuke 裁定 K-12 追加): 興行プレビューの不仲タッグの警告は、試合後に実際に起きる
+// 効果(両者の団体への信頼-1)をそのまま書く。7月にここを「相手との関係-1」へ伏せた結果、表示と効果が
+// 食い違っていたため。選手の信頼の値・推移を見せるものではなく、組んだ時点で決まる罰の予告。
+// 例外はこの1文字列だけ(spec trust-system-spec-v2.1 §16 / relationship-system-spec-v2.3 §D.1)。
+const K12_DISCORD_PREVIEW = "WM_I18N.t('能力-3 / 連携不可 / 団体への信頼-1')";
+const uiCommonRaw = read('src/ui-common.js');
+assert.strictEqual(uiCommonRaw.split(K12_DISCORD_PREVIEW).length - 1, 1,
+  'the K-12 discord preview exception must appear exactly once (tag preview warning only)');
+const ui = [uiCommonRaw.split(K12_DISCORD_PREVIEW).join(''), read('src/ui-render.js')].join('\n');
 const management = read('src/management.js');
 const data = read('src/data.js');
 
