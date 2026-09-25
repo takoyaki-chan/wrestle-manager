@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3537件、訳文あり3537件)
+//  生成元: i18n/template-ledger.json (総キー3538件、訳文あり3538件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -32,6 +32,7 @@
     "  → ピン！ だが{name}がカットイン！": "  → The cover! But {name} breaks it up!",
     "  → ピン！ だが{name}が返した！": "  → The cover! But {name} kicks out!",
     "  → フォール！ だが{name}がカウント2で返した！": "  → The cover! But {name} kicks out at two!",
+    "  → 丸め込み！ だが{name}がカウント2で返した！": "  → The rollup! But {name} kicks out at two!",
     "  → 締めに入った！ だが{name}が振りほどいた！": "  → The hold is locked in! But {name} works free!",
     "  ↔ タッチ(戦術): {name} → {name2}": "  ↔ Tag (tactical): {name} → {name2}",
     "  ↔ タッチ(消耗): {name} → {name2}": "  ↔ Tag (worn down): {name} → {name2}",

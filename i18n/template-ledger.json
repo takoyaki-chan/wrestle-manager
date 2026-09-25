@@ -150,6 +150,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "  → 丸め込み！ だが{name}がカウント2で返した！",
+    "en": "  → The rollup! But {name} kicks out at two!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "  → 締めに入った！ だが{name}が振りほどいた！",
     "en": "  → The hold is locked in! But {name} works free!",
     "files": [

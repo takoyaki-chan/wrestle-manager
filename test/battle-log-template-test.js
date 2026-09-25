@@ -48,6 +48,8 @@ const FROZEN_SINGLE = {
   pinFailSub: (p) => `  → 締めに入った！ だが${p.name}が振りほどいた！`,
   pinFailFall: (p) => `  → フォール！ だが${p.name}がカウント2で返した！`,
   rollup: (p) => `★ ${p.name}、まさかの${p.move}で3カウント！ 大金星！`,
+  // K-7(2026-09-25)で追加した行(移設後の新規。丸め込みをカウント2で返した)。凍結当時には無かった
+  rollupFail: (p) => `  → 丸め込み！ だが${p.name}がカウント2で返した！`,
   refStop: (p) => `★ レフェリーストップ！ ${p.name}のTKO勝利！`,
   timeout: (p) => `⏰ 時間切れ判定により、${p.name}の勝利！`,
 };

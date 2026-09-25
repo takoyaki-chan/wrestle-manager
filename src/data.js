@@ -864,6 +864,8 @@ const BATTLE_LOG_TEMPLATES = {
     pinFailSub: '  → 締めに入った！ だが{name}が振りほどいた！',
     pinFailFall: '  → フォール！ だが{name}がカウント2で返した！',
     rollup: '★ {name}、まさかの{move}で3カウント！ 大金星！',
+    // K-7: 丸め込みをカウント2で返した(フォール狙いの返し pinFailFall と対になる行)
+    rollupFail: '  → 丸め込み！ だが{name}がカウント2で返した！',
     refStop: '★ レフェリーストップ！ {name}のTKO勝利！',
     timeout: '⏰ 時間切れ判定により、{name}の勝利！',
   },
@@ -932,6 +934,7 @@ const BATTLE_LOG_LINE_KINDS = {
     pinFailSub: { cls: null, spoiler: true },
     pinFailFall: { cls: null, spoiler: true },
     rollup: { cls: 'finish', spoiler: true },
+    rollupFail: { cls: null, spoiler: true },
     refStop: { cls: 'finish', spoiler: true },
     timeout: { cls: 'finish', spoiler: false },
   },
@@ -982,7 +985,11 @@ const BIGMATCH_ENG = {
   rollupBaseSuccess: 10,
   rollupHpThreshold: 0.25,
   finisherUnlockHpThreshold: 0.40,
-  pinAttemptHpThreshold: 0.25,
+  // K-7(2026-09-25): フォール狙いの成否はTier別の値を読むようになった(旧実装はグローバルENG直読みで、
+  // 下の成功基礎14・Climax+18は一度も効いていなかった)。成功率を下げた分が大一番の「返し合い」になる。
+  // フォール狙いの閾値は旧 0.25 の上書きを外し、実際にずっと動いていた 0.35(ENG)を継承する。
+  // 計測(同格/格差の大一番): 閾値25%は返しを増やさず(ニアフォール+0.06)格下勝率だけを1〜2.4pt下げた
+  // (決着の手前で削り合いが長くなるため)。裁定「勝率は変えずに」に合わせて採らない。
   pinAttemptSuccessBase: 14,
   pinAttemptClimax: 18,
   kickoutMax: 3,
