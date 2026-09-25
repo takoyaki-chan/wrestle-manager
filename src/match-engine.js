@@ -51,6 +51,9 @@ const HIT_BANDS = {
   tag:      { big: TAG_BIG_HIT_HP_PCT, heavy: TAG_HEAVY_HIT_HP_PCT },
 };
 
+// K-6 追加: 丸め込み決着の実況で「大金星」を言うのは格下が勝ったときだけ。
+// 格下の基準は新聞・試合結果の「番狂わせ」(app.js の isUpset: 勝者のOVRが敗者より8を超えて低い)にそろえる。
+const UPSET_OVR_GAP = 8;
 
 // 技候補はモジュール初期化時に一度だけ威力ティアへ分類する。
 // 丸め込みは独立抽選なので、通常ティアの候補からは除外する。
@@ -145,6 +148,10 @@ Engine.battle = {
     isHeavyHit(dmg, defMhp, bands) {
       const pct = (bands || HIT_BANDS.normal).heavy;
       return dmg > 0 && defMhp > 0 && dmg * 100 >= defMhp * pct;
+    },
+    // K-6 追加: 格下の勝利か(丸め込みの「大金星」の実況だけに使う。定義はファイル先頭の UPSET_OVR_GAP)
+    isUpsetWin(winnerOvr, loserOvr) {
+      return winnerOvr < loserOvr - UPSET_OVR_GAP;
     },
     // numeric-overhaul P1: 内部戦闘力 = 5ステのべき平均(p=powerMeanP)。
     // ダメージのOVR比補正だけがこれを参照する。p=1で算術平均(旧仕様)と一致し、
@@ -789,7 +796,9 @@ Engine.battle = {
                 finType = '丸め込み';
                 finishPhase = ph.name;
                 finMove = mv.n;
-                pushLog('rollup', { name: atk.name, move: mv.n });
+                // K-6 追加: 「まさかの…大金星！」は格下が勝ったときだけ。それ以外は事実だけを言う行
+                const upsetWin = B.isUpsetWin(isLeftAtk ? _ovrL : _ovrR, isLeftAtk ? _ovrR : _ovrL);
+                pushLog(upsetWin ? 'rollupUpset' : 'rollupWin', { name: atk.name, move: mv.n });
                 if (recordFrames) _turnRollup = 'success';
               } else {
                 // 丸め込みもカウント2で返せばニアフォール。フォール狙いの返しと同じ流れ(粘りバフ・ドラマ集計)に乗せる

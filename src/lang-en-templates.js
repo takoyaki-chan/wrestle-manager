@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3577件、訳文あり3577件)
+//  生成元: i18n/template-ledger.json (総キー3578件、訳文あり3578件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1455,6 +1455,7 @@
     "★ {name}、{move}でギブアップ勝ち！": "★ {name} wins by submission with {move}!",
     "★ {name}、{move}でギブアップ！": "★ {name} forces the tap with {move}!",
     "★ {name}、{move}でフォール勝ち！": "★ {name} wins by pinfall with {move}!",
+    "★ {name}、{move}で丸め込んで3カウント！": "★ {name} rolls her up with {move} for the three count!",
     "★ {name}、まさかの{move}で3カウント！ 大金星！": "★ {name} steals the three count with {move}! A huge upset!",
     "★ レフェリーストップ！ {name}のTKO勝利！": "★ The referee stops it! {name} wins by TKO!",
     "★★★レジェンド": "★★★ Legend",

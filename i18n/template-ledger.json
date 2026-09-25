@@ -14408,6 +14408,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "★ {name}、{move}で丸め込んで3カウント！",
+    "en": "★ {name} rolls her up with {move} for the three count!",
+    "files": [
+      "BATTLE_LOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "★ {name}、まさかの{move}で3カウント！ 大金星！",
     "en": "★ {name} steals the three count with {move}! A huge upset!",
     "files": [
