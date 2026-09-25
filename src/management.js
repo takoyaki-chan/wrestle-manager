@@ -3637,12 +3637,15 @@ const Engine = {
         stage: metadata.stage ?? null,
       };
       let nextState = { ...state, [recordKey]: record };
+      // K-1 第1段 §7 X09: 経歴に刻む内容も返す(選手の一覧を後で書き戻す呼び出し側が刻み直すため)
+      const careerStamp = Engine.mq._recordCareerStamp(nextState, { isTag, prevRecord: current.value, record, metadata });
       // MQ再設計P4 §5.4: 記録更新の瞬間を大ニュース記事(mqAllTimeRecord/mqTagRecord)として記事化キューへ
       nextState = Engine.mq._pushRecordNews(nextState, { isTag, prevRecord: current.value, record, metadata });
       return {
         state: nextState,
         updated: true,
         record,
+        careerStamp,
       };
     },
 
@@ -3692,6 +3695,56 @@ const Engine = {
       });
     },
 
+    /** 歴代最高評価の更新をキャリアに刻む内容(シングルのみ。勝者を名指しできないときは null)。
+     * K-1 第1段 §7 X09(2026-09-26): 興行の処理は、記録を更新した「後」で選手の一覧を丸ごと
+     * 書き戻す(executeShow の s = { ...s, roster, … } / app.js _finalizeShowImpl も同じ)ため、
+     * 記録更新の瞬間に刻んだ経歴がそこで消えていた。updateRecord が戻り値 careerStamp で
+     * この内容を返し、呼び出し側が書き戻しの後で applyRecordCareerStamp を呼び直せるようにする。 */
+    _recordCareerStamp(state, { isTag, prevRecord, record, metadata }) {
+      if (isTag) return null;
+      const winnerId = metadata.winnerId;
+      if (winnerId == null || !Array.isArray(record.holderIds)) return null;
+      const loserId = record.holderIds.find(id => id !== winnerId);
+      if (loserId == null) return null;
+      return {
+        opts: {
+          winnerId, loserId,
+          winnerName: Engine.mq._fighterName(state, winnerId),
+          loserName: Engine.mq._fighterName(state, loserId),
+        },
+        base: {
+          type: 'mqAllTimeRecord', season: state.season, week: state.week,
+          mq: record.value, prevRecord: Math.round(Number(prevRecord) || 0),
+          stage: Engine.mq.STAGE_LABELS[metadata.stage] || '興行',
+        },
+      };
+    },
+
+    /** careerStamp を勝者・敗者の経歴へ刻む(Engine.career.addPairEvent と同じ形の出来事)。
+     * 冪等: 同じ季・週・評価の記録の出来事がすでにある選手には積まない(書き戻しで消えなかった
+     * 経路で呼び直しても二重にならない)。 */
+    applyRecordCareerStamp(state, stamp) {
+      if (!state || !stamp || !stamp.opts || !stamp.base) return state;
+      const { winnerId, loserId, winnerName, loserName } = stamp.opts;
+      const base = stamp.base;
+      const has = (s, id) => {
+        const f = Engine.mq._findFighter(s, id)?.fighter;
+        const hist = (f && f.careerRecord && f.careerRecord.history) || [];
+        return hist.some(e => e && e.type === base.type && e.season === base.season
+          && e.week === base.week && e.mq === base.mq);
+      };
+      let s = state;
+      if (winnerId != null && !has(s, winnerId)) {
+        s = Engine.career.addEventToId(s, winnerId, {
+          ...base, won: true, opponentId: loserId ?? null, opponentName: loserName || undefined });
+      }
+      if (loserId != null && !has(s, loserId)) {
+        s = Engine.career.addEventToId(s, loserId, {
+          ...base, won: false, opponentId: winnerId ?? null, opponentName: winnerName || undefined });
+      }
+      return s;
+    },
+
     /** 記録更新(updateRecord内部専用)を大ニュース記事キューへ積む。
      * winnerId(シングル)/winnerIds(タッグ)がmetadataに無い場合は記事化せず数値記録のみ更新する
      * (記録自体はドローでも成立しうるが、勝者を名指しできない記事は書けないため静かにスキップ)。 */
@@ -3718,10 +3771,9 @@ const Engine = {
           type: 'mqAllTimeRecord', characterId: winnerId, characterIds: [winnerId, loserId], data,
         });
         // 2026-08-01: 記録更新は記事にしかならず**キャリアに残っていなかった**。両者に刻む
-        next = Engine.career.addPairEvent(next,
-          { winnerId, loserId, winnerName: data.name, loserName: data.name2 },
-          { type: 'mqAllTimeRecord', season: state.season, week: state.week,
-            mq: record.value, prevRecord: prevRecordDisp, stage: stageLabel });
+        // (K-1 第1段 §7 X09: 刻む内容は _recordCareerStamp にまとめ、updateRecord の戻り値でも返す)
+        next = Engine.mq.applyRecordCareerStamp(next,
+          Engine.mq._recordCareerStamp(state, { isTag, prevRecord, record, metadata }));
         return next;
       }
       const winnerIds = Array.isArray(metadata.winnerIds) ? metadata.winnerIds.filter(id => id != null) : [];
@@ -14450,6 +14502,7 @@ const Engine = {
       s = { ...s, aiOrgs: Engine.rival.ensureAICoachStaffing(aiCoachRng, s.aiOrgs, s.coaches || [], s.leagueElevated || false) };
       const newAiOrgs = {};
       const aiMatchPairs = []; // Phase 2: AI試合ペア収集
+      const aiRecordCareerStamps = []; // K-1 第1段 §7 X09: 下の aiOrgs の書き戻しの後で刻み直す分
       Object.keys(s.aiOrgs).forEach(orgId => {
         const org = RIVAL_ORGS.find(o => o.id === orgId);
         if (!org) { newAiOrgs[orgId] = s.aiOrgs[orgId]; return; }
@@ -14466,14 +14519,16 @@ const Engine = {
           delete newAiOrgs[orgId]._mqRecordCandidate;
         }
         (newAiOrgs[orgId]._lastMatchResults || []).forEach(matchResult => {
-          s = Engine.mq.updateRecord(s, matchResult, {
+          const recordUpdate = Engine.mq.updateRecord(s, matchResult, {
             holderIds: [matchResult.left?.id, matchResult.right?.id],
             orgId,
             stage: 'ai',
             matchType: 'singles',
             winnerId: matchResult.winner === 'left' ? matchResult.left?.id
               : matchResult.winner === 'right' ? matchResult.right?.id : null,
-          }).state;
+          });
+          s = recordUpdate.state;
+          if (recordUpdate.careerStamp) aiRecordCareerStamps.push(recordUpdate.careerStamp);
         });
         // Phase 2: 新規試合ペアを収集（matchupLogの差分から取得）
         const newLog = newAiOrgs[orgId].matchupLog || [];
@@ -14571,6 +14626,12 @@ const Engine = {
           delete aiOrgData._mediaRelationships;
         }
       });
+      // K-1 第1段 §7 X09: 他団体の試合で歴代最高評価を更新したときの経歴の刻印は、updateRecord が
+      // 古い s.aiOrgs に刻むため、上の aiOrgs の書き戻しで消えていた。ここで刻み直す(冪等)。
+      // 置き場所は上の「消費済みの印を newAiOrgs の中でその場で消す」処理(_lastMatchResults ほか)の後。
+      // 刻むと団体のオブジェクトが作り直されるので、先に刻むと消す処理が新しい方に届かず、
+      // 前週の試合結果が翌週に残って世界が変わってしまう(2026-09-26 に実測して確認)
+      aiRecordCareerStamps.forEach(stamp => { s = Engine.mq.applyRecordCareerStamp(s, stamp); });
     }
     // AI団体間対抗戦
     if (s.aiOrgs && !s.offSeason) {
@@ -15375,6 +15436,7 @@ const Engine = {
       s = { ...s, milestoneBuffs: cleanedBuffs };
     }
 
+    const recordCareerStamps = [];
     results.forEach((result, matchIndex) => {
       const slot = validMatches[matchIndex];
       const isTagResult = result.matchType === 'tag';
@@ -15396,13 +15458,16 @@ const Engine = {
             winnerId: result.winner === 'left' ? slot?.left
               : result.winner === 'right' ? slot?.right : null,
           };
-      s = Engine.mq.updateRecord(s, result, {
+      const recordUpdate = Engine.mq.updateRecord(s, result, {
         holderIds,
         orgId: 'player',
         stage: 'normal',
         matchType: isTagResult ? 'tag' : 'singles',
         ...winnerMeta,
-      }).state;
+      });
+      s = recordUpdate.state;
+      // K-1 第1段 §7 X09: ここで刻んだ経歴は、後段の s = { ...s, roster, … } の書き戻しで消える。刻み直す分を控える
+      if (recordUpdate.careerStamp) recordCareerStamps.push(recordUpdate.careerStamp);
     });
 
     // Phase 5: Pass 2完了後に因縁更新+決着判定（MQ確定値を渡す）
@@ -16001,6 +16066,8 @@ const Engine = {
     });
 
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek, matchupLog: updatedMatchupLog, tagExp };
+    // K-1 第1段 §7 X09: 歴代最高評価の更新をキャリアに刻み直す(上の書き戻しで消えた分。冪等)
+    recordCareerStamps.forEach(stamp => { s = Engine.mq.applyRecordCareerStamp(s, stamp); });
 
     // §13.4: 突然の退団チェック（trust < 15, 2.5%/興行、trust更新前に判定）
     const departureRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xDE7A, s.season, s.week));

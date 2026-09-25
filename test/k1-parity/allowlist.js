@@ -107,15 +107,9 @@ module.exports = [
     patterns: ['_pendingF09', 'factionTimeline', 'factionEventCooldowns.*', '_industryNewsEvents'],
     mustAppear: true, refs: 'app.js:8530-8618 / エンジン側なし(_f09Locked は加点倍率にだけ使う)',
   },
-  {
-    id: 'K1-E06', title: '歴代最高評価(MQ記録)のタッグ別記録と記録更新記事',
-    category: 'formula', side: 'both', impact: '表示', scenarios: ['mq-record'], checkpoints: ['A', 'B'],
-    // mqRecord.*: 実プレイはタッグの評価もシングルの記録と比べるので、タッグの評価がシングル記録を塗り替える
-    patterns: ['mqRecordTag.*', 'mqRecord.*', '_industryNewsEvents'],
-    mustAppear: true, refs: 'management.js:14866-14894(matchType・勝者を渡す) / app.js:8146-8159(渡さない)',
-    note: '実プレイは updateRecord に matchType と勝者を渡さないので、タッグの記録はシングルの記録として扱われ(タッグ記録は更新されない)、'
-      + '記録更新記事(mqAllTimeRecord / mqTagRecord)も勝者不明で出ない。',
-  },
+  // K1-E06(実プレイの歴代最高評価の記録に matchType と勝者が渡らない)は K-1 第1段で解消したので外した(2026-09-26)。
+  // app.js _finalizeShowImpl がエンジンと同じ引数を渡す。あわせて §7 X09(記録更新の経歴の刻印が roster の書き戻しで
+  // 消える)も両経路で直した(Engine.mq.updateRecord の careerStamp を書き戻しの後で applyRecordCareerStamp)。
   // K1-E07(自団体の王座移動記事 titleChange が実プレイで消える)は K-1 第1段で解消したので外した(2026-09-26)。
   // app.js _finalizeShowImpl が記事を G ではなく s に積む(乱入者が奪って即空位にした王座は記事にしない)。
   {
@@ -161,7 +155,9 @@ module.exports = [
   {
     id: 'K1-F01', title: 'タッグの人気・連敗・勝敗の付け方(実プレイは敗者も勝者扱い)',
     category: 'formula', side: 'both', impact: '数値', scenarios: ['tag-mixed', 'mq-record', 'tag-lowbond'], checkpoints: ['A', 'B'],
-    patterns: ['roster[*].popularity', 'roster[*].losingStreak', 'roster[*].lastMatchResult'],
+    // _industryNewsEvents(B): 勝敗の付け方が違うので、週次の新聞が拾う連敗の節目(loseStreakMilestone)が変わる
+    // (第1段で K1-E06 を外して見えるようになった。mq-record で実測)
+    patterns: ['roster[*].popularity', 'roster[*].losingStreak', 'roster[*].lastMatchResult', '_industryNewsEvents'],
     mustAppear: true, refs: 'management.js:14990-15010 / app.js:8258-8271(left と right に同じ選手を入れて applyMQPopularity を呼ぶため、どちらが勝っても勝者判定になる)',
   },
   {

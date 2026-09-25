@@ -8098,19 +8098,41 @@ const App = {
           .filter(buff => buff.type !== 'next_match_mq'),
       };
     }
+    // K-1 第1段(K1-E06): エンジンの executeShow と同じく matchType と勝者を渡す。渡していなかったため、
+    // タッグの評価がシングルの記録と比べられ(タッグ記録は更新されない)、勝者不明で記録更新の記事と
+    // キャリアへの刻印も出なかった
+    const recordCareerStamps = [];
     results.forEach((result, matchIndex) => {
       const slot = validMatches[matchIndex];
-      const holderIds = result.matchType === 'tag'
+      const isTagResult = result.matchType === 'tag';
+      const holderIds = isTagResult
         ? [
             slot?.teamA?.fighter1, slot?.teamA?.fighter2,
             slot?.teamB?.fighter1, slot?.teamB?.fighter2,
           ]
         : [slot?.left, slot?.right];
-      s = Engine.mq.updateRecord(s, result, {
+      const winnerMeta = isTagResult
+        ? {
+            winnerIds: result.winner === 'teamA'
+              ? [slot?.teamA?.fighter1, slot?.teamA?.fighter2]
+              : result.winner === 'teamB'
+                ? [slot?.teamB?.fighter1, slot?.teamB?.fighter2]
+                : null,
+          }
+        : {
+            winnerId: result.winner === 'left' ? slot?.left
+              : result.winner === 'right' ? slot?.right : null,
+          };
+      const recordUpdate = Engine.mq.updateRecord(s, result, {
         holderIds,
         orgId: 'player',
         stage: 'normal',
-      }).state;
+        matchType: isTagResult ? 'tag' : 'singles',
+        ...winnerMeta,
+      });
+      s = recordUpdate.state;
+      // §7 X09: ここで刻んだ経歴は後段の s = { ...s, roster, … } の書き戻しで消える。最後に刻み直す分を控える
+      if (recordUpdate.careerStamp) recordCareerStamps.push(recordUpdate.careerStamp);
     });
 
     // 因縁決着判定（MQ確定後、保留ペアのみ）
@@ -9206,6 +9228,8 @@ const App = {
     // _pendingF07Directive / _pendingInternalChallenge / _pendingF08Directive / _pendingF09 / _pendingReclaim
     // などのキーが G の旧値として残り、F07 メイン推薦や派閥内序列戦が永久消化扱いにならない。
     // s は finalizeShow 冒頭で {...G} から派生しているため、s を base にして問題ない。
+    // K-1 第1段 §7 X09: 歴代最高評価の更新をキャリアに刻み直す(途中の roster の書き戻しで消えた分。冪等)
+    recordCareerStamps.forEach(stamp => { s = Engine.mq.applyRecordCareerStamp(s, stamp); });
     G = { ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
 
     // v2.0 Phase1-6: メディアスポットライトの興行後処理
