@@ -646,7 +646,9 @@ function nextFrame(){
     }
   }
 
-  applyFrame(fr);
+  // K-6: 自動再生の間隔は applyFrame が決めた最小ディレイ(溜め演出の有無を含む)と揃える。
+  // 別々に計算すると、溜めが走ったフレームで S.anim が解ける前にタイマーが来て自動再生が止まる。
+  const frameMinDelay = applyFrame(fr);
 
   if (fr.winner) {
     // ピン seq が走るフレームは _finishPinSeq が showResult を呼ぶ
@@ -657,7 +659,7 @@ function nextFrame(){
     setTimeout(() => showResult(fr), 1800);
     return;
   }
-  const delay = _frameMinDelay(fr);
+  const delay = frameMinDelay;
   if (S.autoAdvance && S.frameIdx < S.frames.length) {
     const speedD = SPEED_DELAYS[S.speedIdx] || 1500;
     S.autoTimer = setTimeout(() => nextFrame(), Math.max(delay + 300, speedD));
@@ -695,7 +697,9 @@ function applyFrame(fr){
 
   setTimeout(() => _applyFrameVisuals(fr, isBigMove), chargeDelay);
 
-  const minDelay = _frameMinDelay(fr);
+  // K-6: シングルの溜めは技威力の確率発動で「特大」とは別条件。溜めが走るフレームは必ず間を確保する
+  // (旧 dmg>=20 はほぼ全命中で成立していたので、溜めの間はそれで偶然まかなわれていた)
+  const minDelay = _frameMinDelay(fr, isBigMove);
   setTimeout(() => {
     S.anim = false;
     const btn = document.getElementById('nBtn');
@@ -704,6 +708,7 @@ function applyFrame(fr){
     if (prev && !S.pendingCutin && !S.pinCtrl) prev.disabled = S.frameIdx === 0;
     if (!S.pinCtrl) _bindNextButton();
   }, minDelay);
+  return minDelay;
 }
 
 function _applyFrameVisuals(fr, isBigMove){
@@ -821,7 +826,8 @@ function _renderActionImpact(action){
   if (!action || action.kind === 'miss') return;
   const defSide = action.atkSide === 'left' ? 'R' : 'L';
   const atkSide = action.atkSide === 'left' ? 'L' : 'R';
-  const isBig   = action.dmg >= 20;
+  // K-6: 大ダメージ(isCrit)/特大(isHeavy)はエンジンが被弾側の最大HP比で決めてフレームに焼いたもの
+  const isHeavy = _isHeavyHit(action);
 
   _showRingImpact(action);
   _showDmgPop(defSide, action.dmg, action.isCrit, action.kind === 'counter');
@@ -831,8 +837,8 @@ function _renderActionImpact(action){
 
   _playImpactSE(action);
 
-  if (action.isCrit && isBig) _flashRedOverlay(document.getElementById('flashOv'));
-  if (action.isCrit && action.dmg >= 15) _showBigMoveSplash(action.kind === 'counter' ? (action.counterMove || action.move) : action.move);
+  if (action.isCrit && isHeavy) _flashRedOverlay(document.getElementById('flashOv'));
+  if (action.isCrit) _showBigMoveSplash(action.kind === 'counter' ? (action.counterMove || action.move) : action.move);
 }
 
 function _showRingImpact(action){
@@ -859,10 +865,13 @@ function _showBigMoveSplash(moveName){
   const el = document.getElementById('bigmoveName');
   if (!el) return;
   // P7-5: Bebas Neue 56px の1行枠(モバイルは36px/max-width 92vw)。短縮形を優先する
+  // K-6: 大ダメージのフレームは最短1300msで次へ進める(旧定義ではほぼ全命中が3300ms)ので、
+  // 前のスプラッシュの消去タイマーが次のスプラッシュを途中で消さないよう、出し直すたびに解除する
+  clearTimeout(el._wmFadeTimer); clearTimeout(el._wmClearTimer);
   el.textContent = '— ' + _mvDisp(moveName) + ' —';
   el.className = 'bigmove-name show';
-  setTimeout(() => el.classList.add('fade'), 1200);
-  setTimeout(() => { el.className = 'bigmove-name'; el.textContent = ''; }, 1600);
+  el._wmFadeTimer = setTimeout(() => el.classList.add('fade'), 1200);
+  el._wmClearTimer = setTimeout(() => { el.className = 'bigmove-name'; el.textContent = ''; }, 1600);
 }
 
 // ─── ダメージセリフ ────────────────────────────────────────────────────────
@@ -872,9 +881,9 @@ function tryDamageLine(action, fr){
   const def     = action.atkSide === 'left' ? S.R : S.L;
   if (!def) return;
   const hpRatio = def.hp / def.mhp;
-  // battle-lines.js 提供の pickDamageLine
+  // battle-lines.js 提供の pickDamageLine(大ダメージ=action.isCrit のときだけ抽選する)
   if (typeof pickDamageLine !== 'function') return;
-  let line = pickDamageLine(def, action.dmg, hpRatio);
+  let line = pickDamageLine(def, action, hpRatio);
   if (!line) return;
   const last = S.lastCritTurn[defSide] || 0;
   if (fr.turn - last < 3) return;
@@ -1063,7 +1072,7 @@ function _buildPinCtrl(fr){
     const def = fr.action.atkSide === 'left' ? S.R : S.L;
     if (def && typeof pickDamageLine === 'function') {
       const hpRatio = def.hp / def.mhp;
-      let line = pickDamageLine(def, fr.action.dmg, hpRatio);
+      let line = pickDamageLine(def, fr.action, hpRatio);
       const last = S.lastCritTurn[defSide] || 0;
       if (line && fr.turn - last >= 3) {
         S.lastCritTurn[defSide] = fr.turn;

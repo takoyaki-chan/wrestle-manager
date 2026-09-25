@@ -10,6 +10,16 @@ const TITLE_RING_ESCAPE_BONUS = 0.10;
 // カウンター率+4ptを補強(名勝負製造機・因縁と同じ既存キャップ共有)。
 const TITLE_RING_COUNTER_BONUS = 4;
 
+// K-6(2026-09-25 Keisuke裁定A): 観戦演出の「大ダメージ」は被弾側の最大HPに対する割合で決める。
+// 旧定義の絶対値(大ダメージ dmg≥15 / 赤フラッシュ等 dmg≥20)は、最大HPの式(通常 141+2.5×ST・
+// 大一番 272+3.5×ST)でダメージ全体が膨らんだ結果、同格戦の命中のほぼ全部で成立し「全部が山場」になっていた。
+//   大ダメージ(frame.action.isCrit)  : 被弾側の最大HPの12%以上。同格の通常戦で1試合約4回、大一番で約3回
+//   特大    (frame.action.isHeavy) : 同18%以上。大ダメージの上の段(赤フラッシュ・溜め・長めの間)。通常戦で1試合約1回
+// 使い道はフレームの演出フラグと実況ログの「大ダメージ！」注記の選択だけ。勝敗・MQ・乱数には一切関与しない
+// (MQの「大技(10ダメ以上)」項 bigMoves は別物で、変えていない)。整数で比べて浮動小数の端数を避ける。
+const BIG_HIT_HP_PCT = 12;
+const HEAVY_HIT_HP_PCT = 18;
+
 // 技候補はモジュール初期化時に一度だけ威力ティアへ分類する。
 // 丸め込みは独立抽選なので、通常ティアの候補からは除外する。
 const MOVE_TIER_POOLS = {};
@@ -89,6 +99,14 @@ Engine.battle = {
       if (move.d <= 5) return 'small';
       if (move.d <= 10) return 'medium';
       return 'big';
+    },
+    // K-6: 演出専用の段判定(被弾側の最大HP比。定義はファイル先頭の BIG_HIT_HP_PCT / HEAVY_HIT_HP_PCT)。
+    // 最大HPを正しく知っているのはエンジンだけなので、ここで決めてフレームに焼き、観戦iframeは読むだけにする。
+    isBigHit(dmg, defMhp) {
+      return dmg > 0 && defMhp > 0 && dmg * 100 >= defMhp * BIG_HIT_HP_PCT;
+    },
+    isHeavyHit(dmg, defMhp) {
+      return dmg > 0 && defMhp > 0 && dmg * 100 >= defMhp * HEAVY_HIT_HP_PCT;
     },
     // numeric-overhaul P1: 内部戦闘力 = 5ステのべき平均(p=powerMeanP)。
     // ダメージのOVR比補正だけがこれを参照する。p=1で算術平均(旧仕様)と一致し、
@@ -502,9 +520,10 @@ Engine.battle = {
               _openingExecutionData.damageBand = executionDamage.band;
               pushLog('openingExecHit', { turn, name: atk.name, move: mv.n, name2: def.name, dmg, hp: Math.max(0, def.hp), mhp: def.mhp });
               if (recordFrames) {
+                // 開幕大技の命中は常に大ダメージ扱い(ログも固定で「大ダメージ！」)。特大は実ダメージで判定(K-6)
                 _turnAction = {
                   kind: 'hit', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c,
-                  dmg, isCrit: true, isBig: true, openingExecution: true,
+                  dmg, isCrit: true, isHeavy: B.isHeavyHit(dmg, def.mhp), isBig: true, openingExecution: true,
                   openingExecutionHit: true, openingExecutionDamageRatio: executionDamage.ratio,
                   openingExecutionDamageBand: executionDamage.band,
                   openingExecutionOvrGap: _openingExecutionGap,
@@ -584,7 +603,8 @@ Engine.battle = {
             totalCounters++;
             pushLog('counter', { turn, name: atk.name, move: mv.n, name2: def.name, move2: cMv.n, dmg: cDmg });
             if (recordFrames) {
-              _turnAction = { kind: 'counter', atkSide: isLeftAtk ? 'right' : 'left', move: mv.n, counterMove: cMv.n, moveD: mv.d, moveCat: mv.c, dmg: cDmg, isCrit: cDmg >= 15, isBig: cDmg >= 10 };
+              // K-6: 被弾するのは切り返された攻撃側(atk)なので、その最大HPで段を決める
+              _turnAction = { kind: 'counter', atkSide: isLeftAtk ? 'right' : 'left', move: mv.n, counterMove: cMv.n, moveD: mv.d, moveCat: mv.c, dmg: cDmg, isCrit: B.isBigHit(cDmg, atk.mhp), isHeavy: B.isHeavyHit(cDmg, atk.mhp), isBig: cDmg >= 10 };
             }
           } else {
             let dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
@@ -609,10 +629,12 @@ Engine.battle = {
             atk.consecutiveHits++;
             def.consecutiveHits = 0;
             if (dmg >= 10) bigMoves++;
+            // K-6: 演出専用の「大ダメージ」(被弾側の最大HPの12%以上)。フレームのフラグと実況ログの注記にだけ使う
+            const bigHit = B.isBigHit(dmg, def.mhp);
             if (recordFrames) {
               _turnAction = {
                 kind: 'hit', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c,
-                dmg, isCrit: dmg >= 15, isBig: dmg >= 10,
+                dmg, isCrit: bigHit, isHeavy: B.isHeavyHit(dmg, def.mhp), isBig: dmg >= 10,
                 ...(openingCounterBoost ? { openingCounterBoost: true } : {}),
               };
             }
@@ -625,8 +647,8 @@ Engine.battle = {
             // P7-53: 「大ダメージ」注記と「透かし後の反撃」注記の組み合わせは、
             // 値の差し替えではなく4通りの完全文テンプレへ展開してある(構造規約3)。
             pushLog(openingCounterBoost
-              ? (dmg >= 15 ? 'hitBoostCrit' : 'hitBoost')
-              : (dmg >= 15 ? 'hitCrit' : 'hit'),
+              ? (bigHit ? 'hitBoostCrit' : 'hitBoost')
+              : (bigHit ? 'hitCrit' : 'hit'),
               { turn, name: atk.name, move: mv.n, name2: def.name, dmg, hp: Math.max(0, def.hp), mhp: def.mhp });
 
             if (def.hp <= 0) {
@@ -1272,7 +1294,8 @@ Engine.tagMatch = (() => {
           mom = clamp(mom, -50, 50);
           pushLog('counter', { turn: totalTurn, phase: ph.name, name: defFighter.name, move: cMv.n, name2: atkFighter.name, dmg: cDmg });
           if (recordFrames) {
-            _turnAction = { attackerId: defFighter.id, defenderId: atkFighter.id, atkSide: atkSide === 'left' ? 'right' : 'left', move: cMv.n, origMove: mv.n, moveD: cMv.d, moveCat: cMv.c, kind: 'counter', dmg: cDmg, isCrit: cDmg >= 15 };
+            // K-6: 大ダメージ/特大は被弾側(切り返された atkFighter)の最大HP比で決める(演出専用)
+            _turnAction = { attackerId: defFighter.id, defenderId: atkFighter.id, atkSide: atkSide === 'left' ? 'right' : 'left', move: cMv.n, origMove: mv.n, moveD: cMv.d, moveCat: cMv.c, kind: 'counter', dmg: cDmg, isCrit: B.isBigHit(cDmg, atkFighter.mhp), isHeavy: B.isHeavyHit(cDmg, atkFighter.mhp) };
           }
           if (isAAttacking) { lossStreakA++; lossStreakB = 0; }
           else { lossStreakB++; lossStreakA = 0; }
@@ -1416,7 +1439,8 @@ Engine.tagMatch = (() => {
           if (mv.d >= 10) bigMoves++;
           pushLog('hit', { turn: totalTurn, phase: ph.name, name: atkFighter.name, move: mv.n, name2: defFighter.name, dmg, hp: Math.round(defFighter.hp), mhp: defFighter.mhp });
           if (recordFrames) {
-            _turnAction = { attackerId: atkFighter.id, defenderId: defFighter.id, atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, kind: 'hit', dmg, isCrit: dmg >= 15 };
+            // K-6: 大ダメージ/特大は被弾側の最大HP比で決める(演出専用)
+            _turnAction = { attackerId: atkFighter.id, defenderId: defFighter.id, atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, kind: 'hit', dmg, isCrit: B.isBigHit(dmg, defFighter.mhp), isHeavy: B.isHeavyHit(dmg, defFighter.mhp) };
           }
           if (isAAttacking) { lossStreakB++; lossStreakA = 0; }
           else { lossStreakA++; lossStreakB = 0; }

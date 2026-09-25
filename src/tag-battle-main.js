@@ -813,7 +813,8 @@ function applyFrame(fr){
   S.pos = { legalA: newLegalAKey, apronA: newApronAKey, legalB: newLegalBKey, apronB: newApronBKey };
   S.mom = fr.mom || 0;
 
-  const isBigMove = !!(fr.action && fr.action.kind !== 'miss' && fr.action.dmg >= 20);
+  // K-6: 溜めは「特大」(被弾側の最大HPの18%以上。エンジンが action.isHeavy に焼く)のときだけ。旧 dmg>=20
+  const isBigMove = _isHeavyHit(fr.action);
   const chargeDelay = isBigMove ? BIGMOVE_CHARGE_MS : 0;
   const touchPause = (touchA || touchB) ? 700 : 0;
 
@@ -887,7 +888,7 @@ function _applyFrameVisuals(fr, touchA, touchB, isBigMove){
 // ── 演出 ──
 // SE 層は single battle-engine.html 準拠。主な分配:
 //   - ターン頭 sfx.ready() 必須 (single L1781/1814/1876/2007 と同じ)
-//   - 大技 (action.dmg>=20) は applyFrame 側で sfx.bigmoveCharge() を t=0 に先行再生し、
+//   - 大技 (特大 = action.isHeavy。K-6で旧 action.dmg>=20 から置換) は applyFrame 側で sfx.bigmoveCharge() を t=0 に先行再生し、
 //     ナレーション・HUD・技名を 1800ms 保留 → ここでは衝撃演出を +500ms 後に撃つだけ
 //     (全体タイムライン: 0ms charge / 1800ms 技名表示 / 2300ms 衝撃 / 2700ms セリフ)
 //   - カウンター SE は half-volume (single L1881 の `counterSE*0.5` 準拠)
@@ -975,7 +976,7 @@ function _renderActionImpact(action){
   const atkKey = keyById(action.attackerId);
   const defSide = (defKey === 'a1' || defKey === 'a2') ? 'a' : 'b';
   const atkSide = (atkKey === 'a1' || atkKey === 'a2') ? 'a' : 'b';
-  const isBigMove = action.dmg >= 20;
+  const isBigMove = _isHeavyHit(action); // K-6: 特大(被弾側の最大HPの18%以上)。旧 dmg>=20
 
   // ダメージポップ (レガル側のみ)
   if (defKey === S.pos.legalA || defKey === S.pos.legalB) {
@@ -993,7 +994,7 @@ function _renderActionImpact(action){
   }
   _playImpactSE(action);
   if (action.isCrit && isBigMove) _flashRedOverlay(document.getElementById('flashOv'));
-  if (action.isCrit && action.dmg >= 15) _showBigMoveSplash(action.move);
+  if (action.isCrit) _showBigMoveSplash(action.move);
 }
 
 function _showDmgPop(side, val, isCrit, isCounter){
@@ -1012,10 +1013,12 @@ function _showBigMoveSplash(moveName){
   const el = document.getElementById('bigmoveSplash');
   if (!el) return;
   // P7-5: 大きな1行枠。短縮形がある技はそちらを使う
+  // K-6: 大ダメージのフレームは最短1300msで次へ進むので、前の消去タイマーが次のスプラッシュを消さないよう解除する
+  clearTimeout(el._wmFadeTimer); clearTimeout(el._wmClearTimer);
   el.textContent = '— ' + _mvDisp(moveName) + ' —';
   el.className = 'bigmove-splash show';
-  setTimeout(() => el.classList.add('fade'), 1200);
-  setTimeout(() => { el.className = 'bigmove-splash'; el.textContent = ''; }, 1600);
+  el._wmFadeTimer = setTimeout(() => el.classList.add('fade'), 1200);
+  el._wmClearTimer = setTimeout(() => { el.className = 'bigmove-splash'; el.textContent = ''; }, 1600);
 }
 
 function _showRingHelperFor(side, duration){
@@ -1163,7 +1166,7 @@ function _buildPinCtrl(pinEv, fr){
     const def = defKey ? f(defKey) : null;
     if (def) {
       const hpRatio = def.hp / def.mhp;
-      let line = pickDamageLine(def, fr.action.dmg, hpRatio);
+      let line = pickDamageLine(def, fr.action, hpRatio);
       const lastCrit = S.lastCritTurn[defKey] || 0;
       if (line && fr.turn - lastCrit >= 3) {
         S.lastCritTurn[defKey] = fr.turn;
@@ -1553,7 +1556,7 @@ function tryDamageLine(action, fr){
   const def = f(defKey);
   if (!def) return;
   const hpRatio = def.hp / def.mhp;
-  let line = pickDamageLine(def, action.dmg, hpRatio);
+  let line = pickDamageLine(def, action, hpRatio); // 大ダメージ(action.isCrit)のときだけ抽選
   if (!line) return;
   const last = S.lastCritTurn[defKey] || 0;
   if (fr.turn - last < 3) return;

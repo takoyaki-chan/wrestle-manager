@@ -633,10 +633,11 @@ snapshot 構造:
   hp: {[fighterId]: hp, ... x4},
   grit: {...x4}, hotTagBuff: {...x4},
   mom, logLines: string[], events: Event[],
-  action: { attackerId, defenderId, atkSide, move, moveD, kind: 'miss'|'hit'|'counter', dmg, isCrit },
+  action: { attackerId, defenderId, atkSide, move, moveD, kind: 'miss'|'hit'|'counter', dmg, isCrit, isHeavy },
   segmentIdx, winner, finType, finMove, finishPhase, pinnedBy, pinnedWho
 }
 ```
+- `isCrit`(大ダメージ)= 被弾側の最大HPの12%以上、`isHeavy`(特大)= 同18%以上。エンジンが被弾側の実際の最大HPで判定して焼く演出専用フラグ(2026-09-25 K-6。旧 `isCrit` は `dmg>=15`)。定義と使い道は `specs/battle-presentation-spec-v1.0.md` §8。
 
 ### 10.3 ファイル構成
 | ファイル | 役割 |
@@ -677,7 +678,7 @@ snapshot 構造:
 - **HUD** : シングルと同じ `.wm-hud` 構造（顔サークル + TURN + phase pill + モメンタム6px + チーム合算 HP 対面バー 28px + HP%ラベル 28px）
 - **Player card (legal)** : portrait + モニターフレーム（右下角 gold L字）+ スキャンライン + 名前行（IN RING バッジ）+ style/OVR + HP bar + 5 ステータスバー（PWR/SPD/TEC/STA/MNT、色分け：赤/青/青緑/金/紫）
 - **Apron card** : 横並びレイアウト（avatar 100×140 + name+APRON バッジ + style/OVR + HP bar + ▲回復中 + 5 stats 縮小版）、opacity 0.72 で薄暗
-- **Move display** : `CURRENT MOVE` ラベル + bigmove-splash（dmg≥15でゴールド名表示）+ move-name 18px + move-damage（HIT赤 / COUNTER青緑 / MISS灰）+ narration 12px（dramatic で琥珀色）
+- **Move display** : `CURRENT MOVE` ラベル + bigmove-splash（大ダメージ `action.isCrit` でゴールド名表示。2026-09-25 K-6 で旧 dmg≥15 から置換）+ move-name 18px + move-damage（HIT赤 / COUNTER青緑 / MISS灰）+ narration 12px（dramatic で琥珀色）
 - **Battle log** : 新しい順ではなく**古い順（下に追記・下にスクロール）**、イベント境界で枠色変化（hottag赤 / double金 / cutin青 / friendly橙 / betrayal赤 / finish金 / touch緑）、`.log-event` 左ボーダー3px ＋ 背景色つきブロック
 - **Controls** : NEXT TURN メインボタン + AUTO トグル + 速度ドット（×1/×2/×3）
 - **Victory overlay** : 勝者 upper 画像 2枚（左は scaleX(-1) で対面）+ W I N N E R ラベル + ゴールド勾配の勝者名 + finType/finMove/phase/turns + 敗者フェイス＋「LOSER」タグ + MQ/TURNS/SEGS 統計、段階的フェードインで演出
@@ -692,7 +693,7 @@ snapshot 構造:
 ### 10.5 演出（シングル並み磨き込み）
 - **攻撃ヒット**: ダメージ数字ポップ（赤、クリット時52pxゴールド）+ パネルshake + 攻撃側 flash-atk + SE（hitStrike/hitThrow/hitSub/hitAerial/hitGround/hitRollup を move名から guessCategory で推定）
 - **カウンター**: パネル counter-flash + counterSE
-- **クリット (dmg≥15)**: HP残量に応じてダメージセリフ/ボイスカットイン（40%/15%+50%/60% 閾値）、同一選手で3ターン以上空ける
+- **大ダメージ (`action.isCrit` = 被弾側の最大HPの12%以上。2026-09-25 K-6 で旧 dmg≥15 から置換)**: HP残量に応じてダメージセリフ/ボイスカットイン（40%/15%+50%/60% 閾値）、同一選手で3ターン以上空ける
 - **タッチ発生**: リーガル/エプロン swap アニメ（旧 apron が新 legal に昇格）+ touchSE
 - **ホットタグ**: 中央 banner「HOT TAG!」ゴールド + hotTagSE + gold flash + 交代直後の選手カットイン（HOT_TAG_LINES）
 - **ダブルチーム**: 中央 banner「DOUBLE TEAM!」赤 + 両パネル flash + doubleTeamSE
@@ -728,7 +729,7 @@ Phase 4a 時点で tag-battle は single battle-engine とは別ファイルで 
 | `src/battle-sfx.js` | SFX (音源ファイル / Web Audio 合成 / ミックス値 / drone / hitSE / guessCategory) | battle-engine.html + tag-battle.html |
 | `src/battle-shared.css` | デザイントークン (:root) / リセット / スクロールバー / 共有キーフレーム (9種) | battle-engine.html + tag-battle.html |
 | `src/battle-anim.js` | `BattleAnim.renderCutin({overlay, fighter, side, text, variant})` / `BattleAnim.dismissCutin(overlay, onAfterClear?)` | battle-engine.html + tag-battle.html |
-| `src/battle-lines.js` | ダメージセリフ定数 (`DAMAGE_SERIF_LINES` 7 personality×6 archetype / `DAMAGE_VOICE_LINES` 7 archetype) + HP帯別振り分け `pickDamageLine(fighter, dmg, hpRatio, rng?)` | battle-engine.html + tag-battle.html |
+| `src/battle-lines.js` | ダメージセリフ定数 (`DAMAGE_SERIF_LINES` 7 personality×6 archetype / `DAMAGE_VOICE_LINES` 7 archetype) + HP帯別振り分け `pickDamageLine(fighter, action, hpRatio, rng?)`(入口は `action.isCrit`。2026-09-25 K-6 で第2引数を dmg から action へ) | battle-engine.html + tag-battle.html |
 
 ### 11.3 Step 1 — SFX 共通化
 - 両者が約90%重複していた SFX 定義を `battle-sfx.js` に superset で集約。
@@ -799,6 +800,8 @@ Step 5 で SE 呼び出しは align したが、実プレイで「溜めの途�
 - サブミッション導入ステップ (tag 固有 `lock` / `agony`) は 40-44px Noto Sans JP の小さめスタイルに切り分け、メインカウントとの視覚的ヒエラルキーを確保
 
 実機タイムライン検証: `_frameMinDelay({dmg:25,isCrit:true}) = 3300ms`、イベント重畳時 3800ms、非大技 crit 1300ms / 通常 hit 900ms で旧挙動を維持。pin-count 基準 (72px/Bebas Neue/8px letter-spacing/gold-light/0.8s pinCountPop) は single `.finish-count-text` と getComputedStyle で bit-identical。
+
+※ 2026-09-25 K-6: 本節と§11.5cの「大技 = `action.dmg>=20`」(溜め・赤フラッシュ・hitSE 1.3倍・`_frameMinDelay` の+2000)は、「特大」= `action.isHeavy`(被弾側の最大HPの18%以上、エンジンが判定)へ置き換えた。判定は battle-replay-core.js の `_isHeavyHit(action)`(isHeavy を持たない旧フレームは dmg>=20)。`_frameMinDelay(fr, charged)` はシングルの溜め(技威力の確率発動)も+2000の対象にする。現行の定義は `specs/battle-presentation-spec-v1.0.md` §8。
 
 ### 11.6 共通化していないもの (Phase 4c 送り)
 - 演出シーケンス (bigmove / counter / touch swap の setTimeout ツリー) の共通化

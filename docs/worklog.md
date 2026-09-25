@@ -1,5 +1,52 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-25 K-6 大ダメージ判定の相対化 — 被弾側の最大HPの12%(特大18%)へ。試合の数値は不変（Claude/Opus 5.5・Keisuke裁定A）
+
+面白さ総点検の K-6「大ダメージの基準を相対的にする」を裁定Aのとおり実装した。旧定義 `isCrit = dmg≥15`(赤フラッシュ等は `dmg≥20`)は、最大HPの式(通常 141+2.5×ST・大一番 272+3.5×ST)でダメージ全体が膨らんだ結果、同格の通常戦で命中の88〜94%が大ダメージになっていた。そのため BIG HIT・赤フラッシュ・強い揺れ・カメラ寄り・「深く入った！」・被弾セリフの抽選が毎ターン走っていた。
+
+- **新定義**: `src/match-engine.js` 先頭の `BIG_HIT_HP_PCT=12` / `HEAVY_HIT_HP_PCT=18`。判定は `Engine.battle.isBigHit` / `isHeavyHit`(整数で比べる)
+  - 大ダメージ `action.isCrit` = 被弾側の最大HPの12%以上(裁定どおり)
+  - 特大 `action.isHeavy`(新設) = 同18%以上。旧 `dmg≥20` の段(赤フラッシュ・ヒット音1.3倍・タッグの溜め・フレーム間隔+2000ms)の置き換え
+  - 判定はエンジンがフレームに焼き、観戦iframeは読むだけにした(タッグのiframeは最大HPを近似で持っているので、再計算させない)
+  - 実況ログの「大ダメージ！」注記(hitCrit/hitBoostCrit)も同じ定義にした。開幕大技は従来どおり常に大ダメージ
+- **特大を18%にした根拠**(同格の平坦ステ・各800試合・試合ごとに新品rng。通常戦1試合あたりの回数)
+  - 16%=2.1〜2.4回 / 17%=1.5〜1.9回 / **18%=0.95〜1.3回** / 19%=0.5〜0.7回
+  - 18%は大ダメージの約3割に当たる「さらに大きい一撃」で、1〜2回の帯に入る。実ロスターの近接カードで1.13回、格差カード(OVR差15〜30)で2.09回
+- **演出側の変更**
+  - battle-lines.js: `pickDamageLine(fighter, action, hpRatio, rng)` — 入口を `dmg<15` から `action.isCrit` に替えた(第2引数を dmg→action。呼び出し4箇所)
+  - battle-replay-core.js: `_isHeavyHit(action)` を新設(`isHeavy` を持たない旧フレーム=更新前にセーブされた大会の観戦データは `dmg>=20` で読む)。`_frameMinDelay(fr, charged)` と `_playImpactSE` の1.3倍を特大に替えた
+  - battle-engine-main.js: 赤フラッシュを特大に替え、技名スプラッシュの `dmg>=15` を外した(isCrit だけ)
+  - **シングルの大技の溜め**(技威力14以上の確率発動)は特大とは別条件なので、溜めが走るフレームは `_frameMinDelay(fr, true)` で+2000msを確保した。自動再生の間隔も applyFrame の戻り値に揃えた
+    - 旧 `dmg>=20` はほぼ全命中で成立していたので、溜めの間は偶然まかなわれていた
+    - 直さないと溜めの途中で次の攻防が始まる。実時間の自動再生検査で再現し、修正後に消えることを確認した
+  - tag-battle-main.js: 溜めと赤フラッシュを特大に替え、スプラッシュの `dmg>=15` を外した
+  - 技名スプラッシュ(両iframe): 出し直すたびに前の消去タイマーを解除する。大ダメージのフレームが最短1300msで進むようになったため、連続した大ダメージでスプラッシュが途中で消えるのを防ぐ
+- **試合の数値は不変(検証)**
+  - 変更前(HEADの写し)と変更後で4,400試合を照合した: シングル通常/大一番 各1,200、実ロスター+リング内効果+連戦HP 1,200、タッグ800
+    - 照合した項目: 勝者・決着・ターン数・MQ・MQ内訳・最終HP・技選択統計・タッグの各選手成績/ドラマ要約・フレームの数値状態・実況ログ(「大ダメージ！」注記だけ正規化)
+    - **不一致0**。recordFrames の有無でも一致
+  - `node test/balance-baseline.js` ✅逸脱なし。同スクリプトの全出力JSON(anchor/gapCurve/spikeGrid 60構成/styleMatrix)も変更前後でバイト一致
+  - auto-sim 20季 seed42: ALL CLEAR。Semantic fingerprint `5d6fb658` が変更前(`WM_SOURCE_REF=HEAD`)と一致
+- **実測(新定義)**
+  - 通常戦: 大ダメージ3.8〜4.4回/試合(命中の約3割。旧は11.6〜12.2回・命中の88〜94%)、特大0.95〜1.3回
+  - 大一番: 大ダメージ2.3〜3.0回、特大0回
+  - タッグ: 大ダメージ17〜19回(命中の6〜7割)、特大2.4〜3.3回
+  - 被弾カットイン: シングル通常 3.9→1.9回、大一番 6.1→1.4回
+- **気づいたこと(裁定の材料)**
+  1. 大ダメージは End/Climax に集中する(通常戦で Climax が65〜78%、大一番は Climax のみ)。被弾時のHPが66%超の場面は1〜8%しかないので、**長文の被弾セリフは1試合約2回→約0.4回**になり、悲鳴は約1.9→1.5回。HP帯のルールは裁定どおり据え置いた
+  2. **大一番では特大(赤フラッシュ・ヒット音1.3倍)が出ない**。1撃が最大HPの13〜16%止まりのため
+  3. **タッグは12%でも命中の6〜7割が大ダメージのまま**(最大HP 70+ST が小さい)。被弾カットインは3ターンのクールダウンで頭打ちになり約8回/試合(旧7.8〜10.1回)。タッグ専用の割合にするかは要裁定
+  4. 既存の挙動: タッグ観戦の被弾カットインは、自動再生中でも自動では閉じない(クリック待ち。シングルは1.5秒で自動で閉じる)
+  5. 既存の挙動: ヒット音の強さ `hitSE` は `dmg/20`(0.3〜1.5で頭打ち)の絶対値のまま。今のダメージ尺度ではほぼ全命中が最大の強さになる。今回は対象外
+  6. 既存の不合格: `node test/i18n-ratchet.js` が data.js/ui-render.js/management.js で NG(今回触っていないファイル。MVP v3 などの直書き増分)
+- **テスト**
+  - `test/big-hit-relative-test.js` を新設。境界・フレームのフラグと最大HP比・ログ注記・recordFrames不変・配給の帯・pickDamageLine の入口・_isHeavyHit/_frameMinDelay を見る
+  - npm test 270/270
+  - 観戦iframeの Playwright 検査(spectator-move-i18n-check): ALL CHECKS PASS・例外ゼロ
+  - 自動再生の実時間検査(シングル通常/大一番・タッグ): 最後まで停止なし・溜めと次の攻防の重なり0・例外0。修正前の間の計算を再現すると重なりを検出した
+- 触ったファイル: src/match-engine.js / src/battle-lines.js / src/battle-replay-core.js / src/battle-engine-main.js / src/tag-battle-main.js / test/big-hit-relative-test.js(新規) / CLAUDE.md / specs/battle-presentation-spec-v1.0.md(§8新設) / specs/tag-match-system-spec-v0.1.md / specs/INDEX.md / docs/ui/03-screens/battle-spectator.md / docs/実機確認バックログ.md / docs/game-system-roadmap.md / docs/worklog.md
+- 残: 実機確認(docs/実機確認バックログ.md「K-6」)、上の1〜3の扱いの裁定、specs diff の確認
+
 ## 2026-09-25 面白さ総点検 v0.1 追補 — 裁定16件の図解ガイドを作成、資金の断定を撤回（Claude/Opus 5.5・src無変更）
 
 Keisuke「資金が2年目以降意味を失うのはあまりないと思う(5〜6年目以降かもっと先)」「決めてほしい項目をもっと詳しく、分かりやすく。必要ならSVGや画像で」「古いセーブは古い版なので今を反映していない」を受けて対応した。
