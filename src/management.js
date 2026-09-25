@@ -31941,12 +31941,17 @@ Engine.newspaper = {
   },
 
   /** ティア別テンプレから1本選ぶ。同一号に同ティア複数が出る場合は usedCounts で順繰りに回す。
-   *  {reigns} を含むバリアントは reigns>=1 のときだけ選ぶ(無冠者には非使用バリアントを割り当てる)。 */
+   *  {reigns} を含むバリアントは reigns>=1 のときだけ選ぶ(無冠者には非使用バリアントを割り当てる)。
+   *  maxReigns を持つバリアントは戴冠数がその値以下のときだけ選ぶ(2026-09-25。L-3「ベルトの数で
+   *  語られる選手ではなかった」が、同じ号にLティアの引退が3件以上並ぶと複数回戴冠した選手にも
+   *  回ってきていた)。 */
   pickRetirementVariant(tier, reigns, usedCounts) {
     const table = (typeof RETIREMENT_TEMPLATES !== 'undefined') ? RETIREMENT_TEMPLATES[tier] : null;
     if (!table || !table.length) return null;
-    const hasReigns = Number(reigns) > 0;
-    const pool = hasReigns ? table : table.filter(v => !/\{reigns\}/.test(v.body) && !/\{reigns\}/.test(v.headline));
+    const n = Number(reigns) || 0;
+    const hasReigns = n > 0;
+    const pool = table.filter(v => (hasReigns || (!/\{reigns\}/.test(v.body) && !/\{reigns\}/.test(v.headline)))
+      && (v.maxReigns == null || n <= v.maxReigns));
     const list = pool.length ? pool : table;
     const uc = usedCounts || {};
     const idx = (uc[tier] || 0) % list.length;
