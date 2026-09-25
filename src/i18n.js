@@ -63,6 +63,12 @@
 //    だと英語で折り返し・はみ出しが起きる。pn()と同じ「フルネームJA」を入力に取り、
 //    姓だけを返す。姓のみ辞書に無ければpn()(フルネーム訳、それも無ければ原文)へ
 //    fail-openする。addSurnames(map)が登録入口(生成元はpn()と同じsrc/lang-en-names.js)。
+//  ■ 下の名前辞書 pnGiven (2026-09-25 呼び名、specs/call-name-spec-v1.0.md):
+//    セリフで相手を呼ぶとき、話し手→相手の絆が devoted 帯なら下の名前で呼ぶ(既定は名字)。
+//    呼び名の判定は Engine.relationships.callName(JA)。EN の呼び名は表示側がここで引く:
+//    pnGiven(フルネームJA) = 下の名前EN。辞書に無ければ pnSurname(str) へ fail-open
+//    (= 名字EN。日本語の下の名前は t() の名前自動変換の対象外なので、JAの下の名前を t() へ渡さないこと)。
+//    addGivenNames(map)が登録入口(生成元はpn()と同じsrc/lang-en-names.js)。ja/pseudo時は素通し。
 //  ■ <html lang>属性の同期 (Stage B P6-11): setLang()呼び出し時と読み込み時に
 //    document.documentElement.lang を 'en'(currentLang==='en')/'ja'(それ以外) へ同期する。
 //    静的HTMLは`<html lang="ja">`固定なので、EN専用CSS(`html[lang="en"] .foo{...}`)が
@@ -85,6 +91,10 @@
   // 生成元: src/lang-en-names.js(test/i18n-build-names.jsがnames-ledger.jsonの
   // ja(フルネーム)→enSurnameを突合して生成)。
   const surnames = Object.create(null);
+  // 2026-09-25 呼び名: フルネーム(JA) → 下の名前(EN)。セリフで相手を下の名前で呼ぶときだけ引く
+  // (specs/call-name-spec-v1.0.md)。names(pn)とは別領域 — 下の名前(JA)を names へ入れると
+  // t() の名前自動変換が一般語(未来・ひかり 等)まで人名として訳しうるため、キーはフルネームだけにする。
+  const givenNames = Object.create(null);
   // P7-5: 技名(JA) → 技名(EN)。names(pn)とは別領域。
   // 日本語の技名は効果音判定・解説文選択・セーブ値(finMove)の安定キーとして残るので、
   // 「表示の直前に1回だけ引く」用途に閉じる(specs §2-2/§13-1)。
@@ -335,6 +345,13 @@
     Object.keys(map).forEach((key) => { surnames[key] = map[key]; });
   }
 
+  // ── 2026-09-25 呼び名: 下の名前辞書(フルネームJA → 下の名前EN)の登録入口 ──
+  // 生成元: test/i18n-build-names.js(i18n/names-ledger.json の characters[].enGiven)→ src/lang-en-names.js。
+  function addGivenNames(map) {
+    if (!map) return;
+    Object.keys(map).forEach((key) => { givenNames[key] = map[key]; });
+  }
+
   // ── P7-5: 技名辞書の登録入口 ──
   // names/surnamesとは別領域。{ 技名JA: 技名EN } のマップをマージする(複数回呼び出し可)。
   // 生成元: test/i18n-build-names.js → src/lang-en-names.js。
@@ -367,6 +384,16 @@
     if (currentLang !== 'en') return str;
     if (Object.prototype.hasOwnProperty.call(surnames, str)) return surnames[str];
     return pn(str);
+  }
+
+  // ── 2026-09-25 呼び名: 下の名前(EN)。strはフルネームJA(pn()/pnSurname()と同じ入力形) ──
+  // 下の名前辞書に完全一致すればEN下の名前、無ければ pnSurname(str)(名字EN → フルネームEN → 原文)へ
+  // fail-open。ja/pseudo時は素通し(JAの呼び名は Engine.relationships.callName が返す)。
+  function pnGiven(str) {
+    if (typeof str !== 'string') return str;
+    if (currentLang !== 'en') return str;
+    if (Object.prototype.hasOwnProperty.call(givenNames, str)) return givenNames[str];
+    return pnSurname(str);
   }
 
   // ── P7-5: 技名の表示ヘルパー(pn()と同じ契約) ──
@@ -411,10 +438,12 @@
     addDict,
     addNames,
     addSurnames,
+    addGivenNames,
     addMoves,
     addMoveShorts,
     pn,
     pnSurname,
+    pnGiven,
     mv,
     mvShort,
     applyDom,

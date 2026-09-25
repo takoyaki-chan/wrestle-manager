@@ -13,6 +13,8 @@
       "jaSurname": "阿武隈",
       "en": "Toko Abukuma",
       "enSurname": "Abukuma",
+      "jaGiven": "塔子",
+      "enGiven": "Toko",
       "confirmed": true
     },
     {
@@ -21,6 +23,8 @@
       "jaSurname": "富岡",
       "en": "Kanako Tomioka",
       "enSurname": "Tomioka",
+      "jaGiven": "加奈子",
+      "enGiven": "Kanako",
       "confirmed": true
     },
     {
@@ -29,6 +33,8 @@
       "jaSurname": "澤出",
       "en": "Mizuki Sawaide",
       "enSurname": "Sawaide",
+      "jaGiven": "みずき",
+      "enGiven": "Mizuki",
       "confirmed": true
     },
     {
@@ -37,6 +43,8 @@
       "jaSurname": "高津",
       "en": "Koharu Takatsu",
       "enSurname": "Takatsu",
+      "jaGiven": "小春",
+      "enGiven": "Koharu",
       "confirmed": true
     },
     {
@@ -45,6 +53,8 @@
       "jaSurname": "深町",
       "en": "Makoto Fukamachi",
       "enSurname": "Fukamachi",
+      "jaGiven": "真琴",
+      "enGiven": "Makoto",
       "confirmed": true
     },
     {
@@ -53,6 +63,8 @@
       "jaSurname": "副沢",
       "en": "Tamaki Fukuzawa",
       "enSurname": "Fukuzawa",
+      "jaGiven": "たまき",
+      "enGiven": "Tamaki",
       "confirmed": true
     },
     {
@@ -61,6 +73,8 @@
       "jaSurname": "高階",
       "en": "Masami Takashina",
       "enSurname": "Takashina",
+      "jaGiven": "まさみ",
+      "enGiven": "Masami",
       "confirmed": true
     },
     {
@@ -69,6 +83,8 @@
       "jaSurname": "林",
       "en": "Mahiro Hayashi",
       "enSurname": "Hayashi",
+      "jaGiven": "真尋",
+      "enGiven": "Mahiro",
       "confirmed": true
     },
     {
@@ -77,6 +93,8 @@
       "jaSurname": "宇田川",
       "en": "Rina Udagawa",
       "enSurname": "Udagawa",
+      "jaGiven": "里奈",
+      "enGiven": "Rina",
       "confirmed": true
     },
     {
@@ -85,6 +103,8 @@
       "jaSurname": "橘",
       "en": "Reimi Tachibana",
       "enSurname": "Tachibana",
+      "jaGiven": "玲美",
+      "enGiven": "Reimi",
       "confirmed": true
     },
     {
@@ -93,6 +113,8 @@
       "jaSurname": "生駒",
       "en": "Erika Ikoma",
       "enSurname": "Ikoma",
+      "jaGiven": "エリカ",
+      "enGiven": "Erika",
       "confirmed": true
     },
     {
@@ -101,6 +123,8 @@
       "jaSurname": "堂前",
       "en": "Yuki Domae",
       "enSurname": "Domae",
+      "jaGiven": "ユキ",
+      "enGiven": "Yuki",
       "confirmed": true
     },
     {
@@ -109,6 +133,8 @@
       "jaSurname": "黒江",
       "en": "Mai Kuroe",
       "enSurname": "Kuroe",
+      "jaGiven": "舞",
+      "enGiven": "Mai",
       "confirmed": true
     },
     {
@@ -117,6 +143,8 @@
       "jaSurname": "楠木",
       "en": "Nagisa Kusunoki",
       "enSurname": "Kusunoki",
+      "jaGiven": "なぎさ",
+      "enGiven": "Nagisa",
       "confirmed": true
     },
     {
@@ -125,6 +153,8 @@
       "jaSurname": "大河内",
       "en": "Sayoko Okochi",
       "enSurname": "Okochi",
+      "jaGiven": "紗代子",
+      "enGiven": "Sayoko",
       "confirmed": true
     },
     {
@@ -133,6 +163,8 @@
       "jaSurname": "川野辺",
       "en": "Nahoko Kawanobe",
       "enSurname": "Kawanobe",
+      "jaGiven": "菜穂子",
+      "enGiven": "Nahoko",
       "confirmed": true
     },
     {
@@ -141,6 +173,8 @@
       "jaSurname": "出羽",
       "en": "Takako Dewa",
       "enSurname": "Dewa",
+      "jaGiven": "鷹子",
+      "enGiven": "Takako",
       "confirmed": true
     },
     {
@@ -149,6 +183,8 @@
       "jaSurname": "四条",
       "en": "Azusa Shijo",
       "enSurname": "Shijo",
+      "jaGiven": "あずさ",
+      "enGiven": "Azusa",
       "confirmed": true
     },
     {
@@ -157,6 +193,8 @@
       "jaSurname": "岸",
       "en": "Yumie Kishi",
       "enSurname": "Kishi",
+      "jaGiven": "ゆみえ",
+      "enGiven": "Yumie",
       "confirmed": true
     },
     {
@@ -165,6 +203,8 @@
       "jaSurname": "木ノ内",
       "en": "Sachine Kinouchi",
       "enSurname": "Kinouchi",
+      "jaGiven": "幸音",
+      "enGiven": "Sachine",
       "confirmed": true
     },
     {
@@ -173,6 +213,8 @@
       "jaSurname": "美濃山",
       "en": "Marina Minoyama",
       "enSurname": "Minoyama",
+      "jaGiven": "まりな",
+      "enGiven": "Marina",
       "confirmed": true
     },
     {
@@ -181,6 +223,8 @@
       "jaSurname": "早見",
       "en": "Tomoko Hayami",
       "enSurname": "Hayami",
+      "jaGiven": "知子",
+      "enGiven": "Tomoko",
       "confirmed": true
     },
     {
@@ -189,6 +233,8 @@
       "jaSurname": "園部",
       "en": "Rika Sonobe",
       "enSurname": "Sonobe",
+      "jaGiven": "梨花",
+      "enGiven": "Rika",
       "confirmed": true
     },
     {
@@ -197,6 +243,8 @@
       "jaSurname": "石戸谷",
       "en": "Natsuki Ishitoya",
       "enSurname": "Ishitoya",
+      "jaGiven": "なつき",
+      "enGiven": "Natsuki",
       "confirmed": true
     },
     {
@@ -205,6 +253,8 @@
       "jaSurname": "宮守",
       "en": "Natsume Miyamori",
       "enSurname": "Miyamori",
+      "jaGiven": "なつめ",
+      "enGiven": "Natsume",
       "confirmed": true
     },
     {
@@ -213,6 +263,8 @@
       "jaSurname": "八重樫",
       "en": "Mai Yaegashi",
       "enSurname": "Yaegashi",
+      "jaGiven": "舞",
+      "enGiven": "Mai",
       "confirmed": true
     },
     {
@@ -221,6 +273,8 @@
       "jaSurname": "岩屋",
       "en": "Mira Iwaya",
       "enSurname": "Iwaya",
+      "jaGiven": "みら",
+      "enGiven": "Mira",
       "confirmed": true
     },
     {
@@ -229,6 +283,8 @@
       "jaSurname": "相沢",
       "en": "Mirai Aizawa",
       "enSurname": "Aizawa",
+      "jaGiven": "未来",
+      "enGiven": "Mirai",
       "confirmed": true
     },
     {
@@ -237,6 +293,8 @@
       "jaSurname": "松川",
       "en": "Anju Matsukawa",
       "enSurname": "Matsukawa",
+      "jaGiven": "杏樹",
+      "enGiven": "Anju",
       "confirmed": true
     },
     {
@@ -245,6 +303,8 @@
       "jaSurname": "平松",
       "en": "Kanami Hiramatsu",
       "enSurname": "Hiramatsu",
+      "jaGiven": "かなみ",
+      "enGiven": "Kanami",
       "confirmed": true
     },
     {
@@ -253,6 +313,8 @@
       "jaSurname": "双里",
       "en": "Asuka Sori",
       "enSurname": "Sori",
+      "jaGiven": "明日香",
+      "enGiven": "Asuka",
       "confirmed": true
     },
     {
@@ -261,6 +323,8 @@
       "jaSurname": "梅ヶ丘",
       "en": "Minori Umegaoka",
       "enSurname": "Umegaoka",
+      "jaGiven": "みのり",
+      "enGiven": "Minori",
       "confirmed": true
     },
     {
@@ -269,6 +333,8 @@
       "jaSurname": "北畠",
       "en": "Yoshino Kitabatake",
       "enSurname": "Kitabatake",
+      "jaGiven": "吉乃",
+      "enGiven": "Yoshino",
       "confirmed": true
     },
     {
@@ -277,6 +343,8 @@
       "jaSurname": "上野原",
       "en": "Yayoi Uenohara",
       "enSurname": "Uenohara",
+      "jaGiven": "弥生",
+      "enGiven": "Yayoi",
       "confirmed": true
     },
     {
@@ -285,6 +353,8 @@
       "jaSurname": "真鍋",
       "en": "Ayano Manabe",
       "enSurname": "Manabe",
+      "jaGiven": "綾乃",
+      "enGiven": "Ayano",
       "confirmed": true
     },
     {
@@ -293,6 +363,8 @@
       "jaSurname": "白銀",
       "en": "Reiko Shirogane",
       "enSurname": "Shirogane",
+      "jaGiven": "麗子",
+      "enGiven": "Reiko",
       "confirmed": true
     },
     {
@@ -301,6 +373,8 @@
       "jaSurname": "芝",
       "en": "Ayane Shiba",
       "enSurname": "Shiba",
+      "jaGiven": "彩音",
+      "enGiven": "Ayane",
       "confirmed": true
     },
     {
@@ -309,6 +383,8 @@
       "jaSurname": "神谷",
       "en": "Sanae Kamiya",
       "enSurname": "Kamiya",
+      "jaGiven": "沙奈絵",
+      "enGiven": "Sanae",
       "confirmed": true
     },
     {
@@ -317,6 +393,8 @@
       "jaSurname": "高輪",
       "en": "Mami Takanawa",
       "enSurname": "Takanawa",
+      "jaGiven": "まみ",
+      "enGiven": "Mami",
       "confirmed": true
     },
     {
@@ -325,6 +403,8 @@
       "jaSurname": "根岸",
       "en": "Aria Negishi",
       "enSurname": "Negishi",
+      "jaGiven": "亞里亞",
+      "enGiven": "Aria",
       "confirmed": true
     },
     {
@@ -333,6 +413,8 @@
       "jaSurname": "本郷",
       "en": "Mariko Hongo",
       "enSurname": "Hongo",
+      "jaGiven": "真理子",
+      "enGiven": "Mariko",
       "confirmed": true
     },
     {
@@ -341,6 +423,8 @@
       "jaSurname": "金沢",
       "en": "Aya Kanazawa",
       "enSurname": "Kanazawa",
+      "jaGiven": "文",
+      "enGiven": "Aya",
       "confirmed": true
     },
     {
@@ -349,6 +433,8 @@
       "jaSurname": "福浦",
       "en": "Rino Fukuura",
       "enSurname": "Fukuura",
+      "jaGiven": "理乃",
+      "enGiven": "Rino",
       "confirmed": true
     },
     {
@@ -357,6 +443,8 @@
       "jaSurname": "高槻",
       "en": "Chitose Takatsuki",
       "enSurname": "Takatsuki",
+      "jaGiven": "千歳",
+      "enGiven": "Chitose",
       "confirmed": true
     },
     {
@@ -365,6 +453,8 @@
       "jaSurname": "井沢",
       "en": "Haruka Izawa",
       "enSurname": "Izawa",
+      "jaGiven": "遥",
+      "enGiven": "Haruka",
       "confirmed": true
     },
     {
@@ -373,6 +463,8 @@
       "jaSurname": "斎藤",
       "en": "Mai Saito",
       "enSurname": "Saito",
+      "jaGiven": "麻衣",
+      "enGiven": "Mai",
       "confirmed": true
     },
     {
@@ -381,6 +473,8 @@
       "jaSurname": "菊池",
       "en": "Riko Kikuchi",
       "enSurname": "Kikuchi",
+      "jaGiven": "璃子",
+      "enGiven": "Riko",
       "confirmed": true
     },
     {
@@ -389,6 +483,8 @@
       "jaSurname": "高橋",
       "en": "Mayumi Takahashi",
       "enSurname": "Takahashi",
+      "jaGiven": "まゆみ",
+      "enGiven": "Mayumi",
       "confirmed": true
     },
     {
@@ -397,6 +493,8 @@
       "jaSurname": "相田",
       "en": "Moe Aida",
       "enSurname": "Aida",
+      "jaGiven": "萌",
+      "enGiven": "Moe",
       "confirmed": true
     },
     {
@@ -405,6 +503,8 @@
       "jaSurname": "三橋",
       "en": "Fumie Mitsuhashi",
       "enSurname": "Mitsuhashi",
+      "jaGiven": "ふみえ",
+      "enGiven": "Fumie",
       "confirmed": true
     },
     {
@@ -413,6 +513,8 @@
       "jaSurname": "西川",
       "en": "Chiaki Nishikawa",
       "enSurname": "Nishikawa",
+      "jaGiven": "ちあき",
+      "enGiven": "Chiaki",
       "confirmed": true
     },
     {
@@ -421,6 +523,8 @@
       "jaSurname": "小森",
       "en": "Sanae Komori",
       "enSurname": "Komori",
+      "jaGiven": "さなえ",
+      "enGiven": "Sanae",
       "confirmed": true
     },
     {
@@ -429,6 +533,8 @@
       "jaSurname": "阿部",
       "en": "Minori Abe",
       "enSurname": "Abe",
+      "jaGiven": "みのり",
+      "enGiven": "Minori",
       "confirmed": true
     },
     {
@@ -437,6 +543,8 @@
       "jaSurname": "大久保",
       "en": "Momoko Okubo",
       "enSurname": "Okubo",
+      "jaGiven": "桃子",
+      "enGiven": "Momoko",
       "confirmed": true
     },
     {
@@ -445,6 +553,8 @@
       "jaSurname": "片桐",
       "en": "Arisa Katagiri",
       "enSurname": "Katagiri",
+      "jaGiven": "ありさ",
+      "enGiven": "Arisa",
       "confirmed": true
     },
     {
@@ -453,6 +563,8 @@
       "jaSurname": "浅見",
       "en": "Riona Asami",
       "enSurname": "Asami",
+      "jaGiven": "里緒菜",
+      "enGiven": "Riona",
       "confirmed": true
     },
     {
@@ -461,6 +573,8 @@
       "jaSurname": "丹羽",
       "en": "Hotaru Niwa",
       "enSurname": "Niwa",
+      "jaGiven": "穂垂",
+      "enGiven": "Hotaru",
       "confirmed": true
     },
     {
@@ -469,6 +583,8 @@
       "jaSurname": "池辺",
       "en": "Mari Ikebe",
       "enSurname": "Ikebe",
+      "jaGiven": "マリ",
+      "enGiven": "Mari",
       "confirmed": true
     },
     {
@@ -477,6 +593,8 @@
       "jaSurname": "馬入橋",
       "en": "Hotori Banyubashi",
       "enSurname": "Banyubashi",
+      "jaGiven": "ほとり",
+      "enGiven": "Hotori",
       "confirmed": true
     },
     {
@@ -485,6 +603,8 @@
       "jaSurname": "観音崎",
       "en": "Serika Kannonzaki",
       "enSurname": "Kannonzaki",
+      "jaGiven": "せりか",
+      "enGiven": "Serika",
       "confirmed": true
     },
     {
@@ -493,6 +613,8 @@
       "jaSurname": "宮ケ瀬",
       "en": "Chinatsu Miyagase",
       "enSurname": "Miyagase",
+      "jaGiven": "千夏",
+      "enGiven": "Chinatsu",
       "confirmed": true
     },
     {
@@ -501,6 +623,8 @@
       "jaSurname": "伊勢原",
       "en": "Fumina Isehara",
       "enSurname": "Isehara",
+      "jaGiven": "文奈",
+      "enGiven": "Fumina",
       "confirmed": true
     },
     {
@@ -509,6 +633,8 @@
       "jaSurname": "湯本",
       "en": "Hotaru Yumoto",
       "enSurname": "Yumoto",
+      "jaGiven": "ほたる",
+      "enGiven": "Hotaru",
       "confirmed": true
     },
     {
@@ -517,6 +643,8 @@
       "jaSurname": "倉見",
       "en": "Nana Kurami",
       "enSurname": "Kurami",
+      "jaGiven": "菜々",
+      "enGiven": "Nana",
       "confirmed": true
     },
     {
@@ -525,6 +653,8 @@
       "jaSurname": "長谷川",
       "en": "Reona Hasegawa",
       "enSurname": "Hasegawa",
+      "jaGiven": "レオナ",
+      "enGiven": "Reona",
       "confirmed": true
     },
     {
@@ -533,6 +663,8 @@
       "jaSurname": "柳島",
       "en": "Mizuho Yanagishima",
       "enSurname": "Yanagishima",
+      "jaGiven": "みずほ",
+      "enGiven": "Mizuho",
       "confirmed": true
     },
     {
@@ -541,6 +673,8 @@
       "jaSurname": "大庭",
       "en": "Aina Oba",
       "enSurname": "Oba",
+      "jaGiven": "愛菜",
+      "enGiven": "Aina",
       "confirmed": true
     },
     {
@@ -549,6 +683,8 @@
       "jaSurname": "早川",
       "en": "Mona Hayakawa",
       "enSurname": "Hayakawa",
+      "jaGiven": "モナ",
+      "enGiven": "Mona",
       "confirmed": true
     },
     {
@@ -557,6 +693,8 @@
       "jaSurname": "浜竹",
       "en": "Misaki Hamatake",
       "enSurname": "Hamatake",
+      "jaGiven": "美咲",
+      "enGiven": "Misaki",
       "confirmed": true
     },
     {
@@ -565,6 +703,8 @@
       "jaSurname": "東金",
       "en": "Saori Togane",
       "enSurname": "Togane",
+      "jaGiven": "沙織",
+      "enGiven": "Saori",
       "confirmed": true
     },
     {
@@ -573,6 +713,8 @@
       "jaSurname": "穴澤",
       "en": "Honoka Anazawa",
       "enSurname": "Anazawa",
+      "jaGiven": "ほのか",
+      "enGiven": "Honoka",
       "confirmed": true
     },
     {
@@ -581,6 +723,8 @@
       "jaSurname": "大馬越",
       "en": "Yoshiko Omagoshi",
       "enSurname": "Omagoshi",
+      "jaGiven": "よし子",
+      "enGiven": "Yoshiko",
       "confirmed": true
     },
     {
@@ -589,6 +733,8 @@
       "jaSurname": "富士見ヶ丘",
       "en": "Haruka Fujimigaoka",
       "enSurname": "Fujimigaoka",
+      "jaGiven": "遥",
+      "enGiven": "Haruka",
       "confirmed": true
     },
     {
@@ -597,6 +743,8 @@
       "jaSurname": "海老名",
       "en": "Shiori Ebina",
       "enSurname": "Ebina",
+      "jaGiven": "栞",
+      "enGiven": "Shiori",
       "confirmed": true
     },
     {
@@ -605,6 +753,8 @@
       "jaSurname": "栗林",
       "en": "Akari Kuribayashi",
       "enSurname": "Kuribayashi",
+      "jaGiven": "あかり",
+      "enGiven": "Akari",
       "confirmed": true
     },
     {
@@ -613,6 +763,8 @@
       "jaSurname": "新見",
       "en": "Yuri Niimi",
       "enSurname": "Niimi",
+      "jaGiven": "ゆり",
+      "enGiven": "Yuri",
       "confirmed": true
     },
     {
@@ -621,6 +773,8 @@
       "jaSurname": "椿山",
       "en": "Misaki Tsubakiyama",
       "enSurname": "Tsubakiyama",
+      "jaGiven": "みさき",
+      "enGiven": "Misaki",
       "confirmed": true
     },
     {
@@ -629,6 +783,8 @@
       "jaSurname": "久堂",
       "en": "Ririka Kudo",
       "enSurname": "Kudo",
+      "jaGiven": "梨々花",
+      "enGiven": "Ririka",
       "confirmed": true
     },
     {
@@ -637,6 +793,8 @@
       "jaSurname": "高島",
       "en": "Saya Takashima",
       "enSurname": "Takashima",
+      "jaGiven": "さや",
+      "enGiven": "Saya",
       "confirmed": true
     },
     {
@@ -645,6 +803,8 @@
       "jaSurname": "坂本",
       "en": "Riina Sakamoto",
       "enSurname": "Sakamoto",
+      "jaGiven": "莉衣奈",
+      "enGiven": "Riina",
       "confirmed": true
     },
     {
@@ -653,6 +813,8 @@
       "jaSurname": "近藤",
       "en": "Yurika Kondo",
       "enSurname": "Kondo",
+      "jaGiven": "ゆりか",
+      "enGiven": "Yurika",
       "confirmed": true
     },
     {
@@ -661,6 +823,8 @@
       "jaSurname": "佐久間",
       "en": "Hiyori Sakuma",
       "enSurname": "Sakuma",
+      "jaGiven": "ひより",
+      "enGiven": "Hiyori",
       "confirmed": true
     },
     {
@@ -669,6 +833,8 @@
       "jaSurname": "南谷",
       "en": "An Minamitani",
       "enSurname": "Minamitani",
+      "jaGiven": "杏",
+      "enGiven": "An",
       "confirmed": true
     },
     {
@@ -677,6 +843,8 @@
       "jaSurname": "鴨志田",
       "en": "Lucy Kamoshida",
       "enSurname": "Kamoshida",
+      "jaGiven": "ルーシー",
+      "enGiven": "Lucy",
       "confirmed": true
     },
     {
@@ -685,6 +853,8 @@
       "jaSurname": "芹沢",
       "en": "Arisa Serizawa",
       "enSurname": "Serizawa",
+      "jaGiven": "亜里紗",
+      "enGiven": "Arisa",
       "confirmed": true
     },
     {
@@ -693,6 +863,8 @@
       "jaSurname": "シュタインフェルト",
       "en": "Leona O. Steinfeld",
       "enSurname": "Steinfeld",
+      "jaGiven": "レオナ",
+      "enGiven": "Leona",
       "confirmed": true
     },
     {
@@ -701,6 +873,8 @@
       "jaSurname": "愛川",
       "en": "Asuka Aikawa",
       "enSurname": "Aikawa",
+      "jaGiven": "明日香",
+      "enGiven": "Asuka",
       "confirmed": true
     },
     {
@@ -709,6 +883,8 @@
       "jaSurname": "赤羽",
       "en": "Anna Akabane",
       "enSurname": "Akabane",
+      "jaGiven": "あんな",
+      "enGiven": "Anna",
       "confirmed": true
     },
     {
@@ -717,6 +893,8 @@
       "jaSurname": "玉手",
       "en": "Sumire Tamate",
       "enSurname": "Tamate",
+      "jaGiven": "すみれ",
+      "enGiven": "Sumire",
       "confirmed": true
     },
     {
@@ -725,6 +903,8 @@
       "jaSurname": "等々力",
       "en": "Akane Todoroki",
       "enSurname": "Todoroki",
+      "jaGiven": "あかね",
+      "enGiven": "Akane",
       "confirmed": true
     },
     {
@@ -733,6 +913,8 @@
       "jaSurname": "飯島",
       "en": "Saeko Iijima",
       "enSurname": "Iijima",
+      "jaGiven": "冴子",
+      "enGiven": "Saeko",
       "confirmed": true
     },
     {
@@ -741,6 +923,8 @@
       "jaSurname": "松久保",
       "en": "Iori Matsukubo",
       "enSurname": "Matsukubo",
+      "jaGiven": "伊織",
+      "enGiven": "Iori",
       "confirmed": true
     },
     {
@@ -749,6 +933,8 @@
       "jaSurname": "須藤",
       "en": "Mitsuki Sudo",
       "enSurname": "Sudo",
+      "jaGiven": "美月",
+      "enGiven": "Mitsuki",
       "confirmed": true
     },
     {
@@ -757,6 +943,8 @@
       "jaSurname": "小西",
       "en": "Yukie Konishi",
       "enSurname": "Konishi",
+      "jaGiven": "ゆきえ",
+      "enGiven": "Yukie",
       "confirmed": true
     },
     {
@@ -765,6 +953,8 @@
       "jaSurname": "松下",
       "en": "Maria Matsushita",
       "enSurname": "Matsushita",
+      "jaGiven": "真理亜",
+      "enGiven": "Maria",
       "confirmed": true
     },
     {
@@ -773,6 +963,8 @@
       "jaSurname": "岩崎",
       "en": "Midori Iwasaki",
       "enSurname": "Iwasaki",
+      "jaGiven": "みどり",
+      "enGiven": "Midori",
       "confirmed": true
     },
     {
@@ -781,6 +973,8 @@
       "jaSurname": "米山",
       "en": "Anri Yoneyama",
       "enSurname": "Yoneyama",
+      "jaGiven": "杏里",
+      "enGiven": "Anri",
       "confirmed": true
     },
     {
@@ -789,6 +983,8 @@
       "jaSurname": "三浦",
       "en": "Saki Miura",
       "enSurname": "Miura",
+      "jaGiven": "早紀",
+      "enGiven": "Saki",
       "confirmed": true
     },
     {
@@ -797,6 +993,8 @@
       "jaSurname": "土岐山",
       "en": "Nonoka Tokiyama",
       "enSurname": "Tokiyama",
+      "jaGiven": "乃ノ佳",
+      "enGiven": "Nonoka",
       "confirmed": true
     },
     {
@@ -805,6 +1003,8 @@
       "jaSurname": "沢登",
       "en": "Ayu Sawanobori",
       "enSurname": "Sawanobori",
+      "jaGiven": "鮎",
+      "enGiven": "Ayu",
       "confirmed": true
     },
     {
@@ -813,6 +1013,8 @@
       "jaSurname": "大山",
       "en": "Takami Oyama",
       "enSurname": "Oyama",
+      "jaGiven": "たかみ",
+      "enGiven": "Takami",
       "confirmed": true
     },
     {
@@ -821,6 +1023,8 @@
       "jaSurname": "財津",
       "en": "Kotomi Zaitsu",
       "enSurname": "Zaitsu",
+      "jaGiven": "琴美",
+      "enGiven": "Kotomi",
       "confirmed": true
     },
     {
@@ -829,6 +1033,8 @@
       "jaSurname": "吉野",
       "en": "Moeko Yoshino",
       "enSurname": "Yoshino",
+      "jaGiven": "萌子",
+      "enGiven": "Moeko",
       "confirmed": true
     },
     {
@@ -837,6 +1043,8 @@
       "jaSurname": "黒岩",
       "en": "Chiaki Kuroiwa",
       "enSurname": "Kuroiwa",
+      "jaGiven": "千晶",
+      "enGiven": "Chiaki",
       "confirmed": true
     },
     {
@@ -845,6 +1053,8 @@
       "jaSurname": "赤沼",
       "en": "Saki Akanuma",
       "enSurname": "Akanuma",
+      "jaGiven": "紗稀",
+      "enGiven": "Saki",
       "confirmed": true
     },
     {
@@ -853,6 +1063,8 @@
       "jaSurname": "松岡",
       "en": "Ayano Matsuoka",
       "enSurname": "Matsuoka",
+      "jaGiven": "綾乃",
+      "enGiven": "Ayano",
       "confirmed": true
     },
     {
@@ -861,6 +1073,8 @@
       "jaSurname": "結城",
       "en": "Rena Yuuki",
       "enSurname": "Yuuki",
+      "jaGiven": "玲奈",
+      "enGiven": "Rena",
       "confirmed": true
     },
     {
@@ -869,6 +1083,8 @@
       "jaSurname": "戸塚",
       "en": "Yukari Totsuka",
       "enSurname": "Totsuka",
+      "jaGiven": "ゆかり",
+      "enGiven": "Yukari",
       "confirmed": true
     },
     {
@@ -877,6 +1093,8 @@
       "jaSurname": "若林",
       "en": "Misako Wakabayashi",
       "enSurname": "Wakabayashi",
+      "jaGiven": "美佐子",
+      "enGiven": "Misako",
       "confirmed": true
     },
     {
@@ -885,6 +1103,8 @@
       "jaSurname": "相模",
       "en": "Azumi Sagami",
       "enSurname": "Sagami",
+      "jaGiven": "あずみ",
+      "enGiven": "Azumi",
       "confirmed": true
     },
     {
@@ -893,6 +1113,8 @@
       "jaSurname": "朝比奈",
       "en": "Hikari Asahina",
       "enSurname": "Asahina",
+      "jaGiven": "ひかり",
+      "enGiven": "Hikari",
       "confirmed": true
     },
     {
@@ -901,6 +1123,8 @@
       "jaSurname": "綿貫",
       "en": "Suzu Watanuki",
       "enSurname": "Watanuki",
+      "jaGiven": "すず",
+      "enGiven": "Suzu",
       "confirmed": true
     },
     {
@@ -909,6 +1133,8 @@
       "jaSurname": "木村",
       "en": "Reika Kimura",
       "enSurname": "Kimura",
+      "jaGiven": "レイカ",
+      "enGiven": "Reika",
       "confirmed": true
     },
     {
@@ -917,6 +1143,8 @@
       "jaSurname": "豊田",
       "en": "Isuzu Toyoda",
       "enSurname": "Toyoda",
+      "jaGiven": "いすず",
+      "enGiven": "Isuzu",
       "confirmed": true
     },
     {
@@ -925,6 +1153,8 @@
       "jaSurname": "モーガン",
       "en": "Rina Morgan",
       "enSurname": "Morgan",
+      "jaGiven": "リナ",
+      "enGiven": "Rina",
       "confirmed": true
     },
     {
@@ -933,6 +1163,8 @@
       "jaSurname": "毒島",
       "en": "Crusher Busujima",
       "enSurname": "Busujima",
+      "jaGiven": null,
+      "enGiven": null,
       "confirmed": true
     },
     {
@@ -941,6 +1173,8 @@
       "jaSurname": "割田",
       "en": "Kumi Warita",
       "enSurname": "Warita",
+      "jaGiven": "久美",
+      "enGiven": "Kumi",
       "confirmed": true
     },
     {
@@ -949,6 +1183,8 @@
       "jaSurname": "岩小路",
       "en": "Shimako Iwanokoji",
       "enSurname": "Iwanokoji",
+      "jaGiven": "志摩子",
+      "enGiven": "Shimako",
       "confirmed": true
     },
     {
@@ -957,6 +1193,8 @@
       "jaSurname": "蔵前",
       "en": "Shizuka Kuramae",
       "enSurname": "Kuramae",
+      "jaGiven": "静",
+      "enGiven": "Shizuka",
       "confirmed": true
     },
     {
@@ -965,6 +1203,8 @@
       "jaSurname": "山本",
       "en": "Rika Yamamoto",
       "enSurname": "Yamamoto",
+      "jaGiven": "理香",
+      "enGiven": "Rika",
       "confirmed": true
     },
     {
@@ -973,6 +1213,8 @@
       "jaSurname": "宮沢",
       "en": "Hikaru Miyazawa",
       "enSurname": "Miyazawa",
+      "jaGiven": "ひかる",
+      "enGiven": "Hikaru",
       "confirmed": true
     },
     {
@@ -981,6 +1223,8 @@
       "jaSurname": "柳沼",
       "en": "Eiko Yaginuma",
       "enSurname": "Yaginuma",
+      "jaGiven": "英子",
+      "enGiven": "Eiko",
       "confirmed": true
     },
     {
@@ -989,6 +1233,8 @@
       "jaSurname": "清川",
       "en": "Rei Kiyokawa",
       "enSurname": "Kiyokawa",
+      "jaGiven": "怜",
+      "enGiven": "Rei",
       "confirmed": true
     },
     {
@@ -997,6 +1243,8 @@
       "jaSurname": "藤代",
       "en": "Ema Fujishiro",
       "enSurname": "Fujishiro",
+      "jaGiven": "絵麻",
+      "enGiven": "Ema",
       "confirmed": true
     },
     {
@@ -1005,6 +1253,8 @@
       "jaSurname": "西園",
       "en": "Yurika Nishizono",
       "enSurname": "Nishizono",
+      "jaGiven": "百合香",
+      "enGiven": "Yurika",
       "confirmed": true
     },
     {
@@ -1013,6 +1263,8 @@
       "jaSurname": "榊原",
       "en": "Natsumi Sakakibara",
       "enSurname": "Sakakibara",
+      "jaGiven": "菜摘",
+      "enGiven": "Natsumi",
       "confirmed": true
     },
     {
@@ -1021,6 +1273,8 @@
       "jaSurname": "巳沼",
       "en": "Sagiri Minuma",
       "enSurname": "Minuma",
+      "jaGiven": "紗霧",
+      "enGiven": "Sagiri",
       "confirmed": true
     }
   ],
