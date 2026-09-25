@@ -116,12 +116,8 @@ module.exports = [
     note: '実プレイは updateRecord に matchType と勝者を渡さないので、タッグの記録はシングルの記録として扱われ(タッグ記録は更新されない)、'
       + '記録更新記事(mqAllTimeRecord / mqTagRecord)も勝者不明で出ない。',
   },
-  {
-    id: 'K1-E07', title: '自団体の王座移動記事(titleChange)',
-    category: 'processing', side: 'engine', impact: '表示', scenarios: ['title-defense'], checkpoints: ['A'],
-    patterns: ['_industryNewsEvents'],
-    mustAppear: true, refs: 'management.js:14696 / app.js:7836(G に積むが 9248 の G={...s} で上書きされて消える)',
-  },
+  // K1-E07(自団体の王座移動記事 titleChange が実プレイで消える)は K-1 第1段で解消したので外した(2026-09-26)。
+  // app.js _finalizeShowImpl が記事を G ではなく s に積む(乱入者が奪って即空位にした王座は記事にしない)。
   {
     id: 'K1-A09', title: 'ラストラン出場後の即引退(引退記録・年代記・関係値凍結/整理・信頼)',
     category: 'processing', side: 'app', impact: '数値', scenarios: ['lastrun'], checkpoints: ['A', 'B'],

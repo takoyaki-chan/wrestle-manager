@@ -7784,7 +7784,11 @@ const App = {
         if (!champId || winnerId !== champId) {
           const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
           // 王座移動を新聞へ(2026-07-27)。crownChampion が記事を組んで返す
-          if (crown.newsEvent) App._pushIndustryNews(crown.newsEvent);
+          // K-1 第1段(K1-E07): G ではなく s に積む(エンジンの executeShow と同じ)。G に積むと、
+          // この関数の最後の G = { ...s } で上書きされて記事が消えていた。
+          // 乱入者が奪った王座はすぐ空位にするので、「新王者」の記事は出さない(乱入の結果は別の知らせで出る)
+          const intruderTook = App._intrusionData && App._intrusionData.intruder && winnerId === App._intrusionData.intruder.id;
+          if (crown.newsEvent && !intruderTook) s = Engine.industryNews.push(s, crown.newsEvent);
           titleMatchOutcomes.push({ outcome: 'change', newChampId: winnerId, prevChampId: champId, challengerId });
         } else {
           const def = Engine.title.recordDefense(tempState, { challengerName, challengerId }); titles = def.titles; roster = def.roster; events.push(def.msg);
