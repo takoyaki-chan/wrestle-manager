@@ -32776,6 +32776,19 @@ Engine.newspaper = {
       + Engine.newspaper.intensityBonus(state, story);
   },
 
+  /** 自団体の興行結果(state.currentNewspaper)を「今週の号」に載せてよいか。
+   *  2026-09-25(面白さ総点検 06-④): currentNewspaper は次の興行週の頭まで消えない
+   *  (tickWeek 冒頭の新聞クリアは興行週にしか走らない)ので、存在だけを見ると非興行週の号・
+   *  新年号に前週の興行記事が今週の日付で再掲されていた。興行週で、かつ今週生成された結果だけを載せる。
+   *  generatedWeek/generatedSeason を持たない旧データは「興行週である」ことだけで判定する。 */
+  _isFreshPlayerShow(state) {
+    const cn = state && state.currentNewspaper;
+    if (!cn) return false;
+    if (!Engine.util.isShowWeek(state.week)) return false;
+    if (cn.generatedWeek == null && cn.generatedSeason == null) return true;
+    return cn.generatedWeek === state.week && cn.generatedSeason === state.season;
+  },
+
   /** 毎週の新聞を生成する。tickWeek末尾で呼ばれる */
   // i18n Stage B P4-2(D-P4-2): 第3引数 opts.dict は任意の「辞書参照関数」(text => text)。
   // Engine内でテンプレを充填してGへ焼く箇所のため、生成時点のlangで確定させる必要があり
@@ -32860,7 +32873,10 @@ Engine.newspaper = {
     }
 
     // === 自団体の興行結果（興行週のみ）===
-    if (state.currentNewspaper) {
+    // 2026-09-25: 「興行週で、今週生成された結果」だけを載せる(_isFreshPlayerShow)。以前は存在だけを
+    // 見ていたので、非興行週の号に前週の興行記事が今週の日付で再掲されていた(空の号になってもよい)
+    const playerShowFresh = Engine.newspaper._isFreshPlayerShow(state);
+    if (playerShowFresh) {
       const cn = state.currentNewspaper;
       const isTitleShow = !!cn.isTitleMatch;
       const stampSuffixJa = isTitleShow ? 'タイトル戦' : '定期興行';
@@ -33703,7 +33719,8 @@ Engine.newspaper = {
       layout: 'v3',
       topStory, subStories,
       unpublishedIndustryEvents,
-      playerShowData: state.currentNewspaper || null,
+      // 詳報(本紙つづき)も同じ条件。非興行週の号に前週の詳報を載せない
+      playerShowData: playerShowFresh ? state.currentNewspaper : null,
       preview,
       pages: null, // 複数ページ時のみ設定
       // MQ再設計P4 §5.2: BIG_NEWS_TYPES に載ったら大ニュース週。週頭PU+一面ジャックの起点。
