@@ -47995,6 +47995,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "📉 人気に対して小さい会場です（人気の伸びが控えめになります）",
+    "en": "📉 This venue is small for your popularity (popularity will grow more slowly)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📉 人気の伸び控えめ",
+    "en": "📉 Slower popularity growth",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "📉 契約査定",
     "en": "📉 Contract Assessment",
     "files": [

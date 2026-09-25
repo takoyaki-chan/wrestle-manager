@@ -34356,6 +34356,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (会場が人気に対して小さく、伸びは控えめ) (現在: {curOrgPop})",
+    "en": "📊 ★{stars} (average rating {avgMQ}) → promotion popularity {popDelta} (the venue is small for your popularity, so the gain is modest) (now {curOrgPop})",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (現在: {curOrgPop})",
     "en": "📊 ★{stars} (average rating {avgMQ}) → promotion popularity {popDelta} (now {curOrgPop})",
     "files": [
