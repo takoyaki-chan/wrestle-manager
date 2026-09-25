@@ -31,8 +31,13 @@
 - 修正: 3経路とも tickWeek 直後に G を作り直すところで `weekLogFeed: []` にしてから今週分を積む(エンジンは weekLogFeed を読まないので tickWeek の入力は変えない)
 - 計測(auto-sim 30季 seed42 に読み取り専用の模擬を入れ、旧運用と新運用を同じ走行で比較): 確定枠が2週続けて同じ **19 → 0**、同じ季に同じ選手の同じ節目が2回以上 20組 → 2組(残る2組はエンジンが別の週に改めて生んだもの)。K-14 の報告の「40組」とは数え方が違う
 
+### 5. main 取り込み(707aaea0)後の経路差分テストの修復(src 変更なし)
+- K-6 追加・呼び名+タッグ勝利セリフ・K-12 追加で fixture が変わり、main で `test:k1:parity` が FAIL(未登録11件)
+- **factions の invariant_violation は入力の作り方の不具合**: validateGameState の「fighter#44 が複数派閥に所属: f1 と f900」。基準状態に派閥が2つになり、シナリオが新派閥 900 の顔ぶれに派閥1の選手44を入れていた。900 は「どの派閥にも属さない選手」から選ぶよう scenarios.js を直した(src・呼び名の検査は無関係)
+- 残り10件は既知項目の現れ方の違い: E05(抗争ポイントの記録そのもの)、E03(K-11 件数記録の長さ・怪我引退の `refreshChapters` による年代記の紹介文の書き直し ← 記録と新聞の修正で入った呼び出し。呼び名ではない)、E04(件数記録の長さ・嫌悪伝染の乱数ずれ)、A09(引退者あての挑戦打診の取り下げ)。37件のまま PASS
+
 ### 検証
-- `npm run test:k1:parity`: PASS(登録 **37**件 = 40 −P01 −E07 −E06。未登録0・消えた0)
+- `npm run test:k1:parity`: PASS(登録 **37**件 = 40 −P01 −E07 −E06。未登録0・消えた0。main 取り込み後も PASS)
 - `npm test`: 288本中287 PASS → 落ちた newspaper-priority-test の §9(旧パターン `App._pushIndustryNews(crown.newsEvent)` の存在を検査していた)を新しい積み先の検査に直して PASS(79e0e6ba)
 - 新テスト `test/k1-stage1-test.js`(6項目): 修正前の src では6件とも FAIL することを確認
 - `node test/auto-sim.js 30 42`: ALL CLEAR(違反0・台帳検査0)、指紋 ce3e56c9
