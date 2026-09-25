@@ -740,10 +740,70 @@
     "hasProperNoun": true
   },
   {
+    "key": "4団体勝ち残り対抗戦 {n}人抜き",
+    "en": "Autumn Gauntlet War — {n}-opponent run",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "4団体勝ち残り対抗戦 {rank}{winsClause}",
     "en": "Autumn Gauntlet War: {rank}{winsClause}",
     "files": [
       "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦 優勝（{n}人抜き）",
+    "en": "Autumn Gauntlet War — Winner ({n}-opponent run)",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦 出場",
+    "en": "Autumn Gauntlet War — Entered",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦 準優勝",
+    "en": "Autumn Gauntlet War — Runner-up",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦 準決勝敗退",
+    "en": "Autumn Gauntlet War — Out in the semi-finals",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦 通算{n}勝",
+    "en": "Autumn Gauntlet War — career wins: {n}",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -938,6 +998,46 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 4団体勝ち残り対抗戦 {count}人抜き",
+    "en": "<strong>{name}</strong> put together a {count}-opponent run in the Autumn Gauntlet War",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 4団体勝ち残り対抗戦 {count}度優勝・{streak}連覇（{years}）",
+    "en": "<strong>{name}</strong>, a {count}-time Autumn Gauntlet War winner, {streak} in a row ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 4団体勝ち残り対抗戦 {count}度優勝（{years}）",
+    "en": "<strong>{name}</strong>, a {count}-time Autumn Gauntlet War winner ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 4団体勝ち残り対抗戦優勝",
+    "en": "<strong>{name}</strong> won the Autumn Gauntlet War",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
   },
   {
     "key": "<strong>{name}</strong> MVP {count}度受賞・{streak}年連続（{years}）",
@@ -1308,6 +1408,56 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 全国統一王座 {count}度戴冠（{years}）",
+    "en": "<strong>{name}</strong>, a {count}-time Unified National Champion ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 全国統一王座 戴冠",
+    "en": "<strong>{name}</strong> won the Unified National Championship",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 天頂戦 {count}度優勝（{years}）",
+    "en": "<strong>{name}</strong>, a {count}-time Tenchosen winner ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 天頂戦優勝",
+    "en": "<strong>{name}</strong> won Tenchosen",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 天頂戦準優勝",
+    "en": "<strong>{name}</strong> runner-up at Tenchosen",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
   },
   {
     "key": "<strong>{name}</strong> 対抗戦{total}戦{wins}勝{losses}敗",
@@ -5225,6 +5375,16 @@
     "en": "{names} went out in the semifinals. What they took from a stage that size will show up in the seasons ahead.",
     "files": [
       "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name} との確執",
+    "en": "Bad blood with {name}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -17220,6 +17380,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ジュニアトーナメント 大会ベストバウト（試合評価 {mq}）",
+    "en": "Junior Tournament — Best bout of the tournament (rated {mq})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "ジュニアトーナメント 準々決勝敗退",
     "en": "Junior Tournament — Out in the quarter-finals",
     "files": [
@@ -18820,6 +18990,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "モチベーション喪失により",
+    "en": "After losing her drive",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "モチベ喪失回復momentum +0.2/週",
     "en": "Recovery momentum from lost drive +0.2/week",
     "files": [
@@ -18867,6 +19047,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ラストランを終えて",
+    "en": "After her farewell run",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -18924,6 +19114,36 @@
     "en": "Enemies in the ring, comrades outside it",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "リング上の決着戦に勝利",
+    "en": "Won the match that settled it",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "リング上の決着戦に敗れる",
+    "en": "Lost the match that settled it",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "リング上の決着戦は引き分け",
+    "en": "The match to settle it ended in a draw",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -20830,6 +21050,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "個人{n}勝",
+    "en": "Individual wins: {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "倒れるたびに立ち上がり、{titleWins}度の戴冠を刻んだ女がいた。",
     "en": "There was a woman who got up every time she was put down, and left a {titleWins}-reign record behind her.",
     "files": [
@@ -21474,6 +21704,16 @@
     "en": "Tenchosen, the decider for the strongest champion in the country's women's pro wrestling, opens in week 48. The special invitations went to: {invites}. The competition for the remaining promotion slots is now in earnest. {championWatch}{preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "全国統一王座 {n}度目の防衛",
+    "en": "Unified National Championship — defense No. {n}",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -22881,6 +23121,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "団体は静観",
+    "en": "The promotion stood back",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "団体を代表する実力者{name}が{fromOrg}を離れ、{toOrg}へ移籍した。両団体の戦力構成は大きく変わり、{fromOrg}では次の中心選手が問われる。",
     "en": "{name}, one of the wrestlers who defined the promotion, has left {fromOrg} for {toOrg}. The shape of both rosters changes, and {fromOrg} now has to answer who its next center is.",
     "files": [
@@ -23641,6 +23891,77 @@
     "hasProperNoun": false
   },
   {
+    "key": "天頂戦 ベスト4",
+    "en": "Tenchosen — Final four",
+    "files": [
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦 出場",
+    "en": "Tenchosen — Entered",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦 出場（1回戦敗退）",
+    "en": "Tenchosen — Out in round 1",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦 大会ベストバウト（試合評価 {mq}）",
+    "en": "Tenchosen — Best bout of the tournament (rated {mq})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦 準々決勝敗退",
+    "en": "Tenchosen — Out in the quarter-finals",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦 準優勝",
+    "en": "Tenchosen — Runner-up",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES",
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦 準決勝敗退",
+    "en": "Tenchosen — Out in the semi-finals",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "天頂戦で決勝まで進んだ{age}歳。あと一歩届かなかった悔しさも、年間レースでは大きな存在感になっている。",
     "en": "She reached the Tenchosen final at {age}. Even the sting of falling one step short counts for a great deal in the annual race.",
     "files": [
@@ -23755,6 +24076,16 @@
     "en": "Contract signed. A quiet welcome",
     "files": [
       "draft-negotiation.js:NARRATION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "契約満了を機に",
+    "en": "As her contract ran out",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -27361,6 +27692,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "格上との一戦を境に開眼",
+    "en": "Awakened after facing a better opponent",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES",
+      "HOF_HIGHLIGHT_TEMPLATES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "格上挑戦！{name1}が{org2}の{name2}に挑む！",
     "en": "Punching up! {name1} takes on {name2} of {org2}!",
     "files": [
@@ -27945,6 +28287,16 @@
     "en": "All-time best rating now {mq} — {name}'s number",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "歴代最高評価を更新（試合評価 {mq}）",
+    "en": "New all-time match rating record (rated {mq})",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -30054,6 +30406,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "突然の退団とともに",
+    "en": "Along with her sudden departure",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "章の終盤に{belt}を陥落",
     "en": "the {belt} lost late in the chapter",
     "files": [
@@ -31836,6 +32198,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "話し合いで収束",
+    "en": "Settled by talking",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "話術",
     "en": "Way with Words",
     "files": [
@@ -32683,6 +33055,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手間の確執",
+    "en": "Bad blood in the locker room",
+    "files": [
+      "CAREER_MILESTONE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {

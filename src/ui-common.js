@@ -4623,7 +4623,12 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <div style="padding:9px 10px;background:rgba(255,255,255,0.015)">`;
 
           if (nonSummary.length === 0) {
-            html += `<div style="font-size:11px;color:var(--text-dim);line-height:1.35">${WM_I18N.t('\u7279\u8a18\u4e8b\u9805\u306a\u3057')}</div>`;
+            // 2026-09-25(\u9762\u767d\u3055\u7dcf\u70b9\u691c 06-\u2460): \u300c\u7279\u8a18\u4e8b\u9805\u306a\u3057\u300d\u306f Engine.milestone.get \u304c**\u305d\u306e\u5e74\u306e
+            // \u8a18\u9332\u306e\u6709\u7121**\u3067\u5224\u5b9a\u3057\u3001season_end \u306e quiet \u306b\u8f09\u305b\u308b\u3002\u8a18\u9332\u306f\u3042\u308b\u304c\u5e74\u8868\u306e\u884c\u306b\u306a\u3089\u306a\u3044\u5e74
+            // (quiet:false)\u306f\u3001\u4e8b\u5b9f\u3068\u98df\u3044\u9055\u3046\u300c\u7279\u8a18\u4e8b\u9805\u306a\u3057\u300d\u3092\u66f8\u304b\u305a\u3001\u7a7a\u6b04\u306e\u5370\u3060\u3051\u3092\u7f6e\u304f
+            const emptyNote = (!summary || summary.quiet !== false)
+              ? WM_I18N.t('\u7279\u8a18\u4e8b\u9805\u306a\u3057') : '\u2014';
+            html += `<div style="font-size:11px;color:var(--text-dim);line-height:1.35">${emptyNote}</div>`;
           } else {
             nonSummary.forEach(m => {
               const typeStyle = Engine.milestone._typeStyle(m.type);

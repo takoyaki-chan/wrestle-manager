@@ -1,6 +1,7 @@
 # 選手経歴年表 仕様書 v1.0
 
-最終更新: 2026-05-02 (転生前データ別人扱い対応)
+最終更新: 2026-09-25 (面白さ総点検 06-①/03-⑦: 天頂戦など7種+開眼の行、引退理由の実キー、「特記事項なし」の判定、殿堂の実績欄・引退セレモニーの経歴欄)
+前回: 2026-05-02 (転生前データ別人扱い対応)
 
 ## 概要
 
@@ -90,10 +91,24 @@ NPC は団体生成時にフィクションのキャリア事前史（プロデ�
 | `release` | プレイヤー解雇 | `fromOrg` | 「KINGSを解雇」+「ロスター調整等により契約解除」 |
 | `contractEnd` | 契約交渉決裂で退団 | `fromOrg`, `destinationType`, `destinationOrg` | 「TOKYOを契約満了で退団」+「フリーエージェントへ」 |
 | `suddenDeparture` | 突然の退団イベント | `fromOrg`, `destinationType`, `destinationOrg` | 「BLITZを突然退団」+「KINGSへ移籍」 |
-| `retire` | 引退 | `age`, `reason` (age / injury_wear / injury_career_ending) | 「引退（33歳）」+「年齢による引退」 |
+| `retire` | 引退 | `age`, `reason`(下表) | 「引退（29歳）」+「ラストランを終えて」 |
 | `retireRetracted` | 引退撤回 | `orgName` | 「引退を撤回し KINGS に復帰」 |
 | `rentalIn` | レンタル加入 | `fromOrg`, `toOrg`, `seasons` | 「KINGSから GLOW へレンタル加入（2期）」 |
 | `rentalOut` | レンタル期間満了で帰団 | `fromOrg`, `toOrg` | 「レンタル期間満了で KINGS へ帰団」 |
+
+**`retire.reason` の実際の値と注記(2026-09-25):**
+
+| reason | 記録する経路 | 注記 |
+|---|---|---|
+| `wearInjury` | 興行中の怪我引退(エンジン) | 度重なる怪我により |
+| `careerEnding` | 同上(壊滅的な怪我) | 重傷により現役続行不可 |
+| `injury` | AI団体の怪我引退 | 怪我による引退 |
+| `lastrun` | ラストラン後の引退(App) | ラストランを終えて |
+| `motivation` | モチベ喪失による引退(App) | モチベーション喪失により |
+| `contractEnd` / `sudden` | 契約交渉からの引退(`processDeparture`) | 契約満了を機に / 突然の退団とともに |
+| なし / `career` | 季末の引退(`commitRetirements`)・AIの季末引退 | 注記なし(年齢は本文に出る) |
+
+旧来の想定キー `injury_wear` / `injury_career_ending` / `age` は1件も記録されていなかったが、互換のため同じ注記で引く。
 
 ### 2.2 タイトル・トーナメント
 
@@ -105,6 +120,12 @@ NPC は団体生成時にフィクションのキャリア事前史（プロデ�
 | `ppvMainEvent` | `won`, `isSummit`, `opponentName?` | サミット優勝/準優勝 4分岐 (下記§3.1) |
 | `juniorTournament` | `result` (champion/runnerUp/semiFinal/quarterFinal), `finalOpponentName?`, `eliminatedByName?` | 結果 4分岐 (下記§3.2) |
 | `domeMain` | `result` (win/lose/draw), `matchType` (title/main), `opponentName?` | 「ドーム大会 メインイベント 勝利（vs 黒澤）」 |
+| `ppvTournament` | `result` (champion/runnerUp/semiFinal/quarterFinal/firstRound)。週は持たない(開催週48に置く) | 「天頂戦 優勝」「天頂戦 準決勝敗退」「天頂戦 出場（1回戦敗退）」 |
+| `unifiedTitle` | `result` (won/captured/defense)、`selfOvr?`/`oppOvr?` | 「全国統一王座 戴冠(第1代)」「全国統一王座 奪取」「全国統一王座 2度目の防衛」(防衛は戴冠/奪取からの通し番号) |
+| `autumnWar` | `result` (champion/runnerUp/semiFinal)、`wins`(本人の勝ち星)。週は持たない(開催週36に置く) | 「4団体勝ち残り対抗戦 優勝」+「個人3勝」 |
+| `mqAllTimeRecord` | `mq`, `stage`(JAラベル), `won`, `opponentName` | 「歴代最高評価を更新（試合評価 92）」+「天頂戦・○○ に勝利」 |
+| `tenchosenBestBout` / `juniorTournamentBestBout` | `mq`, `round`(天頂戦はJAラベル/ジュニアは内部キー), `won`, `opponentName` | 「天頂戦 大会ベストバウト（試合評価 88）」+「準決勝・○○ に敗れる」 |
+| `kaigan` | `opponentName`, `won`, `mq`(開眼の発火時に `Engine.kaigan.processMatchResults` が積む) | 「格上との一戦を境に開眼」+「○○ に敗れる」 |
 
 **戦歴サマリー（団体別ブレークダウン）:** `Engine.career.buildSummary` は `titleWin` / `titleDefense` / `titleLoss` の `orgName` で団体別にグルーピングし、`titleByOrg = [{ orgName, wins, defenses }]` を返す。選手詳細の戦歴パネルでは複数団体を渡り歩いた選手は団体ごとに 1 行ずつ「元○○団体王座 N度戴冠・通算M度防衛」を縦並びで表示する。殿堂入り判定 (`Engine.awards.calcHofPoints`) は団体を区別せず合算（`totalTitleWins` + `totalDefenses`）で扱う。
 
@@ -117,6 +138,7 @@ NPC は団体生成時にフィクションのキャリア事前史（プロデ�
 | `b3Challenge` | `opponentOrgName`, `won` | 「BLITZへの挑戦状 勝利」 |
 | `b3Decline` | `orgName` | 「TOKYOからの挑戦状を辞退」 |
 | `b3Rejected` | `rejectedByOrg` | 「挑戦状を相手団体に拒絶される」 |
+| `feud` | `resolution` (talk/match/ignore), `won`, `opponentName`(AI団体の選手間対立) | 「○○ との確執」+「話し合いで収束」「リング上の決着戦に勝利」「団体は静観」 |
 
 ### 2.4 表彰式
 
@@ -167,6 +189,39 @@ NPC は団体生成時にフィクションのキャリア事前史（プロデ�
 ### 3.4 default fallback
 
 `Engine.milestone.get` の switch で未知 type は **読み捨て**(描画しない)。英字 type 名が UI に漏れる事故を防ぐ。
+記録されるのに描かない type は、現在 `breakthrough`(careerHistory 側の行で出る)・`bigMatch`・`practiceInjury`・
+`talentActivity`・`mediaSpotlight`・`challenge_request_match`・`retain`(いずれも内部記録)。
+
+### 3.5 「特記事項なし」の判定(2026-09-25)
+
+完了した年に年表の行が1本も無いとき、`season_end` の区切りを置く。**「特記事項なし」と書くのは、その年の記録
+(`careerRecord.history` と `careerHistory`)が1件も無いときだけ**(`quiet: true`)。記録はあるが行にならない年
+(上の内部記録だけの年)は注記を付けず(`quiet: false`)、UI は本文に「—」だけを置く。
+以前は「行が無い年」で判定していたので、年表が描けなかった天頂戦の優勝年が「特記事項なし」になっていた。
+
+### 3.6 殿堂の実績欄(`Engine.awards.buildCareerHighlights`)との関係(2026-09-25)
+
+- **不変条件: `calcHofPoints` が数える type は、すべて殿堂の実績欄と経歴年表が描く**
+  (`test/career-record-display-coverage-test.js`。数える type は calcHofPoints のソースから機械抽出)。
+- 実績欄に天頂戦(優勝/準優勝/ベスト4)・4団体勝ち残り対抗戦(優勝/3人抜き以上/2大会以上の通算勝ち星)・
+  開眼を追加。PPV GRAND FINAL の優勝は `{ isSummit, won }` で判定(以前は result を見ていて出ていなかった)。
+- 王座の行の `{org}` は団体名(記録の orgName はベルト名「○○王座」なので末尾の「王座」を外す)。
+  以前は「○○王座王座 初戴冠」になっていた。
+- 殿堂の詳細画面は、エントリに残る `careerRecord` から**再生成した実績欄**を正とする(保存値は素材の無い旧エントリだけ)。
+- 年代記の章ハイライト(`Engine.chronicle._buildHighlights`)にも天頂戦・4団体勝ち残り対抗戦・全国統一王座を追加。
+- 殿堂の異名(`Engine.awards.generateEpithet`)の数字入り10本(三度の頂・二度の戴冠・三度の栄冠・二度の最優秀・
+  MVP二冠・三年王朝・三連覇の怪物・二連覇の衝撃・世代を二度制した女・10年選手)は、実際の回数と一致するときだけ
+  候補にする(`_EPITHET_COUNT_RULES`)。タグの条件は「以上」なので、「三度の頂」が4〜7回戴冠した選手にも付いていた。
+  既に保存された異名は書き換えない。
+
+### 3.7 引退セレモニーの経歴欄(`Engine.retirement.buildCareerSummary`)(2026-09-25)
+
+「入団」+「その選手らしい瞬間(最大3つ・時系列)」+「全盛期」。瞬間は `Engine.retirement.pickCareerMoments` が選ぶ:
+候補は殿堂の実績欄(`buildCareerHighlights(..., { withKind: true })`)と、実績欄に載らない年表の出来事
+(大会の上位・大会ベストバウト・歴代最高評価・対抗戦の勝利など)。種類ごとに1件(大きさ最大、同じなら最初)、
+系統ごとの上限(王座と全国統一王座は2つ、ほかは1つ。天頂戦の優勝と統一王座の戴冠は同じ系統)、表示用の重み
+(`MOMENT_WEIGHTS`、ゲームの数値には関与しない)の大きい順に3つ。移籍で加わった選手は自団体への移籍を入団の行にする。
+以前は記録されない type `summit` を探し、大会成績と受賞を拾わず、王座の獲得/陥落を1件ずつ並べていた。
 
 ---
 
@@ -210,3 +265,4 @@ NPC は団体生成時にフィクションのキャリア事前史（プロデ�
 - **Phase C** (2026-04-27): 対戦相手名フィールドを追加(タイトル戦/対抗戦/ドーム/JT)、防衛閾値を 3/5/7/10/15/20... に細分化
 - **Phase D** (2026-04-27): PPV 出場履歴に対戦相手名と勝敗、サミット 2分岐 + 非サミット 2分岐 計4パターン
 - **Phase E** (2026-04-27): 退団・再契約経緯 6 type 追加(`release` / `contractEnd` / `suddenDeparture` / `retireRetracted` / `rentalIn` / `rentalOut`)
+- **2026-09-25(面白さ総点検 06-①/03-⑦)**: 読み捨てていた7種(`ppvTournament`/`unifiedTitle`/`autumnWar`/`mqAllTimeRecord`/`tenchosenBestBout`/`juniorTournamentBestBout`/`feud`)と開眼(`kaigan`、履歴への記録も新設)の行を追加。引退理由を実キーで引く。「特記事項なし」を記録の有無で判定(§3.5)。殿堂の実績欄・年代記・引退セレモニーの経歴欄(§3.6/§3.7)

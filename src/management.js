@@ -6180,6 +6180,33 @@ const Engine = {
             });
             return;
           }
+          // 2026-09-25(面白さ総点検 06-①): 天頂戦・4団体勝ち残り対抗戦・全国統一王座が章に1行も出なかった
+          if (ev.type === 'ppvTournament' && ev.result === 'champion') {
+            addGrouped(`${c.id}:ppvTournament`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
+            return;
+          }
+          if (ev.type === 'ppvTournament' && ev.result === 'runnerUp') {
+            addSingle({
+              season: ev.season, type: ev.type,
+              ...mk([{ t: H.tenchosenRunnerUp, v: { name: charName } }]), tier: 'silver'
+            });
+            return;
+          }
+          if (ev.type === 'autumnWar' && ev.result === 'champion') {
+            addGrouped(`${c.id}:autumnWar`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
+            return;
+          }
+          if (ev.type === 'autumnWar' && (Number(ev.wins) || 0) >= 3) {
+            addSingle({
+              season: ev.season, type: ev.type,
+              ...mk([{ t: H.autumnWarGauntlet, v: { name: charName, count: Number(ev.wins) } }]), tier: 'silver'
+            });
+            return;
+          }
+          if (ev.type === 'unifiedTitle' && (ev.result === 'won' || ev.result === 'captured')) {
+            addGrouped(`${c.id}:unifiedTitle`, { season: ev.season, type: ev.type, charName, tier: 'gold' });
+            return;
+          }
           let part = null, tier = 'normal';
           switch (ev.type) {
             case 'domeMain': {
@@ -6298,6 +6325,24 @@ const Engine = {
                 ? { t: H.ppvMainStreak, v: { name, count: g.count, streak, years } }
                 : { t: H.ppvMainMulti, v: { name, count: g.count, years } })
               : { t: H.ppvMainOnce, v: { name } };
+            break;
+          case 'ppvTournament':
+            // 4年に一度なので「連覇」は数えない(連続シーズンにならない)
+            part = g.count >= 2
+              ? { t: H.tenchosenMulti, v: { name, count: g.count, years } }
+              : { t: H.tenchosenOnce, v: { name } };
+            break;
+          case 'autumnWar':
+            part = g.count >= 2
+              ? (streak >= 2
+                ? { t: H.autumnWarStreak, v: { name, count: g.count, streak, years } }
+                : { t: H.autumnWarMulti, v: { name, count: g.count, years } })
+              : { t: H.autumnWarOnce, v: { name } };
+            break;
+          case 'unifiedTitle':
+            part = g.count >= 2
+              ? { t: H.unifiedMulti, v: { name, count: g.count, years } }
+              : { t: H.unifiedOnce, v: { name } };
             break;
           case 'war': {
             const w = g.wins || 0, l = g.losses || 0;
@@ -7225,6 +7270,21 @@ const Engine = {
         if (xs.length === 0) return undefined;
         return xs.reduce((a, b) => _t(ARTICLE_COMPOSE_TEMPLATES.dotJoin, { a, b }));
       };
+      // 2026-09-25(面白さ総点検 06-①): 天頂戦・全国統一王座・4団体勝ち残り対抗戦・歴代最高評価・
+      // 大会ベストバウト・確執・開眼の行で使う補助。対戦相手の勝敗注記は PPV 出場行の完全文を共用する
+      const _vsResult = (ev) => {
+        if (!ev || !ev.opponentName) return null;
+        if (ev.won === true) return _t(T.ppvEntryDetailWin, { name: ev.opponentName });
+        if (ev.won === false) return _t(T.ppvEntryDetailLose, { name: ev.opponentName });
+        return null;
+      };
+      // 天頂戦・4団体勝ち残り対抗戦の履歴には週が無いので、開催週に置く(年内の並び順のためだけ)
+      const _tenchosenWeek = (Engine.ppvTournament && Engine.ppvTournament.SHOW_WEEK) || 48;
+      const _autumnWarWeek = (Engine.autumnWar && Engine.autumnWar.EVENT_WEEK) || 36;
+      const _jtWeek = (Engine.juniorTournament && Engine.juniorTournament.WEEK) || 24;
+      const _unifiedGeneration = Engine.awards._unifiedGenerationResolver(G);
+      // 全国統一王座の防衛は1回ずつ記録される(回数を持たない)ので、戴冠/奪取からの通し番号を数える
+      let _unifiedDefenseN = 0;
 
       // Convert careerRecord.history events to milestones
       for (const ev of history) {
@@ -7317,11 +7377,27 @@ const Engine = {
               text: _t(T.rentalOut, { org: ev.toOrg || _lbl(T.labels.formerOrg) }) });
             break;
           }
-          case 'retire':
+          case 'retire': {
+            // 2026-09-25(面白さ総点検 03-⑦): 注記は**実際に記録される** reason 値で引く。
+            // 以前は injury_wear / injury_career_ending / age だけを見ていたが、どれも記録されない値で、
+            // 引退の注記は1件も出ていなかった。旧キーは互換のため残す。
+            // 季末の引退(commitRetirements)と AI の季末引退('career')は理由を持たないので注記なし
+            // (年齢は本文に出ている。「年齢による引退」と書くと20代前半の引退と食い違う)
+            const rr = ev.reason;
+            const retireDetailTpl = (rr === 'wearInjury' || rr === 'injury_wear') ? T.retireInjuryWear
+              : (rr === 'careerEnding' || rr === 'injury_career_ending') ? T.retireInjuryCareerEnding
+              : rr === 'injury' ? T.injuryRetire
+              : rr === 'lastrun' ? T.retireLastRun
+              : rr === 'motivation' ? T.retireMotivation
+              : rr === 'contractEnd' ? T.retireContractEnd
+              : rr === 'sudden' ? T.retireSudden
+              : rr === 'age' ? T.retireAge
+              : null;
             milestones.push({ season: rel(ev.season), week: ev.week || 48, type: 'retire',
               text: _t(T.retire, { age: ev.age || '?' }),
-              detail: ev.reason === 'injury_wear' ? _t(T.retireInjuryWear) : ev.reason === 'injury_career_ending' ? _t(T.retireInjuryCareerEnding) : ev.reason === 'age' ? _t(T.retireAge) : undefined });
+              detail: retireDetailTpl ? _t(retireDetailTpl) : undefined });
             break;
+          }
           case 'summit':
             milestones.push({ season: rel(ev.season), week: ev.week, type: 'summit',
               text: _t(ev.won ? T.summitWin : T.summitLose) });
@@ -7426,6 +7502,79 @@ const Engine = {
               text: _t(stTpl, { n: ev.season }), detail: stDetail });
             break;
           }
+          // ── 2026-09-25(面白さ総点検 06-①): 以下7種+開眼は careerRecord.history に記録されて
+          //    いたのに default で読み捨てられ、天頂戦で優勝した年が「特記事項なし」になっていた ──
+          case 'ppvTournament': {
+            // 天頂戦。result は敗退したラウンド(champion/runnerUp/semiFinal/quarterFinal/firstRound)
+            const ptTpl = ev.result === 'runnerUp' ? T.tenchosenRunnerUp
+              : ev.result === 'semiFinal' ? T.tenchosenSemiFinal
+              : ev.result === 'quarterFinal' ? T.tenchosenQuarterFinal
+              : ev.result === 'firstRound' ? T.tenchosenFirstRound
+              : T.tenchosenEntry;
+            milestones.push({ season: rel(ev.season), week: ev.week || _tenchosenWeek, type: 'tenchosen',
+              text: ev.result === 'champion' ? _lbl(_WM_TENCHOSEN_CHAMPION_JA) : _t(ptTpl) });
+            break;
+          }
+          case 'unifiedTitle': {
+            // 全国統一王座。won=天頂戦の優勝による戴冠 / captured=王者を破っての奪取 / defense=防衛1回
+            const UH = HOF_HIGHLIGHT_TEMPLATES;
+            if (ev.result === 'won' || ev.result === 'captured') {
+              _unifiedDefenseN = 0;
+              const gen = ev.result === 'won' ? _unifiedGeneration(ev) : null;
+              milestones.push({ season: rel(ev.season), week: ev.week || _tenchosenWeek, type: 'unified_title',
+                text: ev.result === 'captured' ? _t(UH.unifiedCapture)
+                  : (gen ? _t(UH.unifiedCrownGeneration, { n: gen }) : _t(UH.unifiedCrown)) });
+            } else if (ev.result === 'defense') {
+              _unifiedDefenseN++;
+              milestones.push({ season: rel(ev.season), week: ev.week || 0, type: 'unified_title',
+                text: _t(T.unifiedDefense, { n: _unifiedDefenseN }) });
+            }
+            break;
+          }
+          case 'autumnWar': {
+            // 4団体勝ち残り対抗戦。団体戦なので結果はチームの成績、本人の勝ち星は注記に出す
+            const awWins = Number(ev.wins) || 0;
+            const awTpl = ev.result === 'runnerUp' ? T.autumnWarRunnerUp
+              : ev.result === 'semiFinal' ? T.autumnWarSemiFinal : T.autumnWarEntry;
+            milestones.push({ season: rel(ev.season), week: ev.week || _autumnWarWeek, type: 'autumn_war',
+              text: ev.result === 'champion' ? _lbl(_WM_AUTUMN_WAR_CHAMPION_JA) : _t(awTpl),
+              detail: awWins > 0 ? _t(T.autumnWarDetailWins, { n: awWins }) : undefined });
+            break;
+          }
+          case 'mqAllTimeRecord':
+            // 歴代最高評価の更新。勝者・敗者の両方に刻まれる(stage は記録時のJAラベル)
+            milestones.push({ season: rel(ev.season), week: ev.week || 0, type: 'mq_record',
+              text: _t(T.mqRecord, { mq: ev.mq != null ? ev.mq : '?' }),
+              detail: _dotJoin([ev.stage ? _lbl(ev.stage) : null, _vsResult(ev)]) });
+            break;
+          case 'tenchosenBestBout':
+            // 天頂戦の大会ベストバウト(round は記録時のJAラベル「準決勝」等)
+            milestones.push({ season: rel(ev.season), week: ev.week || _tenchosenWeek, type: 'best_bout',
+              text: _t(T.tenchosenBestBout, { mq: ev.mq != null ? ev.mq : '?' }),
+              detail: _dotJoin([ev.round ? _lbl(ev.round) : null, _vsResult(ev)]) });
+            break;
+          case 'juniorTournamentBestBout':
+            // ジュニアトーナメントの大会ベストバウト(round は内部キー。1回戦はラベルを付けない)
+            milestones.push({ season: rel(ev.season), week: ev.week || _jtWeek, type: 'best_bout',
+              text: _t(T.jtBestBout, { mq: ev.mq != null ? ev.mq : '?' }),
+              detail: _dotJoin([_NP_JT_ROUND_JA[ev.round] ? _lbl(_NP_JT_ROUND_JA[ev.round]) : null, _vsResult(ev)]) });
+            break;
+          case 'feud': {
+            // AI団体の選手間対立(B2)。resolution: talk=話し合い / match=試合で決着 / ignore=団体は静観
+            const fdDetailTpl = ev.resolution === 'talk' ? T.feudTalk
+              : ev.resolution === 'match'
+                ? (ev.won === true ? T.feudMatchWin : ev.won === false ? T.feudMatchLose : T.feudMatchDraw)
+                : ev.resolution === 'ignore' ? T.feudIgnore : null;
+            milestones.push({ season: rel(ev.season), week: ev.week || 0, type: 'feud',
+              text: ev.opponentName ? _t(T.feud, { name: ev.opponentName }) : _t(T.feudNoName),
+              detail: fdDetailTpl ? _t(fdDetailTpl) : undefined });
+            break;
+          }
+          case 'kaigan':
+            // 開眼(格上との一戦をきっかけに伸びしろが開く)。どの一戦だったかを注記に出す
+            milestones.push({ season: rel(ev.season), week: ev.week || 0, type: 'kaigan',
+              text: _t(T.kaigan), detail: _vsResult(ev) || undefined });
+            break;
           case 'breakthrough':
             // peakOVR と重複するため年表には出さない(全盛期マイルストーンに集約)
             break;
@@ -7453,14 +7602,21 @@ const Engine = {
       }
 
       // Add season_end summary for completed seasons (キャリア相対年で 1〜現在まで埋める)
+      // 2026-09-25(面白さ総点検 06-①): 「特記事項なし」は**その年の記録の有無**で判定する。
+      // 以前は「年表の行が無い年」に付けていたので、年表が描けない型(天頂戦など)しか無い年まで
+      // 「特記事項なし」と書いていた。記録はあるが年表の行にならない年(内部記録だけの年)は、
+      // 年の見出しだけ残して注記を付けない(quiet:false。UIは本文に記号だけを置く)。
       const currentSeason = G.season || 1;
       const currentRel = rel(currentSeason);
+      const seasonsWithRecords = new Set();
+      history.forEach(ev => seasonsWithRecords.add(rel(ev.season)));
+      careerHist.forEach(ev => seasonsWithRecords.add(rel(ev.season || 1)));
       for (let s = 1; s < currentRel; s++) {
         const seasonEvents = milestones.filter(m => m.season === s);
         if (seasonEvents.length === 0) {
-          // Add a placeholder for seasons with no notable events
+          const quiet = !seasonsWithRecords.has(s);
           milestones.push({ season: s, week: 48, type: 'season_end',
-            text: _t(T.seasonEnd, { n: s }), detail: _lbl('特記事項なし') });
+            text: _t(T.seasonEnd, { n: s }), detail: quiet ? _lbl('特記事項なし') : undefined, quiet });
         }
       }
 
@@ -7497,6 +7653,14 @@ const Engine = {
         retire_retracted: { icon: '↩️', color: '#27ae60' },
         rental_in:      { icon: '🤝', color: '#16a085' },
         rental_out:     { icon: '↩', color: '#16a085' },
+        // 2026-09-25(面白さ総点検 06-①): 新しく年表に描く型。色はトークンで持つ
+        tenchosen:      { icon: '⛰️', color: 'var(--ev-winter)' },
+        unified_title:  { icon: '🌐', color: 'var(--unified)' },
+        autumn_war:     { icon: '🍁', color: 'var(--ev-autumn)' },
+        mq_record:      { icon: '📜', color: 'var(--gold)' },
+        best_bout:      { icon: '✨', color: 'var(--gold)' },
+        feud:           { icon: '💢', color: 'var(--accent-faction-feud)' },
+        kaigan:         { icon: '👁️', color: 'var(--blue)' },
         season_end:    { icon: '📅', color: '#95a5a6' },
         note:          { icon: '📝', color: '#bdc3c7' },
       };
@@ -7507,73 +7671,195 @@ const Engine = {
   // ── v1.3-3: Retirement Presentation ────────────────
   retirement: {
     /**
-     * Build career summary from careerRecord.history (max 8 items, spec §1.2)
-     * Returns array of { icon, text } objects for display.
-     * i18n P7-52: 第2引数 dict は任意の「辞書参照関数」(既定=省略でJA原文のまま。
-     * 既存呼び出し元は無改修で不変)。呼ばれるたびcareerRecord.historyから組み直され
-     * Gへ焼かれないため、追加フィールドも自己検証も要らない(§22-1と同じ族)。
+     * 引退セレモニーの経歴欄(spec §1.2)。「入団」+「その選手らしい瞬間」(最大3つ)+「全盛期」。
+     * Returns array of { icon, text, priority } objects for display.
+     *
+     * 2026-09-25(面白さ総点検 03-⑦): 以前は、もう記録されない type 'summit' を探し、PPV GRAND FINAL・
+     * ジュニアトーナメント・天頂戦・春のタッグリーグ・4団体勝ち残り対抗戦・MVP・新人王を1つも拾わず、
+     * 王座の獲得と陥落を1件ずつ並べていた。王座に届かない大多数の選手は「入団」と「全盛期」の
+     * 2行だけになっていた。瞬間の選び方は pickCareerMoments を参照。
+     *
+     * i18n P7-52: 第2引数 dict は任意の「辞書参照関数」(省略でJA原文のまま)。呼ばれるたび
+     * careerRecord.history から組み直され G へ焼かれないため、追加フィールドも自己検証も要らない
+     * (§22-1と同じ族)。第3引数 state は任意(春のタッグの相棒の名前・全国統一王座の代数・
+     * 自団体の王座名の補完に使う。無くても組める)。
      */
-    buildCareerSummary(fighter, dict) {
+    buildCareerSummary(fighter, dict, state) {
       // 転生前（NPC事前史）は別人扱いで除外
       const histAll = (fighter.careerRecord?.history || []);
       const joinS = Engine.career.joinSeason(fighter);
       const history = Engine.career.filterPostJoin(histAll, joinS);
       if (history.length === 0) return [];
-
-      // Categorize events
-      const debut = history.filter(e => e.type === 'debut');
-      const titleWins = history.filter(e => e.type === 'titleWin');
-      const titleLosses = history.filter(e => e.type === 'titleLoss');
-      const summits = history.filter(e => e.type === 'summit');
-      const wars = history.filter(e => e.type === 'war');
-      const transfers = history.filter(e => e.type === 'transfer');
-      const peakOVRs = history.filter(e => e.type === 'peakOVR');
-      const defenses = history.filter(e => e.type === 'titleDefense');
-
+      const T = CAREER_MILESTONE_TEMPLATES;
       const items = [];
 
-      // 1. debut (always show)
-      debut.forEach(e => {
-        const viaJa = e.via === 'draft' ? 'ドラフト入団' : e.via === 'fa' ? 'FA入団' : e.via === 'scout' ? 'スカウト入団' : '入団';
-        items.push({ icon: '🎓', text: `S${e.season||1} ${_wmDictLabel(dict, viaJa)}`, priority: 1 });
-      });
-
-      // 2. titleWin / titleLoss (always show)
-      titleWins.forEach(e => items.push({ icon: '🏆', text: `S${e.season} W${e.week} ${_wmDictLabel(dict, '団体王座 獲得')}`, priority: 2 }));
-      titleLosses.forEach(e => items.push({ icon: '💫', text: `S${e.season} W${e.week} ${_wmDictLabel(dict, '団体王座 陥落')}`, priority: 2 }));
-
-      // 3. summit (priority)
-      summits.forEach(e => {
-        items.push({ icon: '🏆', text: `S${e.season} ${_wmDictLabel(dict, e.won ? '頂上決戦 勝利' : '頂上決戦 敗北')}`, priority: 3 });
-      });
-
-      // 4. war (max 2)
-      wars.slice(0, 2).forEach(e => {
-        items.push({ icon: '⚔', text: `S${e.season} ${_wmDictLabel(dict, e.won ? '対抗戦 勝利' : '対抗戦 敗北')}`, priority: 4 });
-      });
-
-      // 5. transfer (max 2)
-      transfers.slice(0, 2).forEach(e => {
-        items.push({ icon: '📋', text: `S${e.season} ${_wmFillWithDict(dict, '{org}に移籍', { org: e.toOrg || _wmDictLabel(dict, '他団体') })}`, priority: 5 });
-      });
-
-      // 6. peakOVR (best only, always show)
-      if (peakOVRs.length > 0) {
-        const best = peakOVRs.reduce((a, b) => (b.ovr || 0) > (a.ovr || 0) ? b : a, peakOVRs[0]);
-        items.push({ icon: '📈', text: `S${best.season} ${_wmDictLabel(dict, '全盛期')} OVR ${best.ovr || fighter.careerRecord?.peakOVR || '?'}`, priority: 6 });
-      } else if (fighter.careerRecord?.peakOVR) {
-        items.push({ icon: '📈', text: `${_wmDictLabel(dict, '全盛期')} OVR ${fighter.careerRecord.peakOVR}`, priority: 6 });
+      // 1. 入団(年表と同じ文面)。移籍で加わった選手は debut が入団前の人生側にあるので、
+      //    自団体への移籍を入団の行として出す
+      const debuts = history.filter(e => e.type === 'debut');
+      if (debuts.length > 0) {
+        debuts.forEach(e => {
+          const via = (e.via === 'fa' || e.via === 'freeagent') ? 'fa' : e.via;
+          const tpl = via === 'draft' ? T.debutDraft : via === 'fa' ? T.debutFa : via === 'scout' ? T.debutScout : T.debutPlain;
+          items.push({ icon: '🎓', text: `S${e.season || 1} ${_wmFillWithDict(dict, tpl)}`, priority: 1 });
+        });
+      } else {
+        const joinTransfer = history.find(e => e.type === 'transfer' && e.toOrg === 'player');
+        if (joinTransfer) {
+          const tpl = joinTransfer.via === 'poach' ? T.transferPoach
+            : joinTransfer.via === 'poach_forced' ? T.transferPoachForced
+            : joinTransfer.via === 'negotiate' ? T.transferNegotiate : T.debutPlain;
+          items.push({ icon: '📋', text: `S${joinTransfer.season || 1} ${_wmFillWithDict(dict, tpl)}`, priority: 1 });
+        }
       }
 
-      // 7. titleDefense (summarized, 1 line)
-      if (defenses.length > 0) {
-        const maxCount = Math.max(...defenses.map(e => e.count || 1));
-        items.push({ icon: '🛡️', text: _wmFillWithDict(dict, '防衛 {n}回', { n: maxCount }), priority: 7 });
-      }
+      // 2. その選手らしい瞬間(最大3つ・時系列)
+      Engine.retirement.pickCareerMoments(fighter, dict, state).forEach(m => {
+        items.push({ icon: m.icon, text: `S${m.season} ${m.text}`, priority: 2 });
+      });
 
-      // Sort by priority, then trim to max 8
-      items.sort((a, b) => a.priority - b.priority);
-      return items.slice(0, 8);
+      // 3. 全盛期(peakOVR の履歴イベントは記録されないので careerRecord.peakOVR を出す)
+      if (fighter.careerRecord?.peakOVR) {
+        items.push({ icon: '📈', text: `${_wmDictLabel(dict, '全盛期')} OVR ${fighter.careerRecord.peakOVR}`, priority: 3 });
+      }
+      return items;
+    },
+
+    // ── 引退セレモニーの「その選手らしい瞬間」(2026-09-25 面白さ総点検 03-⑦) ──
+    // 重みは「その出来事がキャリアの中でどれだけ大きいか」という**表示の序列**だけで、
+    // ゲームの数値には関与しない。20未満は瞬間として出さない。
+    MOMENT_WEIGHTS: {
+      'ppvTournament:champion': 100, 'unified:won': 98, 'unified:captured': 96, awardMVP: 90,
+      titleWin: 86, 'unified:defense': 84, ppvMainEvent: 82, mqAllTimeRecord: 80,
+      'ppvTournament:runnerUp': 78, 'autumnWar:champion': 74, titleDefense: 72, juniorTournament: 70,
+      'summit:win': 70, springTagLeague: 68, kaigan: 66, 'autumnWar:gauntlet': 64, awardBestMatch: 62,
+      'ppvTournament:semiFinal': 60, 'domeMain:titleWin': 60, tenchosenBestBout: 58, 'domeMain:mainWin': 58,
+      awardRookie: 52, 'juniorTournament:runnerUp': 50, 'ppvMainEvent:summitLoss': 50,
+      juniorTournamentBestBout: 48, awardMedia: 48, 'domeMain:title': 46, 'springTagLeague:runnerUp': 46,
+      'autumnWar:total': 44, 'domeMain:main': 44, 'ppvTournament:entry': 42, war: 40,
+      'b3Challenge:win': 36, 'juniorTournament:semiFinal': 36, 'autumnWar:entry': 34, titleLoss: 30,
+      'springTagLeague:placed': 30, 'war:win': 26,
+    },
+    // 同じ系統から出す上限。王座(戴冠+防衛)と全国統一王座(奪取+防衛)だけ2つまで、ほかは1つ。
+    // 同じ賞や同じ大会の繰り返しで3枠が埋まらないようにする。天頂戦の優勝による全国統一王座の
+    // 戴冠(unified:won)は天頂戦の優勝と同じ瞬間なので、天頂戦の系統に入れて2行に割らない
+    MOMENT_FAMILY_MAX: { title: 2, unified: 2 },
+    // 瞬間の記号は経歴年表の記号表(Engine.milestone._typeStyle)から引く
+    MOMENT_ICON_TYPE: {
+      titleWin: 'title_win', titleDefense: 'title_defense', titleLoss: 'title_loss',
+      unified: 'unified_title', 'unified:won': 'unified_title',
+      ppvTournament: 'tenchosen', autumnWar: 'autumn_war', juniorTournament: 'jt_round',
+      springTagLeague: 'spring_tag', ppvMainEvent: 'ppv_main', war: 'war', domeMain: 'dome_main',
+      awardMVP: 'award_mvp', awardRookie: 'award_rookie', awardBestMatch: 'award_bestmatch',
+      awardMedia: 'award_media', mqAllTimeRecord: 'mq_record', tenchosenBestBout: 'best_bout',
+      juniorTournamentBestBout: 'best_bout', kaigan: 'kaigan', b3Challenge: 'b3_event', summit: 'summit',
+    },
+
+    /**
+     * 引退セレモニーの「その選手らしい瞬間」を最大 max 件選ぶ。
+     * 候補の中心は殿堂の実績欄(Engine.awards.buildCareerHighlights)と同じ行。殿堂級の実績が
+     * 少ない選手(大多数)のために、年表の文面(CAREER_MILESTONE_TEMPLATES)で大会の上位・
+     * 大会ベストバウト・歴代最高評価・対抗戦の勝利なども候補に入れる。
+     *  1. 同じ種類(kind)は1件に絞る。何度目の戴冠・何度防衛・試合評価のような大きさ(order)が
+     *     あれば最大のもの、無ければ最初の1回
+     *  2. 同じ系統は MOMENT_FAMILY_MAX まで(既定1)
+     *  3. 重み(MOMENT_WEIGHTS)の大きい順に max 件。表示は時系列
+     * @returns {Array<{kind, season, text, icon, weight}>}
+     */
+    pickCareerMoments(fighter, dict, state, max = 3) {
+      const rec = (fighter && fighter.careerRecord) || {};
+      const histAll = rec.history || [];
+      const joinS = Engine.career.joinSeason(fighter || {});
+      const history = Engine.career.filterPostJoin(histAll, joinS);
+      if (history.length === 0) return [];
+      const T = CAREER_MILESTONE_TEMPLATES;
+      const _t = (tpl, params) => _wmFillWithDict(dict, tpl, params);
+      const W = Engine.retirement.MOMENT_WEIGHTS;
+      const cands = [];
+      const add = (kind, season, text, order) => {
+        if (!text || W[kind] == null) return;
+        cands.push({ kind, season: season || 1, text, order: Number(order) || 0, weight: W[kind] });
+      };
+      // (1) 殿堂の実績欄と同じ行(post-join の判定も同じ経路)
+      Engine.awards.buildCareerHighlights({ history: histAll }, (state && state.orgName) || '', state, dict, { withKind: true })
+        .forEach(h => add(h.kind, h.season, h.text, h.order));
+      // (2) 実績欄に載らない、年表の出来事
+      const opp = (ev) => ev.opponentOrg || ev.opponentOrgName || _wmDictLabel(dict, '他団体');
+      history.forEach(ev => {
+        switch (ev.type) {
+          case 'mqAllTimeRecord':
+            add('mqAllTimeRecord', ev.season, _t(T.mqRecord, { mq: ev.mq != null ? ev.mq : '?' }), ev.mq);
+            break;
+          case 'tenchosenBestBout':
+            add('tenchosenBestBout', ev.season, _t(T.tenchosenBestBout, { mq: ev.mq != null ? ev.mq : '?' }), ev.mq);
+            break;
+          case 'juniorTournamentBestBout':
+            add('juniorTournamentBestBout', ev.season, _t(T.jtBestBout, { mq: ev.mq != null ? ev.mq : '?' }), ev.mq);
+            break;
+          case 'juniorTournament':
+            if (ev.result === 'runnerUp') add('juniorTournament:runnerUp', ev.season, _t(T.jtRunnerUp));
+            else if (ev.result === 'semiFinal') add('juniorTournament:semiFinal', ev.season, _t(T.jtSemiFinal));
+            break;
+          case 'springTagLeague':
+            if (ev.result === 'runnerUp') add('springTagLeague:runnerUp', ev.season, _t(T.springTagRunnerUp, { n: ev.season }));
+            else if (ev.result === 'third') add('springTagLeague:placed', ev.season, _t(T.springTagThird, { n: ev.season }));
+            else if (ev.result === 'fourth') add('springTagLeague:placed', ev.season, _t(T.springTagFourth, { n: ev.season }));
+            break;
+          case 'ppvMainEvent':
+            if (ev.isSummit && ev.won === false) add('ppvMainEvent:summitLoss', ev.season, _t(T.ppvSummitLose));
+            break;
+          case 'ppvTournament':
+            if (ev.result === 'quarterFinal') add('ppvTournament:entry', ev.season, _t(T.tenchosenQuarterFinal));
+            else if (ev.result === 'firstRound') add('ppvTournament:entry', ev.season, _t(T.tenchosenFirstRound));
+            break;
+          case 'autumnWar':
+            if (ev.result !== 'champion' && (Number(ev.wins) || 0) < 3) {
+              add('autumnWar:entry', ev.season, _t(ev.result === 'runnerUp' ? T.autumnWarRunnerUp
+                : ev.result === 'semiFinal' ? T.autumnWarSemiFinal : T.autumnWarEntry), ev.wins);
+            }
+            break;
+          case 'b3Challenge':
+            if (ev.won) add('b3Challenge:win', ev.season, _t(T.b3Win, { org: opp(ev) }));
+            break;
+          case 'war':
+            if (ev.won) {
+              add('war:win', ev.season, ev.opponentName
+                ? _t(T.warWinVs, { org: opp(ev), name: ev.opponentName })
+                : _t(T.warWin, { org: opp(ev) }));
+            }
+            break;
+          case 'summit':
+            // 旧データ(頂上決戦)。今は記録されない
+            if (ev.won) add('summit:win', ev.season, _t(T.summitWin));
+            break;
+        }
+      });
+      // 1. 種類ごとに1件(大きさ最大、同じなら最初の1回)
+      const byKind = new Map();
+      cands.forEach(c => {
+        const cur = byKind.get(c.kind);
+        if (!cur || c.order > cur.order || (c.order === cur.order && c.season < cur.season)) byKind.set(c.kind, c);
+      });
+      // 2. 系統ごとの上限 → 3. 重みの大きい順に max 件
+      const familyOf = (kind) => ((kind === 'titleWin' || kind === 'titleDefense') ? 'title'
+        : kind === 'unified:won' ? 'ppvTournament' : kind.split(':')[0]);
+      const familyCount = {};
+      const picked = [];
+      [...byKind.values()]
+        .sort((a, b) => (b.weight - a.weight) || (a.season - b.season) || (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0))
+        .forEach(c => {
+          if (picked.length >= max || c.weight < 20) return;
+          const fam = familyOf(c.kind);
+          const cap = Engine.retirement.MOMENT_FAMILY_MAX[fam] || 1;
+          if ((familyCount[fam] || 0) >= cap) return;
+          familyCount[fam] = (familyCount[fam] || 0) + 1;
+          picked.push(c);
+        });
+      picked.sort((a, b) => (a.season - b.season) || (b.weight - a.weight));
+      return picked.map(c => {
+        const iconType = Engine.retirement.MOMENT_ICON_TYPE[c.kind] || Engine.retirement.MOMENT_ICON_TYPE[familyOf(c.kind)] || 'note';
+        return { kind: c.kind, season: c.season, text: c.text, weight: c.weight,
+          icon: Engine.milestone._typeStyle(iconType).icon };
+      });
     },
 
     /**
@@ -7923,17 +8209,26 @@ const Engine = {
         s = { ...s, pendingAwards: { ...s.pendingAwards, hallOfFame: Engine.awards.checkHallOfFame(s) } };
       }
 
-      // 10. 新聞 retirement イベント (App 側で _pushNewsEvent する用)
+      // 10. 新聞: 格付けされた引退記事 retirementDeclare(App 側で _pushNewsEvent する用)
+      // 2026-09-25(面白さ総点検 06-②): 季末の引退は、以前は type:'retirement' の汎用テンプレ・
+      // 30点の短信だった。格付け記事は季中に retiredFighters を走査する scanRosterNews にしか無く、
+      // retiredFighters は表彰式の完了時に空になるので、季末の引退は一度も拾われていなかった
+      // (同格のAI選手は肩記事になる)。季中の引退と同じ data(戴冠歴・ピークOVR・在籍・現役王者か)で
+      // 積み、generate() の格付け(retirementGrade)と殿堂特別号(composeHallOfFameRetirement)へ合流させる。
+      // seasons は applySeasonEnd が今季を数え終えた後の値なので +1 しない(季中の scanRosterNews は +1)。
+      // retiredSeason は殿堂の記録を「この人生」のものだけ引くための鍵(K-4: 同じIDの再登場は別人)
       retiredWithRecords.forEach(f => {
-        const ovr = Engine.util.ov(f);
-        if (ovr >= 70 || (f.age || 17) >= 25) {
-          const seasons = f.careerSeasons || 0;
-          newsItems.push({
-            type: 'retirement',
-            characterId: f.id,
-            data: { name: f.name, org: s.orgName || 'あなたの団体', detail: `${seasons}シーズンの現役生活` },
-          });
-        }
+        const cs = Engine.newspaper._retirementCareerStats(f);
+        newsItems.push({
+          type: 'retirementDeclare',
+          characterId: f.id,
+          data: {
+            name: f.name, org: s.orgName || _NP_PLAYER_ORG_FALLBACK_JA, orgMissing: !s.orgName,
+            age: f.age || '', seasons: f.careerSeasons || 1,
+            reigns: cs.reigns, peakOVR: cs.peakOVR, wasChampion: cs.wasChampion,
+            retiredSeason: s.season,
+          },
+        });
       });
 
       return { state: s, events, newsItems };
@@ -8846,7 +9141,23 @@ const Engine = {
             isFreeAgent: options.orgId == null,
           });
           if (!awakened) return;
-          byId.set(awakened.id, awakened);
+          // 2026-09-25(面白さ総点検 06-①): 開眼は業界ニュースにしか残っていなかった。経歴年表・
+          // 殿堂の実績欄に出せるよう careerRecord.history にも刻む。Engine.career.addEvent は
+          // ensure() で careerRecord の他の欄を補うことがあるので使わず、履歴の末尾に1件足すだけ
+          // (数値の欄・乱数には触れない。3経路=自団体の実プレイ/エンジン/AI団体がすべてここを通る)
+          const kaiganCr = awakened.careerRecord || Engine.career.createRecord();
+          const recorded = {
+            ...awakened,
+            careerRecord: {
+              ...kaiganCr,
+              history: [...(kaiganCr.history || []), {
+                type: 'kaigan', season: state.season || 1, week: state.week || 1,
+                opponentId: entry.opponent.id, opponentName: entry.opponent.name,
+                won: entry.won, mq: result.mq,
+              }],
+            },
+          };
+          byId.set(recorded.id, recorded);
           occurrences.push({
             fighterId: awakened.id,
             fighterName: awakened.name,
@@ -18217,7 +18528,7 @@ const Engine = {
             const isLastRunExpired = lastRunExpiredList.some(x => x.id === f.id);
             const route = isLastRunExpired ? 'lastrun_expired' : 'season_end';
             const { line, category } = Engine.retirement.selectLine(f, route, s, lineRng);
-            const summary = Engine.retirement.buildCareerSummary(f, dict);
+            const summary = Engine.retirement.buildCareerSummary(f, dict, s);
             const canRetain = !isLastRunExpired && (f.wear || 0) < 80 && (f.retainCount || 0) < 2;
             return { fighter: f, route, line, category, summary, canRetain };
           });
@@ -21277,6 +21588,23 @@ Engine.awards = {
     };
   },
 
+  /** 全国統一王座の「第N代」を、戴冠イベントの season:week から引く関数を返す。
+   *  殿堂の実績欄(buildCareerHighlights)と経歴年表(Engine.milestone.get)で数え方を1つにする
+   *  ための共通ヘルパー(2026-09-25。中身は buildCareerHighlights にあったものをそのまま移した)。
+   *  state が無ければ常に null(=「第N代」を付けない)。 */
+  _unifiedGenerationResolver(state) {
+    const generationByWhen = new Map();
+    let derivedGeneration = 0;
+    (state?.unifiedTitle?.history || []).forEach(ev => {
+      if (!['creation', 'crown', 'repeat', 'move'].includes(ev?.type)) return;
+      derivedGeneration++;
+      const generation = Number(ev.generation) || derivedGeneration;
+      generationByWhen.set(`${ev.season}:${ev.week}`, generation);
+    });
+    return ev => Number(ev && ev.generation)
+      || generationByWhen.get(`${ev && ev.season}:${ev && ev.week}`) || null;
+  },
+
   calcHofPoints(rec) {
     const histAll = (rec && rec.history) || [];
     // joinSeason の判定は Engine.career.joinSeason に一本化する。
@@ -21329,10 +21657,18 @@ Engine.awards = {
    * @param {object} state - 任意。渡すと springTagLeague のパートナー名解決に使う
    * @param {function} dict - 任意(i18n Stage B P7-25)。「辞書参照関数」。省略時はJA原文の
    *   まま = 保存値(G.allHallOfFame[].careerHighlights[].text)は不変(D-P6-4)。
-   *   表示点(ui-render.js showHofDetail)だけが dict 付きで**再生成**し、保存値と
-   *   1バイト照合してから差し替える(§18-1 の語り文と同じ自己検証型fail-open)。
+   *   表示点(ui-render.js showHofDetail)は、エントリに残る careerRecord から dict 付きで
+   *   **再生成**した行を出す(2026-09-25 から。保存値は素材の無い旧エントリのときだけ使う)。
+   * @param {object} opts - 任意。`{ withKind: true }` で各行に `kind`(行の種類)と `order`
+   *   (同じ種類の中の大きさ: 何度目の戴冠か・何度防衛か等)を付ける。引退セレモニーの
+   *   「その選手らしい瞬間」(Engine.retirement.pickCareerMoments)専用で、殿堂の保存値
+   *   (careerHighlights)の形は変えない。
+   *
+   * 不変条件(test/career-record-display-coverage-test.js): calcHofPoints が数える type は、
+   *   すべてこの実績欄と経歴年表(Engine.milestone.get)が描く。2026-09-25 までは天頂戦・
+   *   4団体勝ち残り対抗戦・PPV GRAND FINAL の優勝が、加点はされるのに1行も出ていなかった。
    */
-  buildCareerHighlights(rec, orgName, state, dict) {
+  buildCareerHighlights(rec, orgName, state, dict, opts) {
     const histAll = (rec && rec.history) || [];
     // 判定は calcHofPoints と同じ経路（Engine.career.joinSeason）を通す。
     const joinS = Engine.career.joinSeason({ careerRecord: { history: histAll } });
@@ -21342,78 +21678,128 @@ Engine.awards = {
     const _t = (tpl, params) => _wmFillWithDict(dict, tpl, params);
     // 賞名は ui-ledger に既訳がある1語ラベル。`{award} 受賞` の値として引き直す(§14-2)
     const _award = (ja) => _t(H.award, { award: _wmDictLabel(dict, ja) });
+    // 2026-09-25: 王座の行の {org} には**団体名**を入れる。titleWin/titleDefense/titleLoss の
+    // ev.orgName は「○○王座」というベルト名で記録されている(recordTitleWin 等の呼び出し元)ので、
+    // そのまま差し込むと「○○王座王座 初戴冠」になっていた。末尾の「王座」を外して団体名に戻す
+    // (Engine.chronicle._beltLabel と同じ読み方)。団体名だけになるので EN の名前辞書変換も効く
+    const _titleOrg = (ev) => {
+      const raw = (ev && ev.orgName) || '';
+      const m = /^(.+)王座$/.exec(raw);
+      return m ? m[1] : (raw || orgName);
+    };
+    const withKind = !!(opts && opts.withKind);
+    const push = (row, kind, order) => {
+      highlights.push(withKind ? { ...row, kind, order: order || 0 } : row);
+    };
     let reignCount = 0;
     history.forEach(ev => {
       switch (ev.type) {
         case 'titleWin':
           reignCount++;
-          highlights.push({
+          push({
             type: 'titleWin', season: ev.season,
             text: reignCount === 1
-              ? _t(H.titleWinFirst, { org: ev.orgName || orgName })
-              : _t(H.titleWinRepeat, { org: ev.orgName || orgName, n: reignCount })
-          });
+              ? _t(H.titleWinFirst, { org: _titleOrg(ev) })
+              : _t(H.titleWinRepeat, { org: _titleOrg(ev), n: reignCount })
+          }, 'titleWin', reignCount);
           break;
         case 'titleDefense':
           if ((ev.count || 0) >= 3) {
-            highlights.push({
+            push({
               type: 'titleDefense', season: ev.season,
-              text: _t(H.titleDefense, { org: ev.orgName || orgName, n: ev.count })
-            });
+              text: _t(H.titleDefense, { org: _titleOrg(ev), n: ev.count })
+            }, 'titleDefense', ev.count);
           }
           break;
         case 'titleLoss':
-          highlights.push({
+          push({
             type: 'titleLoss', season: ev.season,
-            text: _t(H.titleLoss, { org: ev.orgName || orgName, n: ev.defenses || 0 })
-          });
+            text: _t(H.titleLoss, { org: _titleOrg(ev), n: ev.defenses || 0 })
+          }, 'titleLoss', ev.defenses || 0);
           break;
         case 'juniorTournament':
           if (ev.result === 'champion') {
-            highlights.push({
+            push({
               type: 'juniorTournament', season: ev.season,
               text: _t(H.juniorTournament)
-            });
+            }, 'juniorTournament');
           }
           break;
         case 'ppvMainEvent':
-          if (ev.result === 'champion' || ev.result === 'win') {
-            highlights.push({
+          // 2026-09-25: 記録の形は { isSummit, won }(result は持たない)。以前は result だけを見て
+          // いたので、calcHofPoints が5点を足す PPV GRAND FINAL の優勝が1行も出ていなかった。
+          // result の分岐は旧データ互換のため残す
+          if ((ev.isSummit && ev.won === true) || ev.result === 'champion' || ev.result === 'win') {
+            push({
               type: 'ppvMainEvent', season: ev.season,
               text: _t(H.ppvMainEvent)
-            });
+            }, 'ppvMainEvent');
           }
           break;
         case 'awardRookie':
-          highlights.push({ type: 'awardRookie', season: ev.season, text: _award('新人王') });
+          push({ type: 'awardRookie', season: ev.season, text: _award('新人王') }, 'awardRookie');
           break;
         case 'awardMVP':
-          highlights.push({ type: 'awardMVP', season: ev.season, text: _award('MVP') });
+          push({ type: 'awardMVP', season: ev.season, text: _award('MVP') }, 'awardMVP');
           break;
         case 'awardMedia':
-          highlights.push({ type: 'awardMedia', season: ev.season, text: _award('メディア功労賞') });
+          push({ type: 'awardMedia', season: ev.season, text: _award('メディア功労賞') }, 'awardMedia');
           break;
         case 'awardBestMatch':
-          highlights.push({ type: 'awardBestMatch', season: ev.season, text: _t(H.awardBestMatch, { mq: ev.mq || '?' }) });
+          push({ type: 'awardBestMatch', season: ev.season, text: _t(H.awardBestMatch, { mq: ev.mq || '?' }) },
+            'awardBestMatch', Number(ev.mq) || 0);
           break;
-        case 'domeMain':
-          highlights.push({
+        case 'domeMain': {
+          const domeWin = ev.result === 'win';
+          push({
             type: 'domeMain', season: ev.season,
             text: _t(ev.matchType === 'title'
-              ? (ev.result === 'win' ? H.domeTitleWin : H.domeTitleEntry)
-              : (ev.result === 'win' ? H.domeMainWin : H.domeMainEntry))
-          });
+              ? (domeWin ? H.domeTitleWin : H.domeTitleEntry)
+              : (domeWin ? H.domeMainWin : H.domeMainEntry))
+          }, `domeMain:${ev.matchType === 'title' ? 'title' : 'main'}${domeWin ? 'Win' : ''}`);
           break;
+        }
         case 'springTagLeague':
           if (ev.result === 'champion') {
             const partnerName = Engine.career.resolveFighterName(state, ev.partnerId);
-            highlights.push({
+            push({
               type: 'springTagLeague', season: ev.season,
               text: partnerName
                 ? _t(H.springTagWithPartner, { n: ev.season, name: partnerName })
                 : _t(H.springTag, { n: ev.season })
-            });
+            }, 'springTagLeague');
           }
+          break;
+        // ── 2026-09-25(面白さ総点検 06-①): calcHofPoints は加点しているのに実績欄に出なかった ──
+        case 'ppvTournament':
+          // 天頂戦(加点: 優勝8/準優勝5/ベスト4 3)。加点のある結果だけを描く
+          if (ev.result === 'champion') {
+            push({ type: 'ppvTournament', season: ev.season, text: _wmDictLabel(dict, _WM_TENCHOSEN_CHAMPION_JA) },
+              'ppvTournament:champion');
+          } else if (ev.result === 'runnerUp') {
+            push({ type: 'ppvTournament', season: ev.season, text: _t(H.tenchosenRunnerUp) }, 'ppvTournament:runnerUp');
+          } else if (ev.result === 'semiFinal') {
+            push({ type: 'ppvTournament', season: ev.season, text: _t(H.tenchosenSemiFinal) }, 'ppvTournament:semiFinal');
+          }
+          break;
+        case 'autumnWar': {
+          // 4団体勝ち残り対抗戦(加点: 1勝1.5+優勝2+3人抜き以上2)。優勝と3人抜き以上は大会ごとに描き、
+          // それ以外の勝ち星は下で通算に集約する(対抗戦の「通算N勝」と同じ流儀)
+          const awWins = Number(ev.wins) || 0;
+          if (ev.result === 'champion') {
+            push({
+              type: 'autumnWar', season: ev.season,
+              text: awWins >= 3 ? _t(H.autumnWarChampionGauntlet, { n: awWins }) : _wmDictLabel(dict, _WM_AUTUMN_WAR_CHAMPION_JA),
+            }, 'autumnWar:champion', awWins);
+          } else if (awWins >= 3) {
+            push({ type: 'autumnWar', season: ev.season, text: _t(H.autumnWarGauntlet, { n: awWins }) },
+              'autumnWar:gauntlet', awWins);
+          }
+          break;
+        }
+        case 'kaigan':
+          // 開眼(殿堂ptには関与しない。キャリアの転機として実績欄に残す)
+          push({ type: 'kaigan', season: ev.season, text: _t(H.kaigan) }, 'kaigan');
           break;
       }
     });
@@ -21421,39 +21807,39 @@ Engine.awards = {
     const warWinsAll = history.filter(e => e.type === 'war' && e.won);
     if (warWinsAll.length >= 2) {
       const lastWarWin = warWinsAll[warWinsAll.length - 1];
-      highlights.push({
+      push({
         type: 'war', season: lastWarWin.season,
         text: _t(H.war, { n: warWinsAll.length })
-      });
+      }, 'war', warWinsAll.length);
+    }
+    // 4団体勝ち残り対抗戦: 2大会以上で勝ち星がある選手は、通算の勝ち星も1行にまとめる
+    const autumnWithWins = history.filter(e => e.type === 'autumnWar' && (Number(e.wins) || 0) > 0);
+    const autumnWinsTotal = autumnWithWins.reduce((sum, e) => sum + (Number(e.wins) || 0), 0);
+    if (autumnWithWins.length >= 2 && autumnWinsTotal >= 2) {
+      push({
+        type: 'autumnWar', season: autumnWithWins[autumnWithWins.length - 1].season,
+        text: _t(H.autumnWarTotal, { n: autumnWinsTotal }),
+      }, 'autumnWar:total', autumnWinsTotal);
     }
     // calcHofPoints と同じ post-join history / 共通ヘルパーから生成する。
     const unifiedStats = Engine.awards._unifiedCareerStats(history);
-    const generationByWhen = new Map();
-    let derivedGeneration = 0;
-    (state?.unifiedTitle?.history || []).forEach(ev => {
-      if (!['creation', 'crown', 'repeat', 'move'].includes(ev?.type)) return;
-      derivedGeneration++;
-      const generation = Number(ev.generation) || derivedGeneration;
-      generationByWhen.set(`${ev.season}:${ev.week}`, generation);
-    });
-    const generationOf = ev => Number(ev.generation)
-      || generationByWhen.get(`${ev.season}:${ev.week}`) || null;
+    const generationOf = Engine.awards._unifiedGenerationResolver(state);
     unifiedStats.won.forEach(ev => {
       const generation = generationOf(ev);
-      highlights.push({
+      push({
         type: 'unifiedTitle', season: ev.season,
         text: generation ? _t(H.unifiedCrownGeneration, { n: generation }) : _t(H.unifiedCrown),
-      });
+      }, 'unified:won');
     });
     unifiedStats.captured.forEach(ev => {
-      highlights.push({ type: 'unifiedTitle', season: ev.season, text: _t(H.unifiedCapture) });
+      push({ type: 'unifiedTitle', season: ev.season, text: _t(H.unifiedCapture) }, 'unified:captured');
     });
     if (unifiedStats.defenses.length > 0) {
       const lastDefense = unifiedStats.defenses[unifiedStats.defenses.length - 1];
-      highlights.push({
+      push({
         type: 'unifiedTitle', season: lastDefense.season,
         text: _t(H.unifiedDefense, { n: unifiedStats.defenses.length }),
-      });
+      }, 'unified:defense', unifiedStats.defenses.length);
     }
     highlights.sort((a, b) => a.season - b.season);
     return highlights;
@@ -21624,6 +22010,24 @@ Engine.awards = {
       .replace('{name}', (fighter && fighter.name) || '');
   },
 
+  // 2026-09-25(面白さ総点検 06-⑤): 数字の入った異名は、実際の回数と一致するときだけ候補にする。
+  // タグの条件は「○回以上」なので、例えば tripleChamp(戴冠3回以上)の「三度の頂」が4〜7回戴冠した
+  // 選手にも付いていた。合わないときは同じタグの数字の入っていない異名から選ぶ(各タグに必ず残る)。
+  // キーは _EPITHET_TEMPLATES の原文。rec は post-join の集計(totalTitleWins 等)、ctx は
+  // _buildEpithetContext の戻り値。「{n}人切り」は生成時に実数を埋めるので対象外
+  _EPITHET_COUNT_RULES: {
+    '三度の頂': (r) => (r.totalTitleWins || 0) === 3,
+    '二度の戴冠': (r) => (r.totalTitleWins || 0) === 2,
+    '三度の栄冠': (r, ctx) => ctx.mvpCount === 3,
+    '二度の最優秀': (r, ctx) => ctx.mvpCount === 2,
+    'MVP二冠': (r, ctx) => ctx.mvpCount === 2,
+    '三年王朝': (r, ctx) => ctx.maxConsecutiveJT === 3,
+    '三連覇の怪物': (r, ctx) => ctx.maxConsecutiveJT === 3,
+    '二連覇の衝撃': (r, ctx) => ctx.maxConsecutiveJT === 2,
+    '世代を二度制した女': (r) => (r.juniorTournamentWins || 0) === 2,
+    '10年選手': (r, ctx) => ctx.careerSeasons === 10,
+  },
+
   /** C-0: 異名の自動生成 — 実績タグ×重み付きランダム選出 (v2.0)
    * 転生前（NPC事前史）を別人扱いで除外する
    */
@@ -21643,8 +22047,12 @@ Engine.awards = {
     const topTier = matchedTags.filter(t => t.rarity === maxRarity);
 
     const pool = [];
+    // 数字の入った異名は実際の回数と一致するものだけ(_EPITHET_COUNT_RULES)。一致する選手の
+    // プールは従来と同じ並び・同じ本数なので、同じ乱数から同じ異名が選ばれる
+    const COUNT_RULES = Engine.awards._EPITHET_COUNT_RULES;
+    const fitsCount = tmpl => !COUNT_RULES[tmpl] || COUNT_RULES[tmpl](rec || {}, ctx);
     for (const tag of topTier) {
-      const templates = TEMPLATES[tag.id] || [];
+      const templates = (TEMPLATES[tag.id] || []).filter(fitsCount);
       for (const tmpl of templates) {
         pool.push(Engine.awards._resolvePlaceholders(tmpl, rec, f));
       }
@@ -29188,7 +29596,7 @@ Engine.ppvTournament = {
       Engine.achievement.ensureInit(s);
       Engine.achievement.add(s, championEntry.orgId, {
         id: `ppvT_${s.season}`, type: 'ppvTournament', originalPt: 20,
-        label: '天頂戦 優勝', winnerName: champion?.name || '',
+        label: _WM_TENCHOSEN_CHAMPION_JA, winnerName: champion?.name || '',
       });
     }
 
@@ -30848,7 +31256,7 @@ Engine.autumnWar = {
     Engine.achievement.add(s, champion, {
       id: `autumnWar_${s.season}`, type: 'autumnWar',
       originalPt: ACFG.pt.autumnWar || 10,
-      label: '4団体勝ち残り対抗戦 優勝',
+      label: _WM_AUTUMN_WAR_CHAMPION_JA,
       winnerName: Engine.autumnWar._orgName(s, champion),
     });
 
@@ -31045,6 +31453,11 @@ const _NP_JT_ROUND_JA = {
 };
 const _NP_JT_RUNNERUP_FALLBACK_JA = '決勝の相手';
 const _NP_HOF_INDUCTED_JA = '殿堂入り';
+// 2026-09-25(面白さ総点検 06-①): 大会の優勝行。シーズン実績(Engine.achievement)のラベルとして
+// ui-ledger に既訳があるので data.js のテンプレ表へは入れず、ここに1本だけ置く(§15-3)。
+// 経歴年表・殿堂の実績欄・シーズン実績の3か所が同じ原文を `_wmDictLabel` で引く
+const _WM_TENCHOSEN_CHAMPION_JA = '天頂戦 優勝';
+const _WM_AUTUMN_WAR_CHAMPION_JA = '4団体勝ち残り対抗戦 優勝';
 // i18n P7-58: draftRoundup(業界紙のドラフト総評)の評価ティアラベル。
 // ui-common.js _buildDraftSummaryPage 手前のローカル定数(TIER_LABEL)と同じJA原文・同じ
 // raw:'素材'(他画面のTIER_LABELSは原石を使うがdraftRoundupはこの語で確定済み・値を変えない)。
@@ -31644,10 +32057,16 @@ Engine.newspaper = {
   // 通常の引退格（最大+120）とは別枠で積み、天頂戦級の記事と競る特別号にする。
   HOF_RETIREMENT_BONUS: 150,
 
-  /** allHallOfFame（旧セーブは hallOfFame）から選手の殿堂入り記録を引く。 */
-  _findHallOfFameEntry(state, fighterId) {
+  /** allHallOfFame（旧セーブは hallOfFame）から選手の殿堂入り記録を引く。
+   *  opts.retiredSeason(任意): 引退した季が分かっているときは、その季に殿堂入りした記録だけを引く
+   *  (2026-09-25)。同じIDは別の人生で再登場する(K-4裁定: 同姓同名の別人として扱う)ので、IDだけで
+   *  最初に一致した記録を返すと、前の人生の殿堂入り(異名・防衛数)で今の人生の引退記事を書いてしまう。
+   *  殿堂入りは引退した季の表彰式で行われるので、inductionSeason が引退した季と一致する。 */
+  _findHallOfFameEntry(state, fighterId, opts) {
     if (!state || fighterId == null) return null;
-    const sameId = h => h && String(h.id) === String(fighterId);
+    const lifeSeason = (opts && opts.retiredSeason != null) ? Number(opts.retiredSeason) : null;
+    const sameId = h => h && String(h.id) === String(fighterId)
+      && (lifeSeason == null || Number(h.inductionSeason) === lifeSeason);
     const all = state.allHallOfFame || {};
     for (const entries of Object.values(all)) {
       const hit = Array.isArray(entries) ? entries.find(sameId) : null;
@@ -31786,12 +32205,17 @@ Engine.newspaper = {
   },
 
   /** ティア別テンプレから1本選ぶ。同一号に同ティア複数が出る場合は usedCounts で順繰りに回す。
-   *  {reigns} を含むバリアントは reigns>=1 のときだけ選ぶ(無冠者には非使用バリアントを割り当てる)。 */
+   *  {reigns} を含むバリアントは reigns>=1 のときだけ選ぶ(無冠者には非使用バリアントを割り当てる)。
+   *  maxReigns を持つバリアントは戴冠数がその値以下のときだけ選ぶ(2026-09-25。L-3「ベルトの数で
+   *  語られる選手ではなかった」が、同じ号にLティアの引退が3件以上並ぶと複数回戴冠した選手にも
+   *  回ってきていた)。 */
   pickRetirementVariant(tier, reigns, usedCounts) {
     const table = (typeof RETIREMENT_TEMPLATES !== 'undefined') ? RETIREMENT_TEMPLATES[tier] : null;
     if (!table || !table.length) return null;
-    const hasReigns = Number(reigns) > 0;
-    const pool = hasReigns ? table : table.filter(v => !/\{reigns\}/.test(v.body) && !/\{reigns\}/.test(v.headline));
+    const n = Number(reigns) || 0;
+    const hasReigns = n > 0;
+    const pool = table.filter(v => (hasReigns || (!/\{reigns\}/.test(v.body) && !/\{reigns\}/.test(v.headline)))
+      && (v.maxReigns == null || n <= v.maxReigns));
     const list = pool.length ? pool : table;
     const uc = usedCounts || {};
     const idx = (uc[tier] || 0) % list.length;
@@ -32518,12 +32942,16 @@ Engine.newspaper = {
       if (!r || r.id == null || seenRetired[String(r.id)]) return;
       seenRetired[String(r.id)] = 1;
       const cs = Engine.newspaper._retirementCareerStats(r);
+      // 2026-09-25: 殿堂の記録を「この人生」のものだけ引く鍵(季末の commitRetirements と同じ)。
+      // 同じIDの前の人生の retire も履歴に残りうるので、最後の retire の季を使う
+      const lastRetire = ((r.careerRecord && r.careerRecord.history) || []).filter(e => e && e.type === 'retire').pop();
       pushes.push({
         type: 'retirementDeclare', characterId: r.id,
         data: {
           name: r.name, org: s.orgName || _NP_PLAYER_ORG_FALLBACK_JA, orgMissing: playerOrgMissing,
           age: r.age || '', seasons: (r.careerSeasons || 0) + 1,
           reigns: cs.reigns, peakOVR: cs.peakOVR, wasChampion: cs.wasChampion,
+          retiredSeason: (lastRetire && lastRetire.season != null) ? lastRetire.season : s.season,
         },
       });
     });
@@ -32617,6 +33045,19 @@ Engine.newspaper = {
       + Engine.newspaper.intensityBonus(state, story);
   },
 
+  /** 自団体の興行結果(state.currentNewspaper)を「今週の号」に載せてよいか。
+   *  2026-09-25(面白さ総点検 06-④): currentNewspaper は次の興行週の頭まで消えない
+   *  (tickWeek 冒頭の新聞クリアは興行週にしか走らない)ので、存在だけを見ると非興行週の号・
+   *  新年号に前週の興行記事が今週の日付で再掲されていた。興行週で、かつ今週生成された結果だけを載せる。
+   *  generatedWeek/generatedSeason を持たない旧データは「興行週である」ことだけで判定する。 */
+  _isFreshPlayerShow(state) {
+    const cn = state && state.currentNewspaper;
+    if (!cn) return false;
+    if (!Engine.util.isShowWeek(state.week)) return false;
+    if (cn.generatedWeek == null && cn.generatedSeason == null) return true;
+    return cn.generatedWeek === state.week && cn.generatedSeason === state.season;
+  },
+
   /** 毎週の新聞を生成する。tickWeek末尾で呼ばれる */
   // i18n Stage B P4-2(D-P4-2): 第3引数 opts.dict は任意の「辞書参照関数」(text => text)。
   // Engine内でテンプレを充填してGへ焼く箇所のため、生成時点のlangで確定させる必要があり
@@ -32701,7 +33142,10 @@ Engine.newspaper = {
     }
 
     // === 自団体の興行結果（興行週のみ）===
-    if (state.currentNewspaper) {
+    // 2026-09-25: 「興行週で、今週生成された結果」だけを載せる(_isFreshPlayerShow)。以前は存在だけを
+    // 見ていたので、非興行週の号に前週の興行記事が今週の日付で再掲されていた(空の号になってもよい)
+    const playerShowFresh = Engine.newspaper._isFreshPlayerShow(state);
+    if (playerShowFresh) {
       const cn = state.currentNewspaper;
       const isTitleShow = !!cn.isTitleMatch;
       const stampSuffixJa = isTitleShow ? 'タイトル戦' : '定期興行';
@@ -33319,7 +33763,9 @@ Engine.newspaper = {
           const variant = Engine.newspaper.pickRetirementVariant(grade.tier, d.reigns || 0, _retiredVariantCounts);
           const queuedHof = industryEvents.find(x => x && x.type === 'hallOfFame'
             && String(x.characterId) === String(ev.characterId));
-          const hofEntry = Engine.newspaper._findHallOfFameEntry(state, ev.characterId)
+          // 2026-09-25: retiredSeason を持つ記事(季中・季末の自団体の引退)は「この人生」の殿堂入りだけを引く
+          const hofEntry = Engine.newspaper._findHallOfFameEntry(state, ev.characterId,
+            d.retiredSeason != null ? { retiredSeason: d.retiredSeason } : undefined)
             || (queuedHof ? {
               id: ev.characterId, name: d.name,
               titleReigns: queuedHof.data?.titles || d.reigns || 0,
@@ -33542,7 +33988,8 @@ Engine.newspaper = {
       layout: 'v3',
       topStory, subStories,
       unpublishedIndustryEvents,
-      playerShowData: state.currentNewspaper || null,
+      // 詳報(本紙つづき)も同じ条件。非興行週の号に前週の詳報を載せない
+      playerShowData: playerShowFresh ? state.currentNewspaper : null,
       preview,
       pages: null, // 複数ページ時のみ設定
       // MQ再設計P4 §5.2: BIG_NEWS_TYPES に載ったら大ニュース週。週頭PU+一面ジャックの起点。
