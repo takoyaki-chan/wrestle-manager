@@ -47,7 +47,8 @@ header.top{display:flex;flex-direction:column;gap:10px;padding-block:8px 20px}
 .notice ul, .card ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
 .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
 .legend div{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
-.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 10px;white-space:nowrap;line-height:1.7}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 10px;line-height:1.7;max-width:100%}
+.card-head .ttl{min-width:0}
 .pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
 .pill.sure{color:var(--sure);background:var(--sure-soft)}
 .pill.sim{color:var(--sim);background:var(--sim-soft)}
@@ -104,6 +105,26 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px;line-height:1.6;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--ink);resize:vertical}
 #copy-status{font-size:13px;color:var(--new);min-height:1.4em}
 #answer-out{min-height:300px}
+#answer2-out{min-height:200px}
+.reply{border:2px solid var(--gold);border-radius:10px;padding:22px;background:var(--panel);display:flex;flex-direction:column;gap:18px}
+.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px}
+.status-grid div{display:flex;gap:10px;align-items:baseline;border:1px solid var(--line);border-radius:6px;padding:8px 12px;background:var(--panel-2);font-size:14px}
+.status-grid .k{font-family:var(--font-num);font-size:19px;color:var(--gold-ink);min-width:42px}
+.st{font-size:12px;font-weight:700;border-radius:999px;padding:0 8px;white-space:nowrap}
+.st.run{color:var(--taste);background:var(--taste-soft)}
+.st.done{color:var(--sure);background:var(--sure-soft)}
+.st.keep{color:var(--ink-2);background:var(--panel)}
+.st.ask{color:var(--sim);background:var(--sim-soft)}
+.heat{border-collapse:collapse;min-width:720px;font-size:13px}
+.heat th,.heat td{text-align:center;padding:6px 6px;border:1px solid var(--line)}
+.heat th{background:var(--panel-2);font-family:var(--font-body);text-transform:none;letter-spacing:0;font-size:12px;color:var(--ink)}
+.heat td{font-family:var(--font-num);font-size:17px;letter-spacing:.02em}
+.heat td.h-full{background:var(--new-soft);color:var(--new)}
+.heat td.h-mid{background:var(--sim-soft);color:var(--sim)}
+.heat td.h-low{background:var(--now-soft);color:var(--now)}
+.heat th.rowh{text-align:left;white-space:nowrap}
+.formula{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:12px 16px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.formula b{color:var(--gold-ink)}
 .toc{display:flex;flex-wrap:wrap;gap:6px}
 .toc a{font-size:13px;text-decoration:none;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:2px 12px}
 .toc a:hover{border-color:var(--gold)}
@@ -148,9 +169,196 @@ textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px
   <h1>決めてほしい16件</h1>
   <p class="lead">総点検で「Keisukeさんの判断が要る」とした項目を、図と具体例で説明し直しました。各項目の最後に、はい/いいえで答えられる質問を1つずつ置いています。いちばん下の回答シートで選んでコピーすれば、そのままチャットに貼れます。1件ずつの返事でも構いません。</p>
   <nav class="toc" aria-label="項目へ移動">
-    <a href="#k1">K-1</a><a href="#k2">K-2</a><a href="#k3">K-3</a><a href="#k4">K-4</a><a href="#k5">K-5</a><a href="#k6">K-6</a><a href="#k7">K-7</a><a href="#k8">K-8</a><a href="#k9">K-9</a><a href="#k10">K-10</a><a href="#k11">K-11</a><a href="#k12">K-12</a><a href="#k13">K-13</a><a href="#k14">K-14</a><a href="#k15">K-15</a><a href="#k16">K-16</a><a href="#sheet">回答シート</a>
+    <a href="#reply">回答を受けて(9/25)</a><a href="#k1">K-1</a><a href="#k2">K-2</a><a href="#k3">K-3</a><a href="#k4">K-4</a><a href="#k5">K-5</a><a href="#k6">K-6</a><a href="#k7">K-7</a><a href="#k8">K-8</a><a href="#k9">K-9</a><a href="#k10">K-10</a><a href="#k11">K-11</a><a href="#k12">K-12</a><a href="#k13">K-13</a><a href="#k14">K-14</a><a href="#k15">K-15</a><a href="#k16">K-16</a><a href="#sheet">回答シート</a>
   </nav>
 </header>
+
+<section class="reply" id="reply" aria-labelledby="reply-title">
+  <div class="stack">
+    <div class="eyebrow">回答を受けて ・ 2026-09-25</div>
+    <h2 id="reply-title">決まったことと、あと少しだけ確認したいこと</h2>
+  </div>
+
+  <div class="status-grid" aria-label="各項目の状態">
+    <div><span class="k">K-1</span><span>一本化(A)</span><span class="st run">着手: まず差分の一覧</span></div>
+    <div><span class="k">K-2</span><span>★の3項目</span><span class="st ask">★の説明を読んでから</span></div>
+    <div><span class="k">K-3</span><span>会場と人気</span><span class="st ask">計算式の案を確認</span></div>
+    <div><span class="k">K-4</span><span>同姓同名の別人として扱う</span><span class="st ask">設計を書いてから着手</span></div>
+    <div><span class="k">K-5</span><span>後押しは例外として残す(B)</span><span class="st keep">変更なし</span></div>
+    <div><span class="k">K-6</span><span>大ダメージ=最大HPの12%(A)</span><span class="st run">実装中</span></div>
+    <div><span class="k">K-7</span><span>返しをつなぎ直す(A)</span><span class="st keep">K-6 の後に着手</span></div>
+    <div><span class="k">K-8</span><span>世界設定の文言(B)</span><span class="st done">対応済み</span></div>
+    <div><span class="k">K-9</span><span>まず3点(A)</span><span class="st run">実装中(K-13と一緒)</span></div>
+    <div><span class="k">K-10</span><span>大きく悪くなってよい</span><span class="st ask">今のままと受け取りました</span></div>
+    <div><span class="k">K-11</span><span>割合で抑える</span><span class="st ask">ルールの案を確認</span></div>
+    <div><span class="k">K-12</span><span>能力−3を効かせる(A)</span><span class="st run">実装中</span></div>
+    <div><span class="k">K-13</span><span>AIも同じ式(A)</span><span class="st run">実装中(K-9と一緒)</span></div>
+    <div><span class="k">K-14</span><span>GL-01/08を道場へ</span><span class="st run">実装中</span></div>
+    <div><span class="k">K-14</span><span>タッグ勝利セリフの出し場所</span><span class="st ask">案を確認</span></div>
+    <div><span class="k">K-15</span><span>据え置き(B)</span><span class="st keep">変更なし</span></div>
+    <div><span class="k">K-16</span><span>節目の重みは残す</span><span class="st ask">計算式の案を確認</span></div>
+  </div>
+
+  <!-- ★の説明 -->
+  <article class="card" id="stars">
+    <div class="card-head"><div class="num">★</div><div class="ttl">
+      <h2>「★」は試合評価(MQ)とは別物です。しかも★は2種類あります</h2>
+    </div></div>
+    <ul>
+      <li><b>試合評価(MQ = マッチクオリティ)</b>は、1試合ごとの点数です(例: 72)。</li>
+      <li><b>興行結果画面の★</b>は、その興行の試合評価の平均を20点ごとに★にしただけのものです(平均60点台なら★3)。見た目だけで、何にも効きません。</li>
+      <li><b>新聞の「観客満足度 ★」</b>と、週のログの「📊 ★4(平均試合評価 NN)→ 団体人気+X」は、<b>興行全体の評価</b>です。試合評価に、客席の埋まり具合とボーナス(王座戦など)を足して決まり、団体人気・Heat・放映収入に効きます。</li>
+      <li><b>K-2 は、この「観客満足度 ★」のボーナスの話です。</b></li>
+      <li>2種類の★は同じ興行でも食い違うことがあります(結果画面で★2、新聞で★4など)。紛らわしさそのものは、別の機会に1つへ揃えることを提案します。</li>
+    </ul>
+    <figure class="fig">
+      <svg viewBox="0 0 560 300" role="img" aria-label="1試合ごとの試合評価から、興行結果画面の★(平均を20点ごとに★にしただけで何にも効かない)と、観客満足度の★(試合評価・客席・ボーナスの合計で、団体人気・Heat・放映収入に効く)の2つが作られる。K-2は観客満足度の★の話。">
+        <defs><marker id="ahs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+        <text x="0" y="16" class="t-bold">1試合ごとの試合評価(MQ)</text>
+        <rect x="0" y="28" width="150" height="104" rx="6" class="box"/>
+        <text x="14" y="54">第1試合 58</text><text x="14" y="80">第2試合 66</text><text x="14" y="106">メイン 81</text>
+        <text x="14" y="126" class="t-small t-muted">(例)</text>
+        <path d="M150,62 L206,50" class="ln" marker-end="url(#ahs)"/>
+        <path d="M150,100 L206,178" class="ln" marker-end="url(#ahs)"/>
+        <rect x="210" y="18" width="350" height="80" rx="6" class="box"/>
+        <text x="224" y="42" class="t-bold">興行結果画面の★</text>
+        <text x="224" y="64">平均68 → ★★★☆☆(20点ごとに1つ)</text>
+        <text x="224" y="86" class="t-small t-muted">見た目だけ。何にも効かない</text>
+        <rect x="210" y="120" width="350" height="170" rx="6" class="box-new"/>
+        <text x="224" y="144" class="t-bold t-new">観客満足度の★(新聞・週のログ)</text>
+        <text x="224" y="168">試合評価(最大60点)</text>
+        <text x="224" y="190">+ 客席の埋まり(最大15点)</text>
+        <text x="224" y="212">+ ボーナス(最大25点: 王座戦・因縁の決着 など)</text>
+        <text x="224" y="236">→ ★1〜5 → 団体人気・Heat・放映収入に効く</text>
+        <text x="224" y="270" class="t-bold t-new">K-2 はこちらのボーナスの話</text>
+      </svg>
+    </figure>
+    <div class="ask"><div class="sub">あらためて: K-2</div><p>観客満足度の★で、今は効いていない「因縁の決着+6・因縁カード+2・ファン期待+4」を効かせ、★の基準を較正し直してよいですか?(A: 効かせる / B: 仕様から消す / C: 今のまま)</p></div>
+  </article>
+
+  <!-- K-3 計算式 -->
+  <article class="card" id="k3-formula">
+    <div class="card-head"><div class="num">K-3</div><div class="ttl">
+      <h2>計算式の案: 人気が上がったら、小さい会場ほど人気の伸びを減らす</h2>
+      <div class="badges"><span class="pill sure">数字は実際のゲームの関数で計算</span></div>
+    </div></div>
+    <p>いただいた方向(ある程度人気が上がった段階から、低い階層ほど上がり方が減る)を、団体の「見込み客数」と会場の大きさの比で表しました。</p>
+    <div class="formula">
+      <div><b>見込み客数</b> = 今の団体人気から見込める客数(ゲーム内の既存の表: 人気30で550人、50で1,500人、70で3,400人、90で7,000人)</div>
+      <div><b>会場の器</b> = 会場の席数 ÷ (見込み客数 × 0.6)。1以上なら1、下限は0.2</div>
+      <div><b>効き始め</b> = 人気20までは影響なし。20〜40で徐々に効き、40で全部効く</div>
+      <div><b>係数</b> = 1 − (1 − 会場の器) × 効き始め</div>
+      <div>興行で団体人気が<b>上がるときだけ</b>、この係数を掛けます。下がるときは今のまま。★の基準(会場ごとの甘さ)も今のままです。</div>
+    </div>
+    <div class="table-wrap">
+      <table class="heat" aria-label="団体人気と会場ごとの係数">
+        <thead><tr><th class="rowh">団体人気(見込み客数)</th><th>公民館<br>150</th><th>小ホールA<br>300</th><th>小ホールB<br>500</th><th>市民会館<br>800</th><th>中ホールA<br>1,200</th><th>中ホールB<br>2,000</th><th>大ホール<br>3,500</th><th>アリーナ<br>6,000</th><th>大会場<br>12,000</th><th>ドーム<br>22,500</th></tr></thead>
+        <tbody>
+          <tr><th class="rowh">20(300人)</th><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td></tr>
+          <tr><th class="rowh">30(550人)</th><td class="h-mid">0.73</td><td class="h-full">0.95</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td></tr>
+          <tr><th class="rowh">40(900人)</th><td class="h-low">0.28</td><td class="h-mid">0.56</td><td class="h-full">0.93</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td></tr>
+          <tr><th class="rowh">50(1,500人)</th><td class="h-low">0.2</td><td class="h-low">0.33</td><td class="h-mid">0.56</td><td class="h-full">0.89</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td></tr>
+          <tr><th class="rowh">60(2,400人)</th><td class="h-low">0.2</td><td class="h-low">0.21</td><td class="h-low">0.35</td><td class="h-mid">0.56</td><td class="h-full">0.83</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td></tr>
+          <tr><th class="rowh">70(3,400人)</th><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.25</td><td class="h-low">0.39</td><td class="h-mid">0.59</td><td class="h-full">0.98</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td></tr>
+          <tr><th class="rowh">80(4,800人)</th><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.28</td><td class="h-low">0.42</td><td class="h-mid">0.69</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td></tr>
+          <tr><th class="rowh">90(7,000人)</th><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.29</td><td class="h-low">0.48</td><td class="h-full">0.83</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td></tr>
+          <tr><th class="rowh">100(10,000人)</th><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.2</td><td class="h-low">0.33</td><td class="h-mid">0.58</td><td class="h-full">1.0</td><td class="h-full">1.0</td><td class="h-full">1.0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="why">緑=そのまま伸びる、黄=やや減る、赤=大きく減る。人気が上がるほど、係数1.0の会場が右へずれていきます。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>人気80の団体の1興行</th><th>今</th><th>案</th></tr></thead>
+        <tbody>
+          <tr><td>公民館・小ホールBで★5</td><td>+0.44</td><td>+0.09</td></tr>
+          <tr><td>中ホールAで★5</td><td>+0.44</td><td>+0.18</td></tr>
+          <tr><td>中ホールBで★5(見込みより少し小さい箱で満員)</td><td>+0.44</td><td>+0.31</td></tr>
+          <tr><td>大ホールで★4(見込みに合った会場)</td><td>+0.22</td><td>+0.22</td></tr>
+          <tr><td>大ホールで★5</td><td>+0.44</td><td>+0.44</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="why">「見込みより一回り小さい箱で満員」は、少しだけ得が残ります(熱気のある会場の味)。極端に小さい箱に留まる得は無くなります。0.6・0.2・20〜40の数字は、実装後に100季で測って調整します。</p>
+    <div class="ask"><div class="sub">決めてほしい質問</div><p>この計算式の方向で実装してよいですか?(数字の微調整は計測してから相談します)</p></div>
+  </article>
+
+  <!-- K-16 計算式 -->
+  <article class="card" id="k16-formula">
+    <div class="card-head"><div class="num">K-16</div><div class="ttl">
+      <h2>計算式の案: 節目の大会は、興行よりずっとゆるい逓減にする</h2>
+      <div class="badges"><span class="pill sure">数字は実際のゲームの関数で計算</span></div>
+    </div></div>
+    <p>対抗戦や秋の大会の重みを残すため、興行と同じ逓減にはしません。興行の逓減と「逓減なし」のちょうど中間を、節目の大会に使います。</p>
+    <div class="formula">
+      <div><b>節目の係数</b> = (1 + 興行の逓減) ÷ 2</div>
+      <div>勝ちにも負けにも同じ係数を掛けます(勝ちだけ減らすと、人気の高い団体ほど対抗戦が損な勝負になってしまうため)。</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>団体人気</th><th>節目の係数</th><th>対抗戦 勝ち / 負け</th><th>秋の大会 優勝 / 準決勝負け</th><th>対抗戦の1勝は★4興行の何回分</th></tr></thead>
+        <tbody>
+          <tr><td>〜19</td><td>1.0(今と同じ)</td><td>+5 / −3</td><td>+4 / −2</td><td>5回分(今と同じ)</td></tr>
+          <tr><td>20〜39</td><td>0.85</td><td>+4.3 / −2.6</td><td>+3.4 / −1.7</td><td>6回分(今は7回分)</td></tr>
+          <tr><td>40〜54</td><td>0.68</td><td>+3.4 / −2.0</td><td>+2.7 / −1.4</td><td>10回分(今は14回分)</td></tr>
+          <tr><td>55〜84</td><td>0.61</td><td>+3.1 / −1.8</td><td>+2.4 / −1.2</td><td>14回分(今は23回分)</td></tr>
+          <tr><td>85〜94</td><td>0.58</td><td>+2.9 / −1.7</td><td>+2.3 / −1.2</td><td>19回分(今は33回分)</td></tr>
+          <tr><td>95〜</td><td>0.53</td><td>+2.7 / −1.6</td><td>+2.1 / −1.1</td><td>44回分(今は83回分)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="why">どの人気帯でも、対抗戦の1勝は興行10回分以上の重みが残ります。一方で「1回の結果でシーズンの人気がほぼ決まる」状態は和らぎます。準優勝は今の+1が+0.6前後になります。</p>
+    <div class="ask"><div class="sub">決めてほしい質問</div><p>この「節目用のゆるい逓減(勝ち負け両方)」で実装してよいですか?(負けの側だけ今のままにする形もできます)</p></div>
+  </article>
+
+  <!-- K-11 ルール -->
+  <article class="card" id="k11-rule">
+    <div class="card-head"><div class="num">K-11</div><div class="ttl">
+      <h2>ルールの案: 他団体のポップアップは、自団体の件数まで</h2>
+    </div></div>
+    <ul>
+      <li>他団体の関係性ポップアップは、直近12週に出た自団体の件数までにします(最低でも12週に1件は出す)。</li>
+      <li>出す1件を選ぶときは、王者・人気上位の選手、または自団体の選手と縁のある選手(元所属・宿敵)が絡む出来事を優先します。</li>
+      <li>見込み: 自団体 約5件/年に対し、他団体は約62件/年 → 5件前後/年。</li>
+    </ul>
+    <div class="ask"><div class="sub">決めてほしい質問</div><p>他団体の件数は「自団体と同じくらいまで(1:1)」でよいですか? もう少し他団体を見せたいなら「自団体の2倍まで」にもできます。</p></div>
+  </article>
+
+  <!-- K-14 タッグ -->
+  <article class="card" id="k14-tag">
+    <div class="card-head"><div class="num">K-14</div><div class="ttl">
+      <h2>タッグの勝利セリフの出し場所</h2>
+    </div></div>
+    <ul>
+      <li>タッグの決着画面には、もう勝者のセリフ欄があります。今はそこに、口調7種×3本=21本の短いセリフが出ています。</li>
+      <li>使われていない勝利セリフ98本(口調7×性格7×2本)は、「{パートナー}、ありがとう」のようにパートナーのフルネームを差し込む書き方です。8/3に「決着画面のセリフにフルネームを差し込まない」と決めたため、外されていました。</li>
+      <li>案: 98本からパートナーの名前を抜いた書き方に直し(例: 「二人だから勝てたよ。ありがとう」)、今の勝利セリフ欄の抽選に加えます。性格ごとに違うセリフが出るようになります。</li>
+      <li>書き直しはセリフ担当(Opus)に下書きさせ、全文を見ていただいてから入れます。英語版も合わせて直します。連携セリフ(148本)は入れません。</li>
+    </ul>
+    <div class="ask"><div class="sub">決めてほしい質問</div><p>この形(名前を抜いて書き直し、今の勝利セリフ欄に加える)で進めてよいですか?</p></div>
+  </article>
+
+  <!-- K-10 確認 -->
+  <article class="card" id="k10-confirm">
+    <div class="card-head"><div class="num">K-10</div><div class="ttl">
+      <h2>受け取り方の確認</h2>
+    </div></div>
+    <p>「大きく悪くなるのは別にいい」とのことなので、衝突の確率と悪化の幅は<b>今のまま</b>にします。ただ監査では、控室が荒れる理由のほとんどが「ベビーフェイスとヒールだから」の一点で、社長が止める手が無い、という点も見つかっていました。そちらは抗争の器(数か月の抗争の管理)を作るときに、社長のカードで空気が動く形として一緒に考えます。</p>
+    <div class="ask"><div class="sub">確認</div><p>K-10 は「今のまま」でよいですか?</p></div>
+  </article>
+
+  <!-- 追加の回答シート -->
+  <form class="sheet" id="answer2-form" autocomplete="off">
+    <div class="sub">追加の回答シート</div>
+    <div id="sheet2-rows"></div>
+    <div class="btns">
+      <button type="button" class="primary" id="copy2-out">選んだ内容をコピー</button>
+    </div>
+    <p id="copy2-status" role="status" aria-live="polite"></p>
+    <label for="answer2-out" class="sub">チャットに貼る文面</label>
+    <textarea id="answer2-out" readonly></textarea>
+  </form>
+</section>
 
 <section class="notice" aria-labelledby="fix-title">
   <h2 id="fix-title">先に訂正: 資金の件</h2>
@@ -586,9 +794,10 @@ textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px
 <article class="card" id="k9">
   <div class="card-head"><div class="num">K-9</div><div class="ttl">
     <h2>AI団体の順位(S&gt;A&gt;B)が動かない件</h2>
-    <div class="badges"><span class="pill sure">確定(AI同士の結果なので自動プレイヤーの腕に関係しない)</span><span class="pill size">A 小〜中</span></div>
+    <div class="badges"><span class="pill sure">コードで確定</span><span class="pill size">A 小〜中</span></div>
   </div></div>
   <p class="oneline">AI3団体の順位が、70季のあいだ一度も入れ替わりません。選手の実力差は小さいのに、「今強い団体がもっと得をする」仕組みが重なっています。</p>
+  <p class="why">AI同士の結果なので、自動プレイヤーの腕には関係しません。</p>
   <div class="sub">いま起きていること</div>
   <ul>
     <li>S団体とA団体の評価の差は約160点。そのうち選手の実力の差は約24点だけです(下の図)。</li>
@@ -956,6 +1165,82 @@ textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px
     statusEl.textContent = 'クリアしました。';
   });
   document.getElementById('copy-out').addEventListener('click', function(){
+    render();
+    var text = outEl.value;
+    function fallback(){ outEl.focus(); outEl.select(); statusEl.textContent = '文面を選択しました。Ctrl+C(スマホは長押し)でコピーしてください。'; }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ statusEl.textContent = 'コピーしました。チャットに貼ってください。'; }, fallback);
+      } else { fallback(); }
+    } catch (e) { fallback(); }
+  });
+  load();
+  render();
+})();
+(function(){
+  var ITEMS2 = [
+    {k:'K-2', q:'観客満足度★の効いていない3項目', opts:[['A','効かせて★を較正し直す'],['B','仕様から消す'],['C','今のまま']]},
+    {k:'K-3', q:'会場の器の計算式', opts:[['OK','この方向で実装'],['RE','考え直してほしい'],['KEEP','今のまま']]},
+    {k:'K-10', q:'ベビーフェイス×ヒールの衝突', opts:[['KEEP','今のまま'],['SPEC','仕様値に戻す']]},
+    {k:'K-11', q:'他団体ポップアップの割合', opts:[['1:1','自団体と同じくらいまで'],['1:2','自団体の2倍まで']]},
+    {k:'K-14', q:'タッグ勝利セリフ98本', opts:[['OK','名前を抜いて書き直し、勝利欄に加える'],['KEEP','今のまま']]},
+    {k:'K-16', q:'節目の大会の逓減', opts:[['OK','勝ち負け両方ゆるく'],['WIN','負けは今のまま'],['KEEP','今のまま']]}
+  ];
+  var KEY2 = 'wm-audit-decisions-v2';
+  var rowsEl = document.getElementById('sheet2-rows');
+  var outEl = document.getElementById('answer2-out');
+  var statusEl = document.getElementById('copy2-status');
+  if (!rowsEl || !outEl) return;
+  function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]/g,'x'); }
+  ITEMS2.forEach(function(it){
+    var row = document.createElement('div'); row.className = 'sheet-row';
+    var k = document.createElement('div'); k.className = 'k'; k.textContent = it.k;
+    var q = document.createElement('div'); q.className = 'q'; q.textContent = it.q;
+    var ch = document.createElement('div'); ch.className = 'choices';
+    it.opts.forEach(function(o){
+      var id = 'ans2-' + slug(it.k) + '-' + slug(o[0]);
+      var lab = document.createElement('label'); lab.setAttribute('for', id);
+      var inp = document.createElement('input'); inp.type = 'radio'; inp.name = 'ans2-' + slug(it.k); inp.id = id; inp.value = o[0];
+      lab.appendChild(inp); lab.appendChild(document.createTextNode(o[1]));
+      ch.appendChild(lab);
+    });
+    row.appendChild(k); row.appendChild(q); row.appendChild(ch);
+    rowsEl.appendChild(row);
+  });
+  function current(){
+    var res = {};
+    ITEMS2.forEach(function(it){
+      var sel = document.querySelector('input[name="ans2-' + slug(it.k) + '"]:checked');
+      res[it.k] = sel ? sel.value : null;
+    });
+    return res;
+  }
+  function render(){
+    var res = current();
+    var lines = ['総点検 追加の回答'];
+    ITEMS2.forEach(function(it){
+      var v = res[it.k];
+      if (!v) { lines.push(it.k + ': 保留'); return; }
+      var label = '';
+      it.opts.forEach(function(o){ if (o[0] === v) label = o[1]; });
+      lines.push(it.k + ': ' + label);
+    });
+    outEl.value = lines.join('\n');
+  }
+  function save(){ try { localStorage.setItem(KEY2, JSON.stringify(current())); } catch (e) {} }
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY2); if (!raw) return;
+      var data = JSON.parse(raw);
+      Object.keys(data || {}).forEach(function(k){
+        var v = data[k]; if (!v) return;
+        var el = document.getElementById('ans2-' + slug(k) + '-' + slug(v));
+        if (el) el.checked = true;
+      });
+    } catch (e) {}
+  }
+  document.getElementById('answer2-form').addEventListener('change', function(){ render(); save(); });
+  document.getElementById('copy2-out').addEventListener('click', function(){
     render();
     var text = outEl.value;
     function fallback(){ outEl.focus(); outEl.select(); statusEl.textContent = '文面を選択しました。Ctrl+C(スマホは長押し)でコピーしてください。'; }
