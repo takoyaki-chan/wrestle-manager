@@ -1004,6 +1004,9 @@ Engine.tagMatch = (() => {
   function calcCutinRate(type, apronFighter, bond, cutinCount) {
     // bond-rivalry plan P-1: bond ≤ 20 不仲ペアはタッグ連携（cut-in救援）を打たない
     if ((bond != null ? bond : 50) <= 20) return 0;
+    // K-12 追加(2026-09-26): 不仲の判定は「2人の絆の低い方」。渡される bond(ケミストリー用の片方向の値)が
+    // 20を超えていても、Engine.showTagMatch.penalize が付けた印のある選手は救援しない
+    if (apronFighter && apronFighter._noCutin) return 0;
     const CC = TAG_MATCH_CONFIG.cutin;
     let base;
     if (type === 'pin') base = CC.basePinRate;
@@ -1974,6 +1977,8 @@ Engine.tagExp = {
 //  以前は呼び出し元ごとに不仲処理を書き写していた。能力-3はキー名の誤り(power 等)で
 //  どの経路でも効いておらず、全スキップと headless では試合後の信頼-1も抜けていた。
 //  押したボタンで結果が変わらないよう、乱数・絆・不仲ペナルティ・試合後処理を1か所に置く。
+//  不仲の判定(pairBond / isLowBond / isDiscord)と罰(penalize / applyTrustPenalty)は、
+//  春のタッグリーグ(Engine.springTagLeague.run / simulateReplay / apply)もここを呼ぶ(K-12 追加 2026-09-26)。
 //  Pure functions only.
 // ══════════════════════════════════════════════════════════
 Engine.showTagMatch = {
@@ -1987,38 +1992,78 @@ Engine.showTagMatch = {
    */
   PENALTY_STATS: Object.freeze(['pw', 'sp', 'te', 'mn']),
 
-  /** タッグ1ペアの絆。試合と興行画面(🤝 / ⚠ 不仲 の表示)は必ずこの値を使う */
-  pairBond(state, id1, id2) {
+  /** 片方向の絆(from→to)。未登録・数値でないときは50 */
+  _directedBond(state, fromId, toId) {
     const rels = state && state.relationships;
-    const rel = rels ? rels[`${Math.min(id1, id2)}>${Math.max(id1, id2)}`] : null;
+    const rel = rels ? rels[`${fromId}>${toId}`] : null;
     // 絆0は正当な値(完全に冷え切った仲)。以前の `bond || 50` は0を50に化けさせ、
     // いちばん険悪なペアが「🤝 50」と表示されて不仲判定からも漏れていた。
     return (rel && Number.isFinite(rel.bond)) ? rel.bond : 50;
+  },
+
+  /**
+   * タッグ1ペアの絆 = 2人の絆の低い方(A→B と B→A の min)。
+   * 不仲の判定と画面の表示(興行プレビューの 🤝 / ⚠ 不仲、カード編成の 🤝 友好)は必ずこの値を使う。
+   * K-12 追加(2026-09-26): 以前は `小さいID>大きいID` の片方向だけを読んでいて、
+   * 相手からの絆だけが冷え切ったペアが不仲にならなかった(どちら向きを読むかはIDの大小で決まっていた)。
+   */
+  pairBond(state, id1, id2) {
+    const self = Engine.showTagMatch;
+    return Math.min(self._directedBond(state, id1, id2), self._directedBond(state, id2, id1));
+  },
+
+  /**
+   * 試合エンジンへ bond_A / bond_B として渡すケミストリー用の絆(`小さいID>大きいID` の片方向)。
+   * ケミストリー・タッチ・救援率の絆補正・裏切り判定はこの値で動く。K-12 追加の時点で
+   * 数値を不仲の3効果以外で動かさないため据え置いた(不仲の判定は pairBond の低い方)。
+   */
+  chemistryBond(state, id1, id2) {
+    return Engine.showTagMatch._directedBond(state, Math.min(id1, id2), Math.max(id1, id2));
   },
 
   isLowBond(bond) {
     return bond <= Engine.showTagMatch.LOW_BOND_MAX;
   },
 
-  /** 試合用の一時コピーを返す。選手本体の能力値は変えない */
+  /** 不仲ペアか(2人の絆の低い方が20以下)。全経路の判定はここに集める */
+  isDiscord(state, id1, id2) {
+    const self = Engine.showTagMatch;
+    return self.isLowBond(self.pairBond(state, id1, id2));
+  },
+
+  /**
+   * 試合用の一時コピーを返す。選手本体の能力値は変えない。
+   * pw/sp/te/mn を各-3 し、`_noCutin` の印で連携(カットイン救援)を止める(calcCutinRate が読む)
+   */
   penalize(fighter) {
-    const copy = { ...fighter };
+    const copy = { ...fighter, _noCutin: true };
     Engine.showTagMatch.PENALTY_STATS.forEach(key => {
       if (Number.isFinite(copy[key])) copy[key] = Math.max(1, copy[key] - Engine.showTagMatch.STAT_PENALTY);
     });
     return copy;
   },
 
+  /** 試合後の信頼-1 を times 回ぶん反映した roster を返す(対象がいなければ同じ配列を返す) */
+  applyTrustPenalty(roster, ids, times) {
+    const n = times == null ? 1 : times;
+    if (!ids || ids.length === 0 || !(n > 0)) return roster;
+    const hit = new Set(ids.map(id => String(id)));
+    return (roster || []).map(c => hit.has(String(c.id))
+      ? { ...c, trust: Math.max(0, (c.trust != null ? c.trust : 50) - n) }
+      : c);
+  },
+
   /**
    * 通常興行のタッグ1試合をシミュレートする。
-   *  - 不仲ペア(絆≤20): 試合用コピーの pw/sp/te/mn を各-3
-   *  - 連携不可: 絆を bond_A/bond_B で渡し、calcCutinRate が0を返す
+   *  - 不仲ペア(2人の絆の低い方≤20): 試合用コピーの pw/sp/te/mn を各-3
+   *  - 連携不可: penalize の `_noCutin` で calcCutinRate が0を返す
    *  - 試合後: 不仲ペア両者の trust -1 を反映した roster を返す(呼び出し元が書き戻す)
    * @param {Object} state - relationships / tagExp / rngSeed / season / week / roster を読む
    * @param {Object} teamA - { fighter1, fighter2 }(state.roster の選手)
    * @param {Object} teamB - { fighter1, fighter2 }
    * @param {Object} [extraOpts] - simulateTagMatch へ足すオプション(観戦の recordFrames など)
    * @returns {{ result: Object, roster: Array, lowBondIds: Array, bondA: number, bondB: number }}
+   *   bondA / bondB は不仲の判定に使った値(pairBond = 2人の絆の低い方)
    */
   simulate(state, teamA, teamB, extraOpts) {
     const self = Engine.showTagMatch;
@@ -2036,15 +2081,13 @@ Engine.showTagMatch = {
       rng,
       {
         ...(extraOpts || {}),
-        bond_A: bondA, bond_B: bondB,
+        bond_A: self.chemistryBond(state, a1.id, a2.id), bond_B: self.chemistryBond(state, b1.id, b2.id),
         tagExp_A: Engine.tagExp.getCount(state, a1.id, a2.id),
         tagExp_B: Engine.tagExp.getCount(state, b1.id, b2.id),
       }
     );
     const lowBondIds = [...(lowA ? [a1.id, a2.id] : []), ...(lowB ? [b1.id, b2.id] : [])];
-    const roster = lowBondIds.length === 0 ? state.roster : (state.roster || []).map(c => lowBondIds.includes(c.id)
-      ? { ...c, trust: Math.max(0, (c.trust != null ? c.trust : 50) - 1) }
-      : c);
+    const roster = self.applyTrustPenalty(state.roster, lowBondIds, 1);
     return { result, roster, lowBondIds, bondA, bondB };
   },
 };
