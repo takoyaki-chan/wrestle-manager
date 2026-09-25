@@ -10044,8 +10044,10 @@ const App = {
     if (!isTagMain && G.relationships) {
       const kAB = `${main.left.id}>${main.right.id}`;
       const kBA = `${main.right.id}>${main.left.id}`;
-      const bA = G.relationships[kAB]?.bond || 50;
-      const bB = G.relationships[kBA]?.bond || 50;
+      // 絆0は正当な値(冷え切った仲)。欠損・数値でないときだけ50(旧 `|| 50` は0を50に化けさせていた)
+      const _bondOf = rel => (rel && Number.isFinite(rel.bond)) ? rel.bond : 50;
+      const bA = _bondOf(G.relationships[kAB]);
+      const bB = _bondOf(G.relationships[kBA]);
       bondAvg = Math.round((((bA + bB) / 2) + Number.EPSILON) * 10) / 10;
     }
     const isHighBond = bondAvg >= 70;
@@ -13276,7 +13278,7 @@ const App = {
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
-      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
+      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale ?? 60),
       orgPop: Engine.util.clamp((G.orgPop || 0) + orgPopDelta, 0, 100),
       gameLog: [...(G.gameLog || []), ...displayEvents]
     };
@@ -15009,7 +15011,7 @@ const App = {
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
-      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
+      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale ?? 60),
       decisionPoints: result.decisionPoints != null ? result.decisionPoints : G.decisionPoints,
       _decisionWeekUsed: result._decisionWeekUsed || G._decisionWeekUsed || {},
       _decisionDoneThisWeek: [...(G._decisionDoneThisWeek || []), docId],
@@ -15686,7 +15688,7 @@ const App = {
         const mBoost = 3 + Math.min(2, Math.floor(bwt.player / 10)); // +3〜+5
         G = { ...G,
           _newsWarMilestone: { orgId: 'player', orgName: G.orgName || 'プレイヤー団体', wins: bwt.player },
-          lockerRoomMorale: Math.min(100, (G.lockerRoomMorale || 60) + mBoost),
+          lockerRoomMorale: Math.min(100, (G.lockerRoomMorale ?? 60) + mBoost),
         };
       }
     }
@@ -15716,7 +15718,7 @@ const App = {
     let jtMediaTotal = 0;
     wp.results.forEach(r => {
       if (r.playerFighter) {
-        const rev = Math.round((r.playerFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+        const rev = Math.round((r.playerFighter.popularity ?? 1) * MEDIA_CONFIG.jtPerPop);
         jtMediaTotal += rev;
         // メディア功労賞: 個人別メディア収入累計に加算
         G = { ...G, roster: G.roster.map(c =>
@@ -15725,7 +15727,7 @@ const App = {
       }
       // AI団体選手のメディア収入個人トラッキング（対抗戦出場）
       if (r.aiFighter && ev.opponentOrgId && G.aiOrgs && G.aiOrgs[ev.opponentOrgId]) {
-        const aiRev = Math.round((r.aiFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+        const aiRev = Math.round((r.aiFighter.popularity ?? 1) * MEDIA_CONFIG.jtPerPop);
         if (aiRev > 0) {
           const aiOrg = G.aiOrgs[ev.opponentOrgId];
           G = { ...G, aiOrgs: { ...G.aiOrgs, [ev.opponentOrgId]: {

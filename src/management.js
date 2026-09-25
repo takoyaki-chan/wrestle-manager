@@ -8138,7 +8138,7 @@ const Engine = {
             }
           }
         } else {
-          lockerRoomMorale = Math.max(0, (lockerRoomMorale || 50) - 2);
+          lockerRoomMorale = Math.max(0, (lockerRoomMorale ?? 50) - 2);
         }
         return {
           ...updatedG,
@@ -10476,7 +10476,7 @@ const Engine = {
       // v0.2: abilities ベースのフィット判定
       const abs = coach.abilities || [];
       if (abs.some(a => a === '新人育成')) score += (fighter.age || 99) <= 21 ? 6 : 2;
-      if (abs.some(a => a === '怪我耐性')) score += Math.max(0, 80 - (fighter.condition || 70)) * 0.08;
+      if (abs.some(a => a === '怪我耐性')) score += Math.max(0, 80 - (fighter.condition ?? 70)) * 0.08;
       if (abs.some(a => a === '延命術')) score += (fighter.age || 17) >= 27 ? 5 : 0;
       if (abs.some(a => a === 'スター製造')) score += (fighter.popularity || 0) >= 40 ? 3 : 1;
       if (abs.some(a => a === '限界突破' || a === '弱点克服')) score += 4;
@@ -10711,7 +10711,7 @@ const Engine = {
     /** AI試合カード生成: OVR近接ペアリング + matchupLog鮮度考慮 + 因縁スコアリング(v2.1) */
     generateAIMatchCard(roster, matchupLog, showCount, state) {
       const available = roster
-        .filter(f => !f.injury && (f.condition || 70) > 20)
+        .filter(f => !f.injury && (f.condition ?? 70) > 20)
         .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
       // matchupLogがある場合、直近3回以内の同カードにペナルティ
       const recentThreshold = (showCount || 0) - 3;
@@ -10792,7 +10792,7 @@ const Engine = {
         if (!fighter) continue;
 
         // 状況ベースでケア種別を自動選択
-        const condition = fighter.condition || 70;
+        const condition = fighter.condition ?? 70;
         const popularity = fighter.popularity || 0;
         const losses = fighter.losses || 0;
         const streak = fighter.streak || 0;
@@ -10823,7 +10823,7 @@ const Engine = {
         roster = roster.map(f => {
           if (f.id !== target.id) return f;
           let nf = applyTrust(f, trustDelta);
-          if (condDelta > 0) nf = { ...nf, condition: Math.min(100, (nf.condition || 70) + condDelta) };
+          if (condDelta > 0) nf = { ...nf, condition: Math.min(100, (nf.condition ?? 70) + condDelta) };
           return nf;
         });
 
@@ -11093,7 +11093,7 @@ const Engine = {
             let updatedRoster = roster;
             if (aiActivityType === 'fashion') {
               const popGain = mult >= 1.4 ? 3 : mult >= 0.8 ? 2 : 1;
-              updatedRoster = roster.map(f => f.id !== target.id ? f : { ...f, popularity: Engine.util.clamp((f.popularity || 1) + popGain, 1, 100), talentActivityBuff: { type: aiActivityType, remainingWeeks: 0, multiplier: mult }, talentCountSeason: (f.talentCountSeason || 0) + 1 });
+              updatedRoster = roster.map(f => f.id !== target.id ? f : { ...f, popularity: Engine.util.clamp((f.popularity ?? 1) + popGain, 1, 100), talentActivityBuff: { type: aiActivityType, remainingWeeks: 0, multiplier: mult }, talentCountSeason: (f.talentCountSeason || 0) + 1 });
             } else if (aiActivityType === 'fan') {
               const trustGain = mult >= 1.4 ? 6 : mult >= 0.8 ? 4 : 2;
               updatedRoster = roster.map(f => {
@@ -11299,7 +11299,7 @@ const Engine = {
         }
 
         if (nc.injury) {
-          nc.condition = Math.min(100, (nc.condition || 50) + 5);
+          nc.condition = Math.min(100, (nc.condition ?? 50) + 5);
           nc.injury = { ...nc.injury, weeksLeft: nc.injury.weeksLeft - 1 };
           if (nc.injury.weeksLeft <= 0) {
             nc.injury = null;
@@ -11314,9 +11314,9 @@ const Engine = {
         const condBonus = Engine.coach.getCondBonus(stateForCalc, nc.id);
 
         // balance と同じ安全弁: 体調を崩した選手は興行週も含めて自動休養する。
-        if ((nc.condition || 70) < 60) {
+        if ((nc.condition ?? 70) < 60) {
           const restIronBonus = (nc.traits || []).includes('鉄人') ? 3 : 0;
-          nc.condition = Math.min(100, (nc.condition || 70) + 8 + Engine.rng.int(rng, 0, 7) + condBonus + restIronBonus);
+          nc.condition = Math.min(100, (nc.condition ?? 70) + 8 + Engine.rng.int(rng, 0, 7) + condBonus + restIronBonus);
           nc.intensiveWeeks = 0;
           if (GROWTH_CONFIG.intensiveHeatTable !== null) nc._heat = Math.max(0, (nc._heat ?? 0) - 2);
           return nc;
@@ -11329,17 +11329,17 @@ const Engine = {
           const showAceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc, state.leagueElevated);
           const isGeneral = showAceConfig === showConfig.general;
           const hasMediaTrait = (nc.traits || []).includes('華') || (nc.traits || []).includes('ファンサービス');
-          if (isGeneral && hasMediaTrait && (nc.condition || 70) >= 60 && (nc.promoStack || 0) < 3) {
+          if (isGeneral && hasMediaTrait && (nc.condition ?? 70) >= 60 && (nc.promoStack || 0) < 3) {
             const mnVal = nc.mn || 50;
             let rawGain = 1.2 + mnVal * 0.006;
             if ((nc.traits || []).includes('華')) rawGain += 0.3;
             if ((nc.traits || []).includes('ファンサービス')) rawGain += 0.2;
             const diminished = Engine.popularity.applyDiminishing(rawGain, nc.popularity);
-            nc.popularity = Math.min(100, (nc.popularity || 1) + diminished);
-            nc.condition = Math.max(0, (nc.condition || 70) - (1 + Engine.rng.int(rng, 0, 1)));
+            nc.popularity = Math.min(100, (nc.popularity ?? 1) + diminished);
+            nc.condition = Math.max(0, (nc.condition ?? 70) - (1 + Engine.rng.int(rng, 0, 1)));
             nc.promoStack = Math.min(3, (nc.promoStack || 0) + 1);
             nc.promoCountSeason = (nc.promoCountSeason || 0) + 1;
-            nc.mediaRevSeason = (nc.mediaRevSeason || 0) + Math.round((nc.popularity || 1) * MEDIA_CONFIG.promoPerPop);
+            nc.mediaRevSeason = (nc.mediaRevSeason || 0) + Math.round((nc.popularity ?? 1) * MEDIA_CONFIG.promoPerPop);
             didPromo = true;
           }
         }
@@ -11357,7 +11357,7 @@ const Engine = {
             return nc;
           }
 
-          const canIntensive = (nc.condition || 70) >= GROWTH_CONFIG.intensiveMinCond
+          const canIntensive = (nc.condition ?? 70) >= GROWTH_CONFIG.intensiveMinCond
             && (nc.intensiveWeeks || 0) < GROWTH_CONFIG.intensiveMaxConsec;
           const isIntensive = canIntensive && Engine.rng.float(rng) < aceConfig.intensiveRate;
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
@@ -11385,7 +11385,7 @@ const Engine = {
 
           if (isIntensive) {
             const adaptBonus = (nc.traits || []).includes('\u9069\u5fdc\u529b') ? 2 : 0;
-            nc.condition = Math.max(0, (nc.condition || 70) - Math.round(6 + Engine.rng.int(rng, 0, 7)) + adaptBonus);
+            nc.condition = Math.max(0, (nc.condition ?? 70) - Math.round(6 + Engine.rng.int(rng, 0, 7)) + adaptBonus);
             if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id) * (nc._relationshipInjuryMult || 1.0)) {
               const weeks = 1 + Engine.rng.int(rng, 0, 1);
               nc.injury = { type: 'training injury', weeksLeft: weeks, totalWeeks: weeks, severity: 'minor', color: '#f39c12' };
@@ -11398,17 +11398,17 @@ const Engine = {
             }
           } else {
             const ironBonus = (nc.traits || []).includes('\u9244\u4eba') ? 2 : 0;
-            nc.condition = Math.max(0, (nc.condition || 70) - (3 + Engine.rng.int(rng, 0, 3)) + condBonus + ironBonus);
+            nc.condition = Math.max(0, (nc.condition ?? 70) - (3 + Engine.rng.int(rng, 0, 3)) + condBonus + ironBonus);
             nc.intensiveWeeks = 0;
             if (GROWTH_CONFIG.intensiveHeatTable !== null) nc._heat = Math.max(0, (nc._heat ?? 0) - 1);
           }
         } else {
-          nc.condition = Math.min(100, (nc.condition || 70) + 8 + Engine.rng.int(rng, 0, 7) + condBonus);
+          nc.condition = Math.min(100, (nc.condition ?? 70) + 8 + Engine.rng.int(rng, 0, 7) + condBonus);
           nc.intensiveWeeks = 0;
           if (GROWTH_CONFIG.intensiveHeatTable !== null) nc._heat = Math.max(0, (nc._heat ?? 0) - 2);
         }
 
-        nc.condition = Math.min(100, (nc.condition || 70) + 3 + condBonus);
+        nc.condition = Math.min(100, (nc.condition ?? 70) + 3 + condBonus);
         return nc;
       });
 
@@ -11616,10 +11616,10 @@ const Engine = {
             if (won) rawGain += 1;
             if (Traits.has(nc, '\u30d5\u30a1\u30f3\u30b5\u30fc\u30d3\u30b9')) rawGain += 1;
             if (Traits.has(nc, '\u30d2\u30fc\u30eb\u9069\u6027') && (nc.role === 'Heel' || nc.role === 'Dirty') && result.mq >= 40) rawGain += 1;
-            let popDelta = Engine.popularity.applyDiminishing(rawGain, nc.popularity || 10);
+            let popDelta = Engine.popularity.applyDiminishing(rawGain, nc.popularity ?? 10);
             const streakResult = Engine.popularity.checkLosingStreak(nc, won || isDraw);
             popDelta += streakResult.popDelta;
-            nc.popularity = Engine.util.clamp((nc.popularity || 10) + popDelta, 1, 100);
+            nc.popularity = Engine.util.clamp((nc.popularity ?? 10) + popDelta, 1, 100);
             nc.losingStreak = streakResult.losingStreak;
 
             if (!won && !isDraw) {
@@ -11665,7 +11665,7 @@ const Engine = {
                 }
               }
             }
-            nc.condition = Math.max(0, (nc.condition || 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
+            nc.condition = Math.max(0, (nc.condition ?? 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
 
             // MVPレース v2: MQ85超試合の bigMatch 履歴
             if (typeof result.mq === 'number' && result.mq >= 85) {
@@ -11950,7 +11950,7 @@ const Engine = {
         });
         roster = roster.map(f => {
           if (!participantIds.has(f.id)) return f;
-          const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.showPerMQ * 0.15);
+          const rev = Math.round((f.popularity ?? 1) * MEDIA_CONFIG.showPerMQ * 0.15);
           const appeared = { ...f, seasonMatchCount: (f.seasonMatchCount || 0) + 1 };
           if (rev <= 0) return appeared;
           return { ...appeared, mediaRevSeason: (f.mediaRevSeason || 0) + rev };
@@ -11963,7 +11963,7 @@ const Engine = {
 
         roster = roster.map(f => {
           const condBonus = Engine.coach.getCondBonus(aiShowState, f.id);
-          return { ...f, condition: Math.min(100, (f.condition || 70) + 3 + condBonus) };
+          return { ...f, condition: Math.min(100, (f.condition ?? 70) + 3 + condBonus) };
         });
 
         // メディア密着追跡: 対象選手の試合MQを蓄積
@@ -11990,7 +11990,7 @@ const Engine = {
               nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop ?? 50) + 3, 0, 100);
               roster = roster.map(f => {
                 if (f.id !== fId) return f;
-                const newPop = Engine.util.clamp((f.popularity || 1) + 5, 1, 100);
+                const newPop = Engine.util.clamp((f.popularity ?? 1) + 5, 1, 100);
                 const oldTrust = f.trust != null ? f.trust : 50;
                 let trustDelta = Engine.trust.applyCoeff ? Engine.trust.applyCoeff(3, f.mn || 50) : 3;
                 if (trustDelta > 0 && Engine.trust.gainMult) trustDelta *= Engine.trust.gainMult(oldTrust);
@@ -12028,7 +12028,7 @@ const Engine = {
               nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop ?? 50) + 1, 0, 100);
               roster = roster.map(f => {
                 if (f.id !== fId) return f;
-                return { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) };
+                return { ...f, popularity: Engine.util.clamp((f.popularity ?? 1) + 2, 1, 100) };
               });
               nextOrgData._newsMediaResult = {
                 orgName: org.name, fighterName: ms.fighterName,
@@ -12838,7 +12838,7 @@ const Engine = {
             return {
               ...f,
               trust: Engine.util.clamp(oldTrust + adj, 0, 100),
-              popularity: Engine.util.clamp((f.popularity || 1) + 3, 1, 100),
+              popularity: Engine.util.clamp((f.popularity ?? 1) + 3, 1, 100),
             };
           });
           winData.lastB3Week = currentAbsWeek;
@@ -12950,7 +12950,7 @@ const Engine = {
       const overall = Engine.util.ov(f);
       const tierBonus = AI_SEASON_CFG.tierPopBonus[org.tier] || 0;
       const popTarget = Math.min(90, overall * 0.7 + tierBonus);
-      const diff = popTarget - (f.popularity || 10);
+      const diff = popTarget - (f.popularity ?? 10);
       const randomDelta = -AI_SEASON_CFG.popRandomRange + Engine.rng.int(rng, 0, AI_SEASON_CFG.popRandomRange * 2);
       f.popularity = Engine.util.clamp(f.popularity + diff * AI_SEASON_CFG.popConvergeRate + randomDelta, 5, 95);
       return f;
@@ -13466,7 +13466,7 @@ const Engine = {
         // v1.8: §4 スランプ週次処理（時間経過 momentum + 回復判定）
         if (nc.slump && !nc.injury) {
           const slumpTickRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C2, nc.id));
-          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, slumpTickRng, G.season, G.week, Engine.coach.getSlumpRecoveryMult(G, nc.id) * Engine.coach.getFlavorSlumpRecoveryMult(G, nc.id), G.lockerRoomMorale || 60);
+          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, slumpTickRng, G.season, G.week, Engine.coach.getSlumpRecoveryMult(G, nc.id) * Engine.coach.getFlavorSlumpRecoveryMult(G, nc.id), G.lockerRoomMorale ?? 60);
           nc = slumpResult.fighter;
           if (slumpResult.recovered) {
             pendingSlumpEvents.push({ type: 'slump_end', fighterId: nc.id, duration: slumpResult.duration });
@@ -13487,7 +13487,7 @@ const Engine = {
         // v1.8: §5 モチベ喪失週次処理
         if (nc.motivationLoss && !nc.injury) {
           const motTickRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C4, nc.id));
-          const motResult = Engine.growthEvents.tickMotivationLossPassive(nc, motTickRng, G.season, G.week, G.lockerRoomMorale || 60);
+          const motResult = Engine.growthEvents.tickMotivationLossPassive(nc, motTickRng, G.season, G.week, G.lockerRoomMorale ?? 60);
           nc = motResult.fighter;
           if (motResult.selfRetire) {
             pendingMotivationRetirements.push({ fighterId: nc.id });
@@ -13860,7 +13860,7 @@ const Engine = {
       // v2.0 Phase1-7: 逆境チームスピリットバフ
       // 資金が厳しいがチームの士気が保たれている場合、4週に1度ランダム1名のtrustが微増
       let pendingTeamSpirit = null;
-      if (!pendingNotifEvent && G.funds < 300 && (G.lockerRoomMorale || 60) >= 50
+      if (!pendingNotifEvent && G.funds < 300 && (G.lockerRoomMorale ?? 60) >= 50
           && G.week % 4 === 0 && roster.length > 0 && !G.offSeason) {
         const spiritRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x7370));
         const target = roster[Engine.rng.int(spiritRng, 0, roster.length - 1)];
@@ -14067,7 +14067,7 @@ const Engine = {
         const buff = f.talentActivityBuff;
         if (!buff || buff.remainingWeeks <= 0) return;
         const multiplier = buff.multiplier || 1.0;
-        const rev = Math.round((f.popularity || 1) * 0.6 * multiplier);
+        const rev = Math.round((f.popularity ?? 1) * 0.6 * multiplier);
         if (buff.type === 'cm' || buff.type === 'variety') {
           talentMediaRev += rev;
           _talentRevAccum.set(f.id, (_talentRevAccum.get(f.id) || 0) + rev);
@@ -18725,9 +18725,9 @@ const Engine = {
         // v2.0: オフシーズン trust 自然変動（興行なし期間: 各選手に自然減衰 + メンタル回復のみ適用）
         const offSeasonRoster = s.roster.map(f => {
           if (f.injury) return f;  // 怪我中は変動なし
-          const natural = Engine.trust.calcMonthlyNatural(f.mn || 50, 0, f.trust || 50, s.lockerRoomMorale || 60);
-          const newTrust = Engine.util.clamp((f.trust || 50) + natural, 0, 100);
-          return newTrust !== (f.trust || 50) ? { ...f, trust: newTrust } : f;
+          const natural = Engine.trust.calcMonthlyNatural(f.mn || 50, 0, f.trust ?? 50, s.lockerRoomMorale ?? 60);
+          const newTrust = Engine.util.clamp((f.trust ?? 50) + natural, 0, 100);
+          return newTrust !== (f.trust ?? 50) ? { ...f, trust: newTrust } : f;
         });
         s = { ...s, roster: offSeasonRoster };
 
@@ -24569,8 +24569,8 @@ Engine.shachoshitsu = {
       let f = { ...roster[idx] };
       const _before = {
         trust: f.trust != null ? f.trust : 50,
-        condition: f.condition || 70,
-        popularity: f.popularity || 1,
+        condition: f.condition ?? 70,
+        popularity: f.popularity ?? 1,
       };
 
       // cooldown チェック(選手単位)
@@ -24637,7 +24637,7 @@ Engine.shachoshitsu = {
         }
         // Phase 8: trust 効果のみに性格×アーキタイプ倍率を適用
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('encourage', f);
-        f = applyTrust(f, (doc.effect.trust || 0.77) * currentFinalMult);
+        f = applyTrust(f, (doc.effect.trust ?? 0.77) * currentFinalMult);
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
         events.push(`💬 社長が${f.name}に声をかけた`);
       } else if (docId === 'pledge') {
@@ -24712,7 +24712,7 @@ Engine.shachoshitsu = {
         };
         newLastInvitedCoachId = coach.id;
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('trainer', f);
-        f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', 4, currentFinalMult);
+        f = queueTrust(f, doc.effect.trust ?? 5.97, 'trainer', 4, currentFinalMult);
         const typeLabel = (typeof COACHING_TYPE_LABELS !== 'undefined' && COACHING_TYPE_LABELS[coach.coachingType]) || '';
         const focusLabel = focusStat && typeof STAT_LABELS_JP !== 'undefined' ? STAT_LABELS_JP[focusStat] : '';
         events.push(`💪 ${f.name}に${coach.name}コーチ(${typeLabel})を招聘(4週間・${actualCost}万)${focusLabel ? `。重点は${focusLabel}` : ''}`);
@@ -24733,7 +24733,7 @@ Engine.shachoshitsu = {
         // care-rework2 P2-D: trust基礎 5.36→2.0(全書類中最大の信頼書類だった状態を解消)。
         // condition+5 は削除 — メディア対応は休養ではない。人気・団体知名度・嫉妬は不変。
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('media', f);
-        f = applyTrust(f, (doc.effect.trust || 2.0) * currentFinalMult);
+        f = applyTrust(f, (doc.effect.trust ?? 2.0) * currentFinalMult);
         orgPopDelta = doc.effect.orgPopDelta || 0.4;
         // v2.5: メディア露出は選手人気にも直接効く（社長が推す意思決定）
         const mediaRng = Engine.rng.create(
@@ -24753,7 +24753,7 @@ Engine.shachoshitsu = {
       roster[idx] = f;
 
       // changes 構築
-      const _after = { trust: f.trust, condition: f.condition || 70 };
+      const _after = { trust: f.trust, condition: f.condition ?? 70 };
       // Phase 7+8: trainer は trust が即時変わらない + 不確実性で予告文言を3段階出し分け
       if (docId === 'trainer') {
         const tone = Engine.shachoshitsu.classifyTone(currentFinalMult);
@@ -24847,9 +24847,9 @@ Engine.shachoshitsu = {
         roster = roster.map(f => {
           if (f.injury || f.onLeave) return f;
           const mult = Engine.shachoshitsu.calcUncertainty('party', f);
-          return applyTrust(f, (doc.effect.trust || 1.84) * mult);
+          return applyTrust(f, (doc.effect.trust ?? 1.84) * mult);
         });
-        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 6), 0, 100);
+        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale ?? 6), 0, 100);
         // care-rework2 P2-B: 余韻。翌週から3週にわたって +1 ずつ効く(tickWeek で消化)。
         partyAfterglowWeeks = (doc.effect.afterglowWeeks != null) ? doc.effect.afterglowWeeks : 3;
         changes.push({ label: _wmFillWithDict(dict, 'ロッカーの様子'), emoji: '🏠', text: _wmFillWithDict(dict, '選手同士の会話が増え、社長への空気も柔らかくなった') });
@@ -24865,7 +24865,7 @@ Engine.shachoshitsu = {
         roster = roster.map(f => {
           if (f.injury || f.onLeave) return f;
           const mult = Engine.shachoshitsu.calcUncertainty('camp', f);
-          const queued = queueTrust(f, doc.effect.trust || 1.84, 'camp', gb.weeks, mult);
+          const queued = queueTrust(f, doc.effect.trust ?? 1.84, 'camp', gb.weeks, mult);
           return { ...queued, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
         });
         changes.push({ label: _wmFillWithDict(dict, '合宿中の空気'), emoji: '🏕️', text: _wmFillWithDict(dict, '今後{weeks}週、団体全体に一体感が育っていきそうだ', { weeks: gb.weeks }) });
@@ -25428,14 +25428,14 @@ Engine.eventSystem = {
       case 'N3': {
         const newRoster = roster.map(f => {
           if (f.id !== fId) return f;
-          return { ...f, condition: Math.max(20, (f.condition || 70) - 5) };
+          return { ...f, condition: Math.max(20, (f.condition ?? 70) - 5) };
         });
         return { roster: newRoster, event };
       }
       case 'N4': {
         const newRoster = roster.map(f => {
           if (f.id !== fId) return f;
-          const newPop = Engine.util.clamp((f.popularity || 1) + 1, 1, 100);
+          const newPop = Engine.util.clamp((f.popularity ?? 1) + 1, 1, 100);
           const oldTrust = f.trust != null ? f.trust : 50;
           let trustDelta = Engine.trust.applyCoeff(2, f.mn || 50);
           if (trustDelta > 0) trustDelta *= Engine.trust.gainMult(oldTrust);
@@ -25483,7 +25483,7 @@ Engine.eventSystem = {
     }
 
     // S3: condition <= 40 — 休養願い
-    const s3Pool = roster.filter(f => (f.condition || 70) <= 40);
+    const s3Pool = roster.filter(f => (f.condition ?? 70) <= 40);
     if (s3Pool.length > 0 && Engine.rng.float(rng) < 0.50) {
       const f = Engine.rng.pick(rng, s3Pool);
       return { type: 'S3', fighter: f.id, name: f.name };
@@ -25758,8 +25758,8 @@ Engine.eventSystem = {
         if (choiceIdx === 0) {
           roster = roster.map(f => {
             if (f.id !== event.fighter) return f;
-            const newPop = Engine.util.clamp((f.popularity || 1) + 4, 1, 100);
-            const newCond = Math.max(20, (f.condition || 70) - 5);
+            const newPop = Engine.util.clamp((f.popularity ?? 1) + 4, 1, 100);
+            const newCond = Math.max(20, (f.condition ?? 70) - 5);
             return { ...f, popularity: newPop, condition: newCond };
           });
           applyTrust(event.fighter, 1.53);
@@ -25769,7 +25769,7 @@ Engine.eventSystem = {
           if (others.length > 0) {
             const alt = others[Engine.rng.int(evRng, 0, others.length - 1)];
             roster = roster.map(f => f.id === alt.id
-              ? { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) }
+              ? { ...f, popularity: Engine.util.clamp((f.popularity ?? 1) + 2, 1, 100) }
               : f);
             events.push(`📺 ${alt.name}を代わりに推薦（人気+2）`);
             recommendedAltId = alt.id;
@@ -25782,7 +25782,7 @@ Engine.eventSystem = {
       case 'E5': {
         if (choiceIdx === 0) {
           funds += 150;
-          roster = roster.map(f => ({ ...f, condition: Math.max(20, (f.condition || 70) - 8) }));
+          roster = roster.map(f => ({ ...f, condition: Math.max(20, (f.condition ?? 70) - 8) }));
           events.push(`💴 営業試合を受諾（+150万、全選手コンディション-8）`);
         } else {
           events.push(`🚫 営業試合オファーを断った`);
@@ -25844,7 +25844,7 @@ Engine.eventSystem = {
           events.push(`💴 ${event.name}にボーナス支給（-50万、その週の成長ゼロ）`);
         } else {
           applyTrust(event.fighter, -1.53);
-          roster = roster.map(f => f.id === event.fighter ? { ...f, condition: Math.max(0, (f.condition || 70) - 3) } : f);
+          roster = roster.map(f => f.id === event.fighter ? { ...f, condition: Math.max(0, (f.condition ?? 70) - 3) } : f);
           events.push(`🚶 ${event.name}を放っておいた（成長ゼロ+コンディション-3）`);
         }
         break;
@@ -25998,7 +25998,7 @@ Engine.eventSystem = {
     const candidates = [];
 
     // B1: 練習中の怪我 — condition < 50 の選手がいる
-    const b1Pool = roster.filter(f => (f.condition || 70) < 50);
+    const b1Pool = roster.filter(f => (f.condition ?? 70) < 50);
     if (b1Pool.length > 0) candidates.push({ type: 'B1', w: 3, pool: b1Pool });
 
     // B2: 選手間の深刻対立 — trust < 40 の選手が2人以上
@@ -26023,7 +26023,7 @@ Engine.eventSystem = {
     switch (sel.type) {
       case 'B1': {
         const f = Engine.rng.pick(rng, sel.pool);
-        const severity = (f.condition || 70) < 30 ? 'moderate' : 'minor';
+        const severity = (f.condition ?? 70) < 30 ? 'moderate' : 'minor';
         return { type: 'B1', fighter: f.id, name: f.name, severity };
       }
       case 'B2': {
@@ -26199,7 +26199,7 @@ Engine.eventSystem = {
           const gpMult = severity === 'moderate' ? 0.4 : 0.7;
           roster = roster.map(f => {
             if (f.id !== event.fighter) return f;
-            return { ...f, injury: mkInjury(severity, injWeeks), condition: Math.max(20, (f.condition || 70) - 10),
+            return { ...f, injury: mkInjury(severity, injWeeks), condition: Math.max(20, (f.condition ?? 70) - 10),
               growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: '練習中の怪我(特別治療)' } };
           });
           events.push(`🏥 ${event.name}に特別治療を施した（-200万、復帰${injWeeks}週）`);
@@ -26213,7 +26213,7 @@ Engine.eventSystem = {
           const gpMult = severity === 'moderate' ? 0.4 : 0.7;
           roster = roster.map(f => {
             if (f.id !== event.fighter) return f;
-            return { ...f, injury: mkInjury(severity, injWeeks), condition: Math.max(20, (f.condition || 70) - 15),
+            return { ...f, injury: mkInjury(severity, injWeeks), condition: Math.max(20, (f.condition ?? 70) - 15),
               growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: worsen ? '練習中の怪我(悪化)' : '練習中の怪我' } };
           });
           if (worsen) events.push(`💥 ${event.name}を無理させた結果、症状が悪化！（${injWeeks}週離脱）`);
@@ -26225,7 +26225,7 @@ Engine.eventSystem = {
           const gpMult = severity === 'moderate' ? 0.4 : 0.7;
           roster = roster.map(f => {
             if (f.id !== event.fighter) return f;
-            return { ...f, injury: mkInjury(severity, injWeeks), condition: Math.max(20, (f.condition || 70) - 10),
+            return { ...f, injury: mkInjury(severity, injWeeks), condition: Math.max(20, (f.condition ?? 70) - 10),
               growthPenalty: { remainingWeeks: gpWeeks, multiplier: gpMult, source: '練習中の怪我' } };
           });
           events.push(`🩹 ${event.name}の練習中の怪我を通常治療（${injWeeks}週離脱）`);
@@ -26284,7 +26284,7 @@ Engine.eventSystem = {
 
             applyTrust(winnerId, 10);
             applyTrust(loserId, loserPenalty);
-            roster = roster.map(f => f.id === winnerId ? { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) } : f);
+            roster = roster.map(f => f.id === winnerId ? { ...f, popularity: Engine.util.clamp((f.popularity ?? 1) + 2, 1, 100) } : f);
             lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + 2, 0, 100);
             events.push(`🏆 ${winnerName}が${loserName}に勝利し対立に決着（士気+2）`);
           }
@@ -26364,7 +26364,7 @@ Engine.eventSystem = {
             orgPopDelta = Engine.orgPop.applyOrgPopChange(3, state.orgPop, rng);
             applyTrust(fighterId, 5);
             roster = roster.map(f => f.id === fighterId
-              ? { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 3, 1, 100) } : f);
+              ? { ...f, popularity: Engine.util.clamp((f.popularity ?? 1) + 3, 1, 100) } : f);
             events.push(`🎉 挑戦状で${orgName}を返り討ち！（人気+${Math.round(orgPopDelta * 10) / 10}）`);
           } else if (result.winner === 'right') {
             orgPopDelta = Engine.orgPop.applyOrgPopChange(-1, state.orgPop, rng);
@@ -26487,7 +26487,7 @@ Engine.eventSystem = {
           // fashion と fan は即時効果
           if (event.activityType === 'fashion') {
             const popGain = ACTIVITY_MULTIPLIER >= 1.4 ? 3 : ACTIVITY_MULTIPLIER >= 0.8 ? 2 : 1;
-            return { ...fighter, popularity: Engine.util.clamp((fighter.popularity || 1) + popGain, 1, 100),
+            return { ...fighter, popularity: Engine.util.clamp((fighter.popularity ?? 1) + popGain, 1, 100),
                      talentActivityBuff: { type: event.activityType, remainingWeeks: 0, multiplier: ACTIVITY_MULTIPLIER },
                      talentCountSeason: (fighter.talentCountSeason || 0) + 1 };
           }
@@ -26553,7 +26553,7 @@ Engine.eventSystem = {
         orgPopDelta = Engine.orgPop.applyOrgPopChange(3, state.orgPop, rng);
         roster = roster.map(f => {
           if (f.id !== fId) return f;
-          const newPop = Engine.util.clamp((f.popularity || 1) + 5, 1, 100);
+          const newPop = Engine.util.clamp((f.popularity ?? 1) + 5, 1, 100);
           // Phase0修正: trust直接加算→applyCoeff+gainMult経由
           const oldTrust = f.trust != null ? f.trust : 50;
           let trustDelta = Engine.trust.applyCoeff(3, f.mn || 50);
@@ -26566,7 +26566,7 @@ Engine.eventSystem = {
         orgPopDelta = Engine.orgPop.applyOrgPopChange(1, state.orgPop, rng);
         roster = roster.map(f => {
           if (f.id !== fId) return f;
-          return { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) };
+          return { ...f, popularity: Engine.util.clamp((f.popularity ?? 1) + 2, 1, 100) };
         });
         events.push(`📺 ${newSpotlight.fighterName}の密着取材はまずまずの結果（人気+2）`);
       } else {
@@ -27884,7 +27884,7 @@ Engine.contract = {
       state.titles
     );
     const gap = fairSalary - currentSalary;
-    const pop = fighter.popularity || 1;
+    const pop = fighter.popularity ?? 1;
     if (gap <= 0) {
       // ギャップなし — trustベースの昇給要求（小額）
       const baseRaisePct = 0.10 + (pop / 100) * 0.05;
@@ -28210,7 +28210,7 @@ Engine.contract = {
       const seasons = f.careerSeasons || 0;
       let moraleDelta = ctx.isFounder ? -8 : (seasons >= 4 ? -5 : -3);
       if (s.roster.some(c => c.id !== f.id && Traits.has(c, '人望'))) moraleDelta = Math.ceil(moraleDelta / 2);
-      s = { ...s, lockerRoomMorale: Engine.util.clamp((s.lockerRoomMorale || 50) + moraleDelta, 0, 100) };
+      s = { ...s, lockerRoomMorale: Engine.util.clamp((s.lockerRoomMorale ?? 50) + moraleDelta, 0, 100) };
       const reactionDialogue = Engine.contract.selectDialogue(rng, neg, 'sudden_departure', ctx, dict);
       return {
         state: s,
@@ -28279,7 +28279,7 @@ Engine.contract = {
       } else if (choiceIdx === 1) {
         // B: 交渉する（§14-B.2: ギャップ反映の成功率）
         let successRate = 0.60;
-        successRate += ((f.trust || 50) - 30) * 0.02;
+        successRate += ((f.trust ?? 50) - 30) * 0.02;
         successRate += ((f.mn || 50) - 50) * 0.005;
         // ギャップ補正
         if (gapLevel === 'none') successRate += 0.10;
@@ -28296,7 +28296,7 @@ Engine.contract = {
           trustDelta = -8;
           reactionPhase = 'raise_negotiate_refuse';
           const roll = Engine.rng.float(rng);
-          if (roll < 0.20 && (f.trust || 50) < 20) {
+          if (roll < 0.20 && (f.trust ?? 50) < 20) {
             resultType = 'depart';
           } else if (roll < 0.50) {
             escalated = true;
@@ -28316,7 +28316,7 @@ Engine.contract = {
         // A: 引き留める / B→引き留める
         fundsCost = neg.retentionBonus;
         let retainRate = 0.55;
-        retainRate += ((f.trust || 50) - 15) * 0.015;
+        retainRate += ((f.trust ?? 50) - 15) * 0.015;
         retainRate += (f.careerSeasons || 0) * 0.03;
         if (Traits.has(f, '忠誠心')) retainRate += 0.20;
         if (ctx.isFounder) retainRate += 0.10;
@@ -28347,7 +28347,7 @@ Engine.contract = {
     // trust適用（メンタル係数付き）
     if (trustDelta !== 0) {
       const adjusted = Engine.trust.applyCoeff(trustDelta, f.mn);
-      f.trust = Engine.util.clamp((f.trust || 50) + adjusted, 0, 100);
+      f.trust = Engine.util.clamp((f.trust ?? 50) + adjusted, 0, 100);
     }
 
     // 厳格改定でtrustが40未満まで落ちた場合だけ、40%で移籍志願へ発展する。
@@ -28394,7 +28394,7 @@ Engine.contract = {
 
     // モラール適用
     if (moraleDelta !== 0) {
-      const newMorale = Engine.util.clamp((s.lockerRoomMorale || 50) + moraleDelta, 0, 100);
+      const newMorale = Engine.util.clamp((s.lockerRoomMorale ?? 50) + moraleDelta, 0, 100);
       s = { ...s, lockerRoomMorale: newMorale };
     }
 
