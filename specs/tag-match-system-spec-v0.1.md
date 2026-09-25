@@ -637,7 +637,7 @@ snapshot 構造:
   segmentIdx, winner, finType, finMove, finishPhase, pinnedBy, pinnedWho
 }
 ```
-- `isCrit`(大ダメージ)= 被弾側の最大HPの12%以上、`isHeavy`(特大)= 同18%以上。エンジンが被弾側の実際の最大HPで判定して焼く演出専用フラグ(2026-09-25 K-6。旧 `isCrit` は `dmg>=15`)。定義と使い道は `specs/battle-presentation-spec-v1.0.md` §8。
+- `isCrit`(大ダメージ)= 被弾側の最大HPの17%以上、`isHeavy`(特大)= 同20%以上。エンジンが被弾側の実際の最大HPで判定して焼く演出専用フラグ(2026-09-25 K-6。旧 `isCrit` は `dmg>=15`。タッグは最大HP 70+ST が小さく、シングル通常戦の12%/18%では命中の6〜7割が大ダメージのままだったため、2026-09-26 K-6 追加でタッグだけ17%/20%へ上げた。同格で大ダメージ1試合3.7〜4.8回・特大=溜め1.4〜1.6回)。定義と使い道は `specs/battle-presentation-spec-v1.0.md` §8。
 
 ### 10.3 ファイル構成
 | ファイル | 役割 |
@@ -801,7 +801,7 @@ Step 5 で SE 呼び出しは align したが、実プレイで「溜めの途�
 
 実機タイムライン検証: `_frameMinDelay({dmg:25,isCrit:true}) = 3300ms`、イベント重畳時 3800ms、非大技 crit 1300ms / 通常 hit 900ms で旧挙動を維持。pin-count 基準 (72px/Bebas Neue/8px letter-spacing/gold-light/0.8s pinCountPop) は single `.finish-count-text` と getComputedStyle で bit-identical。
 
-※ 2026-09-25 K-6: 本節と§11.5cの「大技 = `action.dmg>=20`」(溜め・赤フラッシュ・hitSE 1.3倍・`_frameMinDelay` の+2000)は、「特大」= `action.isHeavy`(被弾側の最大HPの18%以上、エンジンが判定)へ置き換えた。判定は battle-replay-core.js の `_isHeavyHit(action)`(isHeavy を持たない旧フレームは dmg>=20)。`_frameMinDelay(fr, charged)` はシングルの溜め(技威力の確率発動)も+2000の対象にする。現行の定義は `specs/battle-presentation-spec-v1.0.md` §8。
+※ 2026-09-25 K-6: 本節と§11.5cの「大技 = `action.dmg>=20`」(溜め・赤フラッシュ・hitSE 1.3倍・`_frameMinDelay` の+2000)は、「特大」= `action.isHeavy`(被弾側の最大HPの18%以上、エンジンが判定。タッグは2026-09-26 K-6 追加で20%以上)へ置き換えた。判定は battle-replay-core.js の `_isHeavyHit(action)`(isHeavy を持たない旧フレームは dmg>=20)。`_frameMinDelay(fr, charged)` はシングルの溜め(技威力の確率発動)も+2000の対象にする。現行の定義は `specs/battle-presentation-spec-v1.0.md` §8。
 
 ### 11.6 共通化していないもの (Phase 4c 送り)
 - 演出シーケンス (bigmove / counter / touch swap の setTimeout ツリー) の共通化

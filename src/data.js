@@ -863,7 +863,10 @@ const BATTLE_LOG_TEMPLATES = {
     pinFall: '★ {name}、{move}からのフォールで3カウント！',
     pinFailSub: '  → 締めに入った！ だが{name}が振りほどいた！',
     pinFailFall: '  → フォール！ だが{name}がカウント2で返した！',
-    rollup: '★ {name}、まさかの{move}で3カウント！ 大金星！',
+    // K-6 追加(2026-09-26): 丸め込み決着は勝者が格下(Engine.battle.isUpsetWin)のときだけ「大金星」。
+    // それ以外(同格・格上の丸め込み)は事実だけを言う rollupWin
+    rollupUpset: '★ {name}、まさかの{move}で3カウント！ 大金星！',
+    rollupWin: '★ {name}、{move}で丸め込んで3カウント！',
     // K-7: 丸め込みをカウント2で返した(フォール狙いの返し pinFailFall と対になる行)
     rollupFail: '  → 丸め込み！ だが{name}がカウント2で返した！',
     refStop: '★ レフェリーストップ！ {name}のTKO勝利！',
@@ -933,7 +936,8 @@ const BATTLE_LOG_LINE_KINDS = {
     pinFall: { cls: 'finish', spoiler: true },
     pinFailSub: { cls: null, spoiler: true },
     pinFailFall: { cls: null, spoiler: true },
-    rollup: { cls: 'finish', spoiler: true },
+    rollupUpset: { cls: 'finish', spoiler: true },
+    rollupWin: { cls: 'finish', spoiler: true },
     rollupFail: { cls: null, spoiler: true },
     refStop: { cls: 'finish', spoiler: true },
     timeout: { cls: 'finish', spoiler: false },

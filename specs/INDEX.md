@@ -5,7 +5,7 @@ specs/ = 確定仕様(現在の真実)。新規specを作成したら**必ずこ
 | ファイル | 内容 |
 |---------|------|
 | battle-engine-spec-v4.2.md | 試合シミュレーション(ターン制/MQ計算/ビッグマッチ)。**v6.0=numeric-overhaul P1(差分参照/soft-knee/べき平均p=4尖りプレミアム)を変更履歴に反映済み** |
-| battle-presentation-spec-v1.0.md | シングル戦Replay観戦の確定表示仕様（Pattern C v4、実況・技説明・カメラ・既存演出維持）。§8 大ダメージの段(最大HPの12%/18%、K-6) |
+| battle-presentation-spec-v1.0.md | シングル戦Replay観戦の確定表示仕様（Pattern C v4、実況・技説明・カメラ・既存演出維持）。§8 大ダメージの段(最大HPの12%/18%、大一番は特大13.75%・タッグは17%/20%。K-6) |
 | character-data-spec-v1.7.md | キャラクターデータ定義(ステータス/特性/性格) |
 | coach-system-spec-v3.0.md | コーチ35名/枠/能力/観察レポート |
 | i18n-runtime-spec-v1.0.md | **i18n実行基盤**: WM_I18N.t()/wm_lang/data-i18n/構造規約7条(Engine非依存・断片連結禁止・gameLog type形式等)/常設ガード(JAゴールデン・ラチェット・擬似ロケール)+§5 EN辞書生成パイプライン(Stage B P3b: 抽出台帳i18n/ui-ledger.json・機械検査・lang-en.js)+§6 テンプレ辞書生成パイプライン(Stage B P4-2: data.js14テーブル抽出i18n/template-ledger.json・黒田禁止語grep・lang-en-templates.js・Engine opts.lang糸通し規約。**P4-5(2026-09-04)でkuroda-text.js13プール+app.js新聞2プールを追加**・`d=>`テンプレートリテラル関数値をkurodaTemplateOf()で{name}プレースホルダへ正規化するkurodaText()配線・保留一覧docs/i18n-p4-5-kuroda-holdout-audit.md)+§7 通貨表記(B方式)+§8 セリフ辞書生成パイプライン(Stage B P5-1: data.js+専用ファイル8本を命名規約で142テーブル自動抽出i18n/dialogue-ledger.json・セル(archetype/personality)判定・D-P5-3セル別機械検査・lang-en-dialogue.js・共通レンダラ集約による表示点t()配線) |
