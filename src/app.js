@@ -7790,7 +7790,11 @@ const App = {
         if (!champId || winnerId !== champId) {
           const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
           // 王座移動を新聞へ(2026-07-27)。crownChampion が記事を組んで返す
-          if (crown.newsEvent) App._pushIndustryNews(crown.newsEvent);
+          // K-1 第1段(K1-E07): G ではなく s に積む(エンジンの executeShow と同じ)。G に積むと、
+          // この関数の最後の G = { ...s } で上書きされて記事が消えていた。
+          // 乱入者が奪った王座はすぐ空位にするので、「新王者」の記事は出さない(乱入の結果は別の知らせで出る)
+          const intruderTook = App._intrusionData && App._intrusionData.intruder && winnerId === App._intrusionData.intruder.id;
+          if (crown.newsEvent && !intruderTook) s = Engine.industryNews.push(s, crown.newsEvent);
           titleMatchOutcomes.push({ outcome: 'change', newChampId: winnerId, prevChampId: champId, challengerId });
         } else {
           const def = Engine.title.recordDefense(tempState, { challengerName, challengerId }); titles = def.titles; roster = def.roster; events.push(def.msg);
@@ -8100,19 +8104,41 @@ const App = {
           .filter(buff => buff.type !== 'next_match_mq'),
       };
     }
+    // K-1 第1段(K1-E06): エンジンの executeShow と同じく matchType と勝者を渡す。渡していなかったため、
+    // タッグの評価がシングルの記録と比べられ(タッグ記録は更新されない)、勝者不明で記録更新の記事と
+    // キャリアへの刻印も出なかった
+    const recordCareerStamps = [];
     results.forEach((result, matchIndex) => {
       const slot = validMatches[matchIndex];
-      const holderIds = result.matchType === 'tag'
+      const isTagResult = result.matchType === 'tag';
+      const holderIds = isTagResult
         ? [
             slot?.teamA?.fighter1, slot?.teamA?.fighter2,
             slot?.teamB?.fighter1, slot?.teamB?.fighter2,
           ]
         : [slot?.left, slot?.right];
-      s = Engine.mq.updateRecord(s, result, {
+      const winnerMeta = isTagResult
+        ? {
+            winnerIds: result.winner === 'teamA'
+              ? [slot?.teamA?.fighter1, slot?.teamA?.fighter2]
+              : result.winner === 'teamB'
+                ? [slot?.teamB?.fighter1, slot?.teamB?.fighter2]
+                : null,
+          }
+        : {
+            winnerId: result.winner === 'left' ? slot?.left
+              : result.winner === 'right' ? slot?.right : null,
+          };
+      const recordUpdate = Engine.mq.updateRecord(s, result, {
         holderIds,
         orgId: 'player',
         stage: 'normal',
-      }).state;
+        matchType: isTagResult ? 'tag' : 'singles',
+        ...winnerMeta,
+      });
+      s = recordUpdate.state;
+      // §7 X09: ここで刻んだ経歴は後段の s = { ...s, roster, … } の書き戻しで消える。最後に刻み直す分を控える
+      if (recordUpdate.careerStamp) recordCareerStamps.push(recordUpdate.careerStamp);
     });
 
     // 因縁決着判定（MQ確定後、保留ペアのみ）
@@ -9208,6 +9234,8 @@ const App = {
     // _pendingF07Directive / _pendingInternalChallenge / _pendingF08Directive / _pendingF09 / _pendingReclaim
     // などのキーが G の旧値として残り、F07 メイン推薦や派閥内序列戦が永久消化扱いにならない。
     // s は finalizeShow 冒頭で {...G} から派生しているため、s を base にして問題ない。
+    // K-1 第1段 §7 X09: 歴代最高評価の更新をキャリアに刻み直す(途中の roster の書き戻しで消えた分。冪等)
+    recordCareerStamps.forEach(stamp => { s = Engine.mq.applyRecordCareerStamp(s, stamp); });
     G = { ...s, seasonStats: stats, gameLog: [...G.gameLog, ...events] };
 
     // v2.0 Phase1-6: メディアスポットライトの興行後処理
@@ -10249,7 +10277,15 @@ const App = {
     App._glimpseCascadeShownThisShow = false;
 
     try {
-      const previewBaseState = App._buildShowResultPreviewState(G);
+      // K-1 第1段(K1-P01): 先読みには G の複製を渡す。tickWeek には入れ子の中身をその場で書き換える
+      // 箇所がまだ残っている(関係性ポップアップの待ち行列・関係フラグの記録など。relationships.js の
+      // _enqueueModal の注記)。G と共有したまま回すと、本番の G が興行後処理の前に書き換わり、
+      // W-1 の回数の二重計上・ポップアップの重複・クールダウンの先送りが起きていた。
+      // G に関数・Set・Map は入っていない(2026-09-26 実ページで確認)。structuredClone が無い環境は
+      // セーブと同じ JSON の往復で代える
+      let previewSource;
+      try { previewSource = structuredClone(G); } catch (_) { previewSource = JSON.parse(JSON.stringify(G)); }
+      const previewBaseState = App._buildShowResultPreviewState(previewSource);
       const previewTick = Engine.tickWeek(previewBaseState);
       const previewState = previewTick?.state || null;
       if (!previewState) return;
@@ -11012,7 +11048,11 @@ const App = {
     if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
     if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
     const fh = [...(G.fundsHistory || []), result.state.funds];
-    G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    // 今週のログフィード(道場の「休憩中の選手」の素材)は、ここで前週分を捨ててから今週の垣間見えを積む
+    // (processWeek と同じ扱い)。興行週のこの経路だけ空にしていなかったため、前週の垣間見えが翌週の
+    // 道場にも残り、確定枠(宿命のライバル等の節目)が同じ選手の同じ台詞で2週続いていた(K-14 で発見)。
+    // エンジンは weekLogFeed を読まないので、tickWeek の後で空にする(tickWeek に渡す状態は変えない)
+    G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events], weekLogFeed: [] };
     App.preloadNewspaperImages(G.weeklyNewspaper);
 
     // 興行終了後にshowCardをリセット（renderShowPrep の pad/trim で会場に応じた枠数に自動調整）
@@ -16317,7 +16357,8 @@ App.closePPVResult = function() {
     stats.totalExpense += result.state.weeklyFinance.expense || 0;
   }
   const fh = [...(G.fundsHistory || []), result.state.funds];
-  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+  // 今週のログフィードは前週分を捨ててから積む(processWeek・closeShowResult と同じ。節目の二重表示を防ぐ)
+  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events], weekLogFeed: [] };
   G = { ...G, showCard: [] };
   App.preloadNewspaperImages(G.weeklyNewspaper);
 
@@ -16474,7 +16515,8 @@ App.closePPVTV = function() {
   if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
   if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
   const fh = [...(G.fundsHistory || []), result.state.funds];
-  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+  // 今週のログフィードは前週分を捨ててから積む(processWeek・closeShowResult と同じ。節目の二重表示を防ぐ)
+  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events], weekLogFeed: [] };
   App.preloadNewspaperImages(G.weeklyNewspaper);
 
   App.checkSurvivalUpdate();

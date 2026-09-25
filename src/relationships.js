@@ -781,17 +781,19 @@ Engine.relationships = {
     Object.entries(state.aiOrgs || {}).forEach(([oid, org]) => tryValueRift(org.roster || [], oid));
 
     // 逓減カウンター減衰
+    // K-1 第1段(K1-P01): 項目は写してから書き換える。入力の項目を直接減らすと、結果画面の先読み tick が
+    // 本番 G のカウンターを本処理の前に減らしてしまう(返却値の state だけを更新する — 原則2)
     const counters = { ...(state.relationshipCounters || {}) };
     const keysToDelete = [];
     for (const cKey of Object.keys(counters)) {
-      const c = counters[cKey];
-      if (absWeek - c.lastWeek >= COUNTER_DECAY_WEEKS) {
+      if (absWeek - counters[cKey].lastWeek >= COUNTER_DECAY_WEEKS) {
+        const c = { ...counters[cKey] };
         c.count--;
         c.lastWeek = absWeek;
         if (c.count <= 0) {
           keysToDelete.push(cKey);
         } else {
-          counters[cKey] = { ...c };
+          counters[cKey] = c;
         }
       }
     }
@@ -883,7 +885,9 @@ Engine.relationships = {
     const hostilePairIds = []; // P-4: 記事の写真に出す当事者id（hostilePairCount と同じ条件で拾う）
     let hostilePairCount = 0; // bond-rivalry plan P-4: 同団体内 bond ≤ 30 ペア集計
     // bond-rivalry plan P-6: W-1（憎い敵ゾーン）累計発火カウント
-    if (!state.w1FireCount) state.w1FireCount = {};
+    // K-1 第1段(K1-P01): 写してから数える。入力の記録を直接増やすと、結果画面の先読み tick が
+    // 本番 G の回数を先に増やし、興行週だけ二重に数えられていた(慢性的険悪ペアの書類が早く出る)
+    state = { ...state, w1FireCount: { ...(state.w1FireCount || {}) } };
 
     // ティッカーテキストヘルパー: テンプレートプールからランダムピック＋名前差し込み
     const _pick = (pool, nameA, nameB) => {
@@ -1168,7 +1172,7 @@ Engine.relationships = {
         lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - 2, 0, 100);
         orgPop = Engine.util.clamp(orgPop - 1, 0, 100);
         if (Engine.relationships.flags && Engine.relationships.flags._enqueueModal) {
-          Engine.relationships.flags._enqueueModal(state, 'M-24', {
+          state = Engine.relationships.flags._enqueueModal(state, 'M-24', {
             hostileCount: hostilePairCount,
             pairs: hostilePairNames.slice(0, 3),
             season: state.season, week: state.week,
@@ -1194,7 +1198,8 @@ Engine.relationships = {
     // bond-rivalry plan P-4: 嫌悪伝染（emotional 系の選手が親友の嫌悪を引き継ぐ、月1回）
     {
       const absWeek = Engine.util.absWeek(state.season, state.week);
-      if (!state._contagionLastWeek) state._contagionLastWeek = {};
+      // K-1 第1段: クールダウンの記録も写してから書く(入力の記録を直接書き換えない)
+      state._contagionLastWeek = { ...(state._contagionLastWeek || {}) };
       activeRoster.forEach(carrier => {
         if (carrier.personality !== 'emotional') return;
         if (Engine.rng.float(rng) >= 0.25) return; // 月1回程度
@@ -2765,6 +2770,14 @@ Engine.relationships = {
       return state;
     },
 
+    // K-1 第1段(K1-P01)の調査メモ: 待ち行列は**共有の配列へ push するまま残している**。
+    // 試合の関係値処理(applyMatchResult → F-2/F-5/F-6/F-7 と M-15)は一時の relState の上で積み、
+    // 呼び出し側は relationships / relationshipCounters だけを取り戻す
+    // (management.js executeShow・大会/PPV・B3・対抗戦、app.js _finalizeShowImpl ほか)。
+    // 積んだポップアップは「共有の配列への push」だけを通って本番の state に届いている。
+    // 写して足す形に変えると、それらが黙って消える(auto-sim の指紋が変わることで確認した, 2026-09-26)。
+    // 純化は、取り戻す側で _modalQueue(と relationshipFlags/Lockouts/FlagCounters)も受け取る形に
+    // そろえてから(K-1 第3段)。結果画面の先読み tick の書き換えは、先読みに G の複製を渡して止めている。
     _enqueueModal(state, type, payload) {
       if (!state._modalQueue) state._modalQueue = [];
       state._modalQueue.push({ type, payload, season: state.season, week: state.week });
@@ -2775,10 +2788,12 @@ Engine.relationships = {
       Engine.relationships.flags._ensureInit(state);
       if (!cooldownKey) return this._enqueueModal(state, type, payload);
       const absWeek = Engine.util.absWeek(state.season, state.week);
-      const counters = state.relationshipFlagCounters || {};
-      const entry = counters[cooldownKey];
+      const entry = (state.relationshipFlagCounters || {})[cooldownKey];
       const lastWeek = typeof entry === 'number' ? entry : (entry && entry.lastWeek != null ? entry.lastWeek : -999999);
       if ((cooldownWeeks || 0) > 0 && (absWeek - lastWeek) < cooldownWeeks) return state;
+      // K-1 第1段(K1-P01): クールダウンの記録は写してから書く(呼び出し元は processWeeklyDecay だけで、
+      // 戻り値の state をそのまま使う)。共有の記録に書くと、先読み tick が本番 G のクールダウンを進めていた
+      const counters = { ...(state.relationshipFlagCounters || {}) };
       counters[cooldownKey] = { lastWeek: absWeek };
       state.relationshipFlagCounters = counters;
       return this._enqueueModal(state, type, payload);

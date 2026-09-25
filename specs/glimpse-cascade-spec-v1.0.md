@@ -34,6 +34,10 @@
 
 候補は `G.weekLogFeed` のうち `_isDojoRestEligibleGlimpse`(ui-render.js)を通るもの。1週に出すのは1人だけ。
 
+`G.weekLogFeed` は**週送りのたびに前週分を捨ててから**その週の Glimpse を積む(2026-09-26 K-1 第1段で統一)。
+興行の無い週(`App.processWeek`)は tickWeek の前、興行週(`App.closeShowResult`)と PPV の2経路は tickWeek 直後の G の作り直しで空にする。
+以前は興行週と PPV の経路だけ空にしていなかったため、前週の Glimpse が翌週の道場にも残り、確定枠(gold/danger 級)が同じ選手の同じ台詞で2週続いていた(30季で19回 → 0回)。回帰テスト: `test/k1-stage1-test.js`
+
 | 層 | 出す | 出さない |
 |---|---|---|
 | A層 | axis が bond / rivalry / trust の閾値通過(gold/danger 級はその週の確定枠、他は18%抽選) | — |

@@ -29,6 +29,11 @@ function prepareBase(base) {
   for (const key of [...BOOKING_KEYS, ...DIRECTIVE_KEYS]) delete G[key];
   G.weekPhase = 'manage';
   G.offSeason = false;
+  // 基準状態で怪我をしている選手は復帰させておく(入力の設定)。エンジンの変更で fixture の
+  // 怪我人が増えると「12人の健康な選手」が揃わずシナリオが組めなくなるため
+  // (2026-09-26: K-2+K-3+K-16 ほかの取り込み後、S2W14 で2人が怪我をしていた)。
+  // 週次の復帰処理と同じく preInjuryPop も片付ける。怪我を扱う injury シナリオは自分で条件を入れる。
+  G.roster = (G.roster || []).map(f => (f.injury ? Engine.popularity.clearPreInjury({ ...f, injury: null }) : f));
   if (!Engine.util.isRegularShowWeek(G.week)) {
     throw new Error(`base week ${G.week} is not a regular show week`);
   }
@@ -263,7 +268,8 @@ const scenarios = [
       const outsiders = f.filter(x => !inExisting.has(x.id));
       const insiders = f.filter(x => inExisting.has(x.id) && x.id !== existing.leaderId);
       const leaderA = G.roster.find(x => x.id === existing.leaderId);
-      if (outsiders.length < 5 || insiders.length < 4 || !leaderA) throw new Error(`${this.name}: not enough fighters to form a second faction`);
+      // 使うのは insiders[0..2] の3人(2026-09-26: 基準状態の派閥が4人=リーダー+3人になったので下限を実際の使用数に合わせた)
+      if (outsiders.length < 5 || insiders.length < 3 || !leaderA) throw new Error(`${this.name}: not enough fighters to form a second faction`);
       const newMembers = outsiders.slice(0, 4);
       const factionB = {
         ...clone(existing), id: 900, name: `${newMembers[0].surname || newMembers[0].name}派`,
