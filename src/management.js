@@ -11986,8 +11986,10 @@ const Engine = {
           if (ms.remainingShows <= 0) {
             // 密着完了: 報酬計算
             const avgMQ = ms.matchCount > 0 ? ms.totalMQ / ms.matchCount : 0;
+            // K-9(A) 残り(2026-09-26): 団体人気は自団体の密着(processMediaSpotlight)と同じ表と同じ逓減を、
+            // この団体自身の人気で掛ける。旧来は +3/+1 を逓減なしで足していた。
             if (avgMQ >= 60) {
-              nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop ?? 50) + 3, 0, 100);
+              nextOrgData.orgPop = Engine.orgPop.nextPop(nextOrgData.orgPop, Engine.orgPop.MEDIA_RAW_DELTA.great);
               roster = roster.map(f => {
                 if (f.id !== fId) return f;
                 const newPop = Engine.util.clamp((f.popularity ?? 1) + 5, 1, 100);
@@ -12025,7 +12027,7 @@ const Engine = {
                 avgMQ: Math.round(avgMQ), success: true,
               };
             } else if (avgMQ >= 45) {
-              nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop ?? 50) + 1, 0, 100);
+              nextOrgData.orgPop = Engine.orgPop.nextPop(nextOrgData.orgPop, Engine.orgPop.MEDIA_RAW_DELTA.fair);
               roster = roster.map(f => {
                 if (f.id !== fId) return f;
                 return { ...f, popularity: Engine.util.clamp((f.popularity ?? 1) + 2, 1, 100) };
@@ -12781,8 +12783,8 @@ const Engine = {
               orgName: org.name,
             });
           });
-          // orgPop -1（小幅）
-          defenderData.orgPop = Engine.util.clamp((defenderData.orgPop ?? 50) - 1, 0, 100);
+          // orgPop -1（小幅。自団体の辞退と同じ表）
+          defenderData.orgPop = Engine.orgPop.nextPop(defenderData.orgPop, Engine.orgPop.B3_RAW_DELTA.decline);
           // 新聞フラグ: 辞退
           if (!defenderData._newsAIB3Result) defenderData._newsAIB3Result = [];
           defenderData._newsAIB3Result.push({
@@ -12827,9 +12829,11 @@ const Engine = {
         const loserOrgId = winner === 'left' ? opponent.id : winner === 'right' ? orgId : null;
 
         // 結果適用
+        // K-9(A) 残り(2026-09-26): 団体人気は自団体の挑戦状と同じ表(Engine.orgPop.B3_RAW_DELTA)と同じ逓減
+        // (applyOrgPopChange)を、それぞれの団体自身の人気で掛ける。旧来は 勝ち+3/引き分け双方+1 を逓減なしで足していた。
         if (winnerOrgId) {
           const winData = { ...newAiOrgs[winnerOrgId] };
-          winData.orgPop = Engine.util.clamp((winData.orgPop ?? 50) + 3, 0, 100);
+          winData.orgPop = Engine.orgPop.nextPop(winData.orgPop, Engine.orgPop.B3_RAW_DELTA.win);
           const winRepId = winnerOrgId === orgId ? challenger.id : defender.id;
           winData.roster = winData.roster.map(f => {
             if (f.id !== winRepId) return f;
@@ -12845,7 +12849,7 @@ const Engine = {
           newAiOrgs[winnerOrgId] = winData;
 
           const loseData = { ...newAiOrgs[loserOrgId] };
-          loseData.orgPop = Engine.util.clamp((loseData.orgPop ?? 50) - 1, 0, 100);
+          loseData.orgPop = Engine.orgPop.nextPop(loseData.orgPop, Engine.orgPop.B3_RAW_DELTA.loss);
           const loseRepId = loserOrgId === orgId ? challenger.id : defender.id;
           loseData.roster = loseData.roster.map(f => {
             if (f.id !== loseRepId) return f;
@@ -12858,7 +12862,7 @@ const Engine = {
         } else {
           // 引き分け
           const d1 = { ...newAiOrgs[orgId] };
-          d1.orgPop = Engine.util.clamp((d1.orgPop ?? 50) + 1, 0, 100);
+          d1.orgPop = Engine.orgPop.nextPop(d1.orgPop, Engine.orgPop.B3_RAW_DELTA.draw);
           d1.lastB3Week = currentAbsWeek;
           d1.roster = d1.roster.map(f => {
             if (f.id !== challenger.id) return f;
@@ -12868,7 +12872,7 @@ const Engine = {
           });
           newAiOrgs[orgId] = d1;
           const d2 = { ...newAiOrgs[opponent.id] };
-          d2.orgPop = Engine.util.clamp((d2.orgPop ?? 50) + 1, 0, 100);
+          d2.orgPop = Engine.orgPop.nextPop(d2.orgPop, Engine.orgPop.B3_RAW_DELTA.draw);
           d2.lastB3Week = currentAbsWeek;
           d2.roster = d2.roster.map(f => {
             if (f.id !== defender.id) return f;
@@ -20130,6 +20134,23 @@ Engine.orgPop = {
     return rawDelta;
   },
 
+  // K-9(A) 残り(2026-09-26): 挑戦状(B3)とメディア密着(従来型)の団体人気の素の値。自団体・AI団体共通の1か所。
+  // 上げ幅は applyOrgPopChange で人気帯の逓減を掛ける(下げ幅はそのまま)。
+  B3_RAW_DELTA: { win: 3, draw: 1, loss: -1, decline: -1 },
+  MEDIA_RAW_DELTA: { great: 3, fair: 1 },  // 密着の平均MQ 60以上 / 45〜59
+  // AI団体の人気に applyOrgPopChange を**その団体自身の人気で**掛けた新しい人気(0〜100)。
+  // 人気の欠損(null/undefined)だけを50で補う(0は正当な値。K-9)。
+  nextPop(orgPop, rawDelta) {
+    const pop = orgPop ?? 50;
+    return Engine.util.clamp(pop + Engine.orgPop.applyOrgPopChange(rawDelta, pop, null), 0, 100);
+  },
+  // aiOrgs の1団体に上を掛けた aiOrgs を返す。団体が無い/素の値が0なら aiOrgs をそのまま返す。
+  applyToAiOrg(aiOrgs, orgId, rawDelta) {
+    const ao = aiOrgs && orgId ? aiOrgs[orgId] : null;
+    if (!ao || !rawDelta) return aiOrgs;
+    return { ...aiOrgs, [orgId]: { ...ao, orgPop: Engine.orgPop.nextPop(ao.orgPop, rawDelta) } };
+  },
+
   // K-3(2026-09-25 Keisuke裁定): 会場の器の係数(0.2〜1.0)。人気に対して小さい会場ほど小さい。
   // 定数と式は data.js の SHOW_ORGPOP_VENUE_FIT。人気20未満(onsetPop未満)は常に1.0。
   // 呼び出し側は「★で決まった団体人気の変化がプラスのとき」だけ掛ける(applyShowPopularity)。
@@ -26315,7 +26336,8 @@ Engine.eventSystem = {
             return { roster, funds, lockerRoomMorale, mediaSpotlight, lastLargeEventWeek: absWeek, lastB3ChallengeWeek: absWeek, events, nextStep: 1 };
           } else {
             // Phase0修正: 辞退ペナルティ追加 orgPop -1（逓減適用）
-            const declineOrgPopDelta = Engine.orgPop.applyOrgPopChange(-1, state.orgPop, null);
+            // 挑戦してきたAI団体の人気は動かない(AI同士の辞退でも挑戦側は動かない。K-9)
+            const declineOrgPopDelta = Engine.orgPop.applyOrgPopChange(Engine.orgPop.B3_RAW_DELTA.decline, state.orgPop, null);
             events.push(`🚫 ${event.orgName || '他団体'}からの挑戦状を断った（団体人気${Math.round(declineOrgPopDelta * 10) / 10}）`);
             // MVPレース v2: 自団体OVRトップ3に b3Decline 履歴
             const ov = Engine.util.ov;
@@ -26360,18 +26382,19 @@ Engine.eventSystem = {
           const orgName = event.orgName || '他団体';
           let orgPopDelta = 0;
 
+          const B3 = Engine.orgPop.B3_RAW_DELTA;
           if (result.winner === 'left') {
-            orgPopDelta = Engine.orgPop.applyOrgPopChange(3, state.orgPop, rng);
+            orgPopDelta = Engine.orgPop.applyOrgPopChange(B3.win, state.orgPop, rng);
             applyTrust(fighterId, 5);
             roster = roster.map(f => f.id === fighterId
               ? { ...f, popularity: Engine.util.clamp((f.popularity ?? 1) + 3, 1, 100) } : f);
             events.push(`🎉 挑戦状で${orgName}を返り討ち！（人気+${Math.round(orgPopDelta * 10) / 10}）`);
           } else if (result.winner === 'right') {
-            orgPopDelta = Engine.orgPop.applyOrgPopChange(-1, state.orgPop, rng);
+            orgPopDelta = Engine.orgPop.applyOrgPopChange(B3.loss, state.orgPop, rng);
             applyTrust(fighterId, -3);
             events.push(`😞 挑戦状で${orgName}に敗北…（人気${Math.round(orgPopDelta * 10) / 10}）`);
           } else {
-            orgPopDelta = Engine.orgPop.applyOrgPopChange(1, state.orgPop, rng);
+            orgPopDelta = Engine.orgPop.applyOrgPopChange(B3.draw, state.orgPop, rng);
             applyTrust(fighterId, 2);
             events.push(`🤼 挑戦状は決着つかず。互角の戦いを見せた（人気+${Math.round(orgPopDelta * 10) / 10}）`);
           }
@@ -26408,6 +26431,14 @@ Engine.eventSystem = {
               };
               aiOrgsRet = aiOrgsUpdated;
             }
+          }
+          // K-9(A) 残り(2026-09-26): 挑戦してきたAI団体の人気も、AIの立場から同じ表と同じ逓減で動かす
+          // (AI同士の挑戦状 processAIB3Challenge と同じ。係数はその団体自身の人気)。旧来はプレイヤーが勝っても
+          // 負けても相手のAI団体の人気は動かなかった。画面の2経路(観戦/スキップ・興行内の挑戦状)はどちらも
+          // ここを通り、返した aiOrgs をそのまま G に反映する。ログ・新聞に人気の数値は出さない。
+          if (event.orgId && state.aiOrgs?.[event.orgId]) {
+            const aiRaw = result.winner === 'right' ? B3.win : result.winner === 'left' ? B3.loss : B3.draw;
+            aiOrgsRet = Engine.orgPop.applyToAiOrg(aiOrgsRet || state.aiOrgs, event.orgId, aiRaw);
           }
           // Phase 4 E-03: 挑戦状の関係値反映
           let relationships = null;
@@ -26550,7 +26581,7 @@ Engine.eventSystem = {
     if (newSpotlight.remainingShows <= 0) {
       const avgMQ = newSpotlight.matchCount > 0 ? newSpotlight.totalMQ / newSpotlight.matchCount : 0;
       if (avgMQ >= 60) {
-        orgPopDelta = Engine.orgPop.applyOrgPopChange(3, state.orgPop, rng);
+        orgPopDelta = Engine.orgPop.applyOrgPopChange(Engine.orgPop.MEDIA_RAW_DELTA.great, state.orgPop, rng);
         roster = roster.map(f => {
           if (f.id !== fId) return f;
           const newPop = Engine.util.clamp((f.popularity ?? 1) + 5, 1, 100);
@@ -26563,7 +26594,7 @@ Engine.eventSystem = {
         });
         events.push(`📺 ${newSpotlight.fighterName}の密着取材が大成功！（人気+5、団体人気+${Math.round(orgPopDelta * 10) / 10}）`);
       } else if (avgMQ >= 45) {
-        orgPopDelta = Engine.orgPop.applyOrgPopChange(1, state.orgPop, rng);
+        orgPopDelta = Engine.orgPop.applyOrgPopChange(Engine.orgPop.MEDIA_RAW_DELTA.fair, state.orgPop, rng);
         roster = roster.map(f => {
           if (f.id !== fId) return f;
           return { ...f, popularity: Engine.util.clamp((f.popularity ?? 1) + 2, 1, 100) };
