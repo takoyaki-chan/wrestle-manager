@@ -14643,15 +14643,11 @@ const Engine = {
         const f3 = roster.find(c => c.id === m.teamB.fighter1);
         const f4 = roster.find(c => c.id === m.teamB.fighter2);
         if (!f1 || !f2 || !f3 || !f4) return null;
-        const tagRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
-        const bondA = s.relationships ? ((s.relationships[`${Math.min(f1.id,f2.id)}>${Math.max(f1.id,f2.id)}`] || {}).bond || 50) : 50;
-        const bondB = s.relationships ? ((s.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
-        const tagExpA = Engine.tagExp.getCount(s, f1.id, f2.id);
-        const tagExpB = Engine.tagExp.getCount(s, f3.id, f4.id);
-        return Engine.tagMatch.simulateTagMatch(
-          { fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 },
-          tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB }
-        );
+        // 不仲ペア(絆≤20)の能力-3・連携不可・試合後の信頼-1は、UIの観戦/スキップ/全スキップと
+        // 共通の Engine.showTagMatch で解決する(K-12)。以前は headless だけ何も適用されていなかった。
+        const tag = Engine.showTagMatch.simulate({ ...s, roster }, { fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 });
+        roster = tag.roster;
+        return tag.result;
       }
       // ── シングルマッチ ──
       const charL = roster.find(c => c.id === m.left);

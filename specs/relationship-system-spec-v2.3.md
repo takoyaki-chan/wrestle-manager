@@ -1,7 +1,7 @@
 # Relationship System Spec v2.3 — Bond/Rivalry ネガティブイベント拡張
 
 策定日: 2026-04-29
-更新日: 2026-07-19 (因縁決着の確定値と宿怨ルートの意味を追記)
+更新日: 2026-09-25 (§D.1 K-12: 不仲タッグの能力-3を有効化し、4経路を Engine.showTagMatch に共通化) / 2026-07-19 (因縁決着の確定値と宿怨ルートの意味を追記)
 位置付け: v2.2 の追補。bond/rivalry の値が直接トリガーとなるネガティブイベントの空白地帯を埋める追加施策の確定仕様。
 
 §A は先行実装完了項目(W-4キャップ / P-2 / P-8 / P-9 / 1-C UI)、§D は追加実装した項目(P-1 / P-3 / P-4 / P-6 / P-7 / 因縁決着整合性)。
@@ -85,16 +85,23 @@
 ### §D.1 P-1 タッグ編成 Bond ペナルティ + 警告
 
 **仕様**:
-- ペアの bond `min(bondAB, bondBA)` ≤ 20 のとき、試合エンジンに渡す前段で fighter を複製し power/speed/technique/spirit を **各 -3**
+- ペアの bond ≤ 20 のとき「不仲」。bond は `Engine.showTagMatch.pairBond` = `relationships['小さいID>大きいID'].bond`(未登録は50)。試合と興行画面の表示は必ず同じ値・同じ閾値を使う
+  - ※当初案の `min(bondAB, bondBA)` ではなく片方向の値を読んでいる(実装当初から。表示も同じ値)。min へ寄せるかは未裁定
+- 試合エンジンに渡す前段で fighter を複製し **pw/sp/te/mn を各 -3**(当初案の power/speed/technique/spirit をエンジンのキーに当てたもの。spirit = MN メンタル。ST=スタミナは下げない)。選手本体の能力値は変えない
+  - 2026-09-25 K-12 裁定で有効化。それまでは存在しないキー(power 等)を減らしていたため、どの経路でも効いていなかった。同格・不仲 bond15 vs 標準 bond50 の不仲側勝率は約 -8pt(3000試合: 42.9%→34.8%)
 - 試合中の連携(cut-in 救援)を完全停止 — `calcCutinRate` で `bond ≤ 20` なら 0 を返す(自然減衰ではなくハードカット)
-- 試合後、対象ペア両者の trust **-1**
-- タッグ編成プレビューに赤色マーカー「⚠ 不仲 ${bond}」+ 警告テキスト「能力-3 / 連携不可 / 信頼-1」
+- 試合後、対象ペア両者の trust **-1**(所属団体への信頼。プレイヤーには非表示)
+- 以上3つは通常興行のタッグ戦の全経路(観戦 / 1試合スキップ / 残り全試合スキップ / headless)で同じに掛かる。以前は全スキップと headless で trust -1 も抜けていた
+- 興行プレビューに赤色マーカー「⚠ 不仲 ${bond}」+ 警告テキスト「能力-3 / 連携不可 / 相手との関係-1」(2026-07-21 に「信頼-1」から文言変更)
+  - ※表示の「相手との関係」は trust-system-spec の用語では Bond を指すが、実際の効果は trust -1。文言と効果のどちらに合わせるかは未裁定
 - MQ ボーナス/ペナルティは入れない(MQ排除方針継続)
 
 **実装場所**:
-- `src/app.js` simulateTagMatch 呼び出し2箇所(自動実行 / 観戦実行)
+- `src/match-engine.js` `Engine.showTagMatch`(`pairBond` / `isLowBond` / `penalize` / `simulate`)— 通常興行のタッグ戦は必ずここを通す。呼び出し元は `App.skipMatch` / `App._watchTagMatch` / `App.skipAllMatches`(`src/app.js`)と `Engine.executeShow`(`src/management.js`)の4か所。`simulate` は乱数(`derive(rngSeed, season, week, A1, B1, 0x7A60)`)・絆・タッグ経験・不仲ペナルティを解決し、trust -1 を反映した roster を返す(呼び出し元が書き戻す)
 - `src/match-engine.js` `calcCutinRate` ガード
-- `src/ui-common.js` タッグマッチプレビュー(`smc-tag-arena`)
+- `src/ui-common.js` 興行プレビュー(`smc-tag-arena`)の ⚠ 不仲 判定、`src/ui-render.js` カード編成画面の絆表示 — どちらも `Engine.showTagMatch.pairBond` / `isLowBond` を使う
+- 対象外: 春のタッグリーグ(`Engine.springTagLeague.run` / `simulateReplay`)。bond を渡すので連携不可だけは効くが、能力-3 と trust -1 は掛からない(不仲の警告表示も無い)
+- 回帰テスト: `test/tag-discord-penalty-test.js`(4経路の一致・ペナルティの実効・不仲でないペアの完全不変・経路ガード)
 
 ### §D.2 P-3 興行波及(逓減動員 + アクシデント率)
 
