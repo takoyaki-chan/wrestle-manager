@@ -182,6 +182,68 @@ section('E05: 実プレイ(app.js)はエンジンと同じ Engine.show.accrueFac
   assert.ok(/Engine\.show\.accrueFactionPoints\(s, validMatches, results\)/.test(ex), 'executeShow が Engine.show.accrueFactionPoints を呼んでいない');
 });
 
+// ── 3. §7 X03 怪我判定に渡す情報 ──
+function captureInjuryArgs(fn) {
+  const real = Engine.injury.check;
+  const calls = [];
+  Engine.injury.check = function (rng, f, result, coachMult, week, season, downgrade, flavorOpts) {
+    calls.push({ fighterId: f && f.id, coachMult, week, season, downgrade, flavorOpts });
+    return null;
+  };
+  try { fn(); } finally { Engine.injury.check = real; }
+  return calls;
+}
+
+section('X03: 怪我判定に週・季・舞台の格・王者を渡す(以前の実プレイは週・季が 0 で「0季0週」の経歴になった)', () => {
+  assert.ok(Engine.show && typeof Engine.show.rollMatchInjury === 'function', 'Engine.show.rollMatchInjury が無い');
+  const s = { rngSeed: 7, season: 4, week: 18, coaches: [], coachAssign: {}, roster: [fighter(1), fighter(2)], relationships: {}, titles: { world: { championId: 2 } } };
+  const r = { winner: 'left', mq: 50, turns: 10, left: { id: 1 }, right: { id: 2 }, hpLeft: { final: 50, max: 100 }, hpRight: { final: 10, max: 100 } };
+  const calls = captureInjuryArgs(() => {
+    Engine.show.rollMatchInjury(s, r, 0, s.roster[0], { titleChampionId: 2 });
+    Engine.show.rollMatchInjury(s, r, 3, s.roster[1], { titleChampionId: 2 });
+    Engine.show.rollMatchInjury(s, { ...r, isTitleMatch: true }, 3, s.roster[1], { titleChampionId: 2 });
+  });
+  assert.strictEqual(calls.length, 3);
+  calls.forEach(c => { assert.strictEqual(c.week, 18); assert.strictEqual(c.season, 4); assert.strictEqual(c.flavorOpts.titleChampionId, 2); });
+  assert.deepStrictEqual(calls.map(c => c.flavorOpts.stage), ['main', 'undercard', 'title']);
+  calls.forEach(c => assert.ok(!(c.flavorOpts.injuryMult > 1), '険悪でないペアに倍率が掛かった'));
+});
+
+section('X03: 険悪ペア(rivalry≥60 ∧ 平均bond≤30)はアクシデント率×2(bond-rivalry P-3)', () => {
+  const rel = { bond: 20, rivalry: 70 };
+  const s = { rngSeed: 7, season: 4, week: 18, coaches: [], coachAssign: {}, roster: [fighter(1), fighter(2)], relationships: { '1>2': { ...rel }, '2>1': { ...rel } } };
+  const r = { winner: 'left', mq: 50, turns: 10, left: { id: 1 }, right: { id: 2 }, hpLeft: { final: 50, max: 100 }, hpRight: { final: 10, max: 100 } };
+  const calls = captureInjuryArgs(() => { Engine.show.rollMatchInjury(s, r, 1, s.roster[0], {}); });
+  assert.strictEqual(calls[0].flavorOpts.injuryMult, 2, `倍率 ${calls[0].flavorOpts.injuryMult}`);
+});
+
+section('X03: 中傷・重傷の経歴に今の週・季が残る(本物の Engine.injury.check を通す)', () => {
+  // 怪我が出る乱数シードを探す(体調0・HP0 で確率の上限 15%)
+  const f = fighter(1, { condition: 0, wear: 0 });
+  const r = { winner: 'right', mq: 50, turns: 30, left: { id: 1 }, right: { id: 2 }, hpLeft: { final: 0, max: 100 }, hpRight: { final: 90, max: 100 } };
+  let hit = null;
+  for (let seed = 1; seed < 5000 && !hit; seed++) {
+    const s = { rngSeed: seed, season: 5, week: 22, coaches: [], coachAssign: {}, roster: [f, fighter(2)], relationships: {} };
+    const res = Engine.show.rollMatchInjury(s, r, 2, f, {});
+    if (res && res.newFighter.careerHistory && res.newFighter.careerHistory.some(e => e.type === 'injury')) hit = res;
+  }
+  assert.ok(hit, '中傷以上の怪我が出るシードが見つからない');
+  const e = hit.newFighter.careerHistory.find(x => x.type === 'injury');
+  assert.strictEqual(e.season, 5);
+  assert.strictEqual(e.week, 22);
+});
+
+section('X03: 実プレイ(app.js)はエンジンと同じ Engine.show.rollMatchInjury を呼ぶ(週・季に 0 を渡さない)', () => {
+  const body = finalizeBody();
+  const calls = body.match(/Engine\.show\.rollMatchInjury\(s, r, idx, (lc|rc), \{ hostileMult, titleChampionId: injuryTitleChampId \}\)/g) || [];
+  assert.strictEqual(calls.length, 2, `_finalizeShowImpl の Engine.show.rollMatchInjury の呼び出しが ${calls.length} 件`);
+  assert.ok(!/Engine\.injury\.check\(/.test(body), '_finalizeShowImpl が Engine.injury.check を直接呼んでいる');
+  const mgmt = readSource('src', 'management.js');
+  const ex = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('  executeShow(state) {') + 60000);
+  assert.strictEqual((ex.match(/Engine\.show\.rollMatchInjury\(s, r, idx, (lc|rc), \{ hostileMult, titleChampionId: _titleChampId \}\)/g) || []).length, 2,
+    'executeShow が Engine.show.rollMatchInjury を呼んでいない');
+});
+
 if (failed > 0) {
   console.log(`\nFAIL: ${failed} 件`);
   process.exit(1);

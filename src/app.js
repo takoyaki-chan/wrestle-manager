@@ -8287,20 +8287,24 @@ const App = {
     if (oldHeat.id !== newHeat.id) events.push({ type: 'heat_level_changed', data: { emoji: newHeat.emoji, oldLabel: oldHeat.label, newLabel: newHeat.label, mult: newHeat.mult }, s: s.season, w: s.week });
 
     // Injuries — separate RNG per fighter to avoid correlation (タッグはスキップ — Phase 5対応)
+    // K-1 4-B-3(§7 X03): 怪我判定の引数はエンジンの executeShow と同じ Engine.show.rollMatchInjury で組む。
+    // 以前は週・季に 0 を渡し(中傷・重傷の経歴が「0季0週」)、険悪ペアの怪我率×2 と舞台の格を渡していなかった。
+    // 王者は興行前の王者(s.titles。この興行の王座の結果はローカルの titles にある。エンジンと同じ)。
+    // 怪我による引退(retireType)は従来どおり記録するだけ(4-B-6 / K1-E03 で扱う)
     const injuryResults = [];
     const matchInjuredIds = new Array(results.length).fill(null); // Phase 2: 試合別怪我選手ID
+    const injuryTitleChampId = (s.titles && s.titles.world) ? s.titles.world.championId : null;
     results.forEach((r, idx) => {
       if (r.matchType === 'tag') return; // タッグ試合の怪我はPhase 5で対応
+      const hostileMult = Engine.injury.hostileMatchMult(s.relationships, r.left.id, r.right.id);
       const lc = roster.find(c => c.id === r.left.id);
       if (lc && !lc.isIntrusion) { // 乱入選手は怪我判定スキップ
-        const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-        const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), Engine.coach.buildInjuryFlavorOpts(s, r.left.id));
+        const li = Engine.show.rollMatchInjury(s, r, idx, lc, { hostileMult, titleChampionId: injuryTitleChampId });
         if (li) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id; roster = roster.map(c => c.id === lc.id ? li.newFighter : c); injuryResults.push({ id: lc.id, name: lc.name, injury: li.newFighter.injury, retireType: li.retireType || null, farewellKind: li.farewellKind || null }); }
       }
       const rc = roster.find(c => c.id === r.right.id);
       if (rc && !rc.isIntrusion) { // 乱入選手は怪我判定スキップ
-        const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-        const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), 0, 0, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), Engine.coach.buildInjuryFlavorOpts(s, r.right.id));
+        const ri = Engine.show.rollMatchInjury(s, r, idx, rc, { hostileMult, titleChampionId: injuryTitleChampId });
         if (ri) { if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id; roster = roster.map(c => c.id === rc.id ? ri.newFighter : c); injuryResults.push({ id: rc.id, name: rc.name, injury: ri.newFighter.injury, retireType: ri.retireType || null, farewellKind: ri.farewellKind || null }); }
       }
     });

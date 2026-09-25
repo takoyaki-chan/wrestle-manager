@@ -15255,6 +15255,28 @@ const Engine = {
       }
       return s;
     },
+
+    // シングル戦の怪我判定1人分(K-1 4-B-3 / 報告書 §7 X03)。Engine.injury.check に渡す引数をここで組む:
+    //   乱数は選手ごとに derive(rngSeed, season, week, 999, 試合番号, 選手ID)
+    //   週・季(中傷・重傷の経歴の日付。以前の実プレイは 0 を渡し「0季0週」で残っていた)
+    //   険悪ペア(rivalry≥60 ∧ 平均bond≤30)のアクシデント率×2(bond-rivalry P-3。Engine.injury.hostileMatchMult)
+    //   舞台の格 stage(前座 undercard < メイン main < 王座戦 title。壮絶な幕切れの重み)と王者ID(幕切れの型)
+    // opts.hostileMult: 呼び出し側が1試合に1回計算した倍率(省略時はここで計算)
+    // opts.titleChampionId: 幕切れの型の判定に使う王者(両経路とも興行前の王者を渡す)
+    // 引退の扱い(retireType が付いたときの処理)は呼び出し側。実プレイはまだ引退させない(4-B-6 / K1-E03 で扱う)
+    rollMatchInjury(state, result, matchIdx, fighter, opts = {}) {
+      if (!fighter || !result || !result.left || !result.right) return null;
+      const s = state;
+      const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, matchIdx, fighter.id));
+      const hostileMult = opts.hostileMult != null
+        ? opts.hostileMult
+        : Engine.injury.hostileMatchMult(s.relationships, result.left.id, result.right.id);
+      const stage = result.isTitleMatch ? 'title' : (matchIdx === 0 ? 'main' : 'undercard');
+      let flavorOpts = { ...(Engine.coach.buildInjuryFlavorOpts(s, fighter.id) || {}), stage, titleChampionId: opts.titleChampionId };
+      if (hostileMult !== 1.0) flavorOpts = { ...flavorOpts, injuryMult: (flavorOpts.injuryMult || 1.0) * hostileMult };
+      return Engine.injury.check(rng, fighter, result, Engine.coach.getInjuryMult(s, fighter.id), s.week, s.season,
+        Engine.coach.getInjurySeverityDowngrade(s, fighter.id), flavorOpts);
+    },
   },
 
   // ══════════════════════════════════════════════════════════
@@ -15731,25 +15753,16 @@ const Engine = {
     const matchInjuredIds = new Array(results.length).fill(null); // Phase 2: 試合別怪我選手ID
     // bond-rivalry plan P-3: 険悪ペア（rivalry≥60 ∧ avg bond≤30）のシングル戦はアクシデント率2倍
     // (式はAI団体の興行と共通の Engine.injury.hostileMatchMult。K-13 で共有化)
-    const _hostileMatchMult = (leftId, rightId) => Engine.injury.hostileMatchMult(s.relationships, leftId, rightId);
-    const _mergeFlavorOpts = (base, extraMult, stage) => {
-      const withStage = stage ? { ...(base || {}), stage, titleChampionId: _titleChampId } : base;
-      if (extraMult === 1.0) return withStage;
-      return { ...(withStage || {}), injuryMult: ((withStage && withStage.injuryMult) || 1.0) * extraMult };
-    };
     // C「壮絶な幕切れ」の舞台の格。前座 < メイン < 王座戦 の順に重い
     // (特別興行・天頂戦は別経路で処理されるため、ここは通常興行のみ)
+    // K-1 4-B-3(§7 X03): 怪我判定の引数(週・季・険悪ペア倍率・舞台の格・王者)は実プレイ(app.js)と同じ
+    // Engine.show.rollMatchInjury で組む。王者は興行前の王者(s.titles。この興行の王座の結果は titles にある)
     const _titleChampId = (s.titles && s.titles.world) ? s.titles.world.championId : null;
-    const _stageOf = (r, idx) => {
-      if (r.isTitleMatch) return 'title';
-      return idx === 0 ? 'main' : 'undercard';
-    };
     results.forEach((r, idx) => {
       if (r.matchType === 'tag') return; // タッグ試合の怪我はPhase 5で対応
-      const hostileMult = _hostileMatchMult(r.left.id, r.right.id);
+      const hostileMult = Engine.injury.hostileMatchMult(s.relationships, r.left.id, r.right.id);
       const lc = roster.find(c => c.id === r.left.id);
-      const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-      const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.left.id), hostileMult, _stageOf(r, idx)));
+      const li = Engine.show.rollMatchInjury(s, r, idx, lc, { hostileMult, titleChampionId: _titleChampId });
       if (li) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -15778,8 +15791,7 @@ const Engine = {
         }
       }
       const rc = roster.find(c => c.id === r.right.id);
-      const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-      const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.right.id), hostileMult, _stageOf(r, idx)));
+      const ri = Engine.show.rollMatchInjury(s, r, idx, rc, { hostileMult, titleChampionId: _titleChampId });
       if (ri) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック

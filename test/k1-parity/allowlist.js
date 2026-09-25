@@ -150,14 +150,8 @@ module.exports = [
   },
   // K1-A15(タッグ不仲ペアの試合後 信頼−1)は、裁定 K-12 の実装(7ba3738e: Engine.showTagMatch に4経路を
   // 通した)で差が消えたので外した(2026-09-26)。以後この場所に差が出ると「未登録」で落ちる。
-  {
-    id: 'K1-X03', title: '怪我の経歴の日付(実プレイは怪我判定に週・季として 0 を渡すので、中傷・重傷の経歴が「0季0週」になる)',
-    category: 'formula', side: 'both', impact: '表示', scenarios: ['departure'], checkpoints: ['A', 'B'],
-    patterns: ['roster[*].careerHistory'],
-    mustAppear: true, refs: 'app.js _finalizeShowImpl の Engine.injury.check(…, 0, 0, …) / management.js executeShow は s.week, s.season を渡す',
-    note: '報告書 §7 X03(コード読解で確認済み)を 2026-09-26 の fixture 更新で実測した(departure で選手41が中傷)。'
-      + '同じシナリオの選手44のブレークスルーの経歴(K1-A02)もこの項目に数えられる(場所が同じため)。',
-  },
+  // K1-X03(怪我判定の引数。実プレイは週・季に 0 を渡し、険悪ペアの怪我率×2 と舞台の格を渡していなかった)は
+  // K-1 第4段 4-B-3 で解消したので外した(2026-09-26)。両経路が Engine.show.rollMatchInjury で引数を組む。
   // K1-F01(タッグの人気・連敗・勝敗の付け方。実プレイは敗者も勝者扱い)は K-1 第4段 4-B-1 で解消したので外した
   // (2026-09-26)。両経路が Engine.show.applyMatchPopularity を通す。タッグにもメイン低評価の人気減と
   // ヒール適性の加点が掛かる(裁定)。以後この場所に差が出ると「未登録」で落ちる。
