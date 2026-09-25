@@ -15624,7 +15624,7 @@ function _buildB4Modal(event, state, roster) {
     const recommendations = available
       .map(f => ({ f, mult: Engine.eventSystem.calcTalentMultiplier(f, activityType) }))
       .filter(x => x.mult >= 1.4)
-      .sort((a, b) => (b.f.popularity || 1) - (a.f.popularity || 1))
+      .sort((a, b) => (b.f.popularity ?? 1) - (a.f.popularity ?? 1))
       .slice(0, 2)
       .map(x => WM_I18N.pn(x.f.name));
 

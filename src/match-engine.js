@@ -521,7 +521,7 @@ Engine.battle = {
         _turnPinAttempt = null;
         _turnRollup = null;
         _turnTkoStop = false;
-        const _popAdvL = ((L.popularity || 50) - (R.popularity || 50)) / 100 * popularityInfluence;
+        const _popAdvL = ((L.popularity ?? 50) - (R.popularity ?? 50)) / 100 * popularityInfluence;
         const _popMultL = (tier >= 2 ? 2.0 : 1.0);
         const leftChance = 50 + mom * 0.05 + _popAdvL * 6 * _popMultL;
         const isLeftAtk = Engine.rng.float(rng) * 100 < leftChance;
@@ -688,7 +688,7 @@ Engine.battle = {
             const _defOvr = B.battlePower(def, eng);
             const _ovrMult = Math.pow(_atkOvr / Math.max(1, _defOvr), eng.ovrGapDmgExponent);
             // v5.0 popularity: 防御側人気優位で被ダメ軽減
-            const _popAdvD = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
+            const _popAdvD = ((def.popularity ?? 50) - (atk.popularity ?? 50)) / 100 * popularityInfluence;
             const _popMultD = (tier >= 2 ? 2.0 : 1.0);
             // v5.1 MN: 終盤の粘り（End +8% / Climax +12% 被ダメ軽減、MN50超過分のみ）
             let _mnLateMult = 1.0;
@@ -731,7 +731,7 @@ Engine.battle = {
               const finLabel = fType === 'fall' ? 'フォール' : fType === 'gu' ? 'ギブアップ' : 'TKO';
               let escaped = false;
               if (fType === 'fall' || fType === 'tko') {
-                const _popAdvKo = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
+                const _popAdvKo = ((def.popularity ?? 50) - (atk.popularity ?? 50)) / 100 * popularityInfluence;
                 const _popMultKo = (tier >= 2 ? 2.0 : 1.0);
                 let koChance = B.calcKickoutChance(def, ph, eng, _popAdvKo, _popMultKo);
                 const defenderChampionBonus = fType === 'fall' ? championReturnBonus(!isLeftAtk) : 0;
@@ -747,7 +747,7 @@ Engine.battle = {
                   if (recordFrames) _turnKickout = { count: def.kickoutCount, escapeType: fType };
                 }
               } else if (fType === 'gu') {
-                const _popAdvGu = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
+                const _popAdvGu = ((def.popularity ?? 50) - (atk.popularity ?? 50)) / 100 * popularityInfluence;
                 const _popMultGu = (tier >= 2 ? 2.0 : 1.0);
                 let escChance = B.calcGuEscapeChance(def, ph, eng, _popAdvGu, _popMultGu);
                 escChance = B.addReturnBonus(escChance, sharedReturnBonus + championReturnBonus(!isLeftAtk), eng.guEscapeKnee.cap);

@@ -15718,7 +15718,7 @@ const App = {
     let jtMediaTotal = 0;
     wp.results.forEach(r => {
       if (r.playerFighter) {
-        const rev = Math.round((r.playerFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+        const rev = Math.round((r.playerFighter.popularity ?? 1) * MEDIA_CONFIG.jtPerPop);
         jtMediaTotal += rev;
         // メディア功労賞: 個人別メディア収入累計に加算
         G = { ...G, roster: G.roster.map(c =>
@@ -15727,7 +15727,7 @@ const App = {
       }
       // AI団体選手のメディア収入個人トラッキング（対抗戦出場）
       if (r.aiFighter && ev.opponentOrgId && G.aiOrgs && G.aiOrgs[ev.opponentOrgId]) {
-        const aiRev = Math.round((r.aiFighter.popularity || 1) * MEDIA_CONFIG.jtPerPop);
+        const aiRev = Math.round((r.aiFighter.popularity ?? 1) * MEDIA_CONFIG.jtPerPop);
         if (aiRev > 0) {
           const aiOrg = G.aiOrgs[ev.opponentOrgId];
           G = { ...G, aiOrgs: { ...G.aiOrgs, [ev.opponentOrgId]: {

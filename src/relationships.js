@@ -869,7 +869,7 @@ Engine.relationships = {
       });
     };
     const applyConditionDelta = (fighterId, delta) => {
-      updateFighter(fighterId, fighter => ({ ...fighter, condition: Engine.util.clamp((fighter.condition || 70) + delta, 0, 100) }));
+      updateFighter(fighterId, fighter => ({ ...fighter, condition: Engine.util.clamp((fighter.condition ?? 70) + delta, 0, 100) }));
     };
     const markGrowthPressure = (fighterId, growthMult, injuryMult) => {
       updateFighter(fighterId, fighter => ({
@@ -2095,7 +2095,7 @@ Engine.relationships = {
         // ???condition +5?+10
         s = { ...s, roster: s.roster.map(c => {
           if (c.id === ev.charA || c.id === ev.charB) {
-            return { ...c, condition: Math.min(100, (c.condition || 80) + ev.effect.conditionBonus) };
+            return { ...c, condition: Math.min(100, (c.condition ?? 80) + ev.effect.conditionBonus) };
           }
           return c;
         })};
@@ -5557,7 +5557,7 @@ Engine.glimpse = {
       }
 
       // GL-07: コンディション不良（condition < 40）
-      if ((f.condition || 100) < 40 && !f.injury) {
+      if ((f.condition ?? 100) < 40 && !f.injury) {
         if (Engine.rng.float(rng) < 0.10) {
           candidates.push({ type: 'GL-07', weight: 2, fighterId: f.id,
             fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-07'], f),

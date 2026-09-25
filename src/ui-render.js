@@ -3750,7 +3750,7 @@ function renderShowPrep() {
     }
     const isChamp = G.titles?.world?.championId === f.id;
     const isUnifiedChamp = G.unifiedTitle?.championId === f.id;
-    const condOk = (f.condition || 100) >= 60;
+    const condOk = (f.condition ?? 100) >= 60;
     let drawHtml = '';
     if (drawData) {
       const dets = [...(drawData.traits || []), ...(drawData.details || [])]
@@ -3761,7 +3761,7 @@ function renderShowPrep() {
       ${isChamp ? `<div class="sp-champ">${WM_I18N.t('👑 王者')}</div>` : ''}
       ${isUnifiedChamp ? `<div class="sp-champ" style="color:var(--unified)">${WM_I18N.t('🌐 統一王者')}</div>` : ''}
       <div class="sp-fighter-name" data-sp-fighter-id="${f.id}" onclick="_spOpenPicker(${slotIdx},'${side}')">${WM_I18N.pn(f.name)}</div>
-      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">${WM_I18N.t('体調')} <span style="${_scale6Style(_condColor(Math.round(f.condition || 100)))}">${Math.round(f.condition || 100)}</span></span></div>
+      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">${WM_I18N.t('体調')} <span style="${_scale6Style(_condColor(Math.round(f.condition ?? 100)))}">${Math.round(f.condition ?? 100)}</span></span></div>
       ${drawHtml}
     </div>`;
   };
@@ -3790,7 +3790,7 @@ function renderShowPrep() {
       const tagExpB = (tB1 && tB2) ? Engine.tagExp.getCount(G, tB1.id, tB2.id) : 0;
       const _tagFighterHtml = (f, team, pos, side) => {
         if (!f) return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:72px;height:72px;border-radius:6px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">${WM_I18N.t('— 選択 —')}</div></div></div>`;
-        const cond = Math.round(f.condition || 100);
+        const cond = Math.round(f.condition ?? 100);
         const drawPow = Math.round(Engine.attendanceV2.calcDrawPower(f, G));
         const isChamp = G.titles?.world?.championId === f.id;
         return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">
