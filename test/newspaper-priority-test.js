@@ -123,8 +123,12 @@ section('9. 王座移動は積み忘れようがない形にする', () => {
     `crownChampion の呼び出しが ${callers} 箇所。増えたなら、その経路でも記事を積むこと`);
   assert.ok(/if \(crown\.newsEvent\) s = Engine\.industryNews\.push\(s, crown\.newsEvent\);/.test(mgmt),
     'エンジン側の呼び出しで積んでいない');
-  assert.ok(/if \(crown\.newsEvent\) App\._pushIndustryNews\(crown\.newsEvent\);/.test(app),
-    'UI側の呼び出しで積んでいない');
+  // UI 側は G ではなく s(_finalizeShowImpl の作業中の状態)に積む。G に積むと関数の最後の
+  // G = { ...s } で上書きされて記事が消える(K-1 第1段 K1-E07・2026-09-26)。乱入者が奪った王座は除く
+  assert.ok(/if \(crown\.newsEvent && !intruderTook\) s = Engine\.industryNews\.push\(s, crown\.newsEvent\);/.test(app),
+    'UI側の呼び出しで s に積んでいない');
+  assert.ok(!/App\._pushIndustryNews\(crown\.newsEvent\)/.test(app),
+    'UI側が王座移動の記事を G に積んでいる(_finalizeShowImpl の最後の G = { ...s } で消える)');
 });
 
 section('10. 嫌悪の伝染が新聞に載る', () => {
