@@ -1006,7 +1006,7 @@ Engine.relationships = {
             const awakeBondDrop = -(10 + Engine.rng.int(rng, 0, 5));
             const boostedBA = { ...(relationships[keyBA] || { bond: 50, rivalry: 0 }) };
             boostedBA.rivalry = this._clampAxisValue((boostedBA.rivalry || 0) + awakeRiv, 'rivalry');
-            boostedBA.bond = this._clampAxisValue((boostedBA.bond || 50) + awakeBondDrop, 'bond');
+            boostedBA.bond = this._clampAxisValue((boostedBA.bond ?? 50) + awakeBondDrop, 'bond');
             relationships[keyBA] = boostedBA;
             updateFighter(right.id, fighter => ({ ...fighter, _awakened: true }));
             // right=B(覚醒する側)のpersonality×archetypeでセリフ選出
@@ -1021,7 +1021,7 @@ Engine.relationships = {
             const awakeBondDrop = -(10 + Engine.rng.int(rng, 0, 5));
             const boostedAB = { ...(relationships[keyAB] || { bond: 50, rivalry: 0 }) };
             boostedAB.rivalry = this._clampAxisValue((boostedAB.rivalry || 0) + awakeRiv, 'rivalry');
-            boostedAB.bond = this._clampAxisValue((boostedAB.bond || 50) + awakeBondDrop, 'bond');
+            boostedAB.bond = this._clampAxisValue((boostedAB.bond ?? 50) + awakeBondDrop, 'bond');
             relationships[keyAB] = boostedAB;
             updateFighter(left.id, fighter => ({ ...fighter, _awakened: true }));
             // left=B(覚醒する側)のpersonality×archetypeでセリフ選出
@@ -1106,7 +1106,7 @@ Engine.relationships = {
               const awakeBondDrop = -(10 + Engine.rng.int(rentalRivalryRng, 0, 5));
               const boostedBA = { ...(relationships[keyBA] || { bond: 50, rivalry: 0 }) };
               boostedBA.rivalry = this._clampAxisValue((boostedBA.rivalry || 0) + awakeRiv, 'rivalry');
-              boostedBA.bond = this._clampAxisValue((boostedBA.bond || 50) + awakeBondDrop, 'bond');
+              boostedBA.bond = this._clampAxisValue((boostedBA.bond ?? 50) + awakeBondDrop, 'bond');
               relationships[keyBA] = boostedBA;
               updateFighter(right.id, fighter => ({ ...fighter, _awakened: true }));
               const awPool1 = getDialoguePool(RELATION_EVENT_LINES.awakening, right);
@@ -1120,7 +1120,7 @@ Engine.relationships = {
               const awakeBondDrop = -(10 + Engine.rng.int(rentalRivalryRng, 0, 5));
               const boostedAB = { ...(relationships[keyAB] || { bond: 50, rivalry: 0 }) };
               boostedAB.rivalry = this._clampAxisValue((boostedAB.rivalry || 0) + awakeRiv, 'rivalry');
-              boostedAB.bond = this._clampAxisValue((boostedAB.bond || 50) + awakeBondDrop, 'bond');
+              boostedAB.bond = this._clampAxisValue((boostedAB.bond ?? 50) + awakeBondDrop, 'bond');
               relationships[keyAB] = boostedAB;
               updateFighter(left.id, fighter => ({ ...fighter, _awakened: true }));
               const awPool2 = getDialoguePool(RELATION_EVENT_LINES.awakening, left);
@@ -4114,7 +4114,9 @@ Engine.challengeRequest = {
     const _healthy = f => f && !f.injury && !f.forcedRest && !f.suspended && !f.isRental;
     const _bond = (a, b) => {
       const k = `${Math.min(a, b)}>${Math.max(a, b)}`;
-      return ((state.relationships || {})[k] || {}).bond || 50;
+      // 絆0は正当な値(冷え切った仲)。欠損・数値でないときだけ50(旧 `|| 50` は0を中位の50として並べていた)
+      const v = ((state.relationships || {})[k] || {}).bond;
+      return Number.isFinite(v) ? v : 50;
     };
     const _ov = f => Engine.util && Engine.util.ov ? Engine.util.ov(f)
       : Math.round(((f.pw || 0) + (f.sp || 0) + (f.te || 0) + (f.st || 0) + (f.mn || 0)) / 5);

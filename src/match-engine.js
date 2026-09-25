@@ -1109,7 +1109,8 @@ Engine.tagMatch = (() => {
     else if (type === 'finisher') base = CC.baseFinisherRate;
     else base = CC.baseCounterRate;
     const hpBonus = (apronFighter.hp - 50) * CC.hpScale;
-    const bondBonus = ((bond || 50) - 50) * CC.bondScale;
+    // 絆≤20 は冒頭で返しているので、ここに来るのは絆>20 か欠損・数値でない値だけ(後者は50扱い)
+    const bondBonus = ((Number.isFinite(bond) ? bond : 50) - 50) * CC.bondScale;
     const penalty = cutinCount * CC.countPenalty;
     return clamp(base + hpBonus + bondBonus - penalty, 0.05, 0.95);
   }

@@ -12972,7 +12972,9 @@ function _relmapRivalryColor(val) {
 
 function _relmapRelationshipIntensity(link) {
   if (!link) return 0;
-  const trust = Math.abs((link.bondAB || 50) - 50) + Math.abs((link.bondBA || 50) - 50);
+  // 絆0(いちばん冷えた仲)は偏差50の強い関係。旧 `|| 50` は0を50(偏差0)に化けさせ、絞り込みで消していた
+  const _dev = v => Math.abs((Number.isFinite(v) ? v : 50) - 50);
+  const trust = _dev(link.bondAB) + _dev(link.bondBA);
   return trust + _relmapRivalryTotal(link) * 0.72;
 }
 

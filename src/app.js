@@ -10044,8 +10044,10 @@ const App = {
     if (!isTagMain && G.relationships) {
       const kAB = `${main.left.id}>${main.right.id}`;
       const kBA = `${main.right.id}>${main.left.id}`;
-      const bA = G.relationships[kAB]?.bond || 50;
-      const bB = G.relationships[kBA]?.bond || 50;
+      // 絆0は正当な値(冷え切った仲)。欠損・数値でないときだけ50(旧 `|| 50` は0を50に化けさせていた)
+      const _bondOf = rel => (rel && Number.isFinite(rel.bond)) ? rel.bond : 50;
+      const bA = _bondOf(G.relationships[kAB]);
+      const bB = _bondOf(G.relationships[kBA]);
       bondAvg = Math.round((((bA + bB) / 2) + Number.EPSILON) * 10) / 10;
     }
     const isHighBond = bondAvg >= 70;
