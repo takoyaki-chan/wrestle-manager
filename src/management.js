@@ -14569,6 +14569,15 @@ const Engine = {
     // という2つの問題を抱えていたため。
     s = Engine.growth.trackStatPeaks(s);
 
+    // K-11(2026-09-25 Keisuke 裁定): 関係性ポップアップのうち他団体の出来事を、直近12週に出した
+    // 自団体の件数の2倍まで(自団体0件でも12週に1件)に絞る。興行・週次処理・前週の週送り後に積まれた
+    // _modalQueue をここで一度だけ判定する(全ての enqueue の後・UI の drain の前)。UI は結果を出すだけ。
+    // 関係値・乱数には触れない
+    if (Engine.relationships && Engine.relationships.flags
+        && typeof Engine.relationships.flags.gateModalQueue === 'function') {
+      s = Engine.relationships.flags.gateModalQueue(s);
+    }
+
     // 浮動小数点サニタイズ: 蓄積する計算誤差を除去（tickWeek統合パイプライン末尾）
     s = Engine.sanitizeFloats(s);
 
@@ -19302,6 +19311,8 @@ const Engine = {
       relationshipFlagCounters: {},
       relationshipHistory: { betrayalRecord: [], retiredRivalries: [] },
       _modalQueue: [],
+      // K-11: 関係性ポップアップの直近12週の件数 [{ w: absWeekTotal, own, other }](無ければ空扱い)
+      relModalWindow: [],
       // h2h: ペア別対戦履歴
       h2h: {},
       // 団体間直接対決記録

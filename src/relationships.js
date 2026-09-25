@@ -2770,6 +2770,149 @@ Engine.relationships = {
       return this._enqueueModal(state, type, payload);
     },
 
+    // ── K-11(2026-09-25 Keisuke 裁定): 他団体の関係性ポップアップは、自団体の件数の2倍まで ──
+    // _modalQueue には AI 団体の控室の出来事(M-19 BF/Heel 衝突・M-18 価値観の決裂・AI 団体の試合の
+    // M-15 番狂わせ)も積まれ、年67件のうち9割が他団体の話だった(docs/fun-audit-v0.1/04-drama-engine.md ③)。
+    // 社長が知りえない他団体の控室を毎週見せないよう、tickWeek の末尾でここが週に一度だけ間引く。
+    //   ・自団体の出来事(自団体の選手が1人でも絡む/選手が特定できない)は、判定済みの印を付けてそのまま通す
+    //   ・他団体の出来事は「直近12週(今週を含む)に出した自団体の件数×2」まで。自団体0件でも12週に1件は出す
+    //   ・同じ週に枠より多く候補があれば、王者・人気上位/自団体との縁(元所属・因縁50以上)が絡むものを優先
+    //   ・枠から外れた分はポップアップにしないだけ。関係値・クールダウンは積んだ時点で確定済みで、一切触らない
+    // UI(_drainFlagModalQueue)は渡されたキューを出すだけ。判定済みの項目には scope('own'|'other')を付け、
+    // PPV 週など drain されずに持ち越した分を二度数えない。
+    // 入力の配列・項目・記録はどれも書き換えない。show-result のプレビュー tick は本番 G と _modalQueue を
+    // 共有したまま tickWeek を回すので、ここで破壊的に書くと本番 G の件数記録が二重になる。
+    MODAL_GATE: {
+      WINDOW_WEEKS: 12,        // 🔧 直近何週の件数で比べるか(今週を含む)
+      OTHER_PER_OWN: 2,        // 🔧 他団体は自団体の何倍まで(K-11 裁定: 2倍)
+      MIN_OTHER_PER_WINDOW: 1, // 🔧 自団体が0件でも、窓あたりこの件数までは他団体を出す(世界の広がり)
+      POP_TOP_N: 10,           // 🔧「人気上位」= 業界横断の人気上位N人(新聞の「人気上位」と同じ物差し)
+      LINK_RIVALRY_MIN: 50,    // 🔧「縁」= 自団体の選手との因縁(どちら向きでも)がこれ以上
+    },
+
+    // payload に登場する選手 id を拾う(M-1〜M-24 が使うキーの総ざらい。名前しか持たない M-24 は空)
+    _modalFighterIds(payload) {
+      const p = payload || {};
+      const ids = [];
+      const add = (v) => { if (typeof v === 'number' && Number.isFinite(v) && !ids.includes(v)) ids.push(v); };
+      ['fromId', 'toId', 'fighterId', 'targetId', 'departerId', 'masterId', 'discipleId', 'idA', 'idB', 'returnerId']
+        .forEach(k => add(p[k]));
+      ['byIds', 'affectedIds'].forEach(k => { if (Array.isArray(p[k])) p[k].forEach(add); });
+      if (Array.isArray(p.reactions)) p.reactions.forEach(r => add(r && r.byId));
+      return ids;
+    },
+
+    gateModalQueue(state) {
+      if (!state) return state;
+      const F = Engine.relationships.flags;
+      const cfg = F.MODAL_GATE;
+      const queue = Array.isArray(state._modalQueue) ? state._modalQueue : [];
+      const now = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+      // 記録は直近の窓の分だけ持つ。旧セーブで無い・壊れている → 空として扱う(fail-open)
+      const prevRecent = Array.isArray(state.relModalWindow) ? state.relModalWindow : [];
+      const recent = prevRecent
+        .filter(x => x && Number.isFinite(x.w) && x.w > now - cfg.WINDOW_WEEKS && x.w <= now)
+        .map(x => ({ w: x.w, own: Number(x.own) || 0, other: Number(x.other) || 0 }));
+      const fresh = [];
+      queue.forEach((e, i) => { if (e && !e.scope) fresh.push(i); });
+      if (fresh.length === 0) {
+        return recent.length === prevRecent.length ? state : { ...state, relModalWindow: recent };
+      }
+
+      const rosterIds = new Set((state.roster || []).map(c => c && c.id));
+      const sigOf = (e) => `${e.type}|${e.season}|${e.week}|${JSON.stringify(e.payload || {})}`;
+      const ownIdx = new Set();
+      const ownSigs = new Set();
+      const otherIdx = [];
+      const otherSigs = new Set();
+      fresh.forEach(i => {
+        const e = queue[i];
+        const ids = F._modalFighterIds(e.payload);
+        if (ids.length === 0 || ids.some(id => rosterIds.has(id))) {
+          ownIdx.add(i);
+          ownSigs.add(sigOf(e)); // 数えるのは出来事の数(同一の重複は1件)。項目自体は全部そのまま通す
+          return;
+        }
+        // 他団体: 同じ出来事の重複(プレビュー tick が共有キューへ先に積んだ分)は候補にしない
+        const sig = sigOf(e);
+        if (otherSigs.has(sig)) return;
+        otherSigs.add(sig);
+        otherIdx.push(i);
+      });
+
+      const sumOf = (k) => recent.reduce((a, x) => a + x[k], 0);
+      const cap = Math.max(cfg.OTHER_PER_OWN * (sumOf('own') + ownSigs.size), cfg.MIN_OTHER_PER_WINDOW);
+      const allowed = Math.max(0, cap - sumOf('other'));
+      let kept = [];
+      if (allowed > 0 && otherIdx.length > 0) {
+        kept = otherIdx.length <= allowed ? otherIdx : F._rankOtherOrgModals(state, queue, otherIdx).slice(0, allowed);
+      }
+      const keptSet = new Set(kept);
+
+      const nextQueue = [];
+      queue.forEach((e, i) => {
+        if (ownIdx.has(i)) nextQueue.push({ ...e, scope: 'own' });
+        else if (keptSet.has(i)) nextQueue.push({ ...e, scope: 'other' });
+        else if (!(e && !e.scope)) nextQueue.push(e); // 判定済みの持ち越し(と壊れた項目)は従来どおり残す
+        // それ以外 = 枠から外れた他団体の出来事 → ポップアップにしない
+      });
+      const cur = recent.find(x => x.w === now);
+      if (cur) {
+        cur.own += ownSigs.size;
+        cur.other += kept.length;
+      } else if (ownSigs.size > 0 || kept.length > 0) {
+        recent.push({ w: now, own: ownSigs.size, other: kept.length });
+      }
+      return { ...state, _modalQueue: nextQueue, relModalWindow: recent };
+    },
+
+    // 他団体の候補を「目立つ順」に並べる(同じ週に枠より多いときだけ呼ばれる)
+    //   ・王者(各団体の王座・全国統一王座)か業界の人気上位が絡む   … 1点
+    //   ・自団体の選手と縁がある(元所属・自団体の選手と因縁50以上) … 1点
+    //   同点は 王者が絡む > 絡む選手の最高人気 > キューの順(決定的。乱数は使わない)
+    _rankOtherOrgModals(state, queue, idxs) {
+      const F = Engine.relationships.flags;
+      const cfg = F.MODAL_GATE;
+      const champIds = new Set();
+      Object.values(state.aiOrgs || {}).forEach(o => {
+        const c = o && o.titles && o.titles.world && o.titles.world.championId;
+        if (c != null) champIds.add(c);
+      });
+      const uc = state.unifiedTitle && state.unifiedTitle.championId;
+      if (uc != null) champIds.add(uc);
+      const popTop = new Set((Engine.popularity && typeof Engine.popularity.getIndustryTopIds === 'function')
+        ? Engine.popularity.getIndustryTopIds(state, cfg.POP_TOP_N) : []);
+      const rosterIds = (state.roster || []).map(c => c && c.id).filter(id => id != null);
+      const rels = state.relationships || {};
+      const rivalryOf = (a, b) => Number((rels[`${a}>${b}`] || {}).rivalry) || 0;
+      const memo = new Map();
+      const infoOf = (id) => {
+        if (memo.has(id)) return memo.get(id);
+        const f = Engine.orgTimeline._findFighter(state, id);
+        const formerPlayer = !!(f && Array.isArray(f.orgTimeline) && f.orgTimeline.some(t => t && t.orgId === 'player'));
+        const feud = rosterIds.some(pid => rivalryOf(id, pid) >= cfg.LINK_RIVALRY_MIN || rivalryOf(pid, id) >= cfg.LINK_RIVALRY_MIN);
+        const v = {
+          champ: champIds.has(id),
+          star: champIds.has(id) || popTop.has(id),
+          linked: formerPlayer || feud,
+          pop: (f && Number(f.popularity)) || 0,
+        };
+        memo.set(id, v);
+        return v;
+      };
+      const scored = idxs.map((i, order) => {
+        const vs = F._modalFighterIds(queue[i].payload).map(infoOf);
+        return {
+          i, order,
+          tier: (vs.some(v => v.star) ? 1 : 0) + (vs.some(v => v.linked) ? 1 : 0),
+          champ: vs.some(v => v.champ) ? 1 : 0,
+          pop: vs.reduce((m, v) => Math.max(m, v.pop), 0),
+        };
+      });
+      scored.sort((a, b) => b.tier - a.tier || b.champ - a.champ || b.pop - a.pop || a.order - b.order);
+      return scored.map(x => x.i);
+    },
+
     // ペアキー: smaller-larger 順 (spec §5.2 default)
     _pairKey(idA, idB) {
       const a = Math.min(idA, idB);
