@@ -138,6 +138,9 @@ const buildUi = new Function(
    function _drainPopupQueue() {}
    function _factionCloseCinematicOverlay() {}
    ${functionSource('escHtml')}
+   ${functionSource('callNameText')}
+   ${functionSource('_factionPickReporter')}
+   ${functionSource('_factionReporterSpeaker')}
    ${functionSource('_factionUpperUrl')}
    ${functionSource('_factionEnsureOverlayRoot')}
    ${functionSource('_activatePopupOverlaySync')}

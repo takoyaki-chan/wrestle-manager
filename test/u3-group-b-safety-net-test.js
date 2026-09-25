@@ -255,6 +255,8 @@ const buildFaction = new Function(
    let EVENT_LINES_BY_KEY = { challengeArrival: { standard: ['ARRIVAL_LINE_MARKER'] } };
    function _isPopupActive() { return false; }
    ${functionSource('escHtml')}
+   ${functionSource('callNameText')}
+   ${functionSource('_factionReporterSpeaker')}
    ${functionSource('_u3bSideHtml')}
    ${functionSource('_u3bOrgBadgeHtml')}
    ${functionSource('_factionUpperUrl')}

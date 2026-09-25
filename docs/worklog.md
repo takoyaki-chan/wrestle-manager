@@ -1,5 +1,47 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 呼び名(セリフで相手を名字/下の名前で呼ぶ)+K-14 タッグ勝利セリフの組み込み(Claude/Opus 5.5・worktree)
+
+Keisuke 裁定(2026-09-25)「セリフの中で他の人物を呼ぶときフルネームを入れない。基本は名字、話し手→相手の絆85以上で下の名前、一度切り替えたら絆50未満まで戻さない。コーチは常に名字。敬称はセリフのまま」と、K-14(タッグ勝利セリフ98本・全文承認済み)の組み込み。仕様は `specs/call-name-spec-v1.0.md`(新規)。
+
+- **エンジン(純関数)** `src/relationships.js:4765〜`: `Engine.relationships.callName(state, speakerId, target)` → `{ form, ja, full, surname, given, id }`。`callNameParts`(ALL_CHARS から名前の部品。引退・休眠・FA・他団体でも引ける)、`_deriveGivenName`(名字が末尾の2名は中黒の前の語、リングネームのクラッシャー毒島は下の名前なし=常に名字、「清川 怜」は空白を除く)、`speechOnlyPlaceholders`(「」の内側だけに出るプレースホルダ)
+- **状態** `G.givenNameCalls = { '話し手id>相手id': true }`(関係値に相乗りしない別の表)。`updateGivenNameCalls`(返却値で更新・入力不変・変化が無ければ同じ state・旧セーブは記録が出るまで表を作らない)を tickWeek の入口(management.js:14299。興行で85に届いた方向を週の減衰の前に拾う)と末尾(15085)で呼ぶ。関係値ごと消えた方向(引退の片付け)の記録は残す(絆が冷えたわけではない)。`validateGameState` に参照整合チェック(キーの形・自分自身・マスター外・値)
+- **英語** `WM_I18N.pnGiven`(src/i18n.js)と `addGivenNames`。名前台帳 `i18n/names-ledger.json` の characters に `jaGiven/enGiven`(126名。毒島は null)、`test/i18n-build-names.js` で検査+`src/lang-en-names.js` 再生成。英語の下の名前はミドルイニシャルを含めない(Leona)
+- **表示** `callNameText(speaker, target, fallback, state)`(ui-common.js:63): 表示言語の呼び名。**日本語の下の名前を t() に渡すと英語画面に日本語が出る**ので、呼び名は必ず表示側で表示言語の値にして渡す
+- **切り替えた箇所(セリフの中で他の人物の名前を埋める全経路)**
+  | 画面・経路 | 場所 | 表・プレースホルダ | 変更前 → 変更後(JA / EN) |
+  |---|---|---|---|
+  | 関係性フラグのポップアップ | ui-common.js:2200 `_flagFormatLine`・2237 | FLAG_DIALOGUE `{name2}`(188行)、M-1 `{name}`(11行) | 「阿武隈塔子先輩、本当に素晴らしい試合でした。」→「阿武隈先輩、…」/絆85で「塔子先輩、…」。EN "Toko Abukuma, that was…" → "Abukuma, …"/"Toko, …"。**M-1(裏切り)は相手が渡っておらず、喋っている本人のフルネームが入っていた**のを、去った選手(departerId)の呼び名に直した |
+  | 同 M-12 出戻り・M-13 師弟 | ui-common.js `_flagBuildM12/_flagBuildM13` | 同上 | 残留者→出戻り者、師匠⇄弟子。M-13 の弟子の話者ラベルに pn() を足した(EN で日本語の名前が出ていた) |
+  | 垣間見え R3 別れのモーダル | ui-common.js:115 `_snapshotLine`→`_snapshotSpeechEntry` | SNAPSHOT_TEXTS.R3.modal `{name2}`(本人の声 voiceLead も) | 「…阿武隈塔子。…ありがとう」→「…阿武隈。…」/「…塔子。…」。保存値(text/vars)は不変、表示時の写しだけ差し替え |
+  | 道場: コーチの報告 | ui-render.js:1973 | COACH_VOICE_REPORT_LINES `{name}`(144行) | 「阿武隈塔子さん、{stat}が…」→「阿武隈さん、…」(コーチは常に名字)。EN "Toko Abukuma's…" → "Abukuma's…" |
+  | 道場: コーチの熱量 | ui-render.js:1994 | HEAT_STATE_COACH_LINES `{name}`(21行) | 「阿武隈塔子、目の光が違うとる」→「阿武隈、…」 |
+  | 大会後のコーチ総括 | ui-common.js:17922 | COACH_WRAPUP_MENTION_LINES `{n1}{n2}`(80行) | フルネーム → 名字 |
+  | 派閥 F07(派閥動向)の取次 | ui-common.js:11245 | F07_LINES.coachReport `{leaderName}{targetName}`、フォールバック `{leaderSurname}`、「{name}さんが社長室に向かいました。」 | フルネーム → 取次(コーチ=名字/コーチ不在時の古参選手=絆で決まる)の呼び名 |
+  | 派閥 Common-1(派閥内の火種)の取次 | ui-common.js:12628 | COMMON1_LINES.coachReport `{aName}{bName}`、フォールバック `{a}{b}` | 同上 |
+  | 派閥 Common-3(加入)の取次 | ui-common.js:12419 | 「{name}が{faction}に加わったみたいです。」 | 同上 |
+  | 派閥 Common-5(取材)の取次 | ui-common.js:12760 | COMMON5_LINES.coachReport `{leaderName}` | 同上 |
+  | 選択型イベントの取次 | ui-common.js:9998 `_choiceEventReporterLine` | 「{name}選手から休養願いが出ています…」ほか12本 | 「阿武隈塔子選手から…」→「阿武隈選手から…」 |
+  | 団体戦の直訴の取次 | ui-common.js:13333 | 「社長、{name}選手から団体戦挑戦の直訴です。…」2本 | 同上 |
+  | 統一王座の挑戦の取次 | ui-common.js:13194 | 「{org}の王者{name}へ挑む番が来ました」 | 同上 |
+  | 対立(B2)の敗者の取次 | ui-common.js:14822 | 「{name}は納得していないようです…」 | 同上 |
+  | 契約交渉 | ui-common.js:17098 `_contractNegForDisplay`・17204・17372、app.js:6042/6119/6127、management.js:28012/28019/28073 | CONTRACT_NEGOTIATION_LINES.rivalry.has_rival `{rivalName}`(7行) | 「阿武隈塔子とはまだ決着ついてねぇけど…」→「阿武隈とは…」。保存値 `rivalName` はフルネームのまま、表示用の写しに `rivalCallName`。**EN はこれまで日本語のフルネームがそのまま出ていた**(.replace で差し込んでいたため)→ 英語の名字 |
+  | 通知: コーチの報告・ファンの声 | management.js:25861 `Engine.eventSystem.pickText` | NOTIF_EVENT_TEXTS の「」の中の `{name}`(9文) | 「コーチ鬼塚:「阿武隈塔子が心配です」」→「…「阿武隈が心配です」」。「」の外(コーチ{coach}が{name}について進言 等)はフルネームのまま |
+  | タッグ決着画面(K-14) | tag-battle-lines.js `pickTagWinLine`、tag-battle-main.js:102/1717、app.js:4881/7405、ui-common.js:80 `tagMatchCallNames` | TAG_MATCH_WIN_LINES `{partner}`(49行) | 下の §K-14 |
+- **対象外にした箇所(理由)**: 地の文 — FACTION_TRANSITION_LINES `{leader}`(ナレーション欄)、GLIMPSE_B GL-12、SEASON_REVIEW_LINES、F07 resultTarget(観察メモ欄)、スナップショットの scene・スタッフ報告、LOCKER_AIR/RELATION_EVENT/CAMP_FLAVOR、派閥の observation-note(「{name}が自然と寄り添っているようです。」等)、B2 対立の報告文(LARGE_EVENT_TEXTS の地の文をそのまま取次の吹き出しに出している。文体が地の文なので据え置き)/新聞・見出し・黒田の記事・実況(TAG_MATCH_COMMENTARY_WIN_LINES 等)/ログ(週のログに残る垣間見えの本人の声を含む)/UI のラベル(話者名・肖像下の名前)/敗者のタッグセリフ TAG_MATCH_LOSS_LINES(表示する場所が無い)
+- **話し手が自分の名前を言う行**: 表には無い(全セリフ台帳の `{name}` は M-1・コーチ報告・コーチ熱量だけで、いずれも他人を指す)。実行時の例外: コーチがいないとき取次は最年長の選手になり、その選手自身が報告の対象(リーダー等)だと自分の名字を言う(従来は自分のフルネームを言っていた)
+- **K-14 タッグ勝利セリフ**: 下書き `docs/fun-audit-v0.1/k14-tag-win-lines-draft.md` の「書き直し案」98本(【迷い】17本も本文)で TAG_MATCH_WIN_LINES を差し替え。名前なし21本のヤンキー1本「あたしら」→「私ら」(裁定53)
+  - `pickTagWinLine(fighter, partnerCallName, dict)`: 性格別2本+口調別の名前なし3本から等確率(名前を呼ぶ行は5回に1回)。呼び名が取れなければ名前入りの行を引かない。辞書は差し込み前のテンプレに掛け、呼び出し側は t() で包み直さない
+  - 観戦画面には絆が無いので、親(app.js の春タッグ 4881・興行 7405)が `tagMatchCallNames` で両チーム4方向の呼び名を決め `matchInfo.callNames['話し手id:相手id']` で渡す
+  - 英語: 台帳(i18n/dialogue-ledger.json)に98本+名前なし1本の訳、`src/lang-en-dialogue.js` 再生成(未訳0・機械検査 OK)。抽出器は `RELATION_EVENT_LINES`(テンプレ台帳の地の文。P7-36 の改名で拾われるようになっていた36行)を除外
+  - `docs/dialogue/02-tag-match.md` 再生成、`specs/battle-presentation-spec §5` 更新。**セリフ編集ワークブック(xlsx)の書き出しはしていない**(書き出しは破壊的なので、未反映の改訂が無いかを Keisuke 側で確かめてから `node tools/dialogue-workbook.js export`)
+- **テスト**(新規3本+手動1本): `test/call-name-test.js`(判定・84↔86往復・例外4名・旧セーブ・tickWeek で記録以外が不変・validateGameState・通知の「」・英語127名)/`test/call-name-dialogue-guard-test.js`(実エンジン+実 i18n の ja/en で FLAG_DIALOGUE 全行×7組・R3・契約交渉・取次を埋め、フルネームが入らないこと。切り出せない表示点はソース検査)/`test/tag-win-lines-callname-test.js`(表の形・重複・名前なし21本と同文なし・抽選20%・英語・呼び名の表・配線)/`test/ui-walkthrough/tag-victory-callname-check.js`(手動。観戦画面を実ブラウザで動かし決着画面の吹き出しを確認)
+  - 既存テストの更新: tag-battle-presentation-ui / victory-overlay-speaker(呼び出し行の文字列検査を新しい形に)、ch1-challenge-flow / tournament-coach-wrapup / u3-group-b-safety-net / unified-title-presentation(関数を切り出して動かすテストに callNameText 等を併せて読み込む)
+- **検証**: npm test 291/291 PASS / `node test/auto-sim.js 30 42` ALL CLEAR(違反0・エラー0・頻度警告0、指紋 76f6741b。main 6784304f を取り込んだ最終状態)/ 指紋の差は新しい表だけ: givenNameCalls を除いた指紋が main と一致(98f905ef)。tickWeek 単位でも記録以外の状態が一致(call-name-test)/ UI 走破 JA PASS(335手)・EN PASS(404手、i18n-miss 0)/ タッグ決着画面(手動チェック): 名字(絆60)「…ありがとう、富岡。…」→下の名前(絆90)「…ありがとう、加奈子。…」、EN "Thank you, Tomioka." → "Thank you, Kanako."。最長の行(JA 49字+「」・EN 88字)は PC 520px幅で3行・スマホ 330px幅で約4行、横のはみ出し0。自然再生は最終フレームのピン演出のクリック待ちをドライバが進められず、締め(_finishPinSeq→showResult)だけ補助した
+- **頻度の実測**(auto-sim 30季、読み取り専用プローブ): 下の名前の記録ができた方向 = seed42 で1方向(ケア無し)、`--care` で45方向(同時最大18)、seed7919 で1方向。仲を深めるケアをしないと下の名前はほとんど出ない
+- **既存の不一致(今回とは無関係)**: `node test/i18n-ratchet.js` は main(6784304f)の時点で ui-common.js +1 で NG(main と同数。今回の変更で増えた生の日本語は0)。`_factionSurname`(ui-common.js)は日本語の名前を空白で分けるだけなので、JA ではほぼ全員フルネームを返す(派閥の観察メモ・派閥名の表示。地の文なので今回は触っていない)
+- 触ったファイル: src/relationships.js, src/management.js, src/i18n.js, src/lang-en-names.js, src/lang-en-dialogue.js, src/ui-common.js, src/ui-render.js, src/app.js, src/tag-battle-lines.js, src/tag-battle-main.js, i18n/names-ledger.json, i18n/dialogue-ledger.json, test/(新規4・変更8), specs/call-name-spec-v1.0.md(新規)/INDEX.md/battle-presentation-spec-v1.0.md, docs/(worklog・roadmap・実機確認バックログ・fun-audit-v0.1.md・dialogue/02-tag-match.md)
+
 ## 2026-09-26 総点検 K-12 追加3項目 — 不仲タッグの表示を効果どおりに/判定は2人の絆の低い方で/春のタッグリーグにも同じ罰(Claude/Opus 5.5・worktree)
 
 裁定: 2026-09-25 第3回の確認 #8(表示を実際の効果=団体への信頼に合わせる)・#9(低い方で判定)・#10(春タッグにも掛ける)。

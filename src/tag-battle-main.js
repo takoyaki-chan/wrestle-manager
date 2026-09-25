@@ -97,6 +97,15 @@ function startReplay(data){
   try { sfx.gongStart(); } catch(e){}
 }
 
+// K-14(2026-09-25): 勝者セリフで話し手がパートナーを呼ぶ名前。親(app.js tagMatchCallNames)が
+// matchInfo.callNames['話し手id:相手id'] に表示言語の呼び名を載せる。無ければ空(→名前入りの行を引かない)
+function _tagCallName(speaker, partner){
+  const map = (S.matchInfo && S.matchInfo.callNames) || null;
+  if (!map || !speaker || !partner) return '';
+  const v = map[`${speaker.id}:${partner.id}`];
+  return (typeof v === 'string') ? v : '';
+}
+
 // ── アクセサ ──
 function f(key){ return S.fighters[key]; }
 function byId(id){ return S.fighters[S.idToKey[id]]; }
@@ -1703,7 +1712,9 @@ function showResult(fr){
       // {winner}/{partner}/{move}で置換される**前**のテンプレートへdictを通すため、
       // WM_I18N.tを第4引数として渡す(呼び出し後にt()で包み直さない — 包み直すと
       // 置換済みの完成文が辞書キー(未置換の原文)と一致せずfail-openしてしまう)。
-      const winLine = WM_I18N.t(pickTagWinLine(winFinisher));
+      // K-14: 勝者セリフは {partner} を呼び名(親が決めた表示言語の値)で埋める。辞書は差し込み前のテンプレに
+      // 掛かる(pickTagWinLine → _tplTagLine)ので、戻り値を t() で包み直さない。フルネームは渡さない
+      const winLine = pickTagWinLine(winFinisher, _tagCallName(winFinisher, winPartner), WM_I18N.t);
       // P7-9: _tplTagLine が dict(tpl, params) 形になったので、名前も技名も**生JAのまま**
       // 渡してよい(t()のenブランチが名前辞書→技名辞書の順で値を変換する)。
       // P7-5で技名だけ先に _mvFull() で訳していた回避はこれで不要になり、

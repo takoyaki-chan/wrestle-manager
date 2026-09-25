@@ -39,6 +39,12 @@ const startAt = ui.indexOf(START);
 const endAt = ui.indexOf(END, startAt);
 assert.ok(startAt > 0 && endAt > startAt, 'task-73 のコーチ総括ブロックが ui-common.js に見つからない');
 const blockSrc = ui.slice(startAt, endAt);
+// 呼び名(2026-09-25): 言及 {n1}{n2} は callNameText(コーチ→選手=名字)を通す。ブロック外の関数なので併せて切り出す
+// (Engine スタブに relationships が無いときは callNameText がフルネームへ fail-open する)
+const callNameAt = ui.indexOf('function callNameText(');
+const callNameEnd = ui.indexOf('\n}', callNameAt);
+assert.ok(callNameAt > 0 && callNameEnd > callNameAt, 'callNameText が ui-common.js に見つからない');
+const callNameSrc = ui.slice(callNameAt, callNameEnd + 2);
 
 const ALL_COACHES_STUB = [
   { id: 1, name: '鬼塚 剛志', emoji: '🔥' },   // sparta_roshi
@@ -74,7 +80,8 @@ function makeSandbox() {
     'Engine', 'ALL_COACHES', 'getCoachVoiceKey', 'COACH_WRAPUP_VERDICT_LINES',
     'COACH_WRAPUP_MENTION_LINES', 'getCoachPortraitUrl', 'escHtml', '_u3bSideHtml',
     '_drainPopupQueue', 'Audio', 'document', 'setTimeout', 'clearTimeout', 'WM_I18N',
-    `${blockSrc}
+    `${callNameSrc}
+     ${blockSrc}
      return { buildCoachTournamentWrapup, showCoachTournamentWrapup, _tcwPickMentions, TCW_EVENT_META };`
   )(
     { util: { ov: f => f.ovr || 0 } },

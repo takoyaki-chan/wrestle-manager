@@ -153,7 +153,10 @@ const EXTRA_INCLUDE = new Set([
   'FAN_EXPECT_REACTIONS',   // P5-2p(§10-2)
   'SPECIAL_EVENT_INTRO',    // P5-2p(§10-2)。INCLUDE_PATH_FILTER でセリフ部分のみ
 ]);
-const EXTRA_EXCLUDE = new Set(['EVENT_LINES_BY_KEY']);
+// RELATION_EVENT_LINES(2026-09-25 追加): 旧 WEEKLY_STORY_TICKER を P7-36 で改名した gameLog 専用の
+// 地の文プール。テンプレ台帳(i18n/template-ledger.json)の住人で、改名で名前に LINES が付いたため
+// 命名規約に拾われるようになった。同じキーを2つの台帳へ載せない(specs §15-3)ため除外する。
+const EXTRA_EXCLUDE = new Set(['EVENT_LINES_BY_KEY', 'RELATION_EVENT_LINES']);
 
 // テーブル名 -> (pathKeys) => 拾うか。未登録のテーブルは全部拾う(従来どおり)。
 // pathKeys はテーブル直下から数えたオブジェクトキー列(配列インデックスは含まない)。

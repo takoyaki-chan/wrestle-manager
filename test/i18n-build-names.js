@@ -14,7 +14,11 @@
 //    ドラフトからの転記漏れ・data.js側のズレ(キャラ追加/名前変更等)を検出する。
 //
 //  ■ 台帳のスキーマ(i18n/names-ledger.json)
-//    - characters: [{ id, ja, jaSurname, en, enSurname, confirmed }] (127件)
+//    - characters: [{ id, ja, jaSurname, en, enSurname, jaGiven, enGiven, confirmed }] (127件)
+//      jaGiven/enGiven(2026-09-25 呼び名): セリフで相手を下の名前で呼ぶときの名前。
+//      下の名前へ切り替えない相手(リングネームのクラッシャー毒島)は null。JA側は
+//      Engine.relationships._deriveGivenName が ALL_CHARS の name/surname から導く値と一致すること
+//      (test/call-name-test.js が127名全員で突合)。EN側は addGivenNames で出力する。
 //    - coaches:    [{ id, ja, jaSurname, en, enSurname, confirmed }] (35件)
 //    - orgs / events / titles / venues / schools / npc: [{ ja, en }]
 //    - moves:      [{ ja, en, short?, confirmed }] (242件・Stage B P7-5)
@@ -92,6 +96,18 @@ function main() {
     }
     if (entry.jaSurname !== c.surname) {
       violations.push(`characters: id=${c.id} jaSurname不一致 台帳="${entry.jaSurname}" data.js="${c.surname}"`);
+    }
+    // 呼び名(2026-09-25): 下の名前。null(切り替えない)か、ja の一部である非空文字列。
+    // EN は JA と対(片方だけ null は不可)で、日本語を含まない
+    const jg = entry.jaGiven;
+    const eg = entry.enGiven;
+    if (!(jg === null || (typeof jg === 'string' && jg && c.name.indexOf(jg) >= 0 && jg !== c.surname))) {
+      violations.push(`characters: id=${c.id} jaGiven が不正 台帳="${jg}"(null か ja の一部の下の名前)`);
+    }
+    if ((jg === null) !== (eg === null) || (eg !== null && (typeof eg !== 'string' || !eg))) {
+      violations.push(`characters: id=${c.id} jaGiven/enGiven の対が不正 jaGiven="${jg}" enGiven="${eg}"`);
+    } else if (eg && /[぀-ヿ㐀-鿿]/.test(eg)) {
+      violations.push(`characters: id=${c.id} enGiven に日本語が含まれる "${eg}"`);
     }
   });
   if ((ledger.characters || []).length !== (data.ALL_CHARS || []).length) {
@@ -250,6 +266,12 @@ function main() {
   (ledger.characters || []).forEach((c) => { surnameByFullName[c.ja] = c.enSurname; });
   (ledger.coaches || []).forEach((c) => { surnameByFullName[c.ja] = c.enSurname; });
 
+  // ── 呼び名(2026-09-25): 下の名前辞書(フルネームJA → 下の名前EN)の構築 ──
+  // セリフで相手を下の名前で呼ぶとき(話し手→相手の絆が devoted 帯)の EN。選手のみ(コーチは常に名字)。
+  // 下の名前へ切り替えない相手(enGiven=null)は載せない(pnGiven は pnSurname へ fail-open)。
+  const givenByFullName = Object.create(null);
+  (ledger.characters || []).forEach((c) => { if (c.enGiven) givenByFullName[c.ja] = c.enGiven; });
+
   // ── P7-5: 技名辞書(技名JA → 技名EN)と短縮形辞書の構築 ──
   const moveMap = Object.create(null);
   const moveShortMap = Object.create(null);
@@ -278,6 +300,8 @@ function main() {
     '//  WM_I18N.pn()/t()のパラメータ値自動変換(D-P6-2/D-P6-3)経由でenのときだけ参照される。',
     '//  jaのときは無関係(1バイト不変)。辞書に無い名前はfail-openで原文のまま表示される。',
     '//  addSurnames(P6-11): フルネームJA→姓のみEN。WM_I18N.pnSurname()経由でenのときだけ参照。',
+    '//  addGivenNames(2026-09-25 呼び名): フルネームJA→下の名前EN。WM_I18N.pnGiven()経由でenのときだけ参照',
+    '//  (セリフで相手を呼ぶ名前。specs/call-name-spec-v1.0.md)。',
     '//  addMoves/addMoveShorts(P7-5): 技名JA→技名EN / 狭い枠向け短縮EN。WM_I18N.mv()/mvShort()',
     '//  とt()のパラメータ値自動変換(D-P6-2)経由でenのときだけ参照。技名の日本語は効果音判定・',
     '//  解説文選択・セーブ値(finMove)の安定キーなので、この辞書は「表示の直前」でのみ引くこと。',
@@ -305,6 +329,16 @@ function main() {
     .join('\n');
   const surnameFooter = '\n    );\n  }\n';
 
+  const givenHeader = [
+    '  if (WM_I18N.addGivenNames) {',
+    '    WM_I18N.addGivenNames(',
+  ].join('\n');
+  const givenBody = JSON.stringify(givenByFullName, null, 2)
+    .split('\n')
+    .map((line) => '    ' + line)
+    .join('\n');
+  const givenFooter = '\n    );\n  }\n';
+
   const moveHeader = [
     '  if (WM_I18N.addMoves) {',
     '    WM_I18N.addMoves(',
@@ -329,6 +363,7 @@ function main() {
     OUT_PATH,
     header + '\n' + body + footer
       + surnameHeader + '\n' + surnameBody + surnameFooter
+      + givenHeader + '\n' + givenBody + givenFooter
       + moveHeader + '\n' + moveBody + moveMid + '\n' + moveShortBody + moveFooter,
     'utf8',
   );
@@ -341,6 +376,7 @@ function main() {
     + `会場=${(ledger.venues || []).length} 学校地名=${(ledger.schools || []).length} 媒体NPC=${(ledger.npc || []).length}`);
   console.log(`[i18n-build-names] 辞書エントリ総数(フルネーム+姓のみ+その他を統合)=${totalKeys}`);
   console.log(`[i18n-build-names] 姓のみ辞書(フルネームJA→姓のみEN)エントリ数=${surnameKeys}`);
+  console.log(`[i18n-build-names] 下の名前辞書(フルネームJA→下の名前EN)エントリ数=${Object.keys(givenByFullName).length}`);
   console.log(`[i18n-build-names] 技名辞書(技名JA→技名EN)エントリ数=${Object.keys(moveMap).length}`
     + ` / 短縮形=${Object.keys(moveShortMap).length}(data.js実データ=${dataMoveNames.size}件と全数一致)`);
 }

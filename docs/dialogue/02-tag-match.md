@@ -1259,107 +1259,107 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ## `TAG_MATCH_WIN_LINES`
 
 - 出典: `src/tag-battle-lines.js`
-- コード内コメント: T2: 試合完了時の勝利者セリフ (パートナー言及必須、{partner} プレースホルダ)。[archetype][personality][2本]
+- コード内コメント: T2: 試合完了時の勝利者セリフ。[archetype][personality][2本]。各セル2本のうち1本だけ {partner}(呼び名)を1回含む。 / {partner} には呼び名(基本は名字、話し手→相手の絆85以上で下の名前)が入る。フルネームは入れない / (K-14 タッグ勝利セリフ・呼び名の裁定 2026-09-25 / specs/call-name-spec-v1.0.md)。 / 名前なし21本(TAG_MATCH_WIN_NAMELESS_LINES)と合わせて pickTagWinLine が等確率で引く。
 - 本数: 98
 
-- `TAG_MATCH_WIN_LINES.standard.normal[1]`: {partner}、ありがとう。二人だから勝てたよ。
-- `TAG_MATCH_WIN_LINES.standard.normal[2]`: やった…{partner}となら勝てるって、信じてた！
-- `TAG_MATCH_WIN_LINES.standard.earnest[1]`: {partner}、あなたを信じてよかった。この勝ち、二人のものだよ。
-- `TAG_MATCH_WIN_LINES.standard.earnest[2]`: {partner}が繋いでくれたから…最後まで諦めずに済んだ。
-- `TAG_MATCH_WIN_LINES.standard.bold[1]`: やったな{partner}！ 二人揃えば、負ける気がしないよ！
-- `TAG_MATCH_WIN_LINES.standard.bold[2]`: 見たか、これが{partner}と私のタッグの力だ！
-- `TAG_MATCH_WIN_LINES.standard.easygoing[1]`: {partner}〜お疲れさま！ 私たち、息ぴったりだったね〜
-- `TAG_MATCH_WIN_LINES.standard.easygoing[2]`: 勝っちゃった。{partner}と組むの、やっぱ楽しい〜
-- `TAG_MATCH_WIN_LINES.standard.quiet[1]`: …{partner}、ありがとう。
-- `TAG_MATCH_WIN_LINES.standard.quiet[2]`: …{partner}と、だから勝てた。
-- `TAG_MATCH_WIN_LINES.standard.shy[1]`: {partner}…ほ、本当に…ありがとう…！
-- `TAG_MATCH_WIN_LINES.standard.shy[2]`: わ、私…頑張れた…{partner}のおかげ…！
-- `TAG_MATCH_WIN_LINES.standard.emotional[1]`: {partner}っ…！ ありがとう…二人で、勝ったよ…！
-- `TAG_MATCH_WIN_LINES.standard.emotional[2]`: 絶対勝つって、約束したもんね…{partner}…っ！
-- `TAG_MATCH_WIN_LINES.polite.normal[1]`: {partner}さん、ありがとうございました。二人で掴んだ勝ちです。
-- `TAG_MATCH_WIN_LINES.polite.normal[2]`: {partner}さんを信じてよかったです…ちゃんと、勝てました！
-- `TAG_MATCH_WIN_LINES.polite.earnest[1]`: {partner}さんのおかげです。本当に、ありがとうございました。
-- `TAG_MATCH_WIN_LINES.polite.earnest[2]`: {partner}さんが繋いでくれたバトン…無駄にせずに済みました。
-- `TAG_MATCH_WIN_LINES.polite.bold[1]`: やりましたね{partner}さん！ 二人揃えば負けません！
-- `TAG_MATCH_WIN_LINES.polite.bold[2]`: 見ましたか、これが{partner}さんと私のタッグです！
-- `TAG_MATCH_WIN_LINES.polite.easygoing[1]`: {partner}さん、お疲れさまです♪ 息ぴったりでしたね〜
-- `TAG_MATCH_WIN_LINES.polite.easygoing[2]`: 勝っちゃいました♪ {partner}さんと組めて、楽しかったです〜
-- `TAG_MATCH_WIN_LINES.polite.quiet[1]`: …{partner}さん、ありがとうございました。
-- `TAG_MATCH_WIN_LINES.polite.quiet[2]`: …{partner}さんと、だから勝てました。
-- `TAG_MATCH_WIN_LINES.polite.shy[1]`: {partner}さん…ほ、本当に…ありがとうございました…！
-- `TAG_MATCH_WIN_LINES.polite.shy[2]`: わ、わたし…頑張れました…{partner}さんのおかげです…！
-- `TAG_MATCH_WIN_LINES.polite.emotional[1]`: {partner}さんっ…！ ありがとうございます…二人で、勝てました…！
-- `TAG_MATCH_WIN_LINES.polite.emotional[2]`: 絶対勝つって約束…守れましたね、{partner}さん…っ！
-- `TAG_MATCH_WIN_LINES.seductive.normal[1]`: {partner}…ありがとう。二人でつかんだ勝ち、悪くないでしょ？
-- `TAG_MATCH_WIN_LINES.seductive.normal[2]`: ふふ、{partner}となら負ける気がしないわ。
-- `TAG_MATCH_WIN_LINES.seductive.earnest[1]`: {partner}…あなたを信じてよかった。この勝ちは二人のものよ。
-- `TAG_MATCH_WIN_LINES.seductive.earnest[2]`: {partner}、あなたが繋いでくれたから…最後まで折れずにいられたの。
-- `TAG_MATCH_WIN_LINES.seductive.bold[1]`: やったわね{partner}。二人揃えば、負ける気なんてしないわ。
-- `TAG_MATCH_WIN_LINES.seductive.bold[2]`: 見た？ これが{partner}と私のタッグよ。
-- `TAG_MATCH_WIN_LINES.seductive.easygoing[1]`: {partner}〜お疲れさま♪ 息ぴったりだったでしょ？
-- `TAG_MATCH_WIN_LINES.seductive.easygoing[2]`: 勝っちゃった♪ やっぱり{partner}と組むと、楽しいわ〜
-- `TAG_MATCH_WIN_LINES.seductive.quiet[1]`: …{partner}、ありがとう。
-- `TAG_MATCH_WIN_LINES.seductive.quiet[2]`: …{partner}と、だから…ね。
-- `TAG_MATCH_WIN_LINES.seductive.shy[1]`: {partner}…う、嬉しい…二人で、勝てて…わ…
-- `TAG_MATCH_WIN_LINES.seductive.shy[2]`: {partner}となら…だ、大丈夫って…信じてた、の…
-- `TAG_MATCH_WIN_LINES.seductive.emotional[1]`: {partner}っ…！ やったわ…二人で、勝ったのよ…！
-- `TAG_MATCH_WIN_LINES.seductive.emotional[2]`: 約束…守れたわね、{partner}…っ！
-- `TAG_MATCH_WIN_LINES.delinquent.normal[1]`: {partner}、ありがとな！ 二人だから勝てたんだ！
-- `TAG_MATCH_WIN_LINES.delinquent.normal[2]`: やったぜ{partner}！ 私ら、いいコンビだろ？
-- `TAG_MATCH_WIN_LINES.delinquent.earnest[1]`: {partner}、お前を信じてよかった。この勝ちは二人のもんだ。
-- `TAG_MATCH_WIN_LINES.delinquent.earnest[2]`: {partner}が繋いでくれたから…あたし、最後まで踏ん張れた。
-- `TAG_MATCH_WIN_LINES.delinquent.bold[1]`: やったな{partner}！ 私らが組みゃ、負ける気がしねえ！
-- `TAG_MATCH_WIN_LINES.delinquent.bold[2]`: 見たかよ！ {partner}と私のタッグ、最強だぜ！
-- `TAG_MATCH_WIN_LINES.delinquent.easygoing[1]`: {partner}〜お疲れさん！ 私ら息ぴったりだったろ？
-- `TAG_MATCH_WIN_LINES.delinquent.easygoing[2]`: 勝っちゃったぜ♪ {partner}と組むの、やっぱ楽しいわ〜
-- `TAG_MATCH_WIN_LINES.delinquent.quiet[1]`: …{partner}、恩に着る。
-- `TAG_MATCH_WIN_LINES.delinquent.quiet[2]`: …{partner}と、だから勝てた。
-- `TAG_MATCH_WIN_LINES.delinquent.shy[1]`: {partner}…あ、ありがとな…！ あたし、頑張れた…！
-- `TAG_MATCH_WIN_LINES.delinquent.shy[2]`: ぜ、全部…{partner}のおかげ、だ…！
-- `TAG_MATCH_WIN_LINES.delinquent.emotional[1]`: {partner}っ…！ やったぜ…二人で、勝ったんだ…！
-- `TAG_MATCH_WIN_LINES.delinquent.emotional[2]`: 絶対勝つって言ったろ…！ な、{partner}…っ！
-- `TAG_MATCH_WIN_LINES.ojousama.normal[1]`: {partner}さん、ありがとうございますわ。二人で掴んだ勝利ですのね。
-- `TAG_MATCH_WIN_LINES.ojousama.normal[2]`: {partner}さんを信じておりまして、本当によかったですわ。
-- `TAG_MATCH_WIN_LINES.ojousama.earnest[1]`: {partner}さんを信じておりまして、本当によかったですわ。
-- `TAG_MATCH_WIN_LINES.ojousama.earnest[2]`: {partner}さんが繋いでくださったからこそ、掴めた勝利ですの。
-- `TAG_MATCH_WIN_LINES.ojousama.bold[1]`: おやりになりましたわね{partner}さん！ 二人揃えば負けませんわ！
-- `TAG_MATCH_WIN_LINES.ojousama.bold[2]`: ご覧になって？ {partner}さんとわたくしのタッグですのよ！
-- `TAG_MATCH_WIN_LINES.ojousama.easygoing[1]`: {partner}さん、お疲れさまですわ♪ 息ぴったりでしたわね〜
-- `TAG_MATCH_WIN_LINES.ojousama.easygoing[2]`: 勝ってしまいましたわ♪ {partner}さんと組むの、楽しいですの〜
-- `TAG_MATCH_WIN_LINES.ojousama.quiet[1]`: …{partner}さん、感謝いたしますわ。
-- `TAG_MATCH_WIN_LINES.ojousama.quiet[2]`: …{partner}さんと、だからですの。
-- `TAG_MATCH_WIN_LINES.ojousama.shy[1]`: {partner}さん…あ、ありがとうございますわ…！
-- `TAG_MATCH_WIN_LINES.ojousama.shy[2]`: わ、私…頑張れましたわ…{partner}さんのおかげで…！
-- `TAG_MATCH_WIN_LINES.ojousama.emotional[1]`: {partner}さんっ…！ やりましたわ…二人で、勝ったのですわ…！
-- `TAG_MATCH_WIN_LINES.ojousama.emotional[2]`: 約束、守れましたわね…{partner}さん…っ！
-- `TAG_MATCH_WIN_LINES.cool.normal[1]`: …{partner}、ありがとう。二人で、勝った。
-- `TAG_MATCH_WIN_LINES.cool.normal[2]`: …{partner}となら、勝てる。
-- `TAG_MATCH_WIN_LINES.cool.earnest[1]`: …{partner}。信じて、よかった。この勝ちは、二人の。
-- `TAG_MATCH_WIN_LINES.cool.earnest[2]`: …{partner}が繋いだ。だから、勝てた。
-- `TAG_MATCH_WIN_LINES.cool.bold[1]`: …やったな、{partner}。二人なら、負けない。
-- `TAG_MATCH_WIN_LINES.cool.bold[2]`: …見たか。{partner}と、あたしのタッグだ。
-- `TAG_MATCH_WIN_LINES.cool.easygoing[1]`: …{partner}、お疲れ。息、ぴったりだった。
-- `TAG_MATCH_WIN_LINES.cool.easygoing[2]`: …勝った。{partner}と組むの、好き。
-- `TAG_MATCH_WIN_LINES.cool.quiet[1]`: ……{partner}、ありがとう。
-- `TAG_MATCH_WIN_LINES.cool.quiet[2]`: ……{partner}と、だから。
-- `TAG_MATCH_WIN_LINES.cool.shy[1]`: …っ、{partner}…ありがとう…
-- `TAG_MATCH_WIN_LINES.cool.shy[2]`: …わ、私、頑張れた…{partner}と…
-- `TAG_MATCH_WIN_LINES.cool.emotional[1]`: …っ、{partner}…勝った。二人で。
-- `TAG_MATCH_WIN_LINES.cool.emotional[2]`: …約束、守った。{partner}…っ。
-- `TAG_MATCH_WIN_LINES.composed.normal[1]`: …{partner}、ありがとう。二人だから、勝てたね。
-- `TAG_MATCH_WIN_LINES.composed.normal[2]`: …{partner}となら勝てる気がしてた。…当たったよ。
-- `TAG_MATCH_WIN_LINES.composed.earnest[1]`: …{partner}、信じてよかったよ。この勝ちは、二人のものだね。
-- `TAG_MATCH_WIN_LINES.composed.earnest[2]`: …{partner}が繋いでくれたから、最後まで立てた。ありがとう。
-- `TAG_MATCH_WIN_LINES.composed.bold[1]`: …やったね、{partner}。二人なら、負ける気がしないよ。
-- `TAG_MATCH_WIN_LINES.composed.bold[2]`: …見た？ {partner}と組めば、こんなもんさ。
-- `TAG_MATCH_WIN_LINES.composed.easygoing[1]`: …{partner}、お疲れさま。息、ぴったりだったね〜
-- `TAG_MATCH_WIN_LINES.composed.easygoing[2]`: …勝っちゃった。{partner}と組むの、やっぱいいな〜
-- `TAG_MATCH_WIN_LINES.composed.quiet[1]`: …{partner}、ありがとう。二人だから、だね。
-- `TAG_MATCH_WIN_LINES.composed.quiet[2]`: …{partner}と、だから勝てた。それだけだよ。
-- `TAG_MATCH_WIN_LINES.composed.shy[1]`: …{partner}、あ、ありがとう…二人で、勝てたね…
-- `TAG_MATCH_WIN_LINES.composed.shy[2]`: …わ、私、頑張れたよ…{partner}のおかげ…
-- `TAG_MATCH_WIN_LINES.composed.emotional[1]`: …{partner}。二人で、勝ったよ。…約束、守れたね。
-- `TAG_MATCH_WIN_LINES.composed.emotional[2]`: …言葉はいらない。{partner}、ありがとう。…それだけだ。
+- `TAG_MATCH_WIN_LINES.standard.normal[1]`: {partner}、ありがとう！ 一人じゃ、ここまで持たなかったよ。
+- `TAG_MATCH_WIN_LINES.standard.normal[2]`: よしっ！ 組むって決まった時から、いけるって思ってたんだ♪
+- `TAG_MATCH_WIN_LINES.standard.earnest[1]`: ふぅ…{partner}を信じて任せたの、正解だったわね。この勝ちは、二人で分け合いましょう。
+- `TAG_MATCH_WIN_LINES.standard.earnest[2]`: 苦しいところを繋いでもらったおかげで…最後まであきらめずにいられたわ。
+- `TAG_MATCH_WIN_LINES.standard.bold[1]`: 当然の結果よ。…でも、{partner}と一緒だと、負ける気が全然しないわね。
+- `TAG_MATCH_WIN_LINES.standard.bold[2]`: 見た？ 二人で組めば、この程度は当たり前よ？
+- `TAG_MATCH_WIN_LINES.standard.easygoing[1]`: {partner}、ハイタッチ〜♪ 合図なしで通じちゃうの、マジ最高じゃん！
+- `TAG_MATCH_WIN_LINES.standard.easygoing[2]`: 勝っちゃった〜♡ 組むの楽しすぎて、試合ってこと忘れてたかも♪
+- `TAG_MATCH_WIN_LINES.standard.quiet[1]`: …助かったわ。組んだ相手が{partner}で、よかったかも。
+- `TAG_MATCH_WIN_LINES.standard.quiet[2]`: …勝てた理由？ 隣を見れば分かるでしょ。
+- `TAG_MATCH_WIN_LINES.standard.shy[1]`: あ、あの、{partner}さん……ほ、本当に……ありがとうございました……！
+- `TAG_MATCH_WIN_LINES.standard.shy[2]`: わ、わたし……ちゃんと、やれてましたか……？ 一緒だったから、足が止まらなかったんです……！
+- `TAG_MATCH_WIN_LINES.standard.emotional[1]`: {partner}っ…！ ありがとう…ありがとうっ…！ 二人で勝てたんだよ、ほんとに…！
+- `TAG_MATCH_WIN_LINES.standard.emotional[2]`: 絶対勝とうねって、控室で言ったよね…っ！ ほんとになった…！
+- `TAG_MATCH_WIN_LINES.polite.normal[1]`: あっ…勝てた…。{partner}さん、今日はずいぶん助けてもらっちゃいましたね。
+- `TAG_MATCH_WIN_LINES.polite.normal[2]`: 信じてよかったです…ほら、ちゃんと勝てましたよ！
+- `TAG_MATCH_WIN_LINES.polite.earnest[1]`: なんとか、なりましたね…{partner}さんのおかげです。ありがとうございました！
+- `TAG_MATCH_WIN_LINES.polite.earnest[2]`: 託してもらった試合、ちゃんと勝ちで返せました。…いい試合でしたね！
+- `TAG_MATCH_WIN_LINES.polite.bold[1]`: やりましたね、{partner}さん！ 二人で全力を出し切れば、負けません！
+- `TAG_MATCH_WIN_LINES.polite.bold[2]`: ふぅ……見てもらえましたか？ これが、二人で組んだ実力です！
+- `TAG_MATCH_WIN_LINES.polite.easygoing[1]`: 途中から、次に何をするか全部わかっちゃいました♪ すごくないですか！？
+- `TAG_MATCH_WIN_LINES.polite.easygoing[2]`: 勝っちゃいました♪ {partner}さんと組めて楽しかったです、またやりましょうね〜！
+- `TAG_MATCH_WIN_LINES.polite.quiet[1]`: …ありがとう、{partner}さん。先に崩してくれたから、組み立てが楽になったの。
+- `TAG_MATCH_WIN_LINES.polite.quiet[2]`: …勝因は、組んだ相手。考えるまでもないことだわ。
+- `TAG_MATCH_WIN_LINES.polite.shy[1]`: ご、ごめんなさい、うまく言えなくて…でも、ほんとに、ありがとうございます…！
+- `TAG_MATCH_WIN_LINES.polite.shy[2]`: わ、わたし…一度も、逃げなかったの…！ {partner}さんが一緒に出てくれたから…！
+- `TAG_MATCH_WIN_LINES.polite.emotional[1]`: ありがとうございますっ…！ す、すみません、涙が止まらなくて…っ
+- `TAG_MATCH_WIN_LINES.polite.emotional[2]`: 約束、守れましたね、{partner}さん…っ！ よかった…ほんとに、よかったです…！
+- `TAG_MATCH_WIN_LINES.seductive.normal[1]`: ありがとう。二人がかりで追い詰めるのって、なかなか愉しいものね♪
+- `TAG_MATCH_WIN_LINES.seductive.normal[2]`: ふふ、{partner}がいると、負けるところが想像できないの。…相手の子には気の毒だけど♪
+- `TAG_MATCH_WIN_LINES.seductive.earnest[1]`: …見立てどおりだったわ。信じて正解。この勝ち、半分は{partner}の手柄よ。
+- `TAG_MATCH_WIN_LINES.seductive.earnest[2]`: 時間を稼いでくれたから…こちらは落ち着いて、勝ち筋を選べたの。
+- `TAG_MATCH_WIN_LINES.seductive.bold[1]`: やったわね、{partner}。この二人なら、もっと上まで行けるわ…！
+- `TAG_MATCH_WIN_LINES.seductive.bold[2]`: 今の、ちゃんと見ていてくれた？ これが私たちのやり方。…忘れさせないわ。
+- `TAG_MATCH_WIN_LINES.seductive.easygoing[1]`: {partner}、いい感じに噛み合ってたじゃない？ おかげで楽させてもらったわ♪
+- `TAG_MATCH_WIN_LINES.seductive.easygoing[2]`: 勝っちゃった♪ 楽しい上に勝ち星まで付いてくるなんて、この組み合わせ、お得よね♪
+- `TAG_MATCH_WIN_LINES.seductive.quiet[1]`: …ふふ。ありがとう、と言っておくわ。
+- `TAG_MATCH_WIN_LINES.seductive.quiet[2]`: …{partner}となら、筋書きどおりに運ぶわね。
+- `TAG_MATCH_WIN_LINES.seductive.shy[1]`: …あ、ありがとう。こういうの、面と向かって言うの…慣れてないの…
+- `TAG_MATCH_WIN_LINES.seductive.shy[2]`: だ、大丈夫って、思えたの…{partner}が、そこにいたから…
+- `TAG_MATCH_WIN_LINES.seductive.emotional[1]`: ふふっ…！ {partner}、あの子たちの悔しそうな顔、見えた？ 二人で勝つと、たまらないわね♪
+- `TAG_MATCH_WIN_LINES.seductive.emotional[2]`: 約束どおりね…！ 私たちを甘く見た子たちに、たっぷり思い知らせてやったわ♪
+- `TAG_MATCH_WIN_LINES.delinquent.normal[1]`: {partner}、ありがとな！ おかげで、真っ向から行けたんだ！
+- `TAG_MATCH_WIN_LINES.delinquent.normal[2]`: へへっ、私ら、けっこういいコンビじゃねえ？
+- `TAG_MATCH_WIN_LINES.delinquent.earnest[1]`: あんたを信じてよかった。…この勝ちは、二人のもんだ。
+- `TAG_MATCH_WIN_LINES.delinquent.earnest[2]`: {partner}が粘ってくれた分、こっちも倒れずに済んだんだ。…ありがてえ。
+- `TAG_MATCH_WIN_LINES.delinquent.bold[1]`: どうだ、{partner}！ 私らが組みゃ、どこの誰が来たって負けねえんだよ！
+- `TAG_MATCH_WIN_LINES.delinquent.bold[2]`: 見たかよ！ このタッグが最強だ。文句あるやつ、いるか？
+- `TAG_MATCH_WIN_LINES.delinquent.easygoing[1]`: {partner}、目ぇ合っただけで分かったろ？ 楽しかったな〜♪
+- `TAG_MATCH_WIN_LINES.delinquent.easygoing[2]`: よっしゃ♪ 組んでると、しんどい試合も遊んでるみてえだな
+- `TAG_MATCH_WIN_LINES.delinquent.quiet[1]`: …{partner}、恩に着る。この借りは、次のリングで返す。
+- `TAG_MATCH_WIN_LINES.delinquent.quiet[2]`: …あんたとだから、勝てた。それ以上は言わねえ。
+- `TAG_MATCH_WIN_LINES.delinquent.shy[1]`: あ、ありがとな…！ …こ、こっち見んなよ、照れんだろ…
+- `TAG_MATCH_WIN_LINES.delinquent.shy[2]`: ぜ、全部…{partner}のおかげ、だ…！ …い、今のナシ、忘れろ…
+- `TAG_MATCH_WIN_LINES.delinquent.emotional[1]`: やった…やったぜ…！ ちくしょう、嬉しくて声が震えやがる…！
+- `TAG_MATCH_WIN_LINES.delinquent.emotional[2]`: 絶対勝つって言ったろ…！ な、{partner}…？ 言ったとおりになったろ…っ！
+- `TAG_MATCH_WIN_LINES.ojousama.normal[1]`: {partner}さん、感謝するわ。…この一勝は、二人で積み上げたぶんの結果ね。
+- `TAG_MATCH_WIN_LINES.ojousama.normal[2]`: この二人なら崩れない。…最初から、そう信じていたわ。
+- `TAG_MATCH_WIN_LINES.ojousama.earnest[1]`: {partner}さんに預けた信頼に、しかと応えていただきましたわ。
+- `TAG_MATCH_WIN_LINES.ojousama.earnest[2]`: 持ちこたえてくださったから、最後に全力で当たれたのだもの。
+- `TAG_MATCH_WIN_LINES.ojousama.bold[1]`: ふふ…{partner}さんがいて、負ける理由がどこにあるのかしら？
+- `TAG_MATCH_WIN_LINES.ojousama.bold[2]`: ご覧になって？ これに並ぶタッグなど、どこにもいないでしょうね。
+- `TAG_MATCH_WIN_LINES.ojousama.easygoing[1]`: あらあら、打ち合わせもなしに、こんなに揃うものなのね。
+- `TAG_MATCH_WIN_LINES.ojousama.easygoing[2]`: あら、勝ってしまいましたわ。こんなに楽しいのなら、{partner}さんとまたご一緒したいものね。
+- `TAG_MATCH_WIN_LINES.ojousama.quiet[1]`: …感謝いたします。言葉は、あとで改めて。
+- `TAG_MATCH_WIN_LINES.ojousama.quiet[2]`: …ご一緒したのが、{partner}さんでよかった。…それだけ。
+- `TAG_MATCH_WIN_LINES.ojousama.shy[1]`: あ、ありがとうございます…こ、こういう時、どんなお顔をすればよいのかしら…
+- `TAG_MATCH_WIN_LINES.ojousama.shy[2]`: み、みっともない姿は…お見せせずに済みましたかしら…？ {partner}さんのおかげですわ…
+- `TAG_MATCH_WIN_LINES.ojousama.emotional[1]`: 勝ちましたのね…！ 二人で…！ …ごめんなさい、今だけは、お行儀を忘れさせて…
+- `TAG_MATCH_WIN_LINES.ojousama.emotional[2]`: お約束、果たせましたわね、{partner}さん…っ！ …嬉しくて、言葉になりませんの…
+- `TAG_MATCH_WIN_LINES.cool.normal[1]`: …ありがとう。二人で削って、二人で取った。
+- `TAG_MATCH_WIN_LINES.cool.normal[2]`: …{partner}と組めば勝てると読んでた。読み通り。
+- `TAG_MATCH_WIN_LINES.cool.earnest[1]`: …信じたのは、正しかった。…いい判断だった。
+- `TAG_MATCH_WIN_LINES.cool.earnest[2]`: …あの場面、{partner}が耐えた。だから、勝ち切れた。
+- `TAG_MATCH_WIN_LINES.cool.bold[1]`: …{partner}となら、負けない。今日で証明した。
+- `TAG_MATCH_WIN_LINES.cool.bold[2]`: …見たか。これが、この二人の仕事。
+- `TAG_MATCH_WIN_LINES.cool.easygoing[1]`: …やりやすかった。余計なこと、考えずに済んだ。
+- `TAG_MATCH_WIN_LINES.cool.easygoing[2]`: …勝った。{partner}と組むのは、嫌いじゃない。
+- `TAG_MATCH_WIN_LINES.cool.quiet[1]`: ……ありがとう。……次も、組む。
+- `TAG_MATCH_WIN_LINES.cool.quiet[2]`: ……{partner}がいなければ、負けてた。
+- `TAG_MATCH_WIN_LINES.cool.shy[1]`: …っ。……あり、がと。……今の、聞こえた？
+- `TAG_MATCH_WIN_LINES.cool.shy[2]`: …ちゃんと、やれた。…{partner}に、ついていけた。
+- `TAG_MATCH_WIN_LINES.cool.emotional[1]`: …っ。…勝った。{partner}と、二人で。…勝ったんだ。
+- `TAG_MATCH_WIN_LINES.cool.emotional[2]`: …二人で勝つ、と決めてた。…決めた通りに、なった。
+- `TAG_MATCH_WIN_LINES.composed.normal[1]`: …ありがとう、{partner}。いい仕事をしてくれたね。おかげで、こっちは落ち着いて戦えたんだ。
+- `TAG_MATCH_WIN_LINES.composed.normal[2]`: …なんとなく、今日は負けない気がしてたんだ。…当たったね。
+- `TAG_MATCH_WIN_LINES.composed.earnest[1]`: 信じてよかった。二人とも、まだまだ強くなれるね！
+- `TAG_MATCH_WIN_LINES.composed.earnest[2]`: …{partner}が踏みとどまってくれたから、最後まで立っていられた。ありがとう。
+- `TAG_MATCH_WIN_LINES.composed.bold[1]`: やったね！ 二人で組んだら負けるかって？ …まさか、だよ。
+- `TAG_MATCH_WIN_LINES.composed.bold[2]`: どう？ ざっとこんなもんだよ。…なんてね、ほとんど{partner}のおかげ。
+- `TAG_MATCH_WIN_LINES.composed.easygoing[1]`: あ〜、楽だった。{partner}が合わせてくれるから、こっちは乗っかるだけだったよね〜
+- `TAG_MATCH_WIN_LINES.composed.easygoing[2]`: 勝っちゃったね〜。一緒だと楽しいし、次もこれでいっか♪
+- `TAG_MATCH_WIN_LINES.composed.quiet[1]`: ……ありがとう。二人で勝ったの、ちゃんと伝わった？
+- `TAG_MATCH_WIN_LINES.composed.quiet[2]`: ……{partner}と組んだから、勝てたの。…分かってるよね？
+- `TAG_MATCH_WIN_LINES.composed.shy[1]`: …え、えっと…ありがとう。…二人で勝てたの、まだちょっと、信じられなくて…
+- `TAG_MATCH_WIN_LINES.composed.shy[2]`: …{partner}の役に、ちゃんと立てたかな…？ …おかげで、頑張りきれたよ
+- `TAG_MATCH_WIN_LINES.composed.emotional[1]`: 勝ったよ、{partner}！ 二人でもぎ取った一勝だよ！ ね、抱きついていい？
+- `TAG_MATCH_WIN_LINES.composed.emotional[2]`: ありがとう！ って、それしか言葉が出てこないや！ 最高だったよ！
 
 ## `TAG_MATCH_LOSS_LINES`
 
