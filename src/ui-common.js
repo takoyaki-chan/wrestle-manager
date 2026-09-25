@@ -5474,8 +5474,9 @@ function renderMatchPreview() {
           </div>
         </div>`;
       };
-      const bondA = G.relationships ? ((G.relationships[`${Math.min(tA1.id,tA2.id)}>${Math.max(tA1.id,tA2.id)}`] || {}).bond || 50) : 50;
-      const bondB = G.relationships ? ((G.relationships[`${Math.min(tB1.id,tB2.id)}>${Math.max(tB1.id,tB2.id)}`] || {}).bond || 50) : 50;
+      // 表示と試合で同じ絆・同じ不仲判定を使う(Engine.showTagMatch。K-12「表示どおり効かせる」)
+      const bondA = Engine.showTagMatch.pairBond(G, tA1.id, tA2.id);
+      const bondB = Engine.showTagMatch.pairBond(G, tB1.id, tB2.id);
       html += `<div class="match-card ${cardClass}${cardStateClass}" data-match-next="${isNext}" style="opacity:${isResolved ? 1 : isNext ? 1 : 0.62}">`;
       html += `<div class="smc-head">
         <span class="smc-label" style="font-size:${isMain ? '18px' : '15px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}">${matchLabel}</span>
@@ -5483,7 +5484,7 @@ function renderMatchPreview() {
       </div>`;
       // bond-rivalry plan P-1: bond ≤ 20 不仲ペアの警告マーカー
       const _chemHtml = (bond) => {
-        if (bond <= 20) {
+        if (Engine.showTagMatch.isLowBond(bond)) {
           return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">${WM_I18N.t('⚠ 不仲')} ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">${WM_I18N.t('能力-3 / 連携不可 / 相手との関係-1')}</div></div>`;
         }
         return `<div class="smc-tag-chem">🤝 ${Math.round(bond)}</div>`;

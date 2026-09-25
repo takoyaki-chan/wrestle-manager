@@ -1942,6 +1942,90 @@ Engine.tagExp = {
 };
 
 // ══════════════════════════════════════════════════════════
+//  Engine.showTagMatch — 通常興行のタッグ1試合(不仲ペナルティ込み)
+//  spec: relationship-system-spec-v2.3 §D.1(bond-rivalry P-1)/ K-12 裁定(2026-09-25)
+//  通常興行のタッグ戦は必ずここを通す。呼び出し元は4か所:
+//    App.skipMatch(1試合スキップ)/ App._watchTagMatch(観戦)/
+//    App.skipAllMatches(残り全試合スキップ)/ Engine.executeShow(headless)
+//  以前は呼び出し元ごとに不仲処理を書き写していた。能力-3はキー名の誤り(power 等)で
+//  どの経路でも効いておらず、全スキップと headless では試合後の信頼-1も抜けていた。
+//  押したボタンで結果が変わらないよう、乱数・絆・不仲ペナルティ・試合後処理を1か所に置く。
+//  Pure functions only.
+// ══════════════════════════════════════════════════════════
+Engine.showTagMatch = {
+  /** 絆がこの値以下のペアは「不仲」(興行プレビューの ⚠ 不仲 と同じ閾値) */
+  LOW_BOND_MAX: 20,
+  /** 不仲ペアの試合中の能力低下量(興行プレビューの「能力-3」) */
+  STAT_PENALTY: 3,
+  /**
+   * 下げる能力。spec §D.1 の power/speed/technique/spirit をエンジンのキーに当てたもの
+   * (spirit = MN メンタル)。ST(スタミナ=HP総量)は spec の列挙に無いので下げない。
+   */
+  PENALTY_STATS: Object.freeze(['pw', 'sp', 'te', 'mn']),
+
+  /** タッグ1ペアの絆。試合と興行画面(🤝 / ⚠ 不仲 の表示)は必ずこの値を使う */
+  pairBond(state, id1, id2) {
+    const rels = state && state.relationships;
+    const rel = rels ? rels[`${Math.min(id1, id2)}>${Math.max(id1, id2)}`] : null;
+    // 絆0は正当な値(完全に冷え切った仲)。以前の `bond || 50` は0を50に化けさせ、
+    // いちばん険悪なペアが「🤝 50」と表示されて不仲判定からも漏れていた。
+    return (rel && Number.isFinite(rel.bond)) ? rel.bond : 50;
+  },
+
+  isLowBond(bond) {
+    return bond <= Engine.showTagMatch.LOW_BOND_MAX;
+  },
+
+  /** 試合用の一時コピーを返す。選手本体の能力値は変えない */
+  penalize(fighter) {
+    const copy = { ...fighter };
+    Engine.showTagMatch.PENALTY_STATS.forEach(key => {
+      if (Number.isFinite(copy[key])) copy[key] = Math.max(1, copy[key] - Engine.showTagMatch.STAT_PENALTY);
+    });
+    return copy;
+  },
+
+  /**
+   * 通常興行のタッグ1試合をシミュレートする。
+   *  - 不仲ペア(絆≤20): 試合用コピーの pw/sp/te/mn を各-3
+   *  - 連携不可: 絆を bond_A/bond_B で渡し、calcCutinRate が0を返す
+   *  - 試合後: 不仲ペア両者の trust -1 を反映した roster を返す(呼び出し元が書き戻す)
+   * @param {Object} state - relationships / tagExp / rngSeed / season / week / roster を読む
+   * @param {Object} teamA - { fighter1, fighter2 }(state.roster の選手)
+   * @param {Object} teamB - { fighter1, fighter2 }
+   * @param {Object} [extraOpts] - simulateTagMatch へ足すオプション(観戦の recordFrames など)
+   * @returns {{ result: Object, roster: Array, lowBondIds: Array, bondA: number, bondB: number }}
+   */
+  simulate(state, teamA, teamB, extraOpts) {
+    const self = Engine.showTagMatch;
+    const a1 = teamA.fighter1, a2 = teamA.fighter2;
+    const b1 = teamB.fighter1, b2 = teamB.fighter2;
+    const bondA = self.pairBond(state, a1.id, a2.id);
+    const bondB = self.pairBond(state, b1.id, b2.id);
+    const lowA = self.isLowBond(bondA);
+    const lowB = self.isLowBond(bondB);
+    const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, a1.id, b1.id, 0x7A60));
+    // simulateTagMatch は必ずプロパティ経由で呼ぶ(auto-sim の計測フックが差し替えるため)
+    const result = Engine.tagMatch.simulateTagMatch(
+      { fighter1: lowA ? self.penalize(a1) : a1, fighter2: lowA ? self.penalize(a2) : a2 },
+      { fighter1: lowB ? self.penalize(b1) : b1, fighter2: lowB ? self.penalize(b2) : b2 },
+      rng,
+      {
+        ...(extraOpts || {}),
+        bond_A: bondA, bond_B: bondB,
+        tagExp_A: Engine.tagExp.getCount(state, a1.id, a2.id),
+        tagExp_B: Engine.tagExp.getCount(state, b1.id, b2.id),
+      }
+    );
+    const lowBondIds = [...(lowA ? [a1.id, a2.id] : []), ...(lowB ? [b1.id, b2.id] : [])];
+    const roster = lowBondIds.length === 0 ? state.roster : (state.roster || []).map(c => lowBondIds.includes(c.id)
+      ? { ...c, trust: Math.max(0, (c.trust != null ? c.trust : 50) - 1) }
+      : c);
+    return { result, roster, lowBondIds, bondA, bondB };
+  },
+};
+
+// ══════════════════════════════════════════════════════════
 //  Engine.wear — 連戦消耗モジュール（共通機構）
 //  定義元: autumn-gauntlet-war-spec-v0.1 §3。同一興行内で連戦が発生する
 //  イベント（春タッグリーグ / 秋4団体勝ち残り対抗戦 / 4年に一度PPVトーナメント）

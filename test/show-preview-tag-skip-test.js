@@ -57,26 +57,25 @@ const runSkipAllMatches = new Function('App', 'G', 'Engine', 'Audio', `${skipAll
     ],
     relationships: {},
   };
+  // K-12: 通常興行のタッグ戦は4経路とも Engine.showTagMatch.simulate を通す。
+  // 乱数・絆・タッグ経験・不仲ペナルティの中身は test/tag-discord-penalty-test.js が実エンジンで見る。
+  const rosterAfterMatch = G.roster.map(c => ({ ...c }));
   const Engine = {
-    rng: {
-      derive(...args) { return args.join(':'); },
-      create(seed) { return { seed }; },
-    },
     battle: {
       simulateMatch() { throw new Error('singles simulation should not run for tag matches'); },
     },
-    tagExp: {
-      getCount() { return 0; },
-    },
     tagMatch: {
-      simulateTagMatch(teamA, teamB, rng, context) {
+      simulateTagMatch() { throw new Error('skipAllMatches must go through Engine.showTagMatch.simulate'); },
+    },
+    showTagMatch: {
+      simulate(state, teamA, teamB, extraOpts) {
+        assert.strictEqual(state, G);
         assert.strictEqual(teamA.fighter1.id, 1);
         assert.strictEqual(teamA.fighter2.id, 2);
         assert.strictEqual(teamB.fighter1.id, 3);
         assert.strictEqual(teamB.fighter2.id, 4);
-        assert.strictEqual(rng.seed, '123:1:2:1:3:31328');
-        assert.deepStrictEqual(context, { bond_A: 50, bond_B: 50, tagExp_A: 0, tagExp_B: 0 });
-        return tagResult;
+        assert.strictEqual(extraOpts, undefined, 'skip-all does not record frames');
+        return { result: tagResult, roster: rosterAfterMatch, lowBondIds: [], bondA: 50, bondB: 50 };
       },
     },
   };
@@ -88,6 +87,7 @@ const runSkipAllMatches = new Function('App', 'G', 'Engine', 'Audio', `${skipAll
 
   assert.strictEqual(finalized, 1);
   assert.strictEqual(App._showPreview.results[0], tagResult);
+  assert.strictEqual(G.roster, rosterAfterMatch, 'skip-all writes back the post-match roster (discord trust -1)');
 })();
 
 (function testSkipAllMatchesMarksMissingTagRosterAsStale() {
@@ -134,6 +134,9 @@ const runSkipAllMatches = new Function('App', 'G', 'Engine', 'Audio', `${skipAll
     },
     tagMatch: {
       simulateTagMatch() { throw new Error('tag simulation should not run when tag roster is incomplete'); },
+    },
+    showTagMatch: {
+      simulate() { throw new Error('tag simulation should not run when tag roster is incomplete'); },
     },
   };
   const Audio = {

@@ -7236,32 +7236,11 @@ const App = {
         App._afterMatchSettle(idx, { skipFlavor: true });
         return;
       }
-      const tagRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
-      const bondA = G.relationships ? ((G.relationships[`${Math.min(f1.id,f2.id)}>${Math.max(f1.id,f2.id)}`] || {}).bond || 50) : 50;
-      const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
-      const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
-      const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
-      // bond-rivalry plan P-1: bond ≤ 20 不仲ペアは試合中の能力 -3
-      const lowBondA = bondA <= 20;
-      const lowBondB = bondB <= 20;
-      const _penalize = (c) => ({ ...c, power: c.power - 3, speed: c.speed - 3, technique: c.technique - 3, spirit: c.spirit - 3 });
-      const f1p = lowBondA ? _penalize(f1) : f1;
-      const f2p = lowBondA ? _penalize(f2) : f2;
-      const f3p = lowBondB ? _penalize(f3) : f3;
-      const f4p = lowBondB ? _penalize(f4) : f4;
-      sp.results[idx] = Engine.tagMatch.simulateTagMatch(
-        { fighter1: f1p, fighter2: f2p }, { fighter1: f3p, fighter2: f4p },
-        tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB, lowBondA, lowBondB }
-      );
-      // P-1: 試合後 trust -1（不仲ペア両者）
-      if (lowBondA || lowBondB) {
-        const lowIds = [];
-        if (lowBondA) lowIds.push(f1.id, f2.id);
-        if (lowBondB) lowIds.push(f3.id, f4.id);
-        G.roster = G.roster.map(c => lowIds.includes(c.id)
-          ? { ...c, trust: Math.max(0, (c.trust != null ? c.trust : 50) - 1) }
-          : c);
-      }
+      // 不仲ペア(絆≤20)の能力-3・連携不可・試合後の信頼-1は、観戦/全スキップ/headless と
+      // 共通の Engine.showTagMatch で解決する(K-12)。返ってきた roster を書き戻す。
+      const tag = Engine.showTagMatch.simulate(G, { fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 });
+      sp.results[idx] = tag.result;
+      G.roster = tag.roster;
       try { Audio.play('tick'); } catch(e) {}
       App._afterMatchSettle(idx, { skipFlavor: true });
       return;
@@ -7383,33 +7362,11 @@ const App = {
       if (sp.results.every(r => r !== null)) App.finalizeShow();
       return;
     }
-    // エンジン実行（recordFrames=true）
-    const tagRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
-    const bondA = G.relationships ? ((G.relationships[`${Math.min(f1.id,f2.id)}>${Math.max(f1.id,f2.id)}`] || {}).bond || 50) : 50;
-    const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
-    const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
-    const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
-    // bond-rivalry plan P-1: bond ≤ 20 不仲ペアは試合中の能力 -3
-    const lowBondA = bondA <= 20;
-    const lowBondB = bondB <= 20;
-    const _penalize = (c) => ({ ...c, power: c.power - 3, speed: c.speed - 3, technique: c.technique - 3, spirit: c.spirit - 3 });
-    const f1p = lowBondA ? _penalize(f1) : f1;
-    const f2p = lowBondA ? _penalize(f2) : f2;
-    const f3p = lowBondB ? _penalize(f3) : f3;
-    const f4p = lowBondB ? _penalize(f4) : f4;
-    const result = Engine.tagMatch.simulateTagMatch(
-      { fighter1: f1p, fighter2: f2p }, { fighter1: f3p, fighter2: f4p },
-      tagRng, { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB, recordFrames: true, lowBondA, lowBondB }
-    );
-    // P-1: 試合後 trust -1（不仲ペア両者）
-    if (lowBondA || lowBondB) {
-      const lowIds = [];
-      if (lowBondA) lowIds.push(f1.id, f2.id);
-      if (lowBondB) lowIds.push(f3.id, f4.id);
-      G.roster = G.roster.map(c => lowIds.includes(c.id)
-        ? { ...c, trust: Math.max(0, (c.trust != null ? c.trust : 50) - 1) }
-        : c);
-    }
+    // エンジン実行（recordFrames=true）。不仲ペアの能力-3・連携不可・試合後の信頼-1は
+    // スキップ/全スキップ/headless と共通の Engine.showTagMatch で解決する(K-12)。
+    const tag = Engine.showTagMatch.simulate(G, { fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 }, { recordFrames: true });
+    const result = tag.result;
+    G.roster = tag.roster;
     sp.results[idx] = result;
     sp.currentWatching = idx;
     // BGM: 通常 battle
@@ -7676,17 +7633,11 @@ const App = {
           sp.results[idx] = { winner: 'draw', mq: 0, finType: '', finMove: '', turns: 0, log: [], _stale: true, matchType: 'tag' };
           return;
         }
-        const tagRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.teamA.fighter1, m.teamB.fighter1, 0x7A60));
-        const bondA = G.relationships ? ((G.relationships[`${Math.min(f1.id,f2.id)}>${Math.max(f1.id,f2.id)}`] || {}).bond || 50) : 50;
-        const bondB = G.relationships ? ((G.relationships[`${Math.min(f3.id,f4.id)}>${Math.max(f3.id,f4.id)}`] || {}).bond || 50) : 50;
-        const tagExpA = Engine.tagExp.getCount(G, f1.id, f2.id);
-        const tagExpB = Engine.tagExp.getCount(G, f3.id, f4.id);
-        sp.results[idx] = Engine.tagMatch.simulateTagMatch(
-          { fighter1: f1, fighter2: f2 },
-          { fighter1: f3, fighter2: f4 },
-          tagRng,
-          { bond_A: bondA, bond_B: bondB, tagExp_A: tagExpA, tagExp_B: tagExpB }
-        );
+        // 1試合スキップ/観戦/headless と同じ Engine.showTagMatch を通す(K-12)。
+        // 以前はここだけ不仲ペアの能力-3と試合後の信頼-1が抜けていて、押したボタンで結果が変わった。
+        const tag = Engine.showTagMatch.simulate(G, { fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 });
+        sp.results[idx] = tag.result;
+        G.roster = tag.roster;
         return;
       }
       const charL = G.roster.find(c => c.id === m.left);
