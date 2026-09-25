@@ -4851,6 +4851,14 @@ Engine.glimpse = {
     return best;
   },
 
+  // ── ヘルパー: 今週の興行でその選手が出た試合の評価(MQ)。見つからなければ 0 ──
+  _weekMatchMq(state, fighterId) {
+    const r = (state.lastShowResults || []).find(x => x && (x.matchType === 'tag'
+      ? !!(x.perFighter && x.perFighter[fighterId])
+      : ((x.left && x.left.id === fighterId) || (x.right && x.right.id === fighterId))));
+    return r ? (Number(r.mq) || 0) : 0;
+  },
+
   // ── ヘルパー: 重み付きサンプリング ──
   _weightedSample(rng, pool, max, usedFighters) {
     const result = [];
@@ -5031,13 +5039,16 @@ Engine.glimpse = {
   // ══════════════════════════════════════════════════════════
   //  P5+P6: B層 Glimpse — 日常の垣間見え
   // ══════════════════════════════════════════════════════════
-  checkBLayer(state, rng, dict) {
+  checkBLayer(state, rng, dict, prevTrust) {
     const glimpses = [];
     const roster = (state.roster || []).filter(f => !f.isRental);
     const cooldowns = { ...(state._glimpseBCooldowns || {}) };
     const absWeek = Engine.util.absWeek(state.season, state.week);
     const candidates = [];
     const allAIChars = this._getAllAIChars(state);
+    // GL-03 が比べる前週の trust。tickWeek は checkALayer(_glimpseAPrevTrust を今週値で上書きする)
+    // より前に取り分けた値を渡す。省略時(単体呼び出し)は state 上の前週スナップショットを使う
+    const prevTrustMap = prevTrust !== undefined ? prevTrust : (state._glimpseAPrevTrust || null);
 
     // ── P5: 絶好調終了（guaranteed） ──
     (state._pendingHotStreakEnds || []).forEach(fighterId => {
@@ -5054,13 +5065,17 @@ Engine.glimpse = {
       if (cooldowns[cdKey] && absWeek - cooldowns[cdKey] < 4) return; // 4週クールダウン
 
       // GL-01: 試合後の感情（今週試合に出場）
+      // 勝敗は興行処理が付ける f.lastMatchResult、試合評価はその試合の lastShowResults[].mq を正とする。
+      // 旧実装は存在しないフィールド f._lastMatchResult を見ていたため常に 'win' 扱いになり、
+      // 負けた選手にも「勝てた」の行を積んでいた(30季実測で52%が勝敗と食い違い。K-14で道場に出すにあたり修正)
       if (f._weekAction === 'match' || f._weekAction === 'show') {
         if (Engine.rng.float(rng) < 0.15) {
-          const matchResult = f._lastMatchResult || {};
-          let subType = 'win';
-          if (matchResult.won === false) subType = (matchResult.mq || 0) >= 70 ? 'goodLoss' : 'loss';
-          else if (matchResult.won === true && (matchResult.mq || 0) >= 70) subType = 'greatWin';
-          const lineObj = GLIMPSE_B_LINES['GL-01'][subType];
+          const won = f.lastMatchResult === 'win' ? true : f.lastMatchResult === 'loss' ? false : null;
+          const mq = this._weekMatchMq(state, f.id);
+          // 引き分け(現行の試合エンジンでは起きない)に合う行は無いので積まない
+          const subType = won === true ? (mq >= 70 ? 'greatWin' : 'win')
+            : won === false ? (mq >= 70 ? 'goodLoss' : 'loss') : null;
+          const lineObj = subType ? GLIMPSE_B_LINES['GL-01'][subType] : null;
           if (lineObj) {
             candidates.push({ type: 'GL-01', subType, weight: 3, fighterId: f.id,
               fighterName: f.name, dialogue: pickDialogueLine(lineObj, f),
@@ -5088,9 +5103,11 @@ Engine.glimpse = {
         }
       }
 
-      // GL-03: 信頼度の揺れ（trust変動±3以上）
-      const prevTrust = (state._glimpseAPrevTrust || {})[f.id] || 50;
-      const trustDelta = (f.trust || 50) - prevTrust;
+      // GL-03: 信頼度の揺れ（前週から trust が±3以上動いた）
+      // 旧実装は checkALayer が今週値で上書きした直後の _glimpseAPrevTrust と比べていたため差が常に0で、
+      // 一度も出なかった(前週値は冒頭の prevTrustMap)。前週値の無い選手(初週・新加入)は比べない
+      const prevTrustVal = prevTrustMap ? prevTrustMap[f.id] : undefined;
+      const trustDelta = prevTrustVal === undefined ? 0 : (f.trust || 50) - prevTrustVal;
       if (Math.abs(trustDelta) >= 3) {
         if (Engine.rng.float(rng) < 0.10) {
           const sub = trustDelta > 0 ? 'up' : 'down';
@@ -5158,8 +5175,9 @@ Engine.glimpse = {
         }
       }
 
-      // GL-09: 連勝の自信（winStreak >= 3）
-      if ((f.winStreak || 0) >= 3) {
+      // GL-09: 連勝の自信（3連勝以上）
+      // 連勝数は f.streak(連勝で正・連敗で負。興行処理が更新)。旧実装は存在しない f.winStreak を見ていて一度も出なかった
+      if ((f.streak || 0) >= 3) {
         if (Engine.rng.float(rng) < 0.12) {
           candidates.push({ type: 'GL-09', weight: 2, fighterId: f.id,
             fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-09'], f),
