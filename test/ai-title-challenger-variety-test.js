@@ -135,7 +135,7 @@ function runOnceAndGetChallengerId(roster, titles, champ, filler, stateExtra = {
     },
     'Engine.battle.simulateMatch': (charL, charR) => ({
       left: charL, right: charR, winner: 'left', mq: 50,
-      hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
+      turns: 12, hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 }, // K-13: 怪我判定が turns を読む
     }),
   }, () => {
     Engine.rival.processAIWeek(Engine.rng.create(rngSeedForProcess), state, { id: 'org_s', tier: 'S' });

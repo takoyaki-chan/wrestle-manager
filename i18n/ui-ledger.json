@@ -2276,31 +2276,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "W-1(憎い敵ゾーン)が累計4回以上発火したペアに対して使用できる。慢性化する前に手を打てば、亀裂が修復可能になることもある。",
-    "en": "Available for any pair whose W-1 (Hated Rival zone) has fired 4 or more times total. Act before it turns chronic, and the rift can still be mended.",
-    "files": [
-      "data.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
-  },
-  {
-    "key": "W-1（憎い敵ゾーン）が累計4回以上発火したペアに対して使用できる。慢性化する前に手を打てば、亀裂が修復可能になることもある。",
-    "en": "Available for any pair whose W-1 (Hated Rival zone) has fired 4 or more times total. Act before it turns chronic, and the rift can still be mended.",
-    "files": [
-      "data.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "source": [
-      "DECISION_DOCS.relationship_repair.recommendation"
-    ]
-  },
-  {
     "key": "WRESTLE MANAGER — 女子プロレス団体経営シミュレーション",
     "en": "WRESTLE MANAGER — A women's pro wrestling management simulation",
     "files": [
@@ -3635,18 +3610,6 @@
     "note": "app.js _checkAndShowMilestone の first_rivalry ナレーション動的生成(MILESTONE_EVENTS.narrationはbase nullで実行時に選手名を埋める)。DATA_TABLES走査対象外につき手追加。"
   },
   {
-    "key": "{nameA}と{nameB}の bond +{delta}（双方向）",
-    "en": "{nameA} and {nameB}, bond +{delta} (both directions)",
-    "files": [
-      "management.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
-  },
-  {
     "key": "{nameA}と{nameB}の溝は埋まらなかった",
     "en": "The rift between {nameA} and {nameB} wasn't closed",
     "files": [
@@ -3657,6 +3620,18 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{nameA}と{nameB}の間のわだかまりが、いくらか解けた",
+    "en": "Some of the ill feeling between {nameA} and {nameB} has eased.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加。2026-09-25 総点検04§5で旧キー「{nameA}と{nameB}の bond +{delta}（双方向）」(内部変数名+数値)を置換"
   },
   {
     "key": "{names} — 今後のFA市場で動きがあるか注目。",
@@ -7746,8 +7721,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "※ 翌シーズンまで満額、その後毎年半減。1pt未満で消滅。",
-    "en": "※ Full value through the following season, then halved every year after. It disappears below 1pt.",
+    "key": "※ 獲得したシーズンだけ満額、翌シーズンから毎年半減。1pt未満で消滅。",
+    "en": "※ Full value only in the season it was earned, then halved every year after. It disappears below 1pt.",
     "files": [
       "ui-render.js"
     ],
@@ -10783,8 +10758,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/メディア功労賞などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。",
-    "en": "No honors this season yet.<br>※ Points come from PPV wins, MVP, Best Match, the Junior Tournament and the Media Merit Award, among others.<br>Full value through the following season, then halved every year after. It disappears below 1pt.",
+    "key": "このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/メディア功労賞などで加点。<br>獲得したシーズンだけ満額、翌シーズンから毎年半減。1pt未満で消滅。",
+    "en": "No honors this season yet.<br>※ Points come from PPV wins, MVP, Best Match, the Junior Tournament and the Media Merit Award, among others.<br>Full value only in the season it was earned, then halved every year after. It disappears below 1pt.",
     "files": [
       "ui-render.js"
     ],
@@ -13429,6 +13404,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "オンエアの反響で、団体に注目が集まった",
+    "en": "The broadcast got noticed, and more eyes are on the promotion.",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "オートセーブ",
     "en": "Autosave",
     "files": [
@@ -13810,6 +13795,42 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "対立が何度も重なってきた二人に使える。慢性化する前に手を打てば、亀裂が修復可能になることもある。",
+    "en": "For two wrestlers whose clashes keep piling up. Act before it turns chronic, and the rift can still be mended.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DECISION_DOCS.relationship_repair.recommendation"
+    ]
+  },
+  {
+    "key": "成功すれば、二人の間のわだかまりがいくらか解ける。失敗しても関係は変わらない。",
+    "en": "If it works, some of the ill feeling between the two eases. If it fails, nothing changes between them.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DECISION_DOCS.relationship_repair.effectSummary"
+    ]
+  },
+  {
+    "key": "記事の反響で、ファンの間で名前が広まった",
+    "en": "The piece got people talking, and her name is spreading among the fans.",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "集客力とグッズ売上にボーナス。興行出場で人気が上がりやすい",
@@ -16216,16 +16237,6 @@
     "source": [
       "tag-battle-main.js:TAG_MOVE_PRESENTATION.tag.guide"
     ]
-  },
-  {
-    "key": "ヒート +{n}",
-    "en": "Heat +{n}",
-    "files": [
-      "app.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
   },
   {
     "key": "ヒール",
@@ -20520,16 +20531,6 @@
     ],
     "count": 18,
     "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "人気 +{n}",
-    "en": "Popularity +{n}",
-    "files": [
-      "app.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -29849,19 +29850,6 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
-  },
-  {
-    "key": "成功時、双方向 bond +5〜+10。失敗時は据え置き。",
-    "en": "On success, bond +5 to +10 in both directions. On failure, nothing changes.",
-    "files": [
-      "data.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "source": [
-      "DECISION_DOCS.relationship_repair.effectSummary"
-    ]
   },
   {
     "key": "成功率",
@@ -48004,6 +47992,26 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📉 人気に対して小さい会場です（人気の伸びが控えめになります）",
+    "en": "📉 This venue is small for your popularity (popularity will grow more slowly)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📉 人気の伸び控えめ",
+    "en": "📉 Slower popularity growth",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {

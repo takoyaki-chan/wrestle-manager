@@ -24,6 +24,7 @@
                     "test:ui:walkthrough":  "node test/ui-walkthrough/run.js",
                     "test:ui:walkthrough:en":  "node test/ui-walkthrough/run.js --lang en",
                     "test:ui:ignite":  "node test/ui-walkthrough/run.js --mode ignite",
+                    "test:k1:parity":  "node test/k1-parity/run.js",
                     "test:data:autumn-war-mvp":  "node test/autumn-war-mvp-lines-test.js",
                     "test:engine:autumn-war-live":  "node test/autumn-war-live-engine-test.js",
                     "test:balance:match":  "node test/_match-system-v5-validation.js",

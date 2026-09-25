@@ -8241,10 +8241,15 @@ const App = {
     };
     const appRating = Engine.attendanceV2.calcShowRating(results, preAttendance, VENUES[s.showVenue].cap, s.showVenue, appRatingCtx);
     const appStars = appRating.stars;
+    // K-2: この興行の★を残す(同じ週の新聞と週次精算=放映収入は再計算せずこれを使う)
+    s = { ...s, lastShowRating: Engine.attendanceV2.packShowRating(appRating, s.totalShows) };
 
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
-    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, appStars);
+    // K-3: 会場の器を渡す(プラスの変化だけ、人気に対して小さい会場ほど控えめになる)
+    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, appStars, s.showVenue);
     roster = popResult.roster;
+    const venueSmallNote = (popResult.venueFit != null ? popResult.venueFit : 1) < SHOW_ORGPOP_VENUE_FIT.noteBelow;
+    // 因縁カード編成の加算(getBookedRivalryOrgPopBonus)には会場の器の係数を掛けない(K-3の対象外)
     const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.filter(m => m.matchType !== 'tag').map(m => ({ leftId: m.left, rightId: m.right })));
     if (bookedRivalryOrgPopBonus !== 0) {
       popResult = {
@@ -8254,7 +8259,8 @@ const App = {
       };
       events.push({ type: 'rivalry_card_org_pop_bonus', data: { delta: `${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}` }, s: s.season, w: s.week });
     }
-    events.push({ type: 'show_rating_org_pop_update', data: { stars: appStars, avgMQ, popDelta: `${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100}`, curOrgPop: Engine.util.dispOrgPop(popResult.orgPop) }, s: s.season, w: s.week });
+    // K-3: 会場の器で伸びが控えめになった回は、理由を一言添えた別の型で残す(数値は出さない)
+    events.push({ type: venueSmallNote ? 'show_rating_org_pop_update_small_venue' : 'show_rating_org_pop_update', data: { stars: appStars, avgMQ, popDelta: `${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100}`, curOrgPop: Engine.util.dispOrgPop(popResult.orgPop) }, s: s.season, w: s.week });
 
     // Heat — ★ベース
     const oldHeat = Engine.heat.getLevel(s);
@@ -10106,7 +10112,9 @@ const App = {
       }).length,
       fanExpectMatches: npFanExpects ? Engine.fanExpect.countMatched(npValidMatches, npFanExpects) : 0,
     };
-    const npRating = Engine.attendanceV2.calcShowRating(results, attendance, VENUES[G.showVenue].cap, G.showVenue, npRatingCtx);
+    // K-2: 興行の処理で決まった★をそのまま使う(1興行の★は1つ。保存が無い旧セーブ等だけ再計算)
+    const npRating = Engine.attendanceV2.getStoredShowRating(G)
+      || Engine.attendanceV2.calcShowRating(results, attendance, VENUES[G.showVenue].cap, G.showVenue, npRatingCtx);
     const showRating = { stars: npRating.stars, totalScore: npRating.totalScore, mqScore: npRating.mqScore, occScore: npRating.occScore, bonusScore: npRating.bonusScore, actual: avgMQ };
 
     // ── preview: 次回展望データ ──
@@ -11022,7 +11030,7 @@ const App = {
     if (showFlavorEvents.length > 0) {
       showFlavorEvents.forEach((ev, i) => {
         hasEventPopups = true;
-        const detail = ev.type === 'magazine' ? WM_I18N.t('人気 +{n}', { n: ev.popGain }) : WM_I18N.t('ヒート +{n}', { n: ev.heatGain });
+        const detail = App._flavorEventDetail(ev);
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone: 'positive', message: ev.headline, detail
@@ -11372,9 +11380,10 @@ const App = {
     const oppOrg = opponentOrgId != null ? opponentOrgId : 'player';
     if (g.vsOrgId !== oppOrg) return false;
     if (!g.intensity || g.intensity < 60) return false;
-    const nowAbs = (season - 1) * 20 + (week || 1);
-    const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
-    if (nowAbs - firedAbs > 24 || nowAbs - firedAbs < 0) return false;
+    // 解雇からの週数は Engine.relationships.grudgeWeeksSince(48週/季)で数える(2026-09-25 総点検04⑪。
+    // 以前は20週/季の換算で、季をまたぐと窓の計算がずれていた)
+    const weeksSinceFired = Engine.relationships.grudgeWeeksSince(g, season, week);
+    if (weeksSinceFired > 24 || weeksSinceFired < 0) return false;
     if (typeof VS_EX_EMPLOYER_LINES === 'undefined') return false;
     return true;
   },
@@ -11407,6 +11416,15 @@ const App = {
     return hitArr.length > 0 ? hitArr : null;
   },
 
+  // 雑誌取材・TV出演ポップアップの効果欄。2026-09-25 総点検06⑩: 以前は「人気 +2」「ヒート +1」と
+  // 数値をそのまま見せていた(数値の丸見せ)。効果の値(Engine.flavor の popGain/heatGain)は変えず、
+  // 何が起きたかだけを質的な一文で伝える
+  _flavorEventDetail(ev) {
+    return ev && ev.type === 'magazine'
+      ? WM_I18N.t('記事の反響で、ファンの間で名前が広まった')
+      : WM_I18N.t('オンエアの反響で、団体に注目が集まった');
+  },
+
   // 業界ニュースキューに追加（毎週の新聞画面・業界ニュース欄に流れる）
   _pushIndustryNews(ev) {
     if (!ev || !ev.type) return;
@@ -11426,11 +11444,9 @@ const App = {
     const g = fighter && fighter.grudge;
     if (!g || !g.vsOrgId || g.vsOrgId !== foeOrgId) return state;
     if (!g.intensity || g.intensity < 60) return state;
-    const nowAbs = Engine.util && Engine.util.absWeek
-      ? Engine.util.absWeek(state.season, state.week)
-      : ((state.season - 1) * 20 + state.week);
-    const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
-    const weeksSinceFired = nowAbs - firedAbs;
+    // 2026-09-25 総点検04⑪: 以前は今の週を48週/季・解雇の週を20週/季で換算しており、
+    // 解雇から2季目以降は差が必ず24週を超えて一度も出なかった。換算を1か所(48週/季)にまとめる
+    const weeksSinceFired = Engine.relationships.grudgeWeeksSince(g, state.season, state.week);
     if (weeksSinceFired > 24 || weeksSinceFired < 0) return state;
     const _orgNameOf = (orgId) => {
       if (orgId === 'player') return state.orgName || 'プレイヤー団体';
@@ -11802,9 +11818,7 @@ const App = {
       const baseDelay = newInjuries.length * 100 + 50;
       flavorEvents.forEach((ev, i) => {
         const tone = ev.type === 'magazine' ? 'positive' : 'positive';
-        const detail = ev.type === 'magazine'
-          ? WM_I18N.t('人気 +{n}', { n: ev.popGain })
-          : WM_I18N.t('ヒート +{n}', { n: ev.heatGain });
+        const detail = App._flavorEventDetail(ev);
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone, message: ev.headline, detail

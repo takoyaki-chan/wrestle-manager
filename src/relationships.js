@@ -1546,17 +1546,31 @@ Engine.relationships = {
   //  - decay は季節境界で逓減
   // ══════════════════════════════════════════════════════════
 
+  /**
+   * 解雇(grudge発行)から何週たったか。今の週・解雇の週とも Engine.util.absWeek(48週/季)で数える。
+   * 2026-09-25 総点検04⑪: 呼び出し元(app.js の古巣対決ニュース・元雇用主向けセリフ、ui-common.js の
+   * 対抗戦勝利セリフ)が、今の週を48週/季・解雇の週を20週/季で換算していたため、解雇から2季目以降は
+   * 差が必ず24週を超え、一度も発火しなかった。換算をこの1か所にまとめる。
+   */
+  grudgeWeeksSince(grudge, season, week) {
+    if (!grudge) return null;
+    return Engine.util.absWeek(season, week || 1)
+      - Engine.util.absWeek(grudge.issuedSeason || 1, grudge.issuedWeek || 1);
+  },
+
   /** 解雇された選手の状況から intensity (0〜100) を算出 */
   computeFiringGrudgeIntensity(firedFighter, state) {
     if (!firedFighter) return 0;
     const pop = Math.max(0, Math.min(100, firedFighter.popularity || 0));
     const age = firedFighter.age || 25;
     const isChamp = !!(state && state.titles && state.titles.world && state.titles.world.championId === firedFighter.id);
-    // 在籍年数: orgJoinWeek があれば現在週との差から計算（1シーズン=20週前提の概算）
+    // 在籍年数: orgJoinWeek(Engine.util.absWeek で記録される絶対週)と現在週の差から計算。
+    // 2026-09-25 総点検04⑪: 以前は現在週を20週/季で換算し、48週/季の orgJoinWeek と引き算していた
+    // (1季目の加入者は在籍を2.4倍に、2季目以降の加入者は0年に数えていた)。係数は変えていない
     let yearsInOrg = 0;
     if (firedFighter.orgJoinWeek != null && state) {
-      const nowAbs = (state.season - 1) * 20 + (state.week || 1);
-      yearsInOrg = Math.max(0, Math.floor((nowAbs - firedFighter.orgJoinWeek) / 20));
+      const nowAbs = Engine.util.absWeek(state.season, state.week || 1);
+      yearsInOrg = Math.max(0, Math.floor((nowAbs - firedFighter.orgJoinWeek) / Engine.util.WEEKS_PER_SEASON));
     }
     // タイトル経験: career history から titleWin / belt 関連を概算カウント
     let titleHistoryCount = 0;
@@ -4290,6 +4304,23 @@ Engine.challengeRequest = {
 // ══════════════════════════════════════════════════════════════════════════════
 Engine.snapshot = {
 
+  // 場面と関係値の突き合わせ(2026-09-25 総点検06⑧/04⑦)。
+  // 同世代(generation)の文面は親密な場面のみ → 両方向 bond≥45 かつ 両方向 rivalry<50 のペアに限る。
+  // 相性の摩擦(friction)は揉め事の場面 → 両方向 bond≥60(互いに好意)のペアには出さない。
+  // 判定は親友ゾーン等と同じく「bondは低い方・rivalryは高い方」で取る(どちらの側から見ても矛盾しない)
+  SCENE_FIT: { generationMinBond: 45, generationMaxRivalry: 50, frictionMaxMinBond: 60 },
+
+  _pairRelation(relationships, idA, idB) {
+    const ab = relationships[`${idA}>${idB}`] || {};
+    const ba = relationships[`${idB}>${idA}`] || {};
+    const bondAB = ab.bond != null ? ab.bond : 50;
+    const bondBA = ba.bond != null ? ba.bond : 50;
+    return {
+      minBond: Math.min(bondAB, bondBA),
+      maxRivalry: Math.max(ab.rivalry || 0, ba.rivalry || 0),
+    };
+  },
+
   // ═══ メイン生成関数 ═══
   generate(rng, state) {
     // 1. 候補収集
@@ -4438,17 +4469,27 @@ Engine.snapshot = {
         if (seenPhasePairs.has(pairKey)) continue;
         seenPhasePairs.add(pairKey);
 
-        // 性格不一致: personalityCompatibility が -3以下
+        // 2026-09-25 総点検06⑧/04⑦: 下の2つは性格の相性・年齢差という「静的な」条件で出るが、
+        // 文面は今の関係の場面(揉めている/仲がいい)を描く。今の関係値と食い違うペアには出さない。
+        // 関係値の条件は抽選(rng)の**後**に置く — 乱数の引き順を変えず、候補だけを絞るため
+        const pairRel = this._pairRelation(relationships, a.id, b.id);
+
+        // 性格不一致: personalityCompatibility が -3以下。
+        // 互いに好意を持っているペア(両方向とも bond≥60)には「揉めていた」「相性が良くない」を出さない
         if (typeof Engine.relationships.personalityCompatibility === 'function') {
           const compat = Engine.relationships.personalityCompatibility(a, b);
-          if (compat <= -3 && Engine.rng.float(rng) < 0.02) {
+          if (compat <= -3 && Engine.rng.float(rng) < 0.02
+              && pairRel.minBond < this.SCENE_FIT.frictionMaxMinBond) {
             candidates.push({ source: 'friction', weight: 2, fighterId: a.id, fighter2Id: b.id, type: 'slot' });
           }
         }
 
-        // 世代近接: 年齢差3以内
+        // 世代近接: 年齢差3以内。文面4本はすべて親密な場面なので、
+        // 両方向とも bond≥45 かつ どちらの rivalry も50未満のペアに限る(険悪・宿敵の同世代には出さない)
         const ageDiff = Math.abs((a.age || 20) - (b.age || 20));
-        if (ageDiff <= 3 && Engine.rng.float(rng) < 0.02) {
+        if (ageDiff <= 3 && Engine.rng.float(rng) < 0.02
+            && pairRel.minBond >= this.SCENE_FIT.generationMinBond
+            && pairRel.maxRivalry < this.SCENE_FIT.generationMaxRivalry) {
           candidates.push({ source: 'generation', weight: 2, fighterId: a.id, fighter2Id: b.id, type: 'slot' });
         }
       }

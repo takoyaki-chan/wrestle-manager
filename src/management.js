@@ -1197,6 +1197,44 @@ const Engine = {
       const pred = ATTENDANCE_PREDICTION.find(p => estOccRate >= p.min) || ATTENDANCE_PREDICTION[ATTENDANCE_PREDICTION.length - 1];
       return { text: pred.text, color: pred.color, estOccRate };
     },
+    // K-3付随(2026-09-25): 「ドーム圏内です」の案内を出してよいかの判定。団体人気90でも、
+    // どう組んでもドーム(22,500席)は4〜7割しか埋まらず赤字になるため、人気の数字ではなく
+    // 集客予測で決める。今のロスターで組める強いカード(集客力の高い順に2人ずつ当てた満枠の
+    // シングル)を仮に組み、getAttendancePrediction(揺らぎなし)の入りが「超満員」の帯
+    // (OCCUPANCY_BONUS[0].min=95%)に届くときだけ sellout:true。表示専用・状態は変えない。
+    getDomeSelloutOutlook(G) {
+      const DOME_IDX = 9;
+      const venue = VENUES[DOME_IDX];
+      const roster = (G && G.roster) || [];
+      const pool = roster.filter(f => f && !f.injury && !f.forcedRest)
+        .map(f => ({ f, draw: Engine.attendanceV2.calcDrawPower(f, G) }))
+        .sort((a, b) => b.draw - a.draw);
+      const pairCount = Math.min(venue.maxMatches, Math.floor(pool.length / 2));
+      if (pairCount < 1) return { sellout: false, estOccRate: 0 };
+      const card = [];
+      for (let i = 0; i < pairCount; i++) card.push({ left: pool[2 * i].f.id, right: pool[2 * i + 1].f.id });
+      const fanExpects = Engine.fanExpect.generate(G) || [];
+      const appeals = card.map(m => {
+        const fA = pool.find(p => p.f.id === m.left).f;
+        const fB = pool.find(p => p.f.id === m.right).f;
+        const rels = G.relationships || {};
+        const rivalry = Math.max(rels[`${m.left}>${m.right}`]?.rivalry || 0, rels[`${m.right}>${m.left}`]?.rivalry || 0);
+        const isFanExpect = fanExpects.some(fe =>
+          (fe.leftId === m.left && fe.rightId === m.right) || (fe.leftId === m.right && fe.rightId === m.left));
+        const lvl = Engine.title.getRivalryLevel(G, m.left, m.right);
+        const fr = Engine.freshness.calc(G.matchupLog || [], m.left, m.right, G.totalShows || 0, roster.length, null);
+        return Engine.attendanceV2.calcMatchAppeal(fA, fB, {
+          rivalry, isTitle: false, isFanExpect, isChallengeRequest: false,
+          pendingClashBonus: lvl?.pendingClashBonus || 0, isFirstMeet: fr.isFirstMeet,
+          freshnessCount: fr.countInWindow, freshnessRawBonus: fr.bonus,
+        }, G);
+      });
+      const used = new Set(card.flatMap(m => [m.left, m.right]));
+      const promo = roster.filter(c => !used.has(c.id)).reduce((sum, c) => sum + (c.promoStack || 0), 0);
+      const showDraw = Engine.attendanceV2.calcShowDraw(appeals, promo, DOME_IDX);
+      const pred = Engine.economy.getAttendancePrediction(G, DOME_IDX, showDraw, card);
+      return { sellout: pred.estOccRate >= OCCUPANCY_BONUS[0].min, estOccRate: pred.estOccRate };
+    },
     // MQ再設計P3c(mq-redesign-proposal-v0.5 §3.2/§3.2b): 会場の熱 = tierAmp(会場の器) × pressureFactor(fp)。
     // fp = rawDemand(キャパでクランプする前の需要) / capacity。興行一律の値であり、試合ごとの
     // 観客寄与はEngine.mq.finalizeがengagementと掛け合わせて算出する(このtotalはその素材)。
@@ -1609,6 +1647,19 @@ const Engine = {
       const occScore = Math.max(occEntry.score, occPenaltyFloor);
 
       // --- bonusScore ---
+      // K-2(2026-09-25 Keisuke裁定A): 本番の呼び出し元(興行2経路・新聞・週次精算)は
+      // {rivalryResolved(真偽), rivalryCards(件数), fanExpectMatches(件数)} を渡すが、ここは
+      // {hasRivalryResolution, hasRivalryCard, fanExpectCount} しか読んでいなかった。そのため
+      // 因縁決着+6・因縁カード+2・ファン期待+4/件 は 2026-03-29 から一度も加算されていなかった。
+      // 両方の名前を受ける。has系の名前が渡されていればそちらを優先する
+      // (measureShow と大会の精算 specialEventFinance はhas系の名前で渡している)。
+      const ctx = context || {};
+      const hasRivalryResolution = ctx.hasRivalryResolution != null
+        ? !!ctx.hasRivalryResolution : !!ctx.rivalryResolved;
+      const hasRivalryCard = ctx.hasRivalryCard != null
+        ? !!ctx.hasRivalryCard : (ctx.rivalryCards || 0) > 0;
+      const fanExpectCount = ctx.fanExpectCount != null
+        ? (ctx.fanExpectCount || 0) : (ctx.fanExpectMatches || 0);
       let bonusScore = 0;
       // タイトル戦
       const titleMatches = matchResults.filter(r => r.isTitleMatch);
@@ -1617,10 +1668,10 @@ const Engine = {
         bonusScore += bestTitleMQ >= cfg.titleGreatMQThreshold ? cfg.titleGreatBonus : cfg.titleAnyBonus;
       }
       // 因縁決着
-      if (context.hasRivalryResolution) bonusScore += cfg.rivalryResolvedBonus;
-      else if (context.hasRivalryCard) bonusScore += cfg.rivalryCardBonus;
+      if (hasRivalryResolution) bonusScore += cfg.rivalryResolvedBonus;
+      else if (hasRivalryCard) bonusScore += cfg.rivalryCardBonus;
       // ファン期待カード
-      bonusScore += (context.fanExpectCount || 0) * cfg.fanExpectBonus;
+      bonusScore += fanExpectCount * cfg.fanExpectBonus;
       // 試合数充実度
       const minMatches = SHOW_DRAW_CONFIG.minMatchesByVenue[venueIdx] || 2;
       if (matchCount >= minMatches) bonusScore += cfg.matchCountFullBonus;
@@ -1641,6 +1692,28 @@ const Engine = {
         occupancy: Math.round(occupancy * 100),
         matchCount,
       };
+    },
+
+    // K-2(2026-09-25): 1興行の★は1つ。興行の処理(app.js _finalizeShowImpl / Engine.executeShow)で
+    // 決まった★を state.lastShowRating に残し、同じ週の新聞と週次精算(放映収入)はそれを使う。
+    // 以前は興行後の state から★を計算し直していた。因縁・ファン期待の加点が効くようになると、
+    // 興行後に作り直したファン期待カード(直前に組んだ組は鮮度・直後クールダウンで外れる)や
+    // 試合で動いた因縁値のせいで、同じ興行の★が場所ごとに食い違ってしまうため。
+    packShowRating(rating, showNo) {
+      return {
+        stars: rating.stars,
+        totalScore: rating.totalScore,
+        mqScore: rating.mqScore,
+        occScore: rating.occScore,
+        bonusScore: rating.bonusScore,
+        showNo,
+      };
+    },
+    // この興行(G.totalShows 番目)のものとして保存された★があれば返す。無ければ null(旧セーブ等は再計算へ)。
+    getStoredShowRating(G) {
+      const r = G && G.lastShowRating;
+      if (!r || typeof r.stars !== 'number' || r.showNo !== G.totalShows) return null;
+      return r;
     },
 
     // ── 興行全体の計測（auto-sim用ワンショット） ──
@@ -1691,7 +1764,8 @@ const Engine = {
       // ショーレーティング
       const hasRivalryResolution = matchResults.some(r => r.rivalryResolved);
       const hasRivalryCard = matchResults.some(r => r.rivalryBonus);
-      const fanExpectCount = matchResults.filter(r => r.fanExpectMatched).length;
+      // K-2: 興行の2経路が立てるフラグは r.fanExpectMatch(旧コードは存在しない r.fanExpectMatched を数えていた)
+      const fanExpectCount = matchResults.filter(r => r.fanExpectMatch).length;
       const ratingResult = this.calcShowRating(matchResults, attendance, v.cap, venueIdx, {
         hasRivalryResolution,
         hasRivalryCard,
@@ -1714,6 +1788,16 @@ const Engine = {
       if (roll < 0.90) return INJURY_TABLE[1];       // 25%: 3〜4週
       if (roll < 0.98) return INJURY_TABLE[2];       //  8%: 6〜8週
       return LONG_TERM_INJURY;                       //  2%: 10〜16週
+    },
+    // bond-rivalry plan P-3: 険悪ペア（rivalry≥60 ∧ 平均bond≤30）のシングル戦はアクシデント率2倍。
+    // 自団体の興行(executeShow)とAI団体の興行(processAIWeek)で同じ式を使う(K-13)。
+    hostileMatchMult(relationships, leftId, rightId) {
+      const rels = relationships || {};
+      const relAB = rels[`${leftId}>${rightId}`] || {};
+      const relBA = rels[`${rightId}>${leftId}`] || {};
+      const avgBond = ((relAB.bond != null ? relAB.bond : 50) + (relBA.bond != null ? relBA.bond : 50)) / 2;
+      const maxRiv = Math.max(relAB.rivalry || 0, relBA.rivalry || 0);
+      return (maxRiv >= 60 && avgBond <= 30) ? 2.0 : 1.0;
     },
     check(rng, fighter, matchResult, coachInjuryMult = 1.0, week = 0, season = 0, coachSeverityDowngrade = 0, flavorOpts = {}) {
       if (!fighter) return null;
@@ -1873,7 +1957,9 @@ const Engine = {
       if (rivalry < 80) return 3;
       return 4;
     },
-    getRivalryPairState(G, id1, id2) {
+    // 関係値と因縁記録だけで決まる部分(所属団体の判定を含まない)。getRivalryPairState と、
+    // checkRivalryTitles が引退者・休眠者のペアの記録だけを更新するときの共通部分(2026-09-25)
+    getRivalryPairCore(G, id1, id2) {
       const entry = Engine.title.getRivalry(G, id1, id2) || null;
       const keyAB = `${id1}>${id2}`;
       const keyBA = `${id2}>${id1}`;
@@ -1893,6 +1979,13 @@ const Engine = {
         ? (rivalryAB >= rivalryBA ? id1 : id2)
         : null;
       const band = Engine.title.getRivalryBand(minRivalry);
+      return {
+        entry, rivalryAB, rivalryBA, bondAB, bondBA, minRivalry, maxRivalry, minBond, avgBond,
+        band, resolvedType, isOneSided, aggressor,
+      };
+    },
+    getRivalryPairState(G, id1, id2) {
+      const core = Engine.title.getRivalryPairCore(G, id1, id2);
       const _findOrgId = (id) => {
         if (G.roster?.find(c => c.id === id)) return G.orgId || 'player';
         for (const [aoId, ao] of Object.entries(G.aiOrgs || {})) {
@@ -1904,20 +1997,8 @@ const Engine = {
       const _orgB = _findOrgId(id2);
       const isCrossOrg = !!(_orgA && _orgB && _orgA !== _orgB);
       return {
-        entry,
-        rivalryAB,
-        rivalryBA,
-        bondAB,
-        bondBA,
-        minRivalry,
-        maxRivalry,
-        minBond,
-        avgBond,
-        band,
-        resolvedType,
-        isOneSided,
-        aggressor,
-        matches: entry?.matches || 0,
+        ...core,
+        matches: core.entry?.matches || 0,
         isCrossOrg,
         // 決着に必要な対戦回数をペアごとに散らすために使う（checkResolution）
         idA: id1,
@@ -2082,6 +2163,13 @@ const Engine = {
     },
     // Phase 5: 週次ライバル表示更新
     // Returns { state, events }
+    // 2026-09-25 総点検04⑨/06⑨: 週のログの約3分の2がこの帯の上下で、その8割は自団体と無関係なペア、
+    // 名前が引けない相手(引退者・休眠者)は「?」で出ていた。
+    // - ログは自団体の選手が絡むペアだけに出す
+    // - 名前が引けない相手(=自団体・他団体・FAのどこにもいない引退者・休眠者)が絡むペアは、
+    //   団体の判定・帯の変化の判定・ログから外す。ただし記録(lastBand/oneSided)は関係値だけで
+    //   決まる従来と同じ式で更新し続ける — 復帰した選手の試合(認知イベント)が oneSided を読むため、
+    //   止めると数値が変わる。帯の判定そのもの(getRivalryPairCore)は変えていない
     checkRivalryTitles(state) {
       const rivalries = { ...(state.rivalries || {}) };
       const events = [];
@@ -2091,7 +2179,7 @@ const Engine = {
         (org.roster || []).forEach(c => nameMap.set(c.id, c.name));
       });
       (state.freeAgents || []).forEach(c => nameMap.set(c.id, c.name));
-      const getName = (id) => nameMap.get(id) || '?';
+      const playerIds = new Set((state.roster || []).map(c => c.id));
       const pairsToCheck = new Set(Object.keys(rivalries));
 
       Object.keys(state.relationships || {}).forEach(key => {
@@ -2103,19 +2191,24 @@ const Engine = {
 
       for (const key of pairsToCheck) {
         const [id1, id2] = key.split('-').map(Number);
-        const pairState = Engine.title.getRivalryPairState(state, id1, id2);
         const entry = rivalries[key] || { matches: 0, lastWeek: 0, resolutionCount: 0, lastBand: 0, oneSided: null };
+        const active = nameMap.has(id1) && nameMap.has(id2);
+        const pairState = active
+          ? Engine.title.getRivalryPairState(state, id1, id2)
+          : Engine.title.getRivalryPairCore(state, id1, id2);
         const prevBand = entry.lastBand || 0;
         const nextBand = pairState.band ? pairState.band.tier : 0;
 
-        if (!pairState.resolvedType && nextBand !== prevBand) {
+        if (active && (playerIds.has(id1) || playerIds.has(id2))
+            && !pairState.resolvedType && nextBand !== prevBand) {
+          const n1 = nameMap.get(id1), n2 = nameMap.get(id2);
           if (nextBand > prevBand && pairState.band) {
-            events.push(`${pairState.band.emoji} ${getName(id1)} vs ${getName(id2)} — ${pairState.band.label}が深まっている`);
+            events.push(`${pairState.band.emoji} ${n1} vs ${n2} — ${pairState.band.label}が深まっている`);
           } else if (nextBand > 0) {
             const labelInfo = pairState.band || RIVALRY_THRESHOLDS.find(t => t.tier === nextBand);
-            if (labelInfo) events.push(`${labelInfo.emoji} ${getName(id1)} vs ${getName(id2)} — ${labelInfo.label}に落ち着いた`);
+            if (labelInfo) events.push(`${labelInfo.emoji} ${n1} vs ${n2} — ${labelInfo.label}に落ち着いた`);
           } else if (prevBand > 0) {
-            events.push(`… ${getName(id1)} vs ${getName(id2)} — 因縁はひとまず静まった`);
+            events.push(`… ${n1} vs ${n2} — 因縁はひとまず静まった`);
           }
         }
 
@@ -3904,13 +3997,16 @@ const Engine = {
     // test/i18n-extract-templates.js がこの2配列をmanagement.jsソースから直接切り出して
     // i18n/template-ledger.json へ載せる(app.js:_NEWSPAPER_HEADLINES と同じ作法)。
     // **配列の並び順は変えないこと** — Engine.rng.int が引く添字が変わるとJA出力が変わる。
+    // 2026-09-25 総点検06⑩: 誰が取材されても同じ『』の決め台詞(「まだまだ頂点を譲る気はない」等)が
+    // 付き、挑戦者にも王者の台詞が出ていた。汎用テンプレに名指しの鉤括弧セリフを入れない方針により、
+    // 0番と5番は台詞を地の文(記事の中身の紹介)に畳んだ。添字と本数は変えていない
     MAGAZINE_HEADLINES: [
-      '📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。『まだまだ頂点を譲る気はない』」',
+      '📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。いま見据えているもの」',
       '📰 月刊プロレスマガジン — 「特集：{name}の素顔に迫る」',
       '📰 週刊女子プロレス — 「{name}、表紙＆巻頭グラビア！ファン歓喜」',
       '📰 スポーツ報知 — 「{name}が語る"強さの秘密"」',
       '📰 週刊女子プロレス — 「{name}密着ルポ。練習場から見えた執念」',
-      '📰 月刊プロレスマガジン — 「{name}インタビュー。『ファンの声援が力になる』」',
+      '📰 月刊プロレスマガジン — 「{name}インタビュー。客席の声援をどう聞いているか」',
     ],
     TV_HEADLINES: [
       '📺 スポーツニュース — 「{name}がゴールデンタイムに登場。業界への注目が高まっている」',
@@ -8367,87 +8463,167 @@ const Engine = {
     },
 
     /**
-     * tickWeek末尾で呼ぶ。前後比較 + _milestonesNotified照合で新規マイルストーンを検出。
+     * 比較の基準点(tickWeek冒頭で呼ぶ)。[{id, ovr, pop, stats}] を返す。
+     * 2026-09-25 総点検03⑥(i): 試合成長は tickWeek の**外**(興行処理)で入るため、tickWeek冒頭の
+     * 値と比べるだけでは興行で閾値を越えた分が一度も差分に現れなかった。前回の検出時に
+     * 記録した値(`_milestoneBaseline`)が同じシーズン・前週以前のものならそれを基準に使い、
+     * 興行・決裁・大会など検出と検出の間に入った伸びを全部拾う。記録に無い選手(その後の加入)と、
+     * 使えない基準(開幕週・オフ明け・旧セーブ)は従来どおり冒頭の値で補う。
+     */
+    baselineFor(state) {
+      const b = state._milestoneBaseline;
+      const usable = !!(b && b.entries && !state.offSeason
+        && b.season === state.season && Number.isFinite(b.week) && b.week < state.week);
+      return (state.roster || []).map(c => {
+        const e = usable ? b.entries[c.id] : null;
+        if (e && e.stats) return { id: c.id, ovr: e.ovr, pop: e.pop, stats: { ...e.stats } };
+        return {
+          id: c.id,
+          ovr: Engine.util.ov(c),
+          pop: c.popularity || 0,
+          stats: { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn },
+        };
+      });
+    },
+
+    /** 検出時点の値を次回の基準として記録する(detect と同じ週に呼ぶ) */
+    captureBaseline(state) {
+      const entries = {};
+      (state.roster || []).forEach(c => {
+        entries[c.id] = {
+          ovr: Engine.util.ov(c),
+          pop: c.popularity || 0,
+          stats: { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn },
+        };
+      });
+      return { season: state.season, week: state.week, entries };
+    },
+
+    /** 閾値ごとの優先度と台詞プール(従来の値のまま) */
+    _grade(type, value) {
+      if (type === 'ovr') {
+        if (value >= 95) return { priority: 100 + value, linePool: 'ovr_legend' };
+        if (value >= 80) return { priority: 80 + value, linePool: 'ovr_elite' };
+        return { priority: 50 + value, linePool: 'ovr_growth' };
+      }
+      if (type === 'pop') {
+        if (value >= 70) return { priority: 60 + value, linePool: 'pop_star' };
+        return { priority: 40 + value, linePool: 'pop_growth' };
+      }
+      return { priority: 75, linePool: 'cap_reached' };
+    },
+
+    /**
+     * tickWeek内(sanitizeFloats前)で呼ぶ。前後比較 + _milestonesNotified照合で新規マイルストーンを検出し、
+     * 保留列 `_milestoneQueue` に合流させてから、通知枠が空いていれば1件だけ出す。
+     * 2026-09-25 総点検03⑥(ii): 従来は同じ週の候補から1件だけ選び、残りは保留されずに消えていた。
+     * 通知の頻度(COOLDOWN_WEEKS に1件)は変えず、落ちた節目を選手×種別ごとに保留して翌週以降に出す。
+     * 同じ選手・同じ種別(総合力/人気)の古い節目は新しい(高い)節目へ畳む(通知時に下の閾値も通知済みにする)。
+     * 限界到達は能力ごとに1件。
      * @param {object} rng
      * @param {object} state - 現在のGameState
-     * @param {Array} prevSnapshot - tickWeek冒頭で取得した [{id, ovr, pop, stats}]
-     * @returns {object|null} マイルストーン情報 + 更新済みroster、またはnull
+     * @param {Array} prevSnapshot - baselineFor(state) の戻り値 [{id, ovr, pop, stats}]
+     * @returns {{roster: Array, queue: Array, milestone: object|null}}
+     *   milestone は今週出す1件(無ければnull)。roster は通知済み閾値を更新したもの
      */
     detect(rng, state, prevSnapshot) {
+      const GM = Engine.growthMilestone;
       const absWeek = (state.season - 1) * 48 + state.week;
-      if (absWeek - (state._lastMilestoneAbsWeek || 0) < Engine.growthMilestone.COOLDOWN_WEEKS) return null;
-
       const prevMap = {};
-      prevSnapshot.forEach(p => { prevMap[p.id] = p; });
-      const OVR_TH = Engine.growthMilestone.OVR_THRESHOLDS;
-      const POP_TH = Engine.growthMilestone.POP_THRESHOLDS;
+      (prevSnapshot || []).forEach(p => { prevMap[p.id] = p; });
+      const OVR_TH = GM.OVR_THRESHOLDS;
+      const POP_TH = GM.POP_THRESHOLDS;
       const STAT_NAMES = ['pw', 'sp', 'te', 'st', 'mn'];
+      const rosterById = new Map((state.roster || []).map(c => [c.id, c]));
+      const notifiedOf = (c) => {
+        const n = c._milestonesNotified || {};
+        return { ovr: n.ovr || [], pop: n.pop || [], cap: n.cap || [] };
+      };
 
+      // ── 1. 今回の通過(判定は従来どおり: 基準 < 閾値 ≤ 現在 かつ未通知) ──
       const candidates = [];
-
-      for (const c of state.roster) {
+      for (const c of (state.roster || [])) {
         const prev = prevMap[c.id];
         if (!prev) continue; // 今週加入した新人はスキップ
-        const notified = c._milestonesNotified || { ovr: [], pop: [], cap: [] };
+        const notified = notifiedOf(c);
         const curOvr = Engine.util.ov(c);
         const curPop = c.popularity || 0;
-
-        // OVR閾値超え: prevOVR < threshold <= curOVR かつ未通知
         for (const th of OVR_TH) {
           if (prev.ovr < th && curOvr >= th && !notified.ovr.includes(th)) {
-            let priority, linePool;
-            if (th >= 95) { priority = 100 + th; linePool = 'ovr_legend'; }
-            else if (th >= 80) { priority = 80 + th; linePool = 'ovr_elite'; }
-            else { priority = 50 + th; linePool = 'ovr_growth'; }
-            candidates.push({ type: 'ovr', fighterId: c.id, fighterName: c.name,
-              value: th, stat: null, linePool, priority });
+            candidates.push({ type: 'ovr', fighterId: c.id, fighterName: c.name, value: th, stat: null });
           }
         }
-        // 人気閾値超え
         for (const th of POP_TH) {
           if (prev.pop < th && curPop >= th && !notified.pop.includes(th)) {
-            let priority, linePool;
-            if (th >= 70) { priority = 60 + th; linePool = 'pop_star'; }
-            else { priority = 40 + th; linePool = 'pop_growth'; }
-            candidates.push({ type: 'pop', fighterId: c.id, fighterName: c.name,
-              value: th, stat: null, linePool, priority });
+            candidates.push({ type: 'pop', fighterId: c.id, fighterName: c.name, value: th, stat: null });
           }
         }
-        // trainCap到達
         if (c.trainCap) {
           for (const s of STAT_NAMES) {
             if (prev.stats[s] < c.trainCap[s] && c[s] >= c.trainCap[s] && !notified.cap.includes(s)) {
-              candidates.push({ type: 'cap', fighterId: c.id, fighterName: c.name,
-                value: c.trainCap[s], stat: s, linePool: 'cap_reached', priority: 75 });
+              candidates.push({ type: 'cap', fighterId: c.id, fighterName: c.name, value: c.trainCap[s], stat: s });
             }
           }
         }
       }
 
-      if (candidates.length === 0) return null;
+      // ── 2. 保留列へ合流(選手×種別で1件。総合力/人気は高い閾値に畳む) ──
+      const keyOf = (e) => `${e.fighterId}|${e.type}${e.type === 'cap' ? '|' + e.stat : ''}`;
+      const merged = new Map();
+      const put = (e) => {
+        const k = keyOf(e);
+        const cur = merged.get(k);
+        if (!cur) { merged.set(k, e); return; }
+        if (e.type === 'cap' || e.value <= cur.value) return;
+        merged.set(k, { ...e, detectedAbs: Math.min(cur.detectedAbs, e.detectedAbs) });
+      };
+      (Array.isArray(state._milestoneQueue) ? state._milestoneQueue : []).forEach(e => {
+        if (e && e.fighterId != null && e.type) put(e);
+      });
+      candidates.forEach(c => put({ ...c, ...GM._grade(c.type, c.value), detectedAbs: absWeek }));
 
-      // 最も重要な1件を選出
-      candidates.sort((a, b) => b.priority - a.priority);
-      const best = candidates[0];
+      // ── 3. 保留の掃除: 団体を去った選手、既に通知済み、値が閾値を下回った節目は出さない ──
+      // (下回った分は通知済みにしないので、また越えたときに改めて拾われる)
+      const queue = [...merged.values()].filter(e => {
+        const c = rosterById.get(e.fighterId);
+        if (!c) return false;
+        const notified = notifiedOf(c);
+        if (e.type === 'ovr') return Engine.util.ov(c) >= e.value && !notified.ovr.includes(e.value);
+        if (e.type === 'pop') return (c.popularity || 0) >= e.value && !notified.pop.includes(e.value);
+        if (e.type === 'cap') return !!c.trainCap && c[e.stat] >= c.trainCap[e.stat] && !notified.cap.includes(e.stat);
+        return false;
+      }).map(e => ({ ...e, fighterName: rosterById.get(e.fighterId).name }));
 
-      // _milestonesNotified を更新したロスターを構築
+      // ── 4. 通知枠(COOLDOWN_WEEKS に1件)が空いていれば、最優先の1件を出す ──
+      if (queue.length === 0 || absWeek - (state._lastMilestoneAbsWeek || 0) < GM.COOLDOWN_WEEKS) {
+        return { roster: state.roster, queue, milestone: null };
+      }
+      queue.sort((a, b) => (b.priority - a.priority) || (a.detectedAbs - b.detectedAbs));
+      const best = queue[0];
+      const rest = queue.slice(1);
+
+      // _milestonesNotified を更新したロスターを構築(畳んだ下の閾値も通知済みにする)
       const updatedRoster = state.roster.map(c => {
         if (c.id !== best.fighterId) return c;
-        const n = { ...(c._milestonesNotified || { ovr: [], pop: [], cap: [] }) };
-        if (best.type === 'ovr') n.ovr = [...n.ovr, best.value];
-        else if (best.type === 'pop') n.pop = [...n.pop, best.value];
+        const n = { ...(c._milestonesNotified || {}), ...notifiedOf(c) };
+        const addUpTo = (list, ths) => [...list, ...ths.filter(t => t <= best.value && !list.includes(t))];
+        if (best.type === 'ovr') n.ovr = addUpTo(n.ovr, OVR_TH);
+        else if (best.type === 'pop') n.pop = addUpTo(n.pop, POP_TH);
         else if (best.type === 'cap') n.cap = [...n.cap, best.stat];
         return { ...c, _milestonesNotified: n };
       });
 
       return {
-        type: best.type,
-        fighterId: best.fighterId,
-        fighterName: best.fighterName,
-        value: best.value,
-        stat: best.stat,
-        linePool: best.linePool,
         roster: updatedRoster,
+        queue: rest,
+        milestone: {
+          type: best.type,
+          fighterId: best.fighterId,
+          fighterName: best.fighterName,
+          value: best.value,
+          stat: best.stat,
+          linePool: best.linePool,
+        },
       };
     },
   },
@@ -9292,7 +9468,7 @@ const Engine = {
       if (!item) return 0;
       const cfg = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG) || {};
       const decay = cfg.decayRate != null ? cfg.decayRate : 0.5;
-      const grace = cfg.graceAge != null ? cfg.graceAge : 1;
+      const grace = cfg.graceAge != null ? cfg.graceAge : 0; // K-9(A): 満額は獲得した季だけ
       const age = item.age || 0;
       const original = item.originalPt || 0;
       if (age <= grace) return original;
@@ -10762,7 +10938,12 @@ const Engine = {
         if (nc.injury) {
           nc.condition = Math.min(100, (nc.condition || 50) + 5);
           nc.injury = { ...nc.injury, weeksLeft: nc.injury.weeksLeft - 1 };
-          if (nc.injury.weeksLeft <= 0) nc.injury = null;
+          if (nc.injury.weeksLeft <= 0) {
+            nc.injury = null;
+            // K-13: 試合の怪我は Engine.injury.check が負傷前人気(preInjuryPop)を記録する。
+            // 自団体の復帰処理(Engine.injury.tick)と同じく復帰で消す(残すと移籍先で「怪我復帰」扱いが続く)
+            nc.preInjuryPop = null;
+          }
           return nc;
         }
 
@@ -10824,7 +11005,12 @@ const Engine = {
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
           const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
           const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
-          const trainGrowth = Math.round(growth * statusMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
+          // K-13: 怪我の成長ペナルティを練習にも掛ける(自団体の練習と同じ。適応力は0.2軽減)。
+          // 試合成長には元から掛かっていた。AIの試合の怪我が Engine.injury.check を通るようになり、
+          // 自団体と同じ INJURY_DEBUFF_TABLE のペナルティが付くため、練習側だけ素通しにしない
+          const rawPenMult = nc.growthPenalty ? nc.growthPenalty.multiplier : 1.0;
+          const penMult = (rawPenMult < 1.0 && Traits.has(nc, '適応力')) ? Math.min(1.0, rawPenMult + 0.2) : rawPenMult;
+          const trainGrowth = Math.round(growth * penMult * statusMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
 
           if (trainGrowth > 0) {
             // P3b: 端数持ち越し。整数化はsettleGrowthFractionの1回だけ(round/ceilの二重量子化を廃止)
@@ -10944,7 +11130,8 @@ const Engine = {
 
         const matchResults = [];
 
-        for (const card of matchCard) {
+        for (let cardIdx = 0; cardIdx < matchCard.length; cardIdx++) {
+          const card = matchCard[cardIdx];
           const leftIdx = roster.findIndex(f => f.id === card.left.id);
           const rightIdx = roster.findIndex(f => f.id === card.right.id);
           if (leftIdx < 0 || rightIdx < 0) continue;
@@ -11086,40 +11273,36 @@ const Engine = {
             }
             nc = Engine.growthEvents.updateMotivationLossMomentumAfterMatch(nc, result.mq, won, matchRng);
 
-            nc.condition = Math.max(0, (nc.condition || 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
-            const injuryChance = (nc.condition < 30 ? 0.08 : 0.03) * Engine.coach.getInjuryMult(aiShowState, nc.id) * (nc._relationshipInjuryMult || 1.0);
-            if (Engine.rng.float(matchRng) < injuryChance) {
-              // 怪我重傷度判定: 65%軽傷 / 25%中程度 / 8%通常重傷 / 2%長期重傷
-              const sevRoll = Engine.rng.float(matchRng);
-              const injuryBand = Engine.injury.severityBand(sevRoll);
-              const isSevere = injuryBand.type === '重傷'; // 合計10%（うち2%は10〜16週）
-              const isModerate = !isSevere && sevRoll >= 0.65; // 25%中傷
-              const weeks = isSevere
-                ? injuryBand.minWeeks + Engine.rng.int(matchRng, 0, injuryBand.maxWeeks - injuryBand.minWeeks)
-                : isModerate ? (3 + Engine.rng.int(matchRng, 0, 2)) : (2 + Engine.rng.int(matchRng, 0, 3));
-              const injType = isSevere ? '重傷' : isModerate ? '中傷' : '軽傷';
-              const injColor = isSevere ? '#e74c3c' : isModerate ? '#e67e22' : '#f39c12';
-              nc.injury = { type: injType, weeksLeft: weeks, totalWeeks: weeks, severity: isSevere ? 'severe' : isModerate ? 'moderate' : 'minor', color: injColor };
-              nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
-
-              // 重傷時の引退チェック（Engine.injury.checkと同等ロジック）
-              if (isSevere) {
-                const wear = nc.wear || 0;
-                let retireType = null;
-                if (wear + 25 > 80) {
-                  retireType = 'wearInjury';
+            // K-13(A) 2026-09-25: 試合の怪我は自団体と同じ Engine.injury.check で判定する。
+            // 起こりやすさ(基礎2.5%+体調+残りHP+ターン数、特性・コーチ・険悪ペア×2)、重さ(65/25/8/2%)、
+            // 離脱週数、成長ペナルティ、重傷時の再査定・引退判定(消耗/壮絶な幕切れ)まで同じ式。
+            // 旧実装は一律3%(体調30未満8%)・軽傷2〜5週・成長ペナルティなしで、怪我は自団体の約半分だった。
+            // 自団体と同じく判定は試合前の体調で行い、試合の消耗はその後に引く。舞台の格も自団体と同じ
+            // (王座戦=title / 第1試合=main / 他=undercard)。乱数は選手ごとの派生系列で、matchRng は消費しない
+            // (自団体の怪我乱数 999 系列とは別ソルト)。
+            {
+              const injRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xA13C, cardIdx, nc.id));
+              const injFlavor = Engine.coach.buildInjuryFlavorOpts(aiShowState, nc.id);
+              const injHostile = Engine.injury.hostileMatchMult(state.relationships, card.left.id, card.right.id);
+              const li = Engine.injury.check(
+                injRng, nc, { ...result, isTitleMatch: isAiTitleCard },
+                Engine.coach.getInjuryMult(aiShowState, nc.id), state.week, state.season,
+                Engine.coach.getInjurySeverityDowngrade(aiShowState, nc.id),
+                {
+                  ...injFlavor,
+                  stage: isAiTitleCard ? 'title' : (cardIdx === 0 ? 'main' : 'undercard'),
+                  titleChampionId: aiChampId,
+                  injuryMult: (injFlavor.injuryMult || 1.0) * injHostile,
                 }
-                if (!retireType) {
-                  // C「壮絶な幕切れ」: 自団体と同じ規則(AI団体の試合は通常興行扱い)
-                  const ceChance = careerEndingChance(nc, 'main');
-                  const ceRng = Engine.rng.create(Engine.rng.derive(matchRng.state || 42, nc.id, 777));
-                  if (ceChance > 0 && Engine.rng.float(ceRng) < ceChance) retireType = 'careerEnding';
-                }
-                if (retireType && roster.filter(f => !f._pendingInjuryRetire).length > 4) {
-                  nc._pendingInjuryRetire = retireType;
+              );
+              if (li) {
+                nc = li.newFighter;
+                if (li.retireType && roster.filter(f => !f._pendingInjuryRetire).length > 4) {
+                  nc._pendingInjuryRetire = li.retireType;
                 }
               }
             }
+            nc.condition = Math.max(0, (nc.condition || 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
 
             // MVPレース v2: MQ85超試合の bigMatch 履歴
             if (typeof result.mq === 'number' && result.mq >= 85) {
@@ -11366,9 +11549,14 @@ const Engine = {
         if (matchResults.length > 0) {
           const aiAvgMQ = Math.round(matchResults.reduce((a, r) => a + (r.mq || 0), 0) / matchResults.length);
           const aiStars = aiAvgMQ >= 80 ? 5 : aiAvgMQ >= 65 ? 4 : aiAvgMQ >= 50 ? 3 : aiAvgMQ >= 35 ? 2 : 1;
-          const aiRawDelta = SHOW_RATING_CONFIG.orgPopDeltaByStars[aiStars] || 0;
-          const aiPopDelta = Engine.orgPop.applyOrgPopChange(aiRawDelta, nextOrgData.orgPop || 50, null);
-          nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + aiPopDelta, 0, 100);
+          // K-9(A) 2026-09-25: 旧 `orgPop || 50` は人気0を「値なし」と扱い、崩れた団体を翌週ほぼ50へ
+          // 戻していた(Bが0.5→46.5に跳ねた実例)。0は正当な値なので、欠損(null/undefined)だけを
+          // `??` で50に補う。AI団体の人気を読む同じ書き方(このファイル14箇所)をすべて揃えた。
+          // K-9(A) 追補: ★→増減・人気帯の逓減に加え、低人気の下支え(人気15未満は下落なし+底上げ、
+          // 30未満は下落半減+底上げ)も自団体の興行と同じ関数(applyShowPopularity)で掛ける。
+          // ★の決め方(平均MQ)はAIのまま。rng は逓減を有効にするために渡すだけで、乱数は消費しない。
+          const aiOrgPopRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0x4F51, org.id.charCodeAt(4) || 0));
+          nextOrgData.orgPop = Engine.applyShowPopularity(roster, matchResults, nextOrgData.orgPop ?? 50, aiOrgPopRng, aiStars).orgPop;
         }
 
         // AI団体 wins/losses/draws/streak 更新（プレイヤー団体processSettlementと同等）
@@ -11431,7 +11619,7 @@ const Engine = {
             // 密着完了: 報酬計算
             const avgMQ = ms.matchCount > 0 ? ms.totalMQ / ms.matchCount : 0;
             if (avgMQ >= 60) {
-              nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + 3, 0, 100);
+              nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop ?? 50) + 3, 0, 100);
               roster = roster.map(f => {
                 if (f.id !== fId) return f;
                 const newPop = Engine.util.clamp((f.popularity || 1) + 5, 1, 100);
@@ -11469,7 +11657,7 @@ const Engine = {
                 avgMQ: Math.round(avgMQ), success: true,
               };
             } else if (avgMQ >= 45) {
-              nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + 1, 0, 100);
+              nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop ?? 50) + 1, 0, 100);
               roster = roster.map(f => {
                 if (f.id !== fId) return f;
                 return { ...f, popularity: Engine.util.clamp((f.popularity || 1) + 2, 1, 100) };
@@ -11493,7 +11681,7 @@ const Engine = {
           roster = aiEventResult.roster;
           if (aiEventResult.lockerRoomMorale != null) nextOrgData.lockerRoomMorale = aiEventResult.lockerRoomMorale;
           if (typeof aiEventResult.orgPopDelta === 'number') {
-            nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop || 50) + aiEventResult.orgPopDelta, 0, 100);
+            nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop ?? 50) + aiEventResult.orgPopDelta, 0, 100);
           }
           // AI放出選手をFA/dormantに振り分け（state直接変更パターン — 既存AI退団処理L4911と同様）
           if (aiEventResult.departedFighters && aiEventResult.departedFighters.length > 0) {
@@ -11574,7 +11762,7 @@ const Engine = {
 
         // 負傷中の選手回復（シーズン開始リセット）
         roster.forEach(f => {
-          if (f.injury) f.injury = null;
+          if (f.injury) { f.injury = null; f.preInjuryPop = null; } // 復帰扱い(週次の復帰処理と同じくpreInjuryPopも消す)
           // seasonGrowthリセット
           f.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
           f.wins = 0; f.losses = 0; f.draws = 0;
@@ -12005,7 +12193,7 @@ const Engine = {
         // orgPop変動
         if (winnerOrgId) {
           const winData = { ...newAiOrgs[winnerOrgId] };
-          winData.orgPop = Engine.util.clamp((winData.orgPop || 50) + 2, 0, 100);
+          winData.orgPop = Engine.util.clamp((winData.orgPop ?? 50) + 2, 0, 100);
           // battleWinsTotal
           if (!s.battleWinsTotal) s = { ...s, battleWinsTotal: {} };
           const bwt = { ...s.battleWinsTotal };
@@ -12021,7 +12209,7 @@ const Engine = {
           newAiOrgs[winnerOrgId] = winData;
 
           const loseData = { ...newAiOrgs[loserOrgId] };
-          loseData.orgPop = Engine.util.clamp((loseData.orgPop || 50) - 0.5, 0, 100);
+          loseData.orgPop = Engine.util.clamp((loseData.orgPop ?? 50) - 0.5, 0, 100);
           const loseRepId = loserOrgId === orgId ? rep1.id : rep2.id;
           loseData.roster = loseData.roster.map(f => {
             if (f.id !== loseRepId) return f;
@@ -12032,11 +12220,11 @@ const Engine = {
         } else {
           // 引き分け
           const d1 = { ...newAiOrgs[orgId] };
-          d1.orgPop = Engine.util.clamp((d1.orgPop || 50) + 0.5, 0, 100);
+          d1.orgPop = Engine.util.clamp((d1.orgPop ?? 50) + 0.5, 0, 100);
           d1.lastWarWeek = currentAbsWeek;
           newAiOrgs[orgId] = d1;
           const d2 = { ...newAiOrgs[opponent.id] };
-          d2.orgPop = Engine.util.clamp((d2.orgPop || 50) + 0.5, 0, 100);
+          d2.orgPop = Engine.util.clamp((d2.orgPop ?? 50) + 0.5, 0, 100);
           d2.lastWarWeek = currentAbsWeek;
           newAiOrgs[opponent.id] = d2;
         }
@@ -12223,7 +12411,7 @@ const Engine = {
             });
           });
           // orgPop -1（小幅）
-          defenderData.orgPop = Engine.util.clamp((defenderData.orgPop || 50) - 1, 0, 100);
+          defenderData.orgPop = Engine.util.clamp((defenderData.orgPop ?? 50) - 1, 0, 100);
           // 新聞フラグ: 辞退
           if (!defenderData._newsAIB3Result) defenderData._newsAIB3Result = [];
           defenderData._newsAIB3Result.push({
@@ -12270,7 +12458,7 @@ const Engine = {
         // 結果適用
         if (winnerOrgId) {
           const winData = { ...newAiOrgs[winnerOrgId] };
-          winData.orgPop = Engine.util.clamp((winData.orgPop || 50) + 3, 0, 100);
+          winData.orgPop = Engine.util.clamp((winData.orgPop ?? 50) + 3, 0, 100);
           const winRepId = winnerOrgId === orgId ? challenger.id : defender.id;
           winData.roster = winData.roster.map(f => {
             if (f.id !== winRepId) return f;
@@ -12286,7 +12474,7 @@ const Engine = {
           newAiOrgs[winnerOrgId] = winData;
 
           const loseData = { ...newAiOrgs[loserOrgId] };
-          loseData.orgPop = Engine.util.clamp((loseData.orgPop || 50) - 1, 0, 100);
+          loseData.orgPop = Engine.util.clamp((loseData.orgPop ?? 50) - 1, 0, 100);
           const loseRepId = loserOrgId === orgId ? challenger.id : defender.id;
           loseData.roster = loseData.roster.map(f => {
             if (f.id !== loseRepId) return f;
@@ -12299,7 +12487,7 @@ const Engine = {
         } else {
           // 引き分け
           const d1 = { ...newAiOrgs[orgId] };
-          d1.orgPop = Engine.util.clamp((d1.orgPop || 50) + 1, 0, 100);
+          d1.orgPop = Engine.util.clamp((d1.orgPop ?? 50) + 1, 0, 100);
           d1.lastB3Week = currentAbsWeek;
           d1.roster = d1.roster.map(f => {
             if (f.id !== challenger.id) return f;
@@ -12309,7 +12497,7 @@ const Engine = {
           });
           newAiOrgs[orgId] = d1;
           const d2 = { ...newAiOrgs[opponent.id] };
-          d2.orgPop = Engine.util.clamp((d2.orgPop || 50) + 1, 0, 100);
+          d2.orgPop = Engine.util.clamp((d2.orgPop ?? 50) + 1, 0, 100);
           d2.lastB3Week = currentAbsWeek;
           d2.roster = d2.roster.map(f => {
             if (f.id !== defender.id) return f;
@@ -13597,7 +13785,9 @@ const Engine = {
           }).length,
           fanExpectMatches: settleFanExpects ? Engine.fanExpect.countMatched(settleValidMatches, settleFanExpects) : 0,
         };
-        const settleRating = Engine.attendanceV2.calcShowRating(G.lastShowResults, attendance, VENUES[G.showVenue].cap, G.showVenue, settleRatingCtx);
+        // K-2: 興行の処理で決まった★をそのまま使う(保存が無い旧セーブ等だけ再計算)
+        const settleRating = Engine.attendanceV2.getStoredShowRating(G)
+          || Engine.attendanceV2.calcShowRating(G.lastShowResults, attendance, VENUES[G.showVenue].cap, G.showVenue, settleRatingCtx);
         const settleStars = settleRating.stars;
         const rev = Engine.economy.calcShowRevenue(G.showVenue, attendance);
 
@@ -13791,13 +13981,9 @@ const Engine = {
         week: state.week, season: state.season, type: 'invariant_violation', message: msg, timestamp: Date.now(),
       }] };
     }
-    // ★ 成長マイルストーン: 冒頭スナップショット（tickWeek末尾で前後比較に使用）
-    const _milestoneSnapshot = state.roster.map(c => ({
-      id: c.id,
-      ovr: Engine.util.ov(c),
-      pop: c.popularity || 0,
-      stats: { pw: c.pw, sp: c.sp, te: c.te, st: c.st, mn: c.mn },
-    }));
+    // ★ 成長マイルストーン: 比較の基準点（tickWeek末尾で前後比較に使用）。
+    // 前回の検出時の値が使えればそれ(=興行など tickWeek の外で入った伸びも含む)、無ければ冒頭の値
+    const _milestoneSnapshot = Engine.growthMilestone.baselineFor(state);
     // MQ再設計P5 §5.4: topChampionInjury — 週内処理前の各団体王者の怪我状態スナップショット
     const _championInjurySnapshot = Engine.mq.snapshotChampionInjuries(state);
     const _unifiedChampionSnapshot = state.unifiedTitle?.championId
@@ -14531,20 +14717,18 @@ const Engine = {
     if (!s.offSeason) s = Engine.streak.refresh(s);
 
     // ★ 成長マイルストーン検出（sanitizeFloats前、全処理完了後）
+    // 今週の通過を保留列へ合流し、枠が空いていれば1件出す。検出時点の値を次回の基準として残す
     if (!s.offSeason) {
       const milestoneRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xCD01));
       const milestoneResult = Engine.growthMilestone.detect(milestoneRng, s, _milestoneSnapshot);
-      if (milestoneResult) {
+      s = { ...s,
+        roster: milestoneResult.roster,
+        _milestoneQueue: milestoneResult.queue,
+        _milestoneBaseline: Engine.growthMilestone.captureBaseline(s),
+      };
+      if (milestoneResult.milestone) {
         s = { ...s,
-          roster: milestoneResult.roster,
-          _pendingMilestone: {
-            type: milestoneResult.type,
-            fighterId: milestoneResult.fighterId,
-            fighterName: milestoneResult.fighterName,
-            value: milestoneResult.value,
-            stat: milestoneResult.stat,
-            linePool: milestoneResult.linePool,
-          },
+          _pendingMilestone: { ...milestoneResult.milestone },
           _lastMilestoneAbsWeek: (s.season - 1) * 48 + s.week,
         };
       }
@@ -15038,10 +15222,15 @@ const Engine = {
     };
     const v2Rating = Engine.attendanceV2.calcShowRating(results, preAttendance, VENUES[s.showVenue].cap, s.showVenue, v2RatingContext);
     const showStars = v2Rating.stars;
+    // K-2: この興行の★を残す(同じ週の週次精算=放映収入は再計算せずこれを使う)
+    s = { ...s, lastShowRating: Engine.attendanceV2.packShowRating(v2Rating, s.totalShows) };
 
     const orgPopRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x4F50));
-    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, showStars);
+    // K-3: 会場の器を渡す(プラスの変化だけ、人気に対して小さい会場ほど控えめになる)
+    let popResult = Engine.applyShowPopularity(roster, results, s.orgPop, orgPopRng, showStars, s.showVenue);
     roster = popResult.roster;
+    const venueSmallNote = (popResult.venueFit != null ? popResult.venueFit : 1) < SHOW_ORGPOP_VENUE_FIT.noteBelow;
+    // 因縁カード編成の加算(getBookedRivalryOrgPopBonus)には会場の器の係数を掛けない(K-3の対象外)
     const bookedRivalryOrgPopBonus = Engine.title.getBookedRivalryOrgPopBonus(s, validMatches.filter(m => m.matchType !== 'tag').map(m => ({ leftId: m.left, rightId: m.right })));
     if (bookedRivalryOrgPopBonus !== 0) {
       popResult = {
@@ -15051,7 +15240,7 @@ const Engine = {
       };
       events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
     }
-    events.push(`📊 ★${showStars} (平均試合評価 ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
+    events.push(`📊 ★${showStars} (平均試合評価 ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100}${venueSmallNote ? ' (会場が人気に対して小さく、伸びは控えめ)' : ''} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // プロモ改修 v1.0: 試合出場選手の promoStack をリセット
     const matchParticipantIds = new Set(results.flatMap(r =>
@@ -15069,14 +15258,8 @@ const Engine = {
     const injuryResults = [];
     const matchInjuredIds = new Array(results.length).fill(null); // Phase 2: 試合別怪我選手ID
     // bond-rivalry plan P-3: 険悪ペア（rivalry≥60 ∧ avg bond≤30）のシングル戦はアクシデント率2倍
-    const _hostileMatchMult = (leftId, rightId) => {
-      const rels = s.relationships || {};
-      const relAB = rels[`${leftId}>${rightId}`] || {};
-      const relBA = rels[`${rightId}>${leftId}`] || {};
-      const avgBond = ((relAB.bond != null ? relAB.bond : 50) + (relBA.bond != null ? relBA.bond : 50)) / 2;
-      const maxRiv = Math.max(relAB.rivalry || 0, relBA.rivalry || 0);
-      return (maxRiv >= 60 && avgBond <= 30) ? 2.0 : 1.0;
-    };
+    // (式はAI団体の興行と共通の Engine.injury.hostileMatchMult。K-13 で共有化)
+    const _hostileMatchMult = (leftId, rightId) => Engine.injury.hostileMatchMult(s.relationships, leftId, rightId);
     const _mergeFlavorOpts = (base, extraMult, stage) => {
       const withStage = stage ? { ...(base || {}), stage, titleChampionId: _titleChampId } : base;
       if (extraMult === 1.0) return withStage;
@@ -15702,8 +15885,10 @@ const Engine = {
     });
     return { roster: newRoster, popEvents };
   },
-  applyShowPopularity(roster, results, orgPop, rng, stars) {
-    if (results.length === 0) return { roster, orgPop, popDelta: 0 };
+  // venueIdx(任意): K-3 会場の器。渡されたときだけ、プラスの変化に Engine.orgPop.getVenueFitMultiplier を掛ける。
+  // 戻り値の venueFit は実際に掛けた係数(掛けていなければ1)。表示側の「伸びは控えめ」の判定に使う。
+  applyShowPopularity(roster, results, orgPop, rng, stars, venueIdx) {
+    if (results.length === 0) return { roster, orgPop, popDelta: 0, venueFit: 1 };
     // v2: ★ベースorgPop変動
     let rawDelta = SHOW_RATING_CONFIG.orgPopDeltaByStars[stars] || 0;
     // 序盤保護（旧getMQAdjust互換）: 低orgPopでは興行実施自体が成長機会
@@ -15718,8 +15903,14 @@ const Engine = {
       else if (stars >= 2) rawDelta += 0.3;       // 低調でも+0.3
     }
     // v1.5: 施策A — orgPop逓減カーブ適用
-    const popDelta = rng ? Engine.orgPop.applyOrgPopChange(rawDelta, orgPop, rng) : rawDelta;
-    return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta };
+    let popDelta = rng ? Engine.orgPop.applyOrgPopChange(rawDelta, orgPop, rng) : rawDelta;
+    // K-3(2026-09-25): 人気に対して小さい会場ほど、伸び(プラスの変化)を減らす。マイナスの変化はそのまま
+    let venueFit = 1;
+    if (popDelta > 0 && venueIdx != null) {
+      venueFit = Engine.orgPop.getVenueFitMultiplier(orgPop, venueIdx);
+      popDelta *= venueFit;
+    }
+    return { roster, orgPop: Engine.util.clamp(orgPop + popDelta, 0, 100), popDelta, venueFit };
   },
 
   // ╔══════════════════════════════════════════════════════════╗
@@ -17829,10 +18020,13 @@ const Engine = {
 
     /** Apply war outcome to state (v2: battlePoints 対戦ポイント移動) */
     applyWarOutcome(state, playerWins, aiWins, opponentOrgId) {
-      let popDelta = 0;
-      if (playerWins > aiWins) popDelta = EVENT_CONFIG.warPopReward;
-      else if (playerWins === aiWins) popDelta = 2;
-      else popDelta = EVENT_CONFIG.warPopPenalty;
+      let rawPopDelta = 0;
+      if (playerWins > aiWins) rawPopDelta = EVENT_CONFIG.warPopReward;
+      else if (playerWins === aiWins) rawPopDelta = 2;
+      else rawPopDelta = EVENT_CONFIG.warPopPenalty;
+      // K-16(2026-09-25): 節目の大会の加減算は、勝ちにも負けにも節目用のゆるい逓減を掛ける
+      // (人気20未満は係数1.0で従来どおり)。ログの表記も実際の変化量に合わせる
+      const popDelta = Engine.orgPop.applyMilestoneChange(rawPopDelta, state.orgPop || 0);
       const events = [];
       const winLabel = playerWins > aiWins ? '勝ち越し！' : playerWins === aiWins ? '決着つかず' : '負け越し…';
       // 対戦ポイント移動
@@ -17852,7 +18046,7 @@ const Engine = {
         state.orgWarRecord, 'player', opponentOrgId,
         playerWins, aiWins, state.season, state.week
       );
-      events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${popDelta >= 0 ? '+' : ''}${popDelta}${bpMsg}）`);
+      events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${Engine.util.formatSignedStatDelta(popDelta, 1)}${bpMsg}）`);
       const newOrgPop = Math.max(0, Math.min(100, state.orgPop + popDelta));
       const warState = { ...state, orgPop: newOrgPop, battlePoints: bp, warThisSeason: true, pendingEvent: null, orgWarRecord: updOwr };
       if (!warState.ppvUnlocked && Engine.ppv.checkUnlock(newOrgPop)) {
@@ -18103,6 +18297,18 @@ const Engine = {
         const _preDecayOrgPop = s.orgPop || 0;
         s = { ...s, orgPop: Math.max(0, (s.orgPop || 0) - Engine.orgPop.calcAnnualDecay(s.orgPop || 0)),
               _prevSeasonEndOrgPop: _preDecayOrgPop };
+        // K-9(A) 2026-09-25: AI団体の人気にも同じ年次減衰を、同じ場所・同じタイミング(オフ第1週)で掛ける。
+        // 旧来はAIだけ季末の人気をそのまま持ち越していたため、S/Aは人気100に張り付いたまま動かなかった。
+        if (s.aiOrgs) {
+          const decayedAiOrgs = {};
+          Object.keys(s.aiOrgs).forEach(orgId => {
+            const ao = s.aiOrgs[orgId];
+            decayedAiOrgs[orgId] = (ao && Number.isFinite(ao.orgPop))
+              ? { ...ao, orgPop: Math.max(0, ao.orgPop - Engine.orgPop.calcAnnualDecay(ao.orgPop)) }
+              : ao;
+          });
+          s = { ...s, aiOrgs: decayedAiOrgs };
+        }
 
         // v2.0: オフシーズン trust 自然変動（興行なし期間: 各選手に自然減衰 + メンタル回復のみ適用）
         const offSeasonRoster = s.roster.map(f => {
@@ -18445,7 +18651,8 @@ const Engine = {
           s = { ...s, aiOrgs: updatedAiOrgsWithMood };
         }
 
-        // シーズン実績の加齢処理 (1年満額 → ×0.5/年で減衰、1pt未満で除去)
+        // シーズン実績の加齢処理 (満額は獲得した季だけ → 翌季から×0.5/年で減衰、1pt未満で除去。K-9(A))
+        // 年間順位の確定(上の oldRankings / seasonHistory)はこの加齢の前なので、その季の実績は満額で数える
         s = Engine.achievement.tickAge(Engine.achievement.ensureInit(s));
         // firing-grudge-spec-v0.1: 解雇遺恨フラグの逓減（decayUntilSeason 超過から ×0.85、≤5 で削除）
         s = Engine.relationships.decayGrudges(s);
@@ -19509,6 +19716,38 @@ Engine.orgPop = {
       return rawDelta * mult;
     }
     return rawDelta;
+  },
+
+  // K-3(2026-09-25 Keisuke裁定): 会場の器の係数(0.2〜1.0)。人気に対して小さい会場ほど小さい。
+  // 定数と式は data.js の SHOW_ORGPOP_VENUE_FIT。人気20未満(onsetPop未満)は常に1.0。
+  // 呼び出し側は「★で決まった団体人気の変化がプラスのとき」だけ掛ける(applyShowPopularity)。
+  getVenueFitMultiplier(orgPop, venueIdx) {
+    const cfg = (typeof SHOW_ORGPOP_VENUE_FIT !== 'undefined') ? SHOW_ORGPOP_VENUE_FIT : null;
+    const venue = (venueIdx != null) ? VENUES[venueIdx] : null;
+    if (!cfg || !venue) return 1.0;
+    const pop = orgPop || 0;
+    const onset = Engine.util.clamp((pop - cfg.onsetPop) / (cfg.fullPop - cfg.onsetPop), 0, 1);
+    if (onset <= 0) return 1.0;
+    const expected = Engine.economy.calcBaseAttendance(pop);
+    const fit = Engine.util.clamp(venue.cap / Math.max(1, expected * cfg.fillRatio), cfg.floor, 1.0);
+    return 1 - (1 - fit) * onset;
+  },
+  // 会場選択・週のログで「人気に対して小さい会場です」と添えるか(表示専用。数値は出さない)
+  isVenueSmallForOrgPop(orgPop, venueIdx) {
+    const cfg = (typeof SHOW_ORGPOP_VENUE_FIT !== 'undefined') ? SHOW_ORGPOP_VENUE_FIT : null;
+    if (!cfg) return false;
+    return Engine.orgPop.getVenueFitMultiplier(orgPop, venueIdx) < cfg.noteBelow;
+  },
+
+  // K-16(2026-09-25 Keisuke裁定): 節目の大会(対抗戦・秋の4団体戦)の団体人気の加減算は、
+  // 興行の逓減と「逓減なし」のちょうど中間でゆるく逓減させる。勝ちにも負けにも同じ係数を掛ける
+  // (勝ちだけ減らすと、人気の高い団体ほど節目の勝負が損になるため)。人気20未満は1.0で従来どおり。
+  // 例: 人気70〜84は0.61 → 対抗戦の勝ち+5→+3.05/負け−3→−1.83、秋の優勝+4→+2.44/準決勝負け−2→−1.22。
+  getMilestoneMultiplier(orgPop) {
+    return (1 + Engine.orgPop.getDiminishingMultiplier(orgPop || 0)) / 2;
+  },
+  applyMilestoneChange(rawDelta, orgPop) {
+    return rawDelta * Engine.orgPop.getMilestoneMultiplier(orgPop);
   },
 
   // orgPop リバランス v1.1: 年次減衰を緩和（高帯でも登れる坂に）
@@ -24152,8 +24391,9 @@ Engine.shachoshitsu = {
         rels[keyAB] = { ...curAB, bond: Engine.util.clamp((curAB.bond != null ? curAB.bond : 50) + delta, 0, 100) };
         rels[keyBA] = { ...curBA, bond: Engine.util.clamp((curBA.bond != null ? curBA.bond : 50) + delta, 0, 100) };
         pairRepairResult = { success: true, delta, idA, idB, nameA: fA.name, nameB: fB.name, relationships: rels };
-        events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功（双方向 bond +${delta}）`);
-        changes.push({ label: _wmFillWithDict(dict, '関係修復'), emoji: '🤝', text: _wmFillWithDict(dict, '{nameA}と{nameB}の bond +{delta}（双方向）', { nameA: fA.name, nameB: fB.name, delta }) });
+        // 2026-09-25 総点検04§5: ログと決裁結果に内部変数名(bond)と増減の数値を出していた。質的に書く(効果の値は不変)
+        events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功。わだかまりがいくらか解けた`);
+        changes.push({ label: _wmFillWithDict(dict, '関係修復'), emoji: '🤝', text: _wmFillWithDict(dict, '{nameA}と{nameB}の間のわだかまりが、いくらか解けた', { nameA: fA.name, nameB: fB.name }) });
         // 因縁列伝 v1.1: 修復タイムスタンプを h2h に刻む（context narrative のため）
         const h2hKey = `${Math.min(idA, idB)}>${Math.max(idA, idB)}`;
         const curH2h = (state.h2h || {})[h2hKey];
@@ -30616,10 +30856,12 @@ Engine.autumnWar = {
     const revenueDistribution = Engine.autumnWar.calcRevenueDistribution(s, result);
     const playerEntered = teams.some(t => t.orgId === 'player' && t.available);
     const playerRevenue = revenueDistribution?.shares.find(share => share.orgId === 'player')?.amount || 0;
-    let popDelta = 0, prize = 0;
-    if (champion === 'player') { popDelta = 4; prize = Engine.autumnWar.PRIZE.champion; }
-    else if (runnerUp === 'player') { popDelta = 1; prize = Engine.autumnWar.PRIZE.runnerUp; }
-    else if (playerEntered) popDelta = -2;
+    let rawPopDelta = 0, prize = 0;
+    if (champion === 'player') { rawPopDelta = 4; prize = Engine.autumnWar.PRIZE.champion; }
+    else if (runnerUp === 'player') { rawPopDelta = 1; prize = Engine.autumnWar.PRIZE.runnerUp; }
+    else if (playerEntered) rawPopDelta = -2;
+    // K-16(2026-09-25): 節目の大会の加減算は、勝ちにも負けにも節目用のゆるい逓減を掛ける(人気20未満は従来どおり)
+    const popDelta = Engine.orgPop.applyMilestoneChange(rawPopDelta, s.orgPop || 0);
     if (playerEntered) {
       const totalEventIncome = playerRevenue + prize;
       const seasonStats = s.seasonStats ? {

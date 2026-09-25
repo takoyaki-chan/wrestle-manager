@@ -106,6 +106,7 @@ textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px
 #copy-status{font-size:13px;color:var(--new);min-height:1.4em}
 #answer-out{min-height:300px}
 #answer2-out{min-height:200px}
+#answer3-out{min-height:320px}
 .reply{border:2px solid var(--gold);border-radius:10px;padding:22px;background:var(--panel);display:flex;flex-direction:column;gap:18px}
 .status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px}
 .status-grid div{display:flex;gap:10px;align-items:baseline;border:1px solid var(--line);border-radius:6px;padding:8px 12px;background:var(--panel-2);font-size:14px}
@@ -169,9 +170,120 @@ textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px
   <h1>決めてほしい16件</h1>
   <p class="lead">総点検で「Keisukeさんの判断が要る」とした項目を、図と具体例で説明し直しました。各項目の最後に、はい/いいえで答えられる質問を1つずつ置いています。いちばん下の回答シートで選んでコピーすれば、そのままチャットに貼れます。1件ずつの返事でも構いません。</p>
   <nav class="toc" aria-label="項目へ移動">
-    <a href="#reply">回答を受けて(9/25)</a><a href="#k1">K-1</a><a href="#k2">K-2</a><a href="#k3">K-3</a><a href="#k4">K-4</a><a href="#k5">K-5</a><a href="#k6">K-6</a><a href="#k7">K-7</a><a href="#k8">K-8</a><a href="#k9">K-9</a><a href="#k10">K-10</a><a href="#k11">K-11</a><a href="#k12">K-12</a><a href="#k13">K-13</a><a href="#k14">K-14</a><a href="#k15">K-15</a><a href="#k16">K-16</a><a href="#sheet">回答シート</a>
+    <a href="#round3">実装中に出た確認(第3回)</a><a href="#reply">回答を受けて(9/25)</a><a href="#k1">K-1</a><a href="#k2">K-2</a><a href="#k3">K-3</a><a href="#k4">K-4</a><a href="#k5">K-5</a><a href="#k6">K-6</a><a href="#k7">K-7</a><a href="#k8">K-8</a><a href="#k9">K-9</a><a href="#k10">K-10</a><a href="#k11">K-11</a><a href="#k12">K-12</a><a href="#k13">K-13</a><a href="#k14">K-14</a><a href="#k15">K-15</a><a href="#k16">K-16</a><a href="#sheet">回答シート</a>
   </nav>
 </header>
+
+<section class="reply" id="round3" aria-labelledby="round3-title">
+  <div class="stack">
+    <div class="eyebrow">第3回の確認 ・ 2026-09-25 夜</div>
+    <h2 id="round3-title">実装中に出た確認事項</h2>
+    <p class="lead">決まった項目を実装していく中で、判断が要る点が出てきました。どれもおすすめを付けています。「全部おすすめで」でも構いませんし、違うものだけ教えてもらっても大丈夫です。いちばん下に、この回の回答シートがあります。</p>
+  </div>
+
+  <div class="status-grid" aria-label="取り込みの状態">
+    <div><span class="k">K-12</span><span>不仲タッグの能力−3</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-6</span><span>大ダメージの相対化</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-14</span><span>GL-01/08/09 を道場へ</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-11</span><span>他団体ポップアップは2倍まで</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-9/13</span><span>AI団体の人気と怪我</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-1</span><span>差分テスト(第1歩)</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-8</span><span>世界設定の文言</span><span class="st done">対応済み</span></div>
+    <div><span class="k">K-2/3/16</span><span>★と団体人気</span><span class="st run">実装中</span></div>
+    <div><span class="k">K-7</span><span>ニアフォール</span><span class="st run">実装中</span></div>
+    <div><span class="k">K-4</span><span>同姓同名の別人</span><span class="st run">設計中</span></div>
+    <div><span class="k">断線</span><span>記録と新聞/通知とログ</span><span class="st run">実装中</span></div>
+    <div><span class="k">K-14</span><span>タッグ勝利セリフ</span><span class="st ask">全文の確認待ち</span></div>
+  </div>
+
+  <!-- A: K-1で見つかった、実プレイで起きていない仕組み -->
+  <article class="card" id="r3-k1">
+    <div class="card-head"><div class="num">K-1</div><div class="ttl">
+      <h2>実プレイで起きていなかった仕組み7つ</h2>
+      <div class="badges"><span class="pill sure">差分テストで実測</span></div>
+    </div></div>
+    <p>興行後の処理が2か所に書かれている件(K-1)で、同じ興行を両方の経路に流して比べたところ、<b>設計にはあるのに実プレイで起きていないもの</b>が見つかりました。直すとKeisukeさんが遊ぶゲームの手触りが変わるので、1件ずつ確認させてください。数値がほぼ動かない分(記事の取りこぼし等)は、確認なしで進めます。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>いま実プレイで起きていること</th><th>直すと変わること</th><th>おすすめ</th></tr></thead>
+        <tbody>
+          <tr><td class="k">1</td><td>タッグで<b>負けたチームも勝者扱い</b>になり、勝ちの人気ボーナスが付き、連敗が消える(不具合)</td><td>負けた側は負けとして数えられ、連敗も続くようになる。あわせて、メインの低評価で人気が下がる処理をタッグにも掛けるか</td><td class="rec">直す。タッグにもシングルと同じく掛ける</td></tr>
+          <tr><td class="k">2</td><td>試合で<b>派閥ポイントが貯まらない</b>(派閥対抗戦のボーナスだけ)</td><td>仕様どおり、試合ごとに派閥抗争ポイント・派閥内ポイントが貯まる。決着が今より早く来る</td><td class="rec">直す</td></tr>
+          <tr><td class="k">3</td><td>怪我判定に渡す情報の一部が抜けている(険悪なペアの試合で怪我率が2倍になる、など)</td><td>仕様どおり、険悪なペアの試合で怪我が増える。経歴の日付も正しくなる</td><td class="rec">直す</td></tr>
+          <tr><td class="k">4</td><td>試合で得る成長に<b>年齢の倍率が掛からない</b>(ベテランが衰えにくい)</td><td>ベテランの衰えが設計どおりの速さに戻る。19〜20歳は少し速く伸びる。あわせて、タッグの相手の強さを「2人の平均」で見るか「強い方」で見るか</td><td class="rec">直す。タッグは平均で</td></tr>
+          <tr><td class="k">5</td><td>試合に出た選手の<b>プロモの蓄積が減らない</b>。「バランス」方針の選手が、季初の3興行を過ぎると練習ばかりになる</td><td>「バランス」の選手が季を通してプロモに回る。収入と人気が上がり、練習の伸びは減る(今の実プレイより資金に余裕が出る)</td><td class="rec">直す(設計どおり)。資金の手触りは実機で確認</td></tr>
+          <tr><td class="k">6</td><td>重傷で消耗が限界を超えても<b>怪我による引退が起きない</b>(「壮絶な幕切れ」も起きない)</td><td>重傷の選手が引退するようになる。仲の良い選手の気落ち、王座の返上なども起きる</td><td class="rec">直す(設計どおり)</td></tr>
+          <tr><td class="k">7</td><td>信頼15未満の選手の<b>突然の退団が起きない</b></td><td>信頼が極端に低い選手が、1興行あたり2.5%で去るようになる</td><td class="rec">直す。ただし社長に前兆が見えることを確かめてから(信頼の低調サインは所属タブ等に出る)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <!-- B: K-12 -->
+  <article class="card" id="r3-k12">
+    <div class="card-head"><div class="num">K-12</div><div class="ttl"><h2>不仲タッグから3つ</h2></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>確認したいこと</th><th>おすすめ</th></tr></thead>
+        <tbody>
+          <tr><td class="k">8</td><td>プレビューは「相手との関係−1」と表示するが、実際の効果は「団体への信頼−1」(7月の文言変更でずれた)。どちらに揃えるか</td><td class="rec">表示を「団体への信頼−1」に合わせる</td></tr>
+          <tr><td class="k">9</td><td>仕様は「2人の絆の低い方」で不仲を判定するが、実装は片方向だけを見ている。仕様どおりにするか(片思いでも一方が嫌っていれば不仲になり、不仲扱いのペアが少し増える)</td><td class="rec">仕様どおり低い方で</td></tr>
+          <tr><td class="k">10</td><td>春のタッグリーグにも同じペナルティ(能力−3・試合後の信頼−1)を掛けるか</td><td class="rec">掛ける(どの試合でも同じルール)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <!-- C: K-6 -->
+  <article class="card" id="r3-k6">
+    <div class="card-head"><div class="num">K-6</div><div class="ttl"><h2>大ダメージの相対化から3つ</h2></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>起きていること</th><th>おすすめ</th></tr></thead>
+        <tbody>
+          <tr><td class="k">11</td><td>大ダメージが終盤に集まるため、HP66%超で出る長い被弾セリフが1試合約2回→約0.4回に減り、ほとんどが悲鳴になった</td><td class="rec">これでよい(減った分、出たときに効く)</td></tr>
+          <tr><td class="k">12</td><td>大一番は1撃が最大HPの13〜16%止まりで、特大(18%)が一度も出ない。つまり赤フラッシュが出ない</td><td class="rec">大一番だけ特大の基準を下げる(例: 15%。1試合1回前後になるよう実測で決める)</td></tr>
+          <tr><td class="k">13</td><td>タッグは最大HPが小さく、12%の基準でも命中の6〜7割が大ダメージのまま</td><td class="rec">タッグだけ割合を上げ、1試合4回前後になるよう実測で決める</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <!-- D: K-14 と K-9 -->
+  <article class="card" id="r3-other">
+    <div class="card-head"><div class="num">他</div><div class="ttl"><h2>道場とAI団体から</h2></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>起きていること</th><th>おすすめ</th></tr></thead>
+        <tbody>
+          <tr><td class="k">14</td><td>GL-08(連敗のストレス)と一緒に、GL-09(連勝の自信)も道場に出すようにした(連敗だけ見せて連勝を見せない偏りを避けるため)</td><td class="rec">このままでよい</td></tr>
+          <tr><td class="k">15</td><td>GL-03(信頼度の揺れ)は発火を直しても、道場に出るのは30季で0〜1回。「ケアが届いた手応え」として見せたいなら、出し方から考え直す必要がある</td><td class="rec">今は据え置き(ケアの見せ方を考えるときに一緒に)</td></tr>
+          <tr><td class="k">16</td><td>AI団体の人気と怪我をプレイヤーと揃えた(K-9/K-13)。B団体は人気30前後で安定し、崩れて経営危機になる場面は起きなくなった。序列(S団体が年間1位)は3シード120季中116季でまだほぼ固定</td><td class="rec">序列を動かす次の手(大会の枠の配り方・AI団体の財布など)は、抗争の器と一緒に後で考える</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="why">AIの怪我が自団体と同じ頻度になったことで、AIの上位選手のOVRは2〜6下がり、全国統一王座が季末に空位になる年が40季で3回→7〜10回に増えました(王者の怪我による引退・返上)。実機で気になるようなら教えてください。</p>
+  </article>
+
+  <!-- E: タッグ勝利セリフ -->
+  <article class="card" id="r3-tag">
+    <div class="card-head"><div class="num">K-14</div><div class="ttl"><h2>タッグ勝利セリフの書き直し(全文の確認)</h2></div></div>
+    <p>98本から名前を抜いて書き直した下書きができました(日本語・英語)。今のゲームで誰も喋らない組み合わせ(30本)を除いた<b>68本</b>を先に見てください。迷った17本には代案を付けています。ファイルは <code>docs/fun-audit-v0.1/k14-tag-win-lines-draft.md</code> で、チャットにも添付します。直したい行だけ番号で教えてもらえれば反映します。</p>
+    <p class="why">あわせて、今出ている名前なし21本のうちヤンキーの1本「お疲れさん！ あたしらの勝ちだ！」を「私ら」に直す案も入っています(一人称の規則に合わせるため)。</p>
+  </article>
+
+  <form class="sheet" id="answer3-form" autocomplete="off">
+    <div class="sub">第3回の回答シート</div>
+    <div id="sheet3-rows"></div>
+    <div class="btns">
+      <button type="button" id="fill3-rec">おすすめで埋める</button>
+      <button type="button" class="primary" id="copy3-out">選んだ内容をコピー</button>
+    </div>
+    <p id="copy3-status" role="status" aria-live="polite"></p>
+    <label for="answer3-out" class="sub">チャットに貼る文面</label>
+    <textarea id="answer3-out" readonly></textarea>
+  </form>
+</section>
 
 <section class="reply" id="reply" aria-labelledby="reply-title">
   <div class="stack">
@@ -1240,7 +1352,103 @@ textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px
     } catch (e) {}
   }
   document.getElementById('answer2-form').addEventListener('change', function(){ render(); save(); });
+  // (第3回のシートは下の別ブロック)
   document.getElementById('copy2-out').addEventListener('click', function(){
+    render();
+    var text = outEl.value;
+    function fallback(){ outEl.focus(); outEl.select(); statusEl.textContent = '文面を選択しました。Ctrl+C(スマホは長押し)でコピーしてください。'; }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ statusEl.textContent = 'コピーしました。チャットに貼ってください。'; }, fallback);
+      } else { fallback(); }
+    } catch (e) { fallback(); }
+  });
+  load();
+  render();
+})();
+(function(){
+  var ITEMS3 = [
+    {k:'1', q:'タッグで負けた側が勝者扱い', opts:[['FIX','直す(タッグにもメイン低評価の人気減)'],['FIXONLY','直す(人気減は掛けない)'],['KEEP','今のまま']], rec:'FIX'},
+    {k:'2', q:'試合で派閥ポイントが貯まらない', opts:[['FIX','直す'],['KEEP','今のまま']], rec:'FIX'},
+    {k:'3', q:'怪我判定に渡す情報の抜け', opts:[['FIX','直す'],['KEEP','今のまま']], rec:'FIX'},
+    {k:'4', q:'試合成長の年齢倍率', opts:[['AVG','直す(タッグの相手は平均)'],['MAX','直す(タッグの相手は強い方)'],['KEEP','今のまま']], rec:'AVG'},
+    {k:'5', q:'プロモ蓄積が減らない', opts:[['FIX','直す(設計どおり)'],['KEEP','今のまま']], rec:'FIX'},
+    {k:'6', q:'怪我による引退が起きない', opts:[['FIX','直す(設計どおり)'],['KEEP','今のまま']], rec:'FIX'},
+    {k:'7', q:'突然の退団が起きない', opts:[['FIX','直す(前兆の確認つき)'],['KEEP','今のまま']], rec:'FIX'},
+    {k:'8', q:'不仲の表示と効果のずれ', opts:[['TEXT','表示を「団体への信頼−1」に'],['BOND','効果をペアの絆−1に']], rec:'TEXT'},
+    {k:'9', q:'不仲の判定は低い方で', opts:[['LOW','仕様どおり低い方で'],['KEEP','今のまま']], rec:'LOW'},
+    {k:'10', q:'春タッグにも不仲ペナルティ', opts:[['YES','掛ける'],['NO','掛けない']], rec:'YES'},
+    {k:'11', q:'長い被弾セリフが減った', opts:[['OK','これでよい'],['TUNE','序盤も出るよう調整']], rec:'OK'},
+    {k:'12', q:'大一番の特大(赤フラッシュ)', opts:[['LOWER','大一番だけ基準を下げる'],['KEEP','今のまま(出ない)']], rec:'LOWER'},
+    {k:'13', q:'タッグの大ダメージの割合', opts:[['TAG','タッグだけ割合を上げる'],['KEEP','今のまま']], rec:'TAG'},
+    {k:'14', q:'GL-09 も道場に出す', opts:[['OK','このままでよい'],['OFF','外す']], rec:'OK'},
+    {k:'15', q:'GL-03 の出し方', opts:[['LATER','今は据え置き'],['NOW','今すぐ見直す']], rec:'LATER'},
+    {k:'16', q:'序列を動かす次の手', opts:[['LATER','抗争の器と一緒に後で'],['NOW','今すぐ進める']], rec:'LATER'}
+  ];
+  var KEY3 = 'wm-audit-decisions-v3';
+  var rowsEl = document.getElementById('sheet3-rows');
+  var outEl = document.getElementById('answer3-out');
+  var statusEl = document.getElementById('copy3-status');
+  if (!rowsEl || !outEl) return;
+  function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]/g,'x'); }
+  ITEMS3.forEach(function(it){
+    var row = document.createElement('div'); row.className = 'sheet-row';
+    var k = document.createElement('div'); k.className = 'k'; k.textContent = it.k;
+    var q = document.createElement('div'); q.className = 'q'; q.textContent = it.q;
+    var ch = document.createElement('div'); ch.className = 'choices';
+    it.opts.forEach(function(o){
+      var id = 'ans3-' + slug(it.k) + '-' + slug(o[0]);
+      var lab = document.createElement('label'); lab.setAttribute('for', id);
+      var inp = document.createElement('input'); inp.type = 'radio'; inp.name = 'ans3-' + slug(it.k); inp.id = id; inp.value = o[0];
+      lab.appendChild(inp); lab.appendChild(document.createTextNode(o[1]));
+      if (it.rec === o[0]) { var m = document.createElement('span'); m.className = 'recmark'; m.textContent = 'おすすめ'; lab.appendChild(m); }
+      ch.appendChild(lab);
+    });
+    row.appendChild(k); row.appendChild(q); row.appendChild(ch);
+    rowsEl.appendChild(row);
+  });
+  function current(){
+    var res = {};
+    ITEMS3.forEach(function(it){
+      var sel = document.querySelector('input[name="ans3-' + slug(it.k) + '"]:checked');
+      res[it.k] = sel ? sel.value : null;
+    });
+    return res;
+  }
+  function render(){
+    var res = current();
+    var lines = ['総点検 第3回の回答'];
+    ITEMS3.forEach(function(it){
+      var v = res[it.k];
+      if (!v) { lines.push(it.k + '(' + it.q + '): 保留'); return; }
+      var label = '';
+      it.opts.forEach(function(o){ if (o[0] === v) label = o[1]; });
+      lines.push(it.k + '(' + it.q + '): ' + label);
+    });
+    outEl.value = lines.join('\n');
+  }
+  function save(){ try { localStorage.setItem(KEY3, JSON.stringify(current())); } catch (e) {} }
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY3); if (!raw) return;
+      var data = JSON.parse(raw);
+      Object.keys(data || {}).forEach(function(k){
+        var v = data[k]; if (!v) return;
+        var el = document.getElementById('ans3-' + slug(k) + '-' + slug(v));
+        if (el) el.checked = true;
+      });
+    } catch (e) {}
+  }
+  document.getElementById('answer3-form').addEventListener('change', function(){ render(); save(); });
+  document.getElementById('fill3-rec').addEventListener('click', function(){
+    ITEMS3.forEach(function(it){
+      var el = document.getElementById('ans3-' + slug(it.k) + '-' + slug(it.rec));
+      if (el) el.checked = true;
+    });
+    render(); save();
+    statusEl.textContent = 'おすすめで埋めました。';
+  });
+  document.getElementById('copy3-out').addEventListener('click', function(){
     render();
     var text = outEl.value;
     function fallback(){ outEl.focus(); outEl.select(); statusEl.textContent = '文面を選択しました。Ctrl+C(スマホは長押し)でコピーしてください。'; }

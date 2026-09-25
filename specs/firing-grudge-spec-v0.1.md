@@ -98,6 +98,15 @@ intensity = 40                          // 基底
 clamp 0〜100
 ```
 
+- `yearsInOrg` は `orgJoinWeek`(`Engine.util.absWeek` の絶対週)と現在週の差を **48週で1年** として数える(`Engine.util.WEEKS_PER_SEASON`)。
+  2026-09-25 総点検04⑪で修正: 以前は現在週だけを20週/季で換算して引き算しており、1季目の加入者は在籍を約2.4倍に、2季目以降の加入者は0年に数えていた。係数は不変。
+
+### 週の数え方(2026-09-25 追記)
+
+「解雇から○週」はすべて `Engine.relationships.grudgeWeeksSince(grudge, season, week)`(= `Engine.util.absWeek` の差、48週/季)で数える。
+§3.2 の新聞見出し(`firedReturn`)、§3.3 の試合中セリフ、対抗戦の勝利セリフの「24週以内」はこの値で判定する。
+以前は20週/季の換算が混ざっており、新聞見出しは解雇から2季目以降一度も出ず、セリフは季をまたぐと窓がずれていた。
+
 ### intensity 逓減
 
 - `decayUntilSeason = issuedSeason + 3`（3シーズン保持）

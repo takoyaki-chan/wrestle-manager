@@ -155,7 +155,8 @@ function testProcessAIWeekCountsDrawAsDefense() {
   withStubs({
     'Engine.rival.generateAIMatchCard': () => [{ left: champ, right: challenger }],
     'Engine.rng.float': () => 0.99,
-    'Engine.battle.simulateMatch': () => ({ left: champ, right: challenger, winner: 'draw', mq: 60, hpLeft: { final: 40, max: 100 }, hpRight: { final: 40, max: 100 } }),
+    // K-13: AIの試合の怪我は Engine.injury.check(残りHP・ターン数)を通るので、本物と同じく turns を返す
+    'Engine.battle.simulateMatch': () => ({ left: champ, right: challenger, winner: 'draw', mq: 60, turns: 12, hpLeft: { final: 40, max: 100 }, hpRight: { final: 40, max: 100 } }),
     'Engine.trust.applyShowTrust': roster => ({ roster }),
     'Engine.coach.getMQBonusForMatch': () => 0,
     'Engine.coach.getMatchGrowthBonus': () => 0,
@@ -187,7 +188,7 @@ function testProcessAIWeekChangesChampionOnLoss() {
   withStubs({
     'Engine.rival.generateAIMatchCard': () => [{ left: champ, right: challenger }],
     'Engine.rng.float': () => 0.99,
-    'Engine.battle.simulateMatch': () => ({ left: champ, right: challenger, winner: 'right', mq: 78, hpLeft: { final: 0, max: 100 }, hpRight: { final: 35, max: 100 } }),
+    'Engine.battle.simulateMatch': () => ({ left: champ, right: challenger, winner: 'right', mq: 78, turns: 12, hpLeft: { final: 0, max: 100 }, hpRight: { final: 35, max: 100 } }),
     'Engine.trust.applyShowTrust': roster => ({ roster }),
     'Engine.coach.getMQBonusForMatch': () => 0,
     'Engine.coach.getMatchGrowthBonus': () => 0,

@@ -156,7 +156,7 @@ MQ≥65の好試合 +0.3、敗北 +0.2。AIも同じ試合結果・コーチ経�
 |------|------|
 | スランプ / モチベーション喪失 | ×0 |
 | レッドホット | ×1.15 |
-| growthPenalty | penalty値 |
+| growthPenalty | penalty値（怪我の `INJURY_DEBUFF_TABLE`。適応力は+0.2軽減。練習・試合の両方。AIも同じ — 2026-09-25 K-13でAIの練習にも適用、AIの試合の怪我が `Engine.injury.check` を通るようになった） |
 | 外部コーチ招聘 | `trainerMult` |
 | 孤立 | ×0.7 |
 | 合宿 | `trainingBoostMult` |
