@@ -244,6 +244,71 @@ section('X03: 実プレイ(app.js)はエンジンと同じ Engine.show.rollMatch
     'executeShow が Engine.show.rollMatchInjury を呼んでいない');
 });
 
+// ── 4. K1-E02 試合成長の式 ──
+const statSum = f => f.pw + f.sp + f.te + f.st + f.mn;
+// シングル1試合の出場者 left の伸び(能力の合計の増分)を、乱数シードを変えて合計する
+function singlesGrowthTotal(leftExtra, seeds = 300) {
+  let total = 0;
+  for (let seed = 1; seed <= seeds; seed++) {
+    const L = fighter(1, { pw: 60, sp: 60, te: 60, st: 60, mn: 60, age: 22, growthLog: [], ...leftExtra });
+    // 相手は OVR が1低い(相手の強さ -1/15)。負け(+0.2)・好試合(MQ≥65, +0.3)で 0.5+0.3+0.2-0.067=0.933。
+    // 2能力に分かれると1能力あたり0.467で、×1.0 なら四捨五入で0、×1.15/×1.2 なら1になる(倍率の有無が数字に出る組)
+    const R = fighter(2, { pw: 59, sp: 59, te: 59, st: 59, mn: 59, age: 22, growthLog: [] });
+    const s = { rngSeed: seed, season: 3, week: 10, coaches: [], coachAssign: {}, roster: [L, R] };
+    const r = { winner: 'right', mq: 70, left: { id: 1, name: L.name }, right: { id: 2, name: R.name } };
+    const out = Engine.show.applyMatchGrowth(s, s.roster, [single(1, 2)], [r]);
+    total += statSum(out[0]) - statSum(L);
+  }
+  return total;
+}
+
+section('E02: 27歳以上は試合で伸びない(年齢倍率0)。以前の実プレイは伸びていた', () => {
+  assert.ok(Engine.show && typeof Engine.show.applyMatchGrowth === 'function', 'Engine.show.applyMatchGrowth が無い');
+  const total = singlesGrowthTotal({ age: 30 }, 200);
+  assert.strictEqual(total, 0, `30歳の選手が試合で ${total} 伸びた`);
+  assert.ok(singlesGrowthTotal({ age: 22 }, 200) > 0, '22歳の選手が試合で伸びない(組み方の前提が崩れた)');
+});
+
+section('E02: 19〜20歳(×1.15)と険悪ゾーンの伸び(関係性倍率×1.2)が効く', () => {
+  const base = singlesGrowthTotal({ age: 22 });
+  const young = singlesGrowthTotal({ age: 19 });
+  const rel = singlesGrowthTotal({ age: 22, _relationshipGrowthMult: 1.2 });
+  assert.ok(young > base, `19歳 ${young} が22歳 ${base} より伸びていない`);
+  assert.ok(rel > base, `関係性倍率1.2 ${rel} が倍率なし ${base} より伸びていない`);
+});
+
+section('E02: タッグの相手の強さは2人の平均(裁定。以前の実プレイは強い方)', () => {
+  const realClamp = Engine.util.clamp;
+  const seen = [];
+  Engine.util.clamp = function (v, lo, hi) {
+    if (lo === -0.2 && hi === 0.5) seen.push(v);
+    return realClamp.apply(this, arguments);
+  };
+  try {
+    const mk = (id, v) => fighter(id, { pw: v, sp: v, te: v, st: v, mn: v, age: 20 });
+    const roster = [mk(1, 60), mk(2, 60), mk(3, 80), mk(4, 40)];
+    const s = { rngSeed: 3, season: 3, week: 10, coaches: [], coachAssign: {}, roster };
+    Engine.show.applyMatchGrowth(s, roster,
+      [{ matchType: 'tag', teamA: { fighter1: 1, fighter2: 2 }, teamB: { fighter1: 3, fighter2: 4 } }],
+      [{ matchType: 'tag', winner: 'teamB', mq: 50 }]);
+  } finally {
+    Engine.util.clamp = realClamp;
+  }
+  // チームA(60・60)から見た相手(80・40)は平均60 → 相手の強さ 0。強い方(80)なら 20/15
+  assert.strictEqual(seen.length, 4, `相手の強さの計算が ${seen.length} 回`);
+  assert.strictEqual(seen[0], 0);
+  assert.strictEqual(seen[1], 0);
+});
+
+section('E02: 実プレイ(app.js)はエンジンと同じ Engine.show.applyMatchGrowth を呼ぶ(自前の成長計算を持たない)', () => {
+  const body = finalizeBody();
+  assert.ok(/roster = Engine\.show\.applyMatchGrowth\(s, roster, validMatches, results\);/.test(body), '_finalizeShowImpl が Engine.show.applyMatchGrowth を呼んでいない');
+  assert.ok(!/derive\(s\.rngSeed, s\.season, s\.week, 1732\)/.test(body), '_finalizeShowImpl に自前の試合成長(乱数1732)が残っている');
+  const mgmt = readSource('src', 'management.js');
+  const ex = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('  executeShow(state) {') + 60000);
+  assert.ok(/roster = Engine\.show\.applyMatchGrowth\(s, roster, validMatches, results\);/.test(ex), 'executeShow が Engine.show.applyMatchGrowth を呼んでいない');
+});
+
 if (failed > 0) {
   console.log(`\nFAIL: ${failed} 件`);
   process.exit(1);

@@ -8700,97 +8700,11 @@ const App = {
       ? Engine.title.getAbsWeek(s)
       : (s.lastTitleMatchWeek ?? null);
 
-    // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える (mirrors Engine.executeShow)
-    const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
-    results.forEach((r, rIdx) => {
-      const m = validMatches[rIdx];
-      // タッグマッチ: 4人に成長配分（Engine.executeShow L8087-8117パターン）
-      let growthEntries;
-      if (r.matchType === 'tag') {
-        const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
-        const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
-          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
-        growthEntries = allIds.map(charId => {
-          const isTeamA = charId === m.teamA.fighter1 || charId === m.teamA.fighter2;
-          const oppIds = isTeamA ? [m.teamB.fighter1, m.teamB.fighter2] : [m.teamA.fighter1, m.teamA.fighter2];
-          const oppOvr = Math.max(...oppIds.map(id => { const f = roster.find(c => c.id === id); return f ? Engine.util.ov(f) : 50; }));
-          const partnerId = isTeamA ? (charId === m.teamA.fighter1 ? m.teamA.fighter2 : m.teamA.fighter1) : (charId === m.teamB.fighter1 ? m.teamB.fighter2 : m.teamB.fighter1);
-          const partnerName = (roster.find(c => c.id === partnerId) || {}).name || '?';
-          const oppNames = oppIds.map(id => (roster.find(c => c.id === id) || {}).name || '?').join('&');
-          return { charId, won: winTeamIds.includes(charId), oppOvr, oppLabel: `w/${partnerName} vs ${oppNames}`,
-            tagPartner: partnerName, tagOpps: oppNames };
-        });
-      } else {
-        growthEntries = [
-          { charId: r.left.id, won: r.winner === 'left', oppOvr: null, oppLabel: null },
-          { charId: r.right.id, won: r.winner === 'right', oppOvr: null, oppLabel: null },
-        ];
-      }
-      growthEntries.forEach(({ charId, won, oppOvr: preOppOvr, oppLabel, tagPartner, tagOpps }) => {
-        const fighter = roster.find(c => c.id === charId);
-        if (!fighter || fighter.isIntrusion) return;
-        let oppOvr;
-        if (preOppOvr !== null) { oppOvr = preOppOvr; } // タッグ: 事前計算済み
-        else {
-          const oppId = charId === r.left.id ? r.right.id : r.left.id;
-          const oppInRoster = roster.find(c => c.id === oppId);
-          const oppRaw = charId === r.left.id ? r.right : r.left;
-          oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
-        }
-        const selfOvr = Engine.util.ov(fighter);
-
-        // growth-rebalance v2: 試合成長を適正化
-        const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
-        const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
-        const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
-        const resultBonus = won ? 0.0 : 0.2;
-        const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
-        let matchGrowth = matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus;
-
-        if (fighter.growthPenalty) {
-          const rawMult = fighter.growthPenalty.multiplier;
-          matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
-        }
-
-        const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
-        const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
-        const pool = [...allStats];
-        const chosen = [];
-        for (let i = 0; i < numStats; i++) {
-          const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1);
-          chosen.push(pool.splice(idx, 1)[0]);
-        }
-        const growthPerStat = matchGrowth / numStats;
-
-        const _mOpp = oppLabel || (charId === r.left?.id ? (r.right?.name || '?') : (r.left?.name || '?'));
-        const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
-        roster = roster.map(c => {
-          if (c.id !== charId) return c;
-          let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
-          const _mD = {};
-          chosen.forEach(stat => {
-            const gain = Math.max(0, Math.round(growthPerStat));
-            const cap = nc.trainCap?.[stat] || 100;
-            const actualGain = Math.max(0, Math.min(gain, cap - (nc[stat] || 0)));
-            if (actualGain > 0) {
-              nc[stat] = (nc[stat] || 0) + actualGain;
-              nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + actualGain;
-              _mD[stat] = actualGain;
-            }
-          });
-          if (nc.growthLog && !nc.isRental) {
-            // i18n P7-28: §14-3と同型の追加フィールド(detail自体はセーブ値不変)。
-            // タッグはoppLabel(w/{partner} vs {opps})経由なのでtagPartner/tagOppsから組む
-            const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes };
-            if (oppLabel) { _me.detailTpl = 'vs w/{partner} vs {opps}'; _me.detailVars = { partner: tagPartner, opps: tagOpps }; }
-            else { _me.detailTpl = 'vs {name}'; _me.detailVars = { name: _mOpp }; }
-            if (Object.keys(_mD).length > 0) _me.deltas = _mD;
-            nc.growthLog = [...nc.growthLog, _me];
-          }
-          return nc;
-        });
-      });
-    });
+    // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える
+    // K-1 4-B-4(K1-E02): エンジンの executeShow と同じ Engine.show.applyMatchGrowth を通す。以前の実プレイには
+    // 年齢倍率・関係性倍率が無く(27歳以上も試合で伸び、19〜20歳・険悪ゾーンの伸びが出なかった)、タッグの相手の強さに
+    // 強い方を使っていた(裁定: 2人の平均)。タッグの成長ログの文面もエンジンと同じ「タッグ(相方) vs 相手&相手」になる
+    roster = Engine.show.applyMatchGrowth(s, roster, validMatches, results);
 
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek };
 

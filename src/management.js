@@ -15277,6 +15277,144 @@ const Engine = {
       return Engine.injury.check(rng, fighter, result, Engine.coach.getInjuryMult(s, fighter.id), s.week, s.season,
         Engine.coach.getInjurySeverityDowngrade(s, fighter.id), flavorOpts);
     },
+
+    // 試合成長(K-1 4-B-4 / K1-E02。specs/growth-system-spec-v2.2.md §7)。怪我処理の後、ロスターに残っている出場選手に。
+    //   matchGrowth = (基本0.5 + 相手の強さ + 好試合(MQ≥65) + 敗北 + コーチ) × 関係性倍率(険悪ゾーンの伸び) × 年齢倍率
+    //   × 怪我の成長ペナルティ(適応力は+0.2軽減)。伸びる能力は1〜2個を乱数(1732)で選ぶ
+    // タッグの相手の強さは相手2人の平均(2026-09-26 Keisuke 裁定。以前の実プレイは強い方を使っていた)。
+    // 以前の実プレイには年齢倍率・関係性倍率が無かった(27歳以上も試合で伸び、19〜20歳・険悪ゾーンの伸びが出なかった)。
+    // 乱入選手(isIntrusion)は伸ばさない。戻り値: 新しいロスター
+    applyMatchGrowth(state, roster, validMatches, results) {
+      const s = state;
+      let out = roster;
+      const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
+      results.forEach((r, _gIdx) => {
+        // タッグ試合の成長処理
+        if (r.matchType === 'tag') {
+          const m = validMatches[_gIdx];
+          const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
+          const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
+            : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
+          allIds.forEach(charId => {
+            const fighter = out.find(c => c.id === charId);
+            if (!fighter || fighter.isIntrusion) return;
+            const won = winTeamIds.includes(charId);
+            const isTeamA = charId === m.teamA.fighter1 || charId === m.teamA.fighter2;
+            const oppIds = isTeamA ? [m.teamB.fighter1, m.teamB.fighter2] : [m.teamA.fighter1, m.teamA.fighter2];
+            const oppOvr = oppIds.reduce((sum, id) => sum + Engine.util.ov(out.find(c => c.id === id) || {}), 0) / 2;
+            const selfOvr = Engine.util.ov(fighter);
+            const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
+            const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
+            const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
+            const resultBonus = won ? 0.0 : 0.2;
+            const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
+            let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
+            matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
+            if (fighter.growthPenalty) {
+              const rawMult = fighter.growthPenalty.multiplier;
+              matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
+            }
+            const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
+            const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
+            const pool = [...allStats];
+            const chosen = [];
+            for (let i = 0; i < numStats; i++) { const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1); chosen.push(pool.splice(idx, 1)[0]); }
+            const growthPerStat = matchGrowth / numStats;
+            const partnerId = isTeamA ? (charId === m.teamA.fighter1 ? m.teamA.fighter2 : m.teamA.fighter1) : (charId === m.teamB.fighter1 ? m.teamB.fighter2 : m.teamB.fighter1);
+            const partnerName = (out.find(c => c.id === partnerId) || {}).name || '?';
+            const oppNames = oppIds.map(id => (out.find(c => c.id === id) || {}).name || '?').join('&');
+            const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
+            out = out.map(c => {
+              if (c.id !== charId) return c;
+              let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+              const _mD = {};
+              chosen.forEach(stat => {
+                const cap = nc.trainCap?.[stat] || 100;
+                const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
+                if (gain > 0) { nc[stat] += gain; nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain; _mD[stat] = gain; }
+              });
+              if (nc.growthLog && !nc.isRental) {
+                // i18n P7-28: 完成文detailは不変(セーブ値不変)。表示点が言語別に組み直せるよう
+                // 充填前テンプレ+充填値を追加フィールドで併記する(§14-3と同型)
+                const _me = { season: s.season, week: s.week, type: 'match', detail: `タッグ(${partnerName}) vs ${oppNames}`, result: _mRes,
+                  detailTpl: 'タッグ({partner}) vs {opps}', detailVars: { partner: partnerName, opps: oppNames } };
+                if (Object.keys(_mD).length > 0) _me.deltas = _mD;
+                nc.growthLog = [...nc.growthLog, _me];
+              }
+              return nc;
+            });
+          });
+          return;
+        }
+        [
+          { charId: r.left.id, won: r.winner === 'left' },
+          { charId: r.right.id, won: r.winner === 'right' },
+        ].forEach(({ charId, won }) => {
+          const fighter = out.find(c => c.id === charId);
+          if (!fighter || fighter.isIntrusion) return; // 怪我引退でロスター離脱済み / 乱入選手
+
+          // 対戦相手OVR取得（引退済みでも matchResult からOVRを算出）
+          const oppId = charId === r.left.id ? r.right.id : r.left.id;
+          const oppInRoster = out.find(c => c.id === oppId);
+          const oppRaw = charId === r.left.id ? r.right : r.left;
+          const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
+          const selfOvr = Engine.util.ov(fighter);
+
+          // §2.3 成長計算 — AI統一成長 Phase1: MATCH_GROWTH_BASE定数化
+          const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
+          const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
+          const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
+          const resultBonus = won ? 0.0 : 0.2;
+          const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
+          let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
+          // v2.0: 試合成長にも年齢倍率を適用
+          matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
+
+          // §3.3 growthPenalty適用（適応力持ちは0.2軽減）
+          if (fighter.growthPenalty) {
+            const rawMult = fighter.growthPenalty.multiplier;
+            matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
+          }
+
+          // §2.5 成長ステータス選択（1〜2個）
+          const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
+          const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
+          const pool = [...allStats];
+          const chosen = [];
+          for (let i = 0; i < numStats; i++) {
+            const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1);
+            chosen.push(pool.splice(idx, 1)[0]);
+          }
+          const growthPerStat = matchGrowth / numStats;
+
+          const _mOpp = charId === r.left.id ? (r.right.name || '?') : (r.left.name || '?');
+          const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
+          out = out.map(c => {
+            if (c.id !== charId) return c;
+            let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+            const _mD = {};
+            chosen.forEach(stat => {
+              const cap = nc.trainCap?.[stat] || 100;
+              const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
+              if (gain > 0) {
+                nc[stat] = nc[stat] + gain;
+                nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
+                _mD[stat] = gain;
+              }
+            });
+            if (nc.growthLog && !nc.isRental) {
+              // i18n P7-28: §14-3と同型の追加フィールド(detail自体はセーブ値不変)
+              const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes,
+                detailTpl: 'vs {name}', detailVars: { name: _mOpp } };
+              if (Object.keys(_mD).length > 0) _me.deltas = _mD;
+              nc.growthLog = [...nc.growthLog, _me];
+            }
+            return nc;
+          });
+        });
+      });
+      return out;
+    },
   },
 
   // ══════════════════════════════════════════════════════════
@@ -15941,132 +16079,10 @@ const Engine = {
     s = Engine.show.accrueFactionPoints(s, validMatches, results);
 
     // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える
-    const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
-    results.forEach((r, _gIdx) => {
-      // タッグ試合の成長処理
-      if (r.matchType === 'tag') {
-        const m = validMatches[_gIdx];
-        const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
-        const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
-          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
-        allIds.forEach(charId => {
-          const fighter = roster.find(c => c.id === charId);
-          if (!fighter) return;
-          const won = winTeamIds.includes(charId);
-          const isTeamA = charId === m.teamA.fighter1 || charId === m.teamA.fighter2;
-          const oppIds = isTeamA ? [m.teamB.fighter1, m.teamB.fighter2] : [m.teamA.fighter1, m.teamA.fighter2];
-          const oppOvr = oppIds.reduce((sum, id) => sum + Engine.util.ov(roster.find(c => c.id === id) || {}), 0) / 2;
-          const selfOvr = Engine.util.ov(fighter);
-          const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
-          const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
-          const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
-          const resultBonus = won ? 0.0 : 0.2;
-          const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
-          let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
-          matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
-          if (fighter.growthPenalty) {
-            const rawMult = fighter.growthPenalty.multiplier;
-            matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
-          }
-          const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
-          const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
-          const pool = [...allStats];
-          const chosen = [];
-          for (let i = 0; i < numStats; i++) { const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1); chosen.push(pool.splice(idx, 1)[0]); }
-          const growthPerStat = matchGrowth / numStats;
-          const partnerId = isTeamA ? (charId === m.teamA.fighter1 ? m.teamA.fighter2 : m.teamA.fighter1) : (charId === m.teamB.fighter1 ? m.teamB.fighter2 : m.teamB.fighter1);
-          const partnerName = (roster.find(c => c.id === partnerId) || {}).name || '?';
-          const oppNames = oppIds.map(id => (roster.find(c => c.id === id) || {}).name || '?').join('&');
-          const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
-          roster = roster.map(c => {
-            if (c.id !== charId) return c;
-            let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
-            const _mD = {};
-            chosen.forEach(stat => {
-              const cap = nc.trainCap?.[stat] || 100;
-              const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
-              if (gain > 0) { nc[stat] += gain; nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain; _mD[stat] = gain; }
-            });
-            if (nc.growthLog && !nc.isRental) {
-              // i18n P7-28: 完成文detailは不変(セーブ値不変)。表示点が言語別に組み直せるよう
-              // 充填前テンプレ+充填値を追加フィールドで併記する(§14-3と同型)
-              const _me = { season: s.season, week: s.week, type: 'match', detail: `タッグ(${partnerName}) vs ${oppNames}`, result: _mRes,
-                detailTpl: 'タッグ({partner}) vs {opps}', detailVars: { partner: partnerName, opps: oppNames } };
-              if (Object.keys(_mD).length > 0) _me.deltas = _mD;
-              nc.growthLog = [...nc.growthLog, _me];
-            }
-            return nc;
-          });
-        });
-        return;
-      }
-      [
-        { charId: r.left.id, won: r.winner === 'left' },
-        { charId: r.right.id, won: r.winner === 'right' },
-      ].forEach(({ charId, won }) => {
-        const fighter = roster.find(c => c.id === charId);
-        if (!fighter) return; // 怪我引退でロスター離脱済み
+    // K-1 4-B-4(K1-E02): 実プレイ(app.js)と同じ Engine.show.applyMatchGrowth を通す(年齢倍率・関係性倍率・
+    // タッグの相手は2人の平均)
+    roster = Engine.show.applyMatchGrowth(s, roster, validMatches, results);
 
-        // 対戦相手OVR取得（引退済みでも matchResult からOVRを算出）
-        const oppId = charId === r.left.id ? r.right.id : r.left.id;
-        const oppInRoster = roster.find(c => c.id === oppId);
-        const oppRaw = charId === r.left.id ? r.right : r.left;
-        const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
-        const selfOvr = Engine.util.ov(fighter);
-
-        // §2.3 成長計算 — AI統一成長 Phase1: MATCH_GROWTH_BASE定数化
-        const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
-        const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
-        const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
-        const resultBonus = won ? 0.0 : 0.2;
-        const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
-        let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
-        // v2.0: 試合成長にも年齢倍率を適用
-        matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
-
-        // §3.3 growthPenalty適用（適応力持ちは0.2軽減）
-        if (fighter.growthPenalty) {
-          const rawMult = fighter.growthPenalty.multiplier;
-          matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
-        }
-
-        // §2.5 成長ステータス選択（1〜2個）
-        const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
-        const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
-        const pool = [...allStats];
-        const chosen = [];
-        for (let i = 0; i < numStats; i++) {
-          const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1);
-          chosen.push(pool.splice(idx, 1)[0]);
-        }
-        const growthPerStat = matchGrowth / numStats;
-
-        const _mOpp = charId === r.left.id ? (r.right.name || '?') : (r.left.name || '?');
-        const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
-        roster = roster.map(c => {
-          if (c.id !== charId) return c;
-          let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
-          const _mD = {};
-          chosen.forEach(stat => {
-            const cap = nc.trainCap?.[stat] || 100;
-            const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
-            if (gain > 0) {
-              nc[stat] = nc[stat] + gain;
-              nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
-              _mD[stat] = gain;
-            }
-          });
-          if (nc.growthLog && !nc.isRental) {
-            // i18n P7-28: §14-3と同型の追加フィールド(detail自体はセーブ値不変)
-            const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes,
-              detailTpl: 'vs {name}', detailVars: { name: _mOpp } };
-            if (Object.keys(_mD).length > 0) _me.deltas = _mD;
-            nc.growthLog = [...nc.growthLog, _me];
-          }
-          return nc;
-        });
-      });
-    });
     // §2.4 TODO: 調子連動（試合後の調子変動）— 調子システム実装時に有効化
 
     // v1.2: タイトルマッチ実施時に絶対週数を記録

@@ -63,6 +63,9 @@ module.exports = [
       'chronicle.fighterArchive[*](presence)', 'relationships.*.frozen', 'relationships.*.bond', 'relationships.*.rivalry',
       'relationshipCounters.*', '_pendingInjuryRetirements', 'factions[*].memberIds', 'newsSeen.**',
       'roster[*].pw', 'roster[*].sp', 'roster[*].te', 'roster[*].st', 'roster[*].mn', 'roster[*].seasonGrowth.*',
+      // 第4段 4-B-4 で K1-E02 を外して見えるようになった: 引退者の分だけ試合成長の乱数(1732)がずれ、
+      // 他の選手の成長ログの伸び(deltas)も入れ替わる
+      'roster[*].growthLog',
       // 2026-09-26 追加(B): 引退した選手の挑戦試合の打診が消える・ロスターが変わって派閥イベントが変わる・
       // 怪我引退のポップアップ(M-22)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
       'challengeRequest.pendingThisWeek', '_pendingFactionEvent', 'relModalWindow[*].own',
@@ -176,12 +179,9 @@ module.exports = [
     mustAppear: true, refs: 'management.js:15048-15052 / app.js なし',
     note: 'B では週次の行動がプロモ(エンジン)と練習(実プレイ)に分かれ、収入・人気・コンディション・乱数(tickMain)の消費まで変わる(K1-B01〜B05)。',
   },
-  {
-    id: 'K1-E02', title: '試合成長の式(年齢倍率・関係性倍率・タッグの相手OVRの取り方)',
-    category: 'formula', side: 'both', impact: '数値', checkpoints: ['A', 'B'],
-    patterns: ['roster[*].pw', 'roster[*].sp', 'roster[*].te', 'roster[*].st', 'roster[*].mn', 'roster[*].seasonGrowth.*', 'roster[*].growthLog', 'roster[*].statPeak.*'],
-    mustAppear: true, refs: 'management.js:15294-15420(×_relationshipGrowthMult ×ageMultiplier、タッグは相手2人の平均) / app.js:8715-8805(どちらも無し、タッグは相手の最大)',
-  },
+  // K1-E02(試合成長の式。実プレイに年齢倍率・関係性倍率が無く、タッグの相手は強い方)は K-1 第4段 4-B-4 で
+  // 解消したので外した(2026-09-26)。両経路が Engine.show.applyMatchGrowth を通す(タッグの相手は2人の平均=裁定)。
+  // tickWeek 後(B)の能力の差は週次の練習/プロモの差(K1-E01)の波及で、K1-B06 に数える。
   {
     id: 'K1-A01', title: 'キャリア最高評価(careerBestMQ)の更新と信頼ボーナス(+1.2)',
     category: 'processing', side: 'app', impact: '数値', checkpoints: ['A', 'B'],
