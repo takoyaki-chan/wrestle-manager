@@ -7746,8 +7746,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "※ 翌シーズンまで満額、その後毎年半減。1pt未満で消滅。",
-    "en": "※ Full value through the following season, then halved every year after. It disappears below 1pt.",
+    "key": "※ 獲得したシーズンだけ満額、翌シーズンから毎年半減。1pt未満で消滅。",
+    "en": "※ Full value only in the season it was earned, then halved every year after. It disappears below 1pt.",
     "files": [
       "ui-render.js"
     ],
@@ -10783,8 +10783,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/メディア功労賞などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。",
-    "en": "No honors this season yet.<br>※ Points come from PPV wins, MVP, Best Match, the Junior Tournament and the Media Merit Award, among others.<br>Full value through the following season, then halved every year after. It disappears below 1pt.",
+    "key": "このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/メディア功労賞などで加点。<br>獲得したシーズンだけ満額、翌シーズンから毎年半減。1pt未満で消滅。",
+    "en": "No honors this season yet.<br>※ Points come from PPV wins, MVP, Best Match, the Junior Tournament and the Media Merit Award, among others.<br>Full value only in the season it was earned, then halved every year after. It disappears below 1pt.",
     "files": [
       "ui-render.js"
     ],

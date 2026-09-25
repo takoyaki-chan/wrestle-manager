@@ -140,7 +140,7 @@ function testProcessAIWeekPassesTitleFlagsForChampionMatch() {
     },
     'Engine.battle.simulateMatch': () => ({
       left: champ, right: challenger, winner: 'left', mq: 60,
-      hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
+      turns: 12, hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 }, // K-13: 怪我判定が turns を読む
     }),
   }, () => {
     Engine.rival.processAIWeek(Engine.rng.create(11), state, { id: 'org_s', tier: 'S' });
@@ -186,7 +186,7 @@ function testProcessAIWeekNonTitleCardStaysPlain() {
     },
     'Engine.battle.simulateMatch': () => ({
       left: other1, right: other2, winner: 'left', mq: 40,
-      hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
+      turns: 12, hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 }, // K-13: 怪我判定が turns を読む
     }),
   }, () => {
     Engine.rival.processAIWeek(Engine.rng.create(12), state, { id: 'org_s', tier: 'S' });

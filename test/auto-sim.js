@@ -285,10 +285,13 @@ function observeFighterSeasons(state) {
   }
 }
 
+// K-13(2026-09-25): AI団体の試合の怪我も Engine.injury.check を通るようになったため、
+// processAIWeek の中から来た呼び出しは自団体として数えない(AIの分は下のロスター差分で数える)。
+let injuryProbeInAIWeek = false;
 const _injuryCheckForProbe = Engine.injury.check;
 Engine.injury.check = function(...args) {
   const result = _injuryCheckForProbe.apply(this, args);
-  if (result && result.injuryInfo) {
+  if (result && result.injuryInfo && !injuryProbeInAIWeek) {
     recordInjury('player', 'player', args[1], result.injuryInfo.injury, result.injuryInfo.weeks, args[5]);
   }
   return result;
@@ -299,7 +302,13 @@ Engine.rival.processAIWeek = function(rng, state, org) {
   const priorOrg = state.aiOrgs?.[org.id] || {};
   const before = new Map((priorOrg.roster || []).map(fighter => [fighter.id, fighter]));
   const priorRetirees = new Set((priorOrg._midSeasonRetirees || []).map(fighter => fighter.id));
-  const result = _processAIWeekForInjuryProbe.call(this, rng, state, org);
+  injuryProbeInAIWeek = true;
+  let result;
+  try {
+    result = _processAIWeekForInjuryProbe.call(this, rng, state, org);
+  } finally {
+    injuryProbeInAIWeek = false;
+  }
   for (const fighter of result?.roster || []) {
     const prior = before.get(fighter.id);
     const injury = fighter.injury;

@@ -92,6 +92,9 @@ function makeShowState(roster, titles, extra = {}) {
   };
 }
 
+// K-13(2026-09-25): AI団体の試合の怪我は自団体と同じ Engine.injury.check(残りHP・ターン数を見る)を
+// 通るため、simulateMatch のスタブは本物と同じく turns を返す(無いと確率がNaNになり必ず負傷する)。
+// rng.float=0.99 なので怪我は起きない(旧実装の一律3%判定で怪我を避けていたのと同じ意図)。
 const AI_PROCESS_STUBS = {
   'Engine.rng.float': () => 0.99, // practiceRateを外す(試合週の学習分岐を避ける)
   'Engine.trust.applyShowTrust': roster => ({ roster }),
@@ -130,7 +133,7 @@ function testInjuredChampionKeepsTitle() {
     'Engine.rival.generateAIMatchCard': () => [{ left: other1, right: other2 }],
     'Engine.battle.simulateMatch': () => ({
       left: other1, right: other2, winner: 'left', mq: 40,
-      hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
+      turns: 12, hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
     }),
   }, () => {
     result = Engine.rival.processAIWeek(Engine.rng.create(21), state, { id: 'org_s', tier: 'S' });
@@ -158,7 +161,7 @@ function testDepartedChampionVacatesTitle() {
     'Engine.rival.generateAIMatchCard': () => [{ left: remaining1, right: remaining2 }],
     'Engine.battle.simulateMatch': () => ({
       left: remaining1, right: remaining2, winner: 'left', mq: 40,
-      hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
+      turns: 12, hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
     }),
   }, () => {
     result = Engine.rival.processAIWeek(Engine.rng.create(22), state, { id: 'org_s', tier: 'S' });
@@ -183,7 +186,7 @@ function testAiTitleCardUsesBigMatchTier() {
       capturedTiers.push(matchTier);
       return {
         left: champ, right: challenger, winner: 'left', mq: 60,
-        hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
+        turns: 12, hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
       };
     },
   }, () => {
@@ -212,7 +215,7 @@ function testAiNonTitleCardStaysNormalTier() {
       capturedTiers.push(matchTier);
       return {
         left: other1, right: other2, winner: 'left', mq: 40,
-        hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
+        turns: 12, hpLeft: { final: 60, max: 100 }, hpRight: { final: 30, max: 100 },
       };
     },
   }, () => {
