@@ -1,7 +1,7 @@
 # Relationship System Spec v2.3 — Bond/Rivalry ネガティブイベント拡張
 
 策定日: 2026-04-29
-更新日: 2026-09-26 (§D.1 K-12 追加: 不仲の判定を2人の絆の低い方に・プレビュー文言を「団体への信頼-1」に・春のタッグリーグにも同じ罰) / 2026-09-25 (§D.1 K-12: 不仲タッグの能力-3を有効化し、4経路を Engine.showTagMatch に共通化) / 2026-07-19 (因縁決着の確定値と宿怨ルートの意味を追記)
+更新日: 2026-09-26 (§D.1 K-12 追加: 不仲の判定を2人の絆の低い方に・警告の文言を「団体への信頼が下がる」に(数値なし)・春のタッグリーグにも同じ罰と編成画面の警告) / 2026-09-25 (§D.1 K-12: 不仲タッグの能力-3を有効化し、4経路を Engine.showTagMatch に共通化) / 2026-07-19 (因縁決着の確定値と宿怨ルートの意味を追記)
 位置付け: v2.2 の追補。bond/rivalry の値が直接トリガーとなるネガティブイベントの空白地帯を埋める追加施策の確定仕様。
 
 §A は先行実装完了項目(W-4キャップ / P-2 / P-8 / P-9 / 1-C UI)、§D は追加実装した項目(P-1 / P-3 / P-4 / P-6 / P-7 / 因縁決着整合性)。
@@ -93,17 +93,16 @@
 - 試合中の連携(cut-in 救援)を完全停止 — `calcCutinRate` で `bond ≤ 20`、または救援する選手に `penalize` が付けた `_noCutin` の印があれば 0 を返す(自然減衰ではなくハードカット。印はケミストリー用の片方向の絆が20を超える「逆向きだけ冷えた」ペアにも連携なしを効かせるため)
 - 試合後、対象ペア両者の trust **-1**(所属団体への信頼。値そのものはプレイヤーには非表示)
 - 以上3つは通常興行のタッグ戦の全経路(観戦 / 1試合スキップ / 残り全試合スキップ / headless)と**春のタッグリーグの全13試合(自団体・他団体・AIどうし)**で同じに掛かる。以前は全スキップと headless で trust -1 も抜けていた。春タッグは 2026-09-26 K-12 追加裁定 #10 から(spring-tag-league-spec-v0.2 §4-2。trust -1 は1試合ごと)
-- 興行プレビューに赤色マーカー「⚠ 不仲 ${bond}」+ 警告テキスト「**能力-3 / 連携不可 / 団体への信頼-1**」(EN: `Ability -3 / no teamwork / trust in the promotion -1`)。`${bond}` は判定と同じ pairBond(2人の絆の低い方)
-  - 経緯: 2026-07-21 に信頼を伏せる一括変更で「信頼-1」→「相手との関係-1」に変わり、表示(相手との関係=Bond)と効果(trust -1)が食い違った。2026-09-26 K-12 追加裁定 #8 で**表示を効果に合わせた**。組んだ時点で決まる罰の予告であり、選手の信頼の値・推移を見せるものではない。trust-system-spec-v2.1 §16(信頼の数値を出さない)の唯一の例外で、`test/org-trust-visibility-guard-test.js` もこの1文字列だけを除外する
+- 興行プレビューに赤色マーカー「⚠ 不仲 ${bond}」+ 警告テキスト「**能力-3 / 連携不可 / 団体への信頼が下がる**」(EN: `Ability -3 / no teamwork / trust in the promotion drops`)。`${bond}` は判定と同じ pairBond(2人の絆の低い方。絆は選手間の関係なので数値可)。春のタッグリーグの編成画面(第11週)にも同じ警告を出す(spring-tag-league-spec-v0.2 §4-2)
+  - 経緯: 2026-07-21 に信頼を伏せる一括変更で「信頼-1」→「相手との関係-1」に変わり、表示(相手との関係=Bond)と効果(trust -1)が食い違った。2026-09-26 K-12 追加裁定 #8(表示を実際の効果に合わせる)で「団体への信頼」に直した。信頼の変化は trust-system-spec-v2.1 §16 に従い**数値で出さない**(`test/org-trust-visibility-guard-test.js` がこの行も検査する。一時「団体への信頼-1」と数値で出した版は同日取り消し)
 - MQ ボーナス/ペナルティは入れない(MQ排除方針継続)
 
 **実装場所**:
 - `src/match-engine.js` `Engine.showTagMatch`(`pairBond` / `chemistryBond` / `isLowBond` / `isDiscord` / `penalize` / `applyTrustPenalty` / `simulate`)— 通常興行のタッグ戦は必ず `simulate` を通す。呼び出し元は `App.skipMatch` / `App._watchTagMatch` / `App.skipAllMatches`(`src/app.js`)と `Engine.executeShow`(`src/management.js`)の4か所。`simulate` は乱数(`derive(rngSeed, season, week, A1, B1, 0x7A60)`)・絆・タッグ経験・不仲ペナルティを解決し、trust -1 を反映した roster を返す(呼び出し元が書き戻す)
 - `src/match-engine.js` `calcCutinRate` ガード(絆≤20 / `_noCutin`)
 - `src/management.js` `Engine.springTagLeague.run`(大会開始時に `isDiscord` で判定し `replayContext.discordTeamIds` に残す。4選手とも `_matchFighter` = `penalize` + 連戦消耗の開始HP)/ `simulateReplay`(記録どおりに罰を掛けて再構築。記録の無い旧大会は罰なし)/ `apply`(試合数ぶん `applyTrustPenalty`)
-- `src/ui-common.js` 興行プレビュー(`smc-tag-arena`)の ⚠ 不仲 判定と文言、`src/ui-render.js` カード編成画面の絆表示(🤝 友好) — どちらも `Engine.showTagMatch.pairBond` / `isLowBond` を使う
-- 春のタッグリーグの編成画面(第11週)には不仲の警告を出していない(罰は掛かる。出すかは未裁定)
-- 回帰テスト: `test/tag-discord-penalty-test.js`(4経路の一致・ペナルティの実効・不仲でないペアの完全不変・低い方の判定・逆向きだけ冷えたペアの連携なし・プレビュー文言 JA/EN・春タッグの run/AIどうし/apply/観戦/旧大会・経路ガード)
+- `src/ui-common.js` 興行プレビュー(`smc-tag-arena`)の ⚠ 不仲 判定と文言、春のタッグリーグの編成画面の警告(`_stlDiscordWarnHtml`。判定は `Engine.showTagMatch.isDiscord`)、2行目の文言は `_tagDiscordEffectText` で共通。`src/ui-render.js` カード編成画面の絆表示(🤝 友好) — いずれも `Engine.showTagMatch.pairBond` / `isLowBond` / `isDiscord` を使う
+- 回帰テスト: `test/tag-discord-penalty-test.js`(4経路の一致・ペナルティの実効・不仲でないペアの完全不変・低い方の判定・逆向きだけ冷えたペアの連携なし・警告の文言 JA/EN・春タッグの編成画面の警告・春タッグの run/AIどうし/apply/観戦/旧大会・経路ガード)
 
 ### §D.2 P-3 興行波及(逓減動員 + アクシデント率)
 

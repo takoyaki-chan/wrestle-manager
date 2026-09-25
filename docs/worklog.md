@@ -2,16 +2,18 @@
 
 ## 2026-09-26 総点検 K-12 追加3項目 — 不仲タッグの表示を効果どおりに/判定は2人の絆の低い方で/春のタッグリーグにも同じ罰(Claude/Opus 5.5・worktree)
 
-裁定: 2026-09-25 第3回の確認 #8(表示を「団体への信頼−1」に)・#9(低い方で判定)・#10(春タッグにも掛ける)。
+裁定: 2026-09-25 第3回の確認 #8(表示を実際の効果=団体への信頼に合わせる)・#9(低い方で判定)・#10(春タッグにも掛ける)。
 
-- **① 表示**(18109798): 興行プレビューの不仲の警告「能力-3 / 連携不可 / 相手との関係-1」→「**能力-3 / 連携不可 / 団体への信頼-1**」(EN: `Ability -3 / no teamwork / trust in the promotion -1`)。効果(試合後の両者の trust -1)は不変。7月の信頼を伏せる一括変更でこの1か所だけ表示が効果とずれていた。信頼の数値を出さない規則(trust-system-spec §16)の唯一の例外として spec に明記し、`test/org-trust-visibility-guard-test.js` もこの1文字列だけ除外(1回だけ出現することを検査)。ui-ledger を更新し lang-en.js を再生成
+- **① 表示**(18109798 → 同日修正): 興行プレビューの不仲の警告「能力-3 / 連携不可 / 相手との関係-1」→「**能力-3 / 連携不可 / 団体への信頼が下がる**」(EN: `Ability -3 / no teamwork / trust in the promotion drops`)。効果(試合後の両者の trust -1)は不変。7月の信頼を伏せる一括変更でこの1か所だけ表示が効果とずれていた。最初は「団体への信頼-1」と数値で出し trust-system-spec §16 と信頼ガードに例外を入れたが、「−1」は裁定の略記だった(コーディネーター判断)ので、§16 どおり**数値なし**に直し、例外は取り消した(ガードは元どおりこの行も検査)。文言は `_tagDiscordEffectText`(ui-common.js)1か所。ui-ledger を更新し lang-en.js を再生成
+- **①' 春タッグの編成画面(第11週)にも同じ警告**(同日追加。罰が掛かるのに社長に見えないのは不公平なため): 選んだ2人が `Engine.showTagMatch.isDiscord` なら、下の帯の「相性 ◎◯△」の代わりに「⚠ 不仲 {絆}」+2行目(`_stlDiscordWarnHtml`)。おすすめペアのチップは相性記号の代わりに「⚠ 不仲 {絆}」1行。色は `var(--cream-red)`(`.stl-discord-warn`、index.html)。帯は `flex-wrap` で狭い画面では警告が次の行へ回る。AIが不仲の組を出すことは変えない
 - **② 判定**(61711c7a): `Engine.showTagMatch.pairBond` = A→B と B→A の min(向きごとに未登録・数値でないときは50)。判定は `isDiscord` / `isLowBond(pairBond)` に一本化(プレビューの ⚠ 不仲 の数字・カード編成の 🤝 友好の数字・4経路・auto-sim・春タッグ)。試合エンジンへ渡すケミストリー用の絆は従来の片方向のまま(`chemistryBond`)にして、不仲の3効果以外の数値を動かさない。連携なしは `penalize` が付ける `_noCutin` の印で `calcCutinRate` が0を返す(ケミストリー用の絆が20超の「逆向きだけ冷えた」ペアにも効かせるため)
 - **③ 春タッグ**(61711c7a): `run` が大会開始時に `isDiscord` で判定して `replayContext.discordTeamIds` に残し、4選手とも `_matchFighter`(penalize+連戦消耗の開始HP)を通す。乱数は引かない。`simulateReplay` は記録どおりに罰を掛けて本番を再構築(大会後に仲が変わっても罰の有無は変わらない/記録の無い旧大会は罰なし)。`apply` が試合数ぶんの信頼-1(自団体は roster、他団体は aiOrgs)。経路は run(自団体・他団体・AIどうし)/simulateReplay(観戦)/スキップ(=記録済みの結果を見せるだけ)の3つで全部
 - **数値が他で動いていないことの確認**: 新コードに「旧の判定(片方向)+春タッグ罰なし」を差し込んだ auto-sim 複製(30季 seed42)が、旧コードと統計出力の全行・状態指紋(新しい保存欄 `discordTeamIds` だけ除外)まで一致。main 取り込み前(`WM_SOURCE_REF=746f02bb`、指紋38bd4a45)と K-7 取り込み後(`1c850f4f`)の両方で確認
 - **計測**(auto-sim 複製 30季 seed42・K-7 取り込み後・計測フックのみで本体と同一の進行): 通常興行のタッグ72試合で不仲扱い 旧6出場 → 新7出場(+1。増えた1回は、別の週には旧判定でも不仲だったペア。旧のみ0)。春タッグ30大会390試合のうち罰が掛かった試合77(AIどうし69・自団体が出る試合8=自団体チームの相手が不仲)、不仲チーム26(全て他団体。旧判定なら25)、不仲チームの出場85(42勝43敗)、信頼-1の合計170。(取り込み前の基準では通常9→10出場、春タッグ罰66試合・不仲21チーム)
 - **検証**: `test/tag-discord-penalty-test.js` 494→1554検査(変更前のコードで新しい検査が失敗することを3項目とも確認)、npm test 288/288(K-7 取り込み後)、auto-sim 30季 ALL CLEAR(取り込み前後とも)、balance-baseline 逸脱なし(取り込み前)、UI走破 PASS(Issues 0・取り込み前)
-- **触ったファイル**: src/match-engine.js・src/management.js(春タッグのみ)・src/ui-common.js(文言)・src/ui-render.js(コメント)・src/lang-en.js・i18n/ui-ledger.json・test/tag-discord-penalty-test.js・test/org-trust-visibility-guard-test.js・specs(relationship v2.3 §D.1/spring-tag-league v0.2 §4-2・§10/trust v2.1 §16)。app.js は触っていない
-- **残課題(Keisuke 判断)**: ゲーム内ヘルプの「信頼は数値では見えません」と今回の「団体への信頼-1」の関係/春タッグの編成画面に不仲の警告を出すか/AI団体が不仲の組を避けるか/ケミストリーも低い方の絆にするか(するとタッグの勝敗が不仲以外でも動く)/春タッグの観戦は大会後に関係値が動くとケミストリーがずれうる(従来から。罰の有無は今回記録化)
+- **触ったファイル**: src/match-engine.js・src/management.js(春タッグのみ)・src/ui-common.js(文言・春タッグ編成画面の警告)・src/index.html(`.stl-discord-warn` の CSS)・src/ui-render.js(コメント)・src/lang-en.js・i18n/ui-ledger.json・test/tag-discord-penalty-test.js・specs(relationship v2.3 §D.1/spring-tag-league v0.2 §4-2・§10)・docs/ui/03-screens/spring-tag-league.md。app.js は触っていない。trust-system-spec と信頼ガードは差分なし(例外を入れて取り消した)
+- **UI自己検査**(ui-check): 機械検査 ui-baseline-guard ok。7項目は 画像・顔・吹き出し・隊列・勝敗・待ち・進行 を扱わない変更なので該当なし。新しい色はトークンのみ(プレビューの既存 `#ff7675` 直書きは触っていない)。Office(Cream)の中で完結
+- **残課題(Keisuke 判断)**: ケミストリーも低い方の絆にするか(するとタッグの勝敗が不仲以外でも動く)/春タッグの観戦は大会後に関係値が動くとケミストリーがずれうる(従来から。罰の有無は今回記録化)
 
 ## 2026-09-26 総点検 K-7 — 「返し」を決着の本線(フォール狙い)に合流(Claude/Opus 5.5・worktree、d920de0e)
 
