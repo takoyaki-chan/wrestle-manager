@@ -11042,7 +11042,11 @@ const App = {
     if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
     if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
     const fh = [...(G.fundsHistory || []), result.state.funds];
-    G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+    // 今週のログフィード(道場の「休憩中の選手」の素材)は、ここで前週分を捨ててから今週の垣間見えを積む
+    // (processWeek と同じ扱い)。興行週のこの経路だけ空にしていなかったため、前週の垣間見えが翌週の
+    // 道場にも残り、確定枠(宿命のライバル等の節目)が同じ選手の同じ台詞で2週続いていた(K-14 で発見)。
+    // エンジンは weekLogFeed を読まないので、tickWeek の後で空にする(tickWeek に渡す状態は変えない)
+    G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events], weekLogFeed: [] };
     App.preloadNewspaperImages(G.weeklyNewspaper);
 
     // 興行終了後にshowCardをリセット（renderShowPrep の pad/trim で会場に応じた枠数に自動調整）
@@ -16347,7 +16351,8 @@ App.closePPVResult = function() {
     stats.totalExpense += result.state.weeklyFinance.expense || 0;
   }
   const fh = [...(G.fundsHistory || []), result.state.funds];
-  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+  // 今週のログフィードは前週分を捨ててから積む(processWeek・closeShowResult と同じ。節目の二重表示を防ぐ)
+  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events], weekLogFeed: [] };
   G = { ...G, showCard: [] };
   App.preloadNewspaperImages(G.weeklyNewspaper);
 
@@ -16504,7 +16509,8 @@ App.closePPVTV = function() {
   if (result.state.funds > stats.peakFunds) stats.peakFunds = result.state.funds;
   if ((result.state.orgPop || 0) > stats.peakPop) stats.peakPop = result.state.orgPop || 0;
   const fh = [...(G.fundsHistory || []), result.state.funds];
-  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
+  // 今週のログフィードは前週分を捨ててから積む(processWeek・closeShowResult と同じ。節目の二重表示を防ぐ)
+  G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events], weekLogFeed: [] };
   App.preloadNewspaperImages(G.weeklyNewspaper);
 
   App.checkSurvivalUpdate();
