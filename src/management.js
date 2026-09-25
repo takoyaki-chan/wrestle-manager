@@ -21771,6 +21771,24 @@ Engine.awards = {
       .replace('{name}', (fighter && fighter.name) || '');
   },
 
+  // 2026-09-25(面白さ総点検 06-⑤): 数字の入った異名は、実際の回数と一致するときだけ候補にする。
+  // タグの条件は「○回以上」なので、例えば tripleChamp(戴冠3回以上)の「三度の頂」が4〜7回戴冠した
+  // 選手にも付いていた。合わないときは同じタグの数字の入っていない異名から選ぶ(各タグに必ず残る)。
+  // キーは _EPITHET_TEMPLATES の原文。rec は post-join の集計(totalTitleWins 等)、ctx は
+  // _buildEpithetContext の戻り値。「{n}人切り」は生成時に実数を埋めるので対象外
+  _EPITHET_COUNT_RULES: {
+    '三度の頂': (r) => (r.totalTitleWins || 0) === 3,
+    '二度の戴冠': (r) => (r.totalTitleWins || 0) === 2,
+    '三度の栄冠': (r, ctx) => ctx.mvpCount === 3,
+    '二度の最優秀': (r, ctx) => ctx.mvpCount === 2,
+    'MVP二冠': (r, ctx) => ctx.mvpCount === 2,
+    '三年王朝': (r, ctx) => ctx.maxConsecutiveJT === 3,
+    '三連覇の怪物': (r, ctx) => ctx.maxConsecutiveJT === 3,
+    '二連覇の衝撃': (r, ctx) => ctx.maxConsecutiveJT === 2,
+    '世代を二度制した女': (r) => (r.juniorTournamentWins || 0) === 2,
+    '10年選手': (r, ctx) => ctx.careerSeasons === 10,
+  },
+
   /** C-0: 異名の自動生成 — 実績タグ×重み付きランダム選出 (v2.0)
    * 転生前（NPC事前史）を別人扱いで除外する
    */
@@ -21790,8 +21808,12 @@ Engine.awards = {
     const topTier = matchedTags.filter(t => t.rarity === maxRarity);
 
     const pool = [];
+    // 数字の入った異名は実際の回数と一致するものだけ(_EPITHET_COUNT_RULES)。一致する選手の
+    // プールは従来と同じ並び・同じ本数なので、同じ乱数から同じ異名が選ばれる
+    const COUNT_RULES = Engine.awards._EPITHET_COUNT_RULES;
+    const fitsCount = tmpl => !COUNT_RULES[tmpl] || COUNT_RULES[tmpl](rec || {}, ctx);
     for (const tag of topTier) {
-      const templates = TEMPLATES[tag.id] || [];
+      const templates = (TEMPLATES[tag.id] || []).filter(fitsCount);
       for (const tmpl of templates) {
         pool.push(Engine.awards._resolvePlaceholders(tmpl, rec, f));
       }
