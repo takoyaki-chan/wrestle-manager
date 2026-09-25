@@ -1546,17 +1546,31 @@ Engine.relationships = {
   //  - decay は季節境界で逓減
   // ══════════════════════════════════════════════════════════
 
+  /**
+   * 解雇(grudge発行)から何週たったか。今の週・解雇の週とも Engine.util.absWeek(48週/季)で数える。
+   * 2026-09-25 総点検04⑪: 呼び出し元(app.js の古巣対決ニュース・元雇用主向けセリフ、ui-common.js の
+   * 対抗戦勝利セリフ)が、今の週を48週/季・解雇の週を20週/季で換算していたため、解雇から2季目以降は
+   * 差が必ず24週を超え、一度も発火しなかった。換算をこの1か所にまとめる。
+   */
+  grudgeWeeksSince(grudge, season, week) {
+    if (!grudge) return null;
+    return Engine.util.absWeek(season, week || 1)
+      - Engine.util.absWeek(grudge.issuedSeason || 1, grudge.issuedWeek || 1);
+  },
+
   /** 解雇された選手の状況から intensity (0〜100) を算出 */
   computeFiringGrudgeIntensity(firedFighter, state) {
     if (!firedFighter) return 0;
     const pop = Math.max(0, Math.min(100, firedFighter.popularity || 0));
     const age = firedFighter.age || 25;
     const isChamp = !!(state && state.titles && state.titles.world && state.titles.world.championId === firedFighter.id);
-    // 在籍年数: orgJoinWeek があれば現在週との差から計算（1シーズン=20週前提の概算）
+    // 在籍年数: orgJoinWeek(Engine.util.absWeek で記録される絶対週)と現在週の差から計算。
+    // 2026-09-25 総点検04⑪: 以前は現在週を20週/季で換算し、48週/季の orgJoinWeek と引き算していた
+    // (1季目の加入者は在籍を2.4倍に、2季目以降の加入者は0年に数えていた)。係数は変えていない
     let yearsInOrg = 0;
     if (firedFighter.orgJoinWeek != null && state) {
-      const nowAbs = (state.season - 1) * 20 + (state.week || 1);
-      yearsInOrg = Math.max(0, Math.floor((nowAbs - firedFighter.orgJoinWeek) / 20));
+      const nowAbs = Engine.util.absWeek(state.season, state.week || 1);
+      yearsInOrg = Math.max(0, Math.floor((nowAbs - firedFighter.orgJoinWeek) / Engine.util.WEEKS_PER_SEASON));
     }
     // タイトル経験: career history から titleWin / belt 関連を概算カウント
     let titleHistoryCount = 0;

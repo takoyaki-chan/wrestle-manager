@@ -1365,13 +1365,15 @@ function _getWarVictoryLine(fighter, state) {
       && fighter.grudge.intensity >= 60
       && typeof getVsExEmployerLine === 'function') {
     const ctxState = state || (typeof G !== 'undefined' ? G : null);
-    if (ctxState) {
-      const nowAbs = (ctxState.season - 1) * 20 + (ctxState.week || 1);
-      const firedAbs = ((fighter.grudge.issuedSeason || 1) - 1) * 20 + (fighter.grudge.issuedWeek || 1);
-      if (nowAbs - firedAbs <= 24 && nowAbs - firedAbs >= 0 && Math.random() < 0.5) {
-        const line = getVsExEmployerLine(fighter, 'win', opponentOrgId);
-        if (line) return WM_I18N.t(line);
-      }
+    // 解雇からの週数は Engine.relationships.grudgeWeeksSince(48週/季)で数える(2026-09-25 総点検04⑪。
+    // 以前は20週/季の換算で、季をまたぐと窓の計算がずれていた)。Engine が無い環境では通常の勝利セリフへ
+    const weeksSinceFired = (ctxState && typeof Engine !== 'undefined' && Engine.relationships
+      && typeof Engine.relationships.grudgeWeeksSince === 'function')
+      ? Engine.relationships.grudgeWeeksSince(fighter.grudge, ctxState.season, ctxState.week)
+      : null;
+    if (weeksSinceFired != null && weeksSinceFired <= 24 && weeksSinceFired >= 0 && Math.random() < 0.5) {
+      const line = getVsExEmployerLine(fighter, 'win', opponentOrgId);
+      if (line) return WM_I18N.t(line);
     }
   }
   const p = fighter.personality || 'normal';

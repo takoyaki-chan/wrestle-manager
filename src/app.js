@@ -11421,9 +11421,10 @@ const App = {
     const oppOrg = opponentOrgId != null ? opponentOrgId : 'player';
     if (g.vsOrgId !== oppOrg) return false;
     if (!g.intensity || g.intensity < 60) return false;
-    const nowAbs = (season - 1) * 20 + (week || 1);
-    const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
-    if (nowAbs - firedAbs > 24 || nowAbs - firedAbs < 0) return false;
+    // 解雇からの週数は Engine.relationships.grudgeWeeksSince(48週/季)で数える(2026-09-25 総点検04⑪。
+    // 以前は20週/季の換算で、季をまたぐと窓の計算がずれていた)
+    const weeksSinceFired = Engine.relationships.grudgeWeeksSince(g, season, week);
+    if (weeksSinceFired > 24 || weeksSinceFired < 0) return false;
     if (typeof VS_EX_EMPLOYER_LINES === 'undefined') return false;
     return true;
   },
@@ -11475,11 +11476,9 @@ const App = {
     const g = fighter && fighter.grudge;
     if (!g || !g.vsOrgId || g.vsOrgId !== foeOrgId) return state;
     if (!g.intensity || g.intensity < 60) return state;
-    const nowAbs = Engine.util && Engine.util.absWeek
-      ? Engine.util.absWeek(state.season, state.week)
-      : ((state.season - 1) * 20 + state.week);
-    const firedAbs = ((g.issuedSeason || 1) - 1) * 20 + (g.issuedWeek || 1);
-    const weeksSinceFired = nowAbs - firedAbs;
+    // 2026-09-25 総点検04⑪: 以前は今の週を48週/季・解雇の週を20週/季で換算しており、
+    // 解雇から2季目以降は差が必ず24週を超えて一度も出なかった。換算を1か所(48週/季)にまとめる
+    const weeksSinceFired = Engine.relationships.grudgeWeeksSince(g, state.season, state.week);
     if (weeksSinceFired > 24 || weeksSinceFired < 0) return state;
     const _orgNameOf = (orgId) => {
       if (orgId === 'player') return state.orgName || 'プレイヤー団体';
