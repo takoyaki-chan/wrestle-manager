@@ -8387,6 +8387,8 @@ const App = {
     // 実際に組まれていれば、既存の因縁清算(applyCommon1MatchResult)を適用する。
     // 特別興行週/PPV週や、他の予約試合(CH/B3/F09/派閥内序列戦/奪還戦)と同一興行での
     // 重複はここで弾き、繰り越す(§5-D鉄則: fail-openで例外は握りつぶし進行を止めない)。
+    // 清算した試合の番号は、後段の派閥ポイントの加点(Engine.show.accrueFactionPoints)で派閥内ポイントを二重に入れないために控える
+    let common1ResolvedIdx = -1;
     if (s.bookedCommon1 && Engine.factions && typeof Engine.factions.findBookedCommon1CardIndex === 'function') {
       try {
         const eligibleShow = !!(Engine.challengeRequest && Engine.challengeRequest.isEligibleHomeShow
@@ -8403,6 +8405,7 @@ const App = {
           const c1Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xC0B1));
           const c1Result = Engine.factions.applyCommon1MatchResult(s, booking, winnerId, loserId, c1Rng);
           s = c1Result.state;
+          common1ResolvedIdx = c1Idx;
           const { bookedCommon1: _doneC1, ...restC1 } = s;
           s = {
             ...restC1,
@@ -8680,6 +8683,12 @@ const App = {
         if (res.pendingEvent) { s = { ...s, _pendingFactionEvent: res.pendingEvent }; break; }
       }
     }
+
+    // ── 派閥抗争ポイント・派閥内ポイントの試合ごとの加点 — K-1 4-B-2(K1-E05) ──
+    // エンジンの executeShow と同じ Engine.show.accrueFactionPoints を通す(faction-rivalry-points-spec §2、
+    // faction-internal-rank-spec §3.2/§3.3)。以前の実プレイでは試合でポイントが入らず、F09 のスイープボーナスだけだった。
+    // Common-1 で清算した試合は、派閥内ポイントを applyCommon1MatchResult(§3.1)で入れ済みなので二重に入れない
+    s = Engine.show.accrueFactionPoints(s, validMatches, results, { common1MatchIdx: common1ResolvedIdx });
 
     // v1.2: タイトルマッチ実施時に絶対週数を記録(統一王座戦は自団体王座のクールダウンを消費しない)
     const executedTitleMatch = validMatches.some(m => m.isTitle && !m._unifiedTitleMatch);

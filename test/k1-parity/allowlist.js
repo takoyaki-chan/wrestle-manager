@@ -100,22 +100,16 @@ module.exports = [
     mustAppear: true, refs: 'management.js:15494-15561 / app.js なし(表示だけ app.js:12045 にある)',
     note: 'Engine.trust.checkSuddenDepartures の呼び出しはエンジンの executeShow だけ。実プレイでは表示コードだけが残っていて、発生源が無い。',
   },
-  {
-    id: 'K1-E05', title: '派閥抗争ポイント・派閥内ポイントの試合ごとの加点',
-    // title-defense: 2026-09-26 の fixture 更新で派閥員(66)が派閥外の王者と戦うようになり、派閥内ポイントの差が出る
-    category: 'processing', side: 'engine', impact: '数値', scenarios: ['factions', 'title-defense'], checkpoints: ['A', 'B'],
-    // factionRivalryPoints.*: 2026-09-26(main 取り込み後の fixture)基準状態に派閥が2つあり、その2派閥の
-    // 選手どうしの試合でエンジンだけが抗争ポイントの記録そのもの(1-2)を作る
-    patterns: ['factionRivalryPoints.*', 'factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB', 'factionInternalPoints.*', 'factionInternalPoints.*.*', '_rivalryPointsWeekly'],
-    mustAppear: true, refs: 'management.js:15263-15292 / app.js なし',
-    note: 'accrueRivalryPointsFromMatch / accrueInternalPointsFromExternalMatch は実プレイで一度も呼ばれない。'
-      + '実プレイ側の値が動くのは F09 のスイープボーナス(K1-A13)だけ。',
-  },
+  // K1-E05(派閥抗争ポイント・派閥内ポイントの試合ごとの加点が実プレイに無い)は K-1 第4段 4-B-2 で解消したので
+  // 外した(2026-09-26)。両経路が Engine.show.accrueFactionPoints を通す。F09 の試合も ×1.8 で加点される。
+  // 残る抗争ポイントの差は F09 のスイープボーナス(+15。実プレイだけ)で、K1-A13 に数える。
   {
     id: 'K1-A13', title: '派閥対抗戦 F09 の決着(スイープボーナス・年表・決着記事・クールダウン・予約の解除)',
     category: 'processing', side: 'app', impact: '数値', scenarios: ['factions'], checkpoints: ['A', 'B'],
-    patterns: ['_pendingF09', 'factionTimeline', 'factionEventCooldowns.*', '_industryNewsEvents'],
-    mustAppear: true, refs: 'app.js:8530-8618 / エンジン側なし(_f09Locked は加点倍率にだけ使う)',
+    // factionRivalryPoints.*.pointsA/B: 試合ごとの加点は両経路で一致(第4段 4-B-2)。差はスイープボーナス +15 だけ
+    patterns: ['_pendingF09', 'factionTimeline', 'factionEventCooldowns.*', '_industryNewsEvents',
+      'factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB'],
+    mustAppear: true, refs: 'app.js _finalizeShowImpl の F09 決着(applyF09SweepBonus) / エンジン側なし(_f09Locked は加点倍率にだけ使う)',
   },
   // K1-E06(実プレイの歴代最高評価の記録に matchType と勝者が渡らない)は K-1 第1段で解消したので外した(2026-09-26)。
   // app.js _finalizeShowImpl がエンジンと同じ引数を渡す。あわせて §7 X09(記録更新の経歴の刻印が roster の書き戻しで

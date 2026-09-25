@@ -106,6 +106,82 @@ section('F01: 実プレイ(app.js)はエンジンと同じ Engine.show.applyMatc
   assert.ok(/Engine\.show\.applyMatchPopularity\(/.test(ex), 'executeShow が Engine.show.applyMatchPopularity を呼んでいない');
 });
 
+// ── 2. K1-E05 派閥ポイント ──
+function factionState(extra = {}) {
+  // 派閥1: リーダー1・2番手2 / 派閥2: リーダー3・2番手4 / 無所属5
+  const roster = [
+    fighter(1, { pw: 70 }), fighter(2, { pw: 60 }), fighter(3, { pw: 70 }), fighter(4, { pw: 60 }), fighter(5),
+  ];
+  return {
+    season: 3, week: 10, offSeason: false, roster,
+    factions: [
+      { id: 1, name: 'A派', leaderId: 1, memberIds: [1, 2], status: 'active', archetypeId: 'COMBAT' },
+      { id: 2, name: 'B派', leaderId: 3, memberIds: [3, 4], status: 'active', archetypeId: 'COMBAT' },
+    ],
+    factionRivalryPoints: { '1-2': { factionAId: 1, factionBId: 2, pointsA: 5, pointsB: 0, startedSeason: 3, startedWeek: 1, lastUpdatedSeason: 3, lastUpdatedWeek: 1, naturalCalmStreak: 0 } },
+    ...extra,
+  };
+}
+const single = (left, right, extra = {}) => ({ left, right, ...extra });
+const singleRes = (winner) => ({ winner, mq: 50, left: { id: 0 }, right: { id: 0 } });
+
+section('E05: 派閥の違う選手の試合で、勝者の派閥に抗争ポイントが入る(リーダー同士=10pt、引き分けは入らない)', () => {
+  assert.ok(Engine.show && typeof Engine.show.accrueFactionPoints === 'function', 'Engine.show.accrueFactionPoints が無い');
+  const s0 = factionState();
+  const out = Engine.show.accrueFactionPoints(s0, [single(1, 3), single(2, 4)], [singleRes('left'), singleRes('draw')]);
+  const e = out.factionRivalryPoints['1-2'];
+  assert.strictEqual(e.pointsA, 5 + FACTION_CONFIG.pointsByRank.top, `リーダー同士の勝ちで ${e.pointsA}`);
+  assert.strictEqual(e.pointsB, 0, '引き分けで加点された');
+});
+
+section('E05: 入力の状態をその場で書き換えない(抗争ポイント・週の上限・派閥内ポイント・派閥)', () => {
+  const s0 = factionState({ factionInternalPoints: { 2: { 4: 1 } } });
+  const before = JSON.parse(JSON.stringify(s0));
+  const out = Engine.show.accrueFactionPoints(s0,
+    [single(1, 3), single(4, 1, { isTitle: true })],
+    [singleRes('right'), singleRes('left')]);
+  assert.deepStrictEqual(s0, before, '入力の状態が書き換わった');
+  assert.notStrictEqual(out, s0);
+  // 2番手(非リーダー)が王座戦で勝つと派閥内ポイント(§3.2 タイトル戦勝利)
+  assert.strictEqual(out.factionInternalPoints[2][4], 1 + FACTION_CONFIG.internalPointsExternalTitleWin);
+  assert.ok(out._rivalryPointsWeekly && Object.keys(out._rivalryPointsWeekly).length === 1, '週の上限の記録が無い');
+});
+
+section('E05: 週の上限(同じ組で20pt)と F09(×1.8・上限なし)', () => {
+  const cards = [single(1, 3), single(1, 3), single(1, 3)];
+  const res = [singleRes('left'), singleRes('left'), singleRes('left')];
+  const capped = Engine.show.accrueFactionPoints(factionState(), cards, res).factionRivalryPoints['1-2'];
+  assert.strictEqual(capped.pointsA, 5 + FACTION_CONFIG.pointsWeeklyCapPerPair, `上限を超えた: ${capped.pointsA}`);
+  const f09 = Engine.show.accrueFactionPoints(factionState(), cards.map(m => ({ ...m, _f09Locked: true })), res).factionRivalryPoints['1-2'];
+  const per = Math.round(FACTION_CONFIG.pointsByRank.top * FACTION_CONFIG.f09PointsMult);
+  assert.strictEqual(f09.pointsA, 5 + per * 3, `F09 の加点 ${f09.pointsA}`);
+});
+
+section('E05: Common-1 で清算した試合は派閥内ポイントを二重に入れない / タッグはチーム代表(fighter1)で数える', () => {
+  // 派閥内の試合(2 vs 1)は抗争ポイントの対象外。非リーダーが王座戦で勝つ形にして、Common-1 の印の有無で比べる
+  const card = [single(2, 1, { isTitle: true })];
+  const res = [singleRes('left')];
+  const plain = Engine.show.accrueFactionPoints(factionState(), card, res);
+  const c1 = Engine.show.accrueFactionPoints(factionState(), card, res, { common1MatchIdx: 0 });
+  assert.strictEqual(plain.factionInternalPoints[1][2], FACTION_CONFIG.internalPointsExternalTitleWin);
+  assert.ok(!c1.factionInternalPoints || !c1.factionInternalPoints[1] || !c1.factionInternalPoints[1][2], 'Common-1 の試合に派閥内ポイントが入った');
+  const tag = Engine.show.accrueFactionPoints(factionState(),
+    [{ matchType: 'tag', teamA: { fighter1: 3, fighter2: 5 }, teamB: { fighter1: 1, fighter2: 5 } }],
+    [{ matchType: 'tag', winner: 'teamA', mq: 50 }]).factionRivalryPoints['1-2'];
+  const tagPt = Math.round(FACTION_CONFIG.pointsByRank.top * (1 + FACTION_CONFIG.pointsTagBonus));
+  assert.strictEqual(tag.pointsB, tagPt, `タッグの加点 ${tag.pointsB}`);
+});
+
+section('E05: 実プレイ(app.js)はエンジンと同じ Engine.show.accrueFactionPoints を呼ぶ(Common-1 の試合番号つき)', () => {
+  const body = finalizeBody();
+  assert.ok(/Engine\.show\.accrueFactionPoints\(s, validMatches, results, \{ common1MatchIdx: common1ResolvedIdx \}\)/.test(body),
+    '_finalizeShowImpl が Engine.show.accrueFactionPoints を呼んでいない');
+  assert.ok(/common1ResolvedIdx = c1Idx;/.test(body), 'Common-1 を清算した試合の番号を控えていない');
+  const mgmt = readSource('src', 'management.js');
+  const ex = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('  executeShow(state) {') + 60000);
+  assert.ok(/Engine\.show\.accrueFactionPoints\(s, validMatches, results\)/.test(ex), 'executeShow が Engine.show.accrueFactionPoints を呼んでいない');
+});
+
 if (failed > 0) {
   console.log(`\nFAIL: ${failed} 件`);
   process.exit(1);

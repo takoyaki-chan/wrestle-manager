@@ -15196,6 +15196,65 @@ const Engine = {
       });
       return { roster: out, popEvents };
     },
+
+    // 派閥抗争ポイント・派閥内ポイントの試合ごとの加点(K-1 4-B-2 / K1-E05。
+    // specs/faction-rivalry-points-spec-v0.1.md §2、faction-internal-rank-spec-v0.2.md §3.2/§3.3)。
+    // 勝者の派閥に加点する。タッグはチーム代表(fighter1)。引き分けは加点なし。F09(_f09Locked)は ×1.8・週の上限なし。
+    // opts.common1MatchIdx: その興行で Common-1 予約を清算した試合の番号。派閥内ポイントは
+    // applyCommon1MatchResult(§3.1)で入れ済みなので、この試合には isCommon1 を立てて二重加算を防ぐ(実プレイだけが使う)。
+    // factions.js の加点関数は受け取った状態をその場で書き換えるので、書き換わる入れ子(抗争ポイントの各ペア・
+    // 週の上限の記録・派閥内ポイント・派閥)を写してから渡す。数値はその場で書き換えた場合と同じ。
+    // 注: isMain はカードの isSummit(PPV の頂上決戦の印)を見ている。通常興行のカードには立たないので、
+    // 通常興行ではメイン加算(抗争 +0.3・派閥内 +2)が掛からない(エンジンの従来どおり。仕様との差は報告済み)
+    accrueFactionPoints(state, validMatches, results, opts = {}) {
+      const F = Engine.factions;
+      if (!F || typeof F.accrueRivalryPointsFromMatch !== 'function') return state;
+      let s = state;
+      let copied = false;
+      const copyOnce = () => {
+        if (copied) return;
+        copied = true;
+        s = { ...s };
+        if (s.factionRivalryPoints) {
+          s.factionRivalryPoints = Object.fromEntries(Object.entries(s.factionRivalryPoints).map(([k, v]) => [k, v && typeof v === 'object' ? { ...v } : v]));
+        }
+        if (s._rivalryPointsWeekly) s._rivalryPointsWeekly = { ...s._rivalryPointsWeekly };
+        if (s.factionInternalPoints && typeof s.factionInternalPoints === 'object') {
+          s.factionInternalPoints = Object.fromEntries(Object.entries(s.factionInternalPoints).map(([k, v]) => [k, v && typeof v === 'object' ? { ...v } : v]));
+        }
+        if (Array.isArray(s.factions)) s.factions = s.factions.map(f => (f && typeof f === 'object' ? { ...f } : f));
+      };
+      const common1Idx = opts.common1MatchIdx != null ? opts.common1MatchIdx : -1;
+      for (let i = 0; i < validMatches.length; i++) {
+        const m = validMatches[i]; const r = results[i];
+        if (!m || !r) continue;
+        let fighterIdA, fighterIdB, winner;
+        if (m.matchType === 'tag' && m.teamA && m.teamB) {
+          fighterIdA = m.teamA.fighter1;
+          fighterIdB = m.teamB.fighter1;
+          winner = r.winner === 'teamA' ? 'A' : (r.winner === 'teamB' ? 'B' : 'draw');
+        } else {
+          fighterIdA = m.left; fighterIdB = m.right;
+          winner = r.winner === 'left' ? 'A' : (r.winner === 'right' ? 'B' : 'draw');
+        }
+        if (winner === 'draw') continue;
+        const matchCtx = {
+          fighterIdA, fighterIdB, winner,
+          isMain: !!m.isSummit,
+          isTitle: !!m.isTitle,
+          isTag: m.matchType === 'tag',
+          isF09: !!m._f09Locked,
+        };
+        if (i === common1Idx) matchCtx.isCommon1 = true;
+        copyOnce();
+        s = F.accrueRivalryPointsFromMatch(s, matchCtx);
+        // 派閥内ポイント加算（spec: faction-internal-rank-spec-v0.2 §3.2/§3.3）
+        if (typeof F.accrueInternalPointsFromExternalMatch === 'function') {
+          s = F.accrueInternalPointsFromExternalMatch(s, matchCtx);
+        }
+      }
+      return s;
+    },
   },
 
   // ══════════════════════════════════════════════════════════
@@ -15866,34 +15925,8 @@ const Engine = {
 
     // ── Phase B: 派閥抗争ポイント蓄積（spec: faction-rivalry-points-spec-v0.1 §2） ──
     // 試合結果ごとにペアの派閥に勝者ポイントを加算。タッグはチーム代表(fighter1)を使用。
-    if (Engine.factions && typeof Engine.factions.accrueRivalryPointsFromMatch === 'function') {
-      for (let i = 0; i < validMatches.length; i++) {
-        const m = validMatches[i]; const r = results[i];
-        if (!m || !r) continue;
-        let fighterIdA, fighterIdB, winner;
-        if (m.matchType === 'tag' && m.teamA && m.teamB) {
-          fighterIdA = m.teamA.fighter1;
-          fighterIdB = m.teamB.fighter1;
-          winner = r.winner === 'teamA' ? 'A' : (r.winner === 'teamB' ? 'B' : 'draw');
-        } else {
-          fighterIdA = m.left; fighterIdB = m.right;
-          winner = r.winner === 'left' ? 'A' : (r.winner === 'right' ? 'B' : 'draw');
-        }
-        if (winner === 'draw') continue;
-        const matchCtx = {
-          fighterIdA, fighterIdB, winner,
-          isMain: !!m.isSummit,
-          isTitle: !!m.isTitle,
-          isTag: m.matchType === 'tag',
-          isF09: !!m._f09Locked,
-        };
-        s = Engine.factions.accrueRivalryPointsFromMatch(s, matchCtx);
-        // 派閥内ポイント加算（spec: faction-internal-rank-spec-v0.2 §3.2/§3.3）
-        if (typeof Engine.factions.accrueInternalPointsFromExternalMatch === 'function') {
-          s = Engine.factions.accrueInternalPointsFromExternalMatch(s, matchCtx);
-        }
-      }
-    }
+    // K-1 4-B-2(K1-E05): 実プレイ(app.js)と同じ Engine.show.accrueFactionPoints を通す
+    s = Engine.show.accrueFactionPoints(s, validMatches, results);
 
     // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える
     const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
