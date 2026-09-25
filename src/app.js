@@ -11071,7 +11071,7 @@ const App = {
     if (showFlavorEvents.length > 0) {
       showFlavorEvents.forEach((ev, i) => {
         hasEventPopups = true;
-        const detail = ev.type === 'magazine' ? WM_I18N.t('人気 +{n}', { n: ev.popGain }) : WM_I18N.t('ヒート +{n}', { n: ev.heatGain });
+        const detail = App._flavorEventDetail(ev);
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone: 'positive', message: ev.headline, detail
@@ -11455,6 +11455,15 @@ const App = {
     const byP = byA[pers] || byA.normal || byStd[pers] || byStd.normal || {};
     const hitArr = byP.hit || [];
     return hitArr.length > 0 ? hitArr : null;
+  },
+
+  // 雑誌取材・TV出演ポップアップの効果欄。2026-09-25 総点検06⑩: 以前は「人気 +2」「ヒート +1」と
+  // 数値をそのまま見せていた(数値の丸見せ)。効果の値(Engine.flavor の popGain/heatGain)は変えず、
+  // 何が起きたかだけを質的な一文で伝える
+  _flavorEventDetail(ev) {
+    return ev && ev.type === 'magazine'
+      ? WM_I18N.t('記事の反響で、ファンの間で名前が広まった')
+      : WM_I18N.t('オンエアの反響で、団体に注目が集まった');
   },
 
   // 業界ニュースキューに追加（毎週の新聞画面・業界ニュース欄に流れる）
@@ -11850,9 +11859,7 @@ const App = {
       const baseDelay = newInjuries.length * 100 + 50;
       flavorEvents.forEach((ev, i) => {
         const tone = ev.type === 'magazine' ? 'positive' : 'positive';
-        const detail = ev.type === 'magazine'
-          ? WM_I18N.t('人気 +{n}', { n: ev.popGain })
-          : WM_I18N.t('ヒート +{n}', { n: ev.heatGain });
+        const detail = App._flavorEventDetail(ev);
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone, message: ev.headline, detail

@@ -34576,8 +34576,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "📰 月刊プロレスマガジン — 「{name}インタビュー。『ファンの声援が力になる』」",
-    "en": "📰 Pro Wrestling Monthly — {name} interview: 'The support from the fans is what carries me'",
+    "key": "📰 月刊プロレスマガジン — 「{name}インタビュー。客席の声援をどう聞いているか」",
+    "en": "📰 Pro Wrestling Monthly — {name} interview: what the crowd's cheers mean to her",
     "files": [
       "management.js:MAGAZINE_HEADLINES"
     ],
@@ -34606,8 +34606,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。『まだまだ頂点を譲る気はない』」",
-    "en": "📰 Weekly Women's Wrestling — exclusive interview with {name}: 'I have no plans to give up the top spot'",
+    "key": "📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。いま見据えているもの」",
+    "en": "📰 Weekly Women's Wrestling — exclusive interview with {name}: what she has her sights set on now",
     "files": [
       "management.js:MAGAZINE_HEADLINES"
     ],

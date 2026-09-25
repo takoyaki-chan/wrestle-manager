@@ -3913,13 +3913,16 @@ const Engine = {
     // test/i18n-extract-templates.js がこの2配列をmanagement.jsソースから直接切り出して
     // i18n/template-ledger.json へ載せる(app.js:_NEWSPAPER_HEADLINES と同じ作法)。
     // **配列の並び順は変えないこと** — Engine.rng.int が引く添字が変わるとJA出力が変わる。
+    // 2026-09-25 総点検06⑩: 誰が取材されても同じ『』の決め台詞(「まだまだ頂点を譲る気はない」等)が
+    // 付き、挑戦者にも王者の台詞が出ていた。汎用テンプレに名指しの鉤括弧セリフを入れない方針により、
+    // 0番と5番は台詞を地の文(記事の中身の紹介)に畳んだ。添字と本数は変えていない
     MAGAZINE_HEADLINES: [
-      '📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。『まだまだ頂点を譲る気はない』」',
+      '📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。いま見据えているもの」',
       '📰 月刊プロレスマガジン — 「特集：{name}の素顔に迫る」',
       '📰 週刊女子プロレス — 「{name}、表紙＆巻頭グラビア！ファン歓喜」',
       '📰 スポーツ報知 — 「{name}が語る"強さの秘密"」',
       '📰 週刊女子プロレス — 「{name}密着ルポ。練習場から見えた執念」',
-      '📰 月刊プロレスマガジン — 「{name}インタビュー。『ファンの声援が力になる』」',
+      '📰 月刊プロレスマガジン — 「{name}インタビュー。客席の声援をどう聞いているか」',
     ],
     TV_HEADLINES: [
       '📺 スポーツニュース — 「{name}がゴールデンタイムに登場。業界への注目が高まっている」',
@@ -24225,8 +24228,9 @@ Engine.shachoshitsu = {
         rels[keyAB] = { ...curAB, bond: Engine.util.clamp((curAB.bond != null ? curAB.bond : 50) + delta, 0, 100) };
         rels[keyBA] = { ...curBA, bond: Engine.util.clamp((curBA.bond != null ? curBA.bond : 50) + delta, 0, 100) };
         pairRepairResult = { success: true, delta, idA, idB, nameA: fA.name, nameB: fB.name, relationships: rels };
-        events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功（双方向 bond +${delta}）`);
-        changes.push({ label: _wmFillWithDict(dict, '関係修復'), emoji: '🤝', text: _wmFillWithDict(dict, '{nameA}と{nameB}の bond +{delta}（双方向）', { nameA: fA.name, nameB: fB.name, delta }) });
+        // 2026-09-25 総点検04§5: ログと決裁結果に内部変数名(bond)と増減の数値を出していた。質的に書く(効果の値は不変)
+        events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功。わだかまりがいくらか解けた`);
+        changes.push({ label: _wmFillWithDict(dict, '関係修復'), emoji: '🤝', text: _wmFillWithDict(dict, '{nameA}と{nameB}の間のわだかまりが、いくらか解けた', { nameA: fA.name, nameB: fB.name }) });
         // 因縁列伝 v1.1: 修復タイムスタンプを h2h に刻む（context narrative のため）
         const h2hKey = `${Math.min(idA, idB)}>${Math.max(idA, idB)}`;
         const curH2h = (state.h2h || {})[h2hKey];
