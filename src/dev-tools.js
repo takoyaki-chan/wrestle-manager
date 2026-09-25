@@ -354,7 +354,7 @@
       for (const o of otherList) {
         const key = Engine.relationships._key(p.id, o.id);
         const rel = G.relationships && G.relationships[key];
-        if (rel) { self = p; other = o; rivalry = rel.rivalry || 70; bond = rel.bond != null ? rel.bond : 30; break outer; }
+        if (rel) { self = p; other = o; rivalry = rel.rivalry ?? 70; bond = rel.bond != null ? rel.bond : 30; break outer; }
       }
     }
 

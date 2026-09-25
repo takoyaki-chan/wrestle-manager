@@ -2930,7 +2930,7 @@ Engine.factions = {
     if (Array.isArray(s.roster)) {
       const memberSet = new Set(memberIds);
       const newRoster = s.roster.map(c => memberSet.has(c.id)
-        ? { ...c, condition: Engine.util.clamp((c.condition || 50) + condDelta, 0, 100) }
+        ? { ...c, condition: Engine.util.clamp((c.condition ?? 50) + condDelta, 0, 100) }
         : c);
       s = { ...s, roster: newRoster };
     }
@@ -4469,7 +4469,7 @@ Engine.factions = {
         s = this._applyTrustToMembers(s, [leaderId], -2);
         // condition 回復は character.condition に直接当てる
         const newRoster = (s.roster || []).map(c => c.id === leaderId
-          ? { ...c, condition: Engine.util.clamp((c.condition || 50) + 5, 0, 100) }
+          ? { ...c, condition: Engine.util.clamp((c.condition ?? 50) + 5, 0, 100) }
           : c);
         s = { ...s, roster: newRoster };
         impactSummary.push({ label: WM_I18N.t('{name} 体調',{ name: leaderName }), delta: '+5' });
@@ -4477,14 +4477,14 @@ Engine.factions = {
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], 2);
         const newRoster = (s.roster || []).map(c => c.id === leaderId
-          ? { ...c, condition: Engine.util.clamp((c.condition || 50) - 3, 0, 100) }
+          ? { ...c, condition: Engine.util.clamp((c.condition ?? 50) - 3, 0, 100) }
           : c);
         s = { ...s, roster: newRoster };
         impactSummary.push({ label: WM_I18N.t('{name} 体調',{ name: leaderName }), delta: '-3' });
         resultText = WM_I18N.t('{name}に任せた。プレッシャーは肩にのしかかったまま。', { name: leaderName });
       } else {
         const newRoster = (s.roster || []).map(c => c.id === leaderId
-          ? { ...c, condition: Engine.util.clamp((c.condition || 50) + 3, 0, 100) }
+          ? { ...c, condition: Engine.util.clamp((c.condition ?? 50) + 3, 0, 100) }
           : c);
         s = { ...s, roster: newRoster };
         s = advanceRebuke(s);
@@ -4496,7 +4496,7 @@ Engine.factions = {
       if (choiceId === 'A') {
         s = this._applyTrustToMembers(s, [leaderId], -3);
         const newRoster = (s.roster || []).map(c => targets.includes(c.id)
-          ? { ...c, condition: Engine.util.clamp((c.condition || 50) + 3, 0, 100) }
+          ? { ...c, condition: Engine.util.clamp((c.condition ?? 50) + 3, 0, 100) }
           : c);
         s = { ...s, roster: newRoster };
         s = this.applyMomentumChange(s, factionId, -2);

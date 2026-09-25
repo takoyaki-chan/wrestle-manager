@@ -869,7 +869,7 @@ Engine.relationships = {
       });
     };
     const applyConditionDelta = (fighterId, delta) => {
-      updateFighter(fighterId, fighter => ({ ...fighter, condition: Engine.util.clamp((fighter.condition || 70) + delta, 0, 100) }));
+      updateFighter(fighterId, fighter => ({ ...fighter, condition: Engine.util.clamp((fighter.condition ?? 70) + delta, 0, 100) }));
     };
     const markGrowthPressure = (fighterId, growthMult, injuryMult) => {
       updateFighter(fighterId, fighter => ({
@@ -1006,7 +1006,7 @@ Engine.relationships = {
             const awakeBondDrop = -(10 + Engine.rng.int(rng, 0, 5));
             const boostedBA = { ...(relationships[keyBA] || { bond: 50, rivalry: 0 }) };
             boostedBA.rivalry = this._clampAxisValue((boostedBA.rivalry || 0) + awakeRiv, 'rivalry');
-            boostedBA.bond = this._clampAxisValue((boostedBA.bond || 50) + awakeBondDrop, 'bond');
+            boostedBA.bond = this._clampAxisValue((boostedBA.bond ?? 50) + awakeBondDrop, 'bond');
             relationships[keyBA] = boostedBA;
             updateFighter(right.id, fighter => ({ ...fighter, _awakened: true }));
             // right=B(覚醒する側)のpersonality×archetypeでセリフ選出
@@ -1021,7 +1021,7 @@ Engine.relationships = {
             const awakeBondDrop = -(10 + Engine.rng.int(rng, 0, 5));
             const boostedAB = { ...(relationships[keyAB] || { bond: 50, rivalry: 0 }) };
             boostedAB.rivalry = this._clampAxisValue((boostedAB.rivalry || 0) + awakeRiv, 'rivalry');
-            boostedAB.bond = this._clampAxisValue((boostedAB.bond || 50) + awakeBondDrop, 'bond');
+            boostedAB.bond = this._clampAxisValue((boostedAB.bond ?? 50) + awakeBondDrop, 'bond');
             relationships[keyAB] = boostedAB;
             updateFighter(left.id, fighter => ({ ...fighter, _awakened: true }));
             // left=B(覚醒する側)のpersonality×archetypeでセリフ選出
@@ -1106,7 +1106,7 @@ Engine.relationships = {
               const awakeBondDrop = -(10 + Engine.rng.int(rentalRivalryRng, 0, 5));
               const boostedBA = { ...(relationships[keyBA] || { bond: 50, rivalry: 0 }) };
               boostedBA.rivalry = this._clampAxisValue((boostedBA.rivalry || 0) + awakeRiv, 'rivalry');
-              boostedBA.bond = this._clampAxisValue((boostedBA.bond || 50) + awakeBondDrop, 'bond');
+              boostedBA.bond = this._clampAxisValue((boostedBA.bond ?? 50) + awakeBondDrop, 'bond');
               relationships[keyBA] = boostedBA;
               updateFighter(right.id, fighter => ({ ...fighter, _awakened: true }));
               const awPool1 = getDialoguePool(RELATION_EVENT_LINES.awakening, right);
@@ -1120,7 +1120,7 @@ Engine.relationships = {
               const awakeBondDrop = -(10 + Engine.rng.int(rentalRivalryRng, 0, 5));
               const boostedAB = { ...(relationships[keyAB] || { bond: 50, rivalry: 0 }) };
               boostedAB.rivalry = this._clampAxisValue((boostedAB.rivalry || 0) + awakeRiv, 'rivalry');
-              boostedAB.bond = this._clampAxisValue((boostedAB.bond || 50) + awakeBondDrop, 'bond');
+              boostedAB.bond = this._clampAxisValue((boostedAB.bond ?? 50) + awakeBondDrop, 'bond');
               relationships[keyAB] = boostedAB;
               updateFighter(left.id, fighter => ({ ...fighter, _awakened: true }));
               const awPool2 = getDialoguePool(RELATION_EVENT_LINES.awakening, left);
@@ -1511,7 +1511,7 @@ Engine.relationships = {
 
     // ── ロッカールーム士気 ──
     if (morDelta !== 0) {
-      const newMorale = Engine.util.clamp((s.lockerRoomMorale || 50) + morDelta, 0, 100);
+      const newMorale = Engine.util.clamp((s.lockerRoomMorale ?? 50) + morDelta, 0, 100);
       s = { ...s, lockerRoomMorale: newMorale };
     }
 
@@ -2095,17 +2095,17 @@ Engine.relationships = {
         // ???condition +5?+10
         s = { ...s, roster: s.roster.map(c => {
           if (c.id === ev.charA || c.id === ev.charB) {
-            return { ...c, condition: Math.min(100, (c.condition || 80) + ev.effect.conditionBonus) };
+            return { ...c, condition: Math.min(100, (c.condition ?? 80) + ev.effect.conditionBonus) };
           }
           return c;
         })};
         log.push({ type: 'recontact_reunion', data: { nameA: getName(ev.charA), nameB: getName(ev.charB) }, s: s.season, w: s.week });
       } else if (ev.type === 'grudge') {
         // lockerRoomMorale -2?-5
-        s = { ...s, lockerRoomMorale: Math.max(0, (s.lockerRoomMorale || 50) + ev.effect.moralePenalty) };
+        s = { ...s, lockerRoomMorale: Math.max(0, (s.lockerRoomMorale ?? 50) + ev.effect.moralePenalty) };
         log.push({ type: 'recontact_grudge', data: { nameA: getName(ev.charA), nameB: getName(ev.charB) }, s: s.season, w: s.week });
       } else if (ev.type === 'vendetta') {
-        s = { ...s, lockerRoomMorale: Math.max(0, (s.lockerRoomMorale || 50) + ev.effect.moralePenalty) };
+        s = { ...s, lockerRoomMorale: Math.max(0, (s.lockerRoomMorale ?? 50) + ev.effect.moralePenalty) };
         const keyAB = this._key(ev.charA, ev.charB);
         const keyBA = this._key(ev.charB, ev.charA);
         const rAB = { ...(rels[keyAB] || { bond: 50, rivalry: 0 }) };
@@ -4114,7 +4114,9 @@ Engine.challengeRequest = {
     const _healthy = f => f && !f.injury && !f.forcedRest && !f.suspended && !f.isRental;
     const _bond = (a, b) => {
       const k = `${Math.min(a, b)}>${Math.max(a, b)}`;
-      return ((state.relationships || {})[k] || {}).bond || 50;
+      // 絆0は正当な値(冷え切った仲)。欠損・数値でないときだけ50(旧 `|| 50` は0を中位の50として並べていた)
+      const v = ((state.relationships || {})[k] || {}).bond;
+      return Number.isFinite(v) ? v : 50;
     };
     const _ov = f => Engine.util && Engine.util.ov ? Engine.util.ov(f)
       : Math.round(((f.pw || 0) + (f.sp || 0) + (f.te || 0) + (f.st || 0) + (f.mn || 0)) / 5);
@@ -5306,7 +5308,7 @@ Engine.glimpse = {
     let prevTrustSnap = state._glimpseAPrevTrust;
     if (!prevTrustSnap) {
       prevTrustSnap = {};
-      roster.forEach(f => { prevTrustSnap[f.id] = f.trust || 50; });
+      roster.forEach(f => { prevTrustSnap[f.id] = f.trust ?? 50; });
     }
 
     const newSnap = {};
@@ -5384,7 +5386,7 @@ Engine.glimpse = {
     roster.forEach(f => {
       if (f.injury || f.isRental) return;
       const prevTrust = prevTrustSnap[f.id];
-      const curTrust = f.trust || 50;
+      const curTrust = f.trust ?? 50;
       if (prevTrust === undefined) return;
 
       GLIMPSE_A_THRESHOLDS.forEach(th => {
@@ -5420,7 +5422,7 @@ Engine.glimpse = {
 
     // 新しいスナップショットを記録
     const newPrevTrust = {};
-    roster.forEach(f => { newPrevTrust[f.id] = f.trust || 50; });
+    roster.forEach(f => { newPrevTrust[f.id] = f.trust ?? 50; });
 
     const newState = {
       ...state,
@@ -5504,7 +5506,7 @@ Engine.glimpse = {
       // 旧実装は checkALayer が今週値で上書きした直後の _glimpseAPrevTrust と比べていたため差が常に0で、
       // 一度も出なかった(前週値は冒頭の prevTrustMap)。前週値の無い選手(初週・新加入)は比べない
       const prevTrustVal = prevTrustMap ? prevTrustMap[f.id] : undefined;
-      const trustDelta = prevTrustVal === undefined ? 0 : (f.trust || 50) - prevTrustVal;
+      const trustDelta = prevTrustVal === undefined ? 0 : (f.trust ?? 50) - prevTrustVal;
       if (Math.abs(trustDelta) >= 3) {
         if (Engine.rng.float(rng) < 0.10) {
           const sub = trustDelta > 0 ? 'up' : 'down';
@@ -5555,7 +5557,7 @@ Engine.glimpse = {
       }
 
       // GL-07: コンディション不良（condition < 40）
-      if ((f.condition || 100) < 40 && !f.injury) {
+      if ((f.condition ?? 100) < 40 && !f.injury) {
         if (Engine.rng.float(rng) < 0.10) {
           candidates.push({ type: 'GL-07', weight: 2, fighterId: f.id,
             fighterName: f.name, dialogue: pickDialogueLine(GLIMPSE_B_LINES['GL-07'], f),

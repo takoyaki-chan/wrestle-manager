@@ -139,15 +139,17 @@ hpRatio = 勝者の試合終了時 残HP ÷ 開始HP
 
 ※ 未使用定義「統一トーナメント優勝 10pt (`unified_`)」は本項に転用 or 廃棄 🔧
 
-### §5.3 orgPop（プレイヤー結果基準）🔧
+### §5.3 orgPop（出場した全団体。自団体・AI団体共通の表）🔧
 
-| 結果 | orgPop(素の値) |
+| 結果 | orgPop(素の値。`Engine.autumnWar.POP_DELTA` / `rawPopDelta`) |
 |------|:------:|
 | 優勝 | +4 |
 | 準優勝 | +1 |
 | 準決勝敗退 | -2 |
 
 **節目の係数(K-16、2026-09-25 Keisuke裁定)**: 素の値に `節目の係数 = (1 + Engine.orgPop.getDiminishingMultiplier(団体人気)) ÷ 2` を勝ち負けとも掛ける(実装 `Engine.orgPop.applyMilestoneChange`、`Engine.autumnWar.apply`)。人気19以下は1.0で従来どおり、20〜39は0.85、40〜54は0.675、55〜84は0.61、85〜94は0.575、95以上は0.53。例: 人気70〜84で優勝+2.44/準優勝+0.61/準決勝敗退−1.22。対抗戦(rival-org-spec §9.2)と同じ係数。
+
+**AI団体(K-16 AI側、2026-09-26)**: 出場したAI団体(`teams` の `available`)にも同じ表と節目の係数を掛ける。係数はその団体自身の人気で計算する(`Engine.orgPop.applyMilestoneToAiOrg`)。旧来はAI団体の人気は大会で動かず、自団体だけが動いていた。不出場の団体と中止の大会では動かない。内部の数値だけで、ログ・記事に人気の数値は出さない。
 
 ### §5.4 賞金 🔧
 
