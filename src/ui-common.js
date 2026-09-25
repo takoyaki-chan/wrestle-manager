@@ -5540,7 +5540,8 @@ function renderMatchPreview() {
           </div>
         </div>`;
       };
-      // 表示と試合で同じ絆・同じ不仲判定を使う(Engine.showTagMatch。K-12「表示どおり効かせる」)
+      // 表示と試合で同じ絆・同じ不仲判定を使う(Engine.showTagMatch。K-12「表示どおり効かせる」)。
+      // 絆は2人の絆の低い方(pairBond)。⚠ 不仲 の数字も判定と同じ値を出す
       const bondA = Engine.showTagMatch.pairBond(G, tA1.id, tA2.id);
       const bondB = Engine.showTagMatch.pairBond(G, tB1.id, tB2.id);
       html += `<div class="match-card ${cardClass}${cardStateClass}" data-match-next="${isNext}" style="opacity:${isResolved ? 1 : isNext ? 1 : 0.62}">`;
@@ -5548,10 +5549,11 @@ function renderMatchPreview() {
         <span class="smc-label" style="font-size:${isMain ? '18px' : '15px'};color:${isMain ? 'var(--gold)' : 'var(--text-sub)'}">${matchLabel}</span>
         ${statusBadge} <span class="smc-tag-badge">TAG MATCH</span>
       </div>`;
-      // bond-rivalry plan P-1: bond ≤ 20 不仲ペアの警告マーカー
+      // bond-rivalry plan P-1: bond ≤ 20 不仲ペアの警告マーカー。2行目の文言は _tagDiscordEffectText
+      // (春のタッグリーグの編成画面と共通)
       const _chemHtml = (bond) => {
         if (Engine.showTagMatch.isLowBond(bond)) {
-          return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">${WM_I18N.t('⚠ 不仲')} ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">${WM_I18N.t('能力-3 / 連携不可 / 相手との関係-1')}</div></div>`;
+          return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">${WM_I18N.t('⚠ 不仲')} ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">${_tagDiscordEffectText()}</div></div>`;
         }
         return `<div class="smc-tag-chem">🤝 ${Math.round(bond)}</div>`;
       };
@@ -19566,6 +19568,22 @@ function renderSpringTagLeagueChampion() {
 }
 
 // ── 週11 編成モーダル（Office/Cream、mdl-a-card を土台に使用） ──
+// 不仲タッグ(2人の絆の低い方≤20。判定は Engine.showTagMatch)の警告の2行目。
+// 通常興行のプレビューと春のタッグリーグの編成画面で同じ文言を出す(K-12)。
+// 3つ目は実際の効果(試合後に2人とも団体への信頼が下がる)を書く。信頼は数値で出さない(trust-system-spec §16)
+function _tagDiscordEffectText() {
+  return WM_I18N.t('能力-3 / 連携不可 / 団体への信頼が下がる');
+}
+
+// 春のタッグリーグの編成画面の不仲の警告(通常興行のプレビューの ⚠ 不仲 と同じ判定・同じ数字・同じ文言)。
+// 不仲でなければ空文字。compact はおすすめペアのチップ用(1行だけ)
+function _stlDiscordWarnHtml(f1Id, f2Id, compact) {
+  if (f1Id == null || f2Id == null || !Engine.showTagMatch.isDiscord(G, f1Id, f2Id)) return '';
+  const head = `${WM_I18N.t('⚠ 不仲')} ${Math.round(Engine.showTagMatch.pairBond(G, f1Id, f2Id))}`;
+  if (compact) return `<span class="stl-discord-warn is-compact">${head}</span>`;
+  return `<span class="stl-discord-warn">${head}<small>${_tagDiscordEffectText()}</small></span>`;
+}
+
 function _stlEntryModalHtml() {
   const playerTeams = (G.springTagLeague?.teams || []).filter(team => team.orgId === 'player')
     .sort((a, b) => (a.slot || 1) - (b.slot || 1));
@@ -19604,10 +19622,12 @@ function _stlEntryModalHtml() {
       const f2 = eligible.find(f => f.id === sug.f2Id);
       if (!f1 || !f2) return;
       const chemLabel = sug.chemistry >= 70 ? '◎' : sug.chemistry >= 45 ? '◯' : '△';
+      // 不仲のペアは相性の記号の代わりに ⚠ 不仲(通常興行のプレビューが 🤝 の代わりに出すのと同じ)
+      const discordChip = _stlDiscordWarnHtml(f1.id, f2.id, true);
       html += `<div class="stl-suggest-chip" onclick="App.stlPickSuggestion(${f1.id},${f2.id})">
         <span class="faces">${_stlFaceImg(f1)}${_stlFaceImg(f2)}</span>
         <span>${escHtml(WM_I18N.pn(f1.name))} &amp; ${escHtml(WM_I18N.pn(f2.name))}</span>
-        <span class="chem">${chemLabel}</span>
+        ${discordChip || `<span class="chem">${chemLabel}</span>`}
       </div>`;
     });
     html += `</div>`;
@@ -19640,10 +19660,12 @@ function _stlEntryModalHtml() {
     const pairData = suggestions.find(s => (s.f1Id === f1.id && s.f2Id === f2.id) || (s.f1Id === f2.id && s.f2Id === f1.id));
     if (pairData) chemLabel = pairData.chemistry >= 70 ? '◎' : pairData.chemistry >= 45 ? '◯' : '△';
   }
+  // 選んだ2人が不仲なら、相性の代わりに通常興行のプレビューと同じ警告(能力-3・連携なし・信頼が下がる)
+  const discordWarn = (f1 && f2) ? _stlDiscordWarnHtml(f1.id, f2.id, false) : '';
   html += `<div class="stl-summary-bar">
     <span class="stl-summary-label">${WM_I18N.t('第{n}代表', { n: activeSlot + 1 })}</span>
     <span class="stl-summary-names">${f1 ? escHtml(WM_I18N.pn(f1.name)) : WM_I18N.t('未選択')} &amp; ${f2 ? escHtml(WM_I18N.pn(f2.name)) : WM_I18N.t('未選択')}</span>
-    ${chemLabel ? `<span class="stl-summary-chem">${WM_I18N.t('相性')} ${chemLabel}</span>` : ''}
+    ${discordWarn || (chemLabel ? `<span class="stl-summary-chem">${WM_I18N.t('相性')} ${chemLabel}</span>` : '')}
   </div>`;
 
   const hasComplete = sel.pairs.some(row => row && row.f1Id != null && row.f2Id != null);

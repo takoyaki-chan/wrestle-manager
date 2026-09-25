@@ -3783,7 +3783,7 @@ function renderShowPrep() {
       const tB2 = slot.teamB.fighter2 > 0 ? getShowCardFighter(slot.teamB.fighter2) : null;
       const tagFilled = tA1 && tA2 && tB1 && tB2;
       // ケミストリー情報
-      // 絆は試合と同じ Engine.showTagMatch.pairBond で読む(表示と試合の値を揃える)
+      // 絆は不仲の判定・興行プレビューと同じ Engine.showTagMatch.pairBond(2人の絆の低い方)で読む
       const bondA = (tA1 && tA2) ? Engine.showTagMatch.pairBond(G, tA1.id, tA2.id) : 50;
       const bondB = (tB1 && tB2) ? Engine.showTagMatch.pairBond(G, tB1.id, tB2.id) : 50;
       const tagExpA = (tA1 && tA2) ? Engine.tagExp.getCount(G, tA1.id, tA2.id) : 0;
