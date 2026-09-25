@@ -35,6 +35,22 @@ const FIGHTING_SPIRIT_HP_RATIO = 0.3;
 // (MQの「大技(10ダメ以上)」項 bigMoves は別物で、変えていない)。整数で比べて浮動小数の端数を避ける。
 const BIG_HIT_HP_PCT = 12;
 const HEAVY_HIT_HP_PCT = 18;
+// K-6 追加(2026-09-26 Keisuke回答): 最大HPの式が違う大一番とタッグは、段の割合を持ち替える。
+// どの形式でも「特大は大ダメージの約3割」にそろう(同格・平坦ステ OVR70/85/100・各3000試合の実測)。
+//   大一番(matchTier 2): 最大HP 272+3.5×ST が大きく、1撃が最大HPの13〜16%止まりで特大18%が一度も出なかった
+//     → 特大だけ13.75%へ(1試合0.6〜1.2回・実ロスター近接1.0回)。大ダメージは12%のまま(2.6〜3.3回)。
+//     13.5%は0.9〜1.6回、14%は0.5〜0.8回。13.75は2進で正確に表せるので、下の比較に端数は出ない
+//   タッグ: 最大HP 70+ST が小さく、12%では命中の6〜7割が大ダメージだった(1試合約19回)
+//     → 大ダメージ17%(3.7〜4.8回・実ロスター近接4.8回)、特大20%(1.4〜1.6回・同2.0回。赤フラッシュ・溜め)
+const BIGMATCH_HEAVY_HIT_HP_PCT = 13.75;
+const TAG_BIG_HIT_HP_PCT = 17;
+const TAG_HEAVY_HIT_HP_PCT = 20;
+const HIT_BANDS = {
+  normal:   { big: BIG_HIT_HP_PCT, heavy: HEAVY_HIT_HP_PCT },
+  bigMatch: { big: BIG_HIT_HP_PCT, heavy: BIGMATCH_HEAVY_HIT_HP_PCT },
+  tag:      { big: TAG_BIG_HIT_HP_PCT, heavy: TAG_HEAVY_HIT_HP_PCT },
+};
+
 
 // 技候補はモジュール初期化時に一度だけ威力ティアへ分類する。
 // 丸め込みは独立抽選なので、通常ティアの候補からは除外する。
@@ -116,13 +132,19 @@ Engine.battle = {
       if (move.d <= 10) return 'medium';
       return 'big';
     },
-    // K-6: 演出専用の段判定(被弾側の最大HP比。定義はファイル先頭の BIG_HIT_HP_PCT / HEAVY_HIT_HP_PCT)。
+    // K-6: 演出専用の段判定(被弾側の最大HP比。定義はファイル先頭の HIT_BANDS)。
     // 最大HPを正しく知っているのはエンジンだけなので、ここで決めてフレームに焼き、観戦iframeは読むだけにする。
-    isBigHit(dmg, defMhp) {
-      return dmg > 0 && defMhp > 0 && dmg * 100 >= defMhp * BIG_HIT_HP_PCT;
+    // bands は hitBands(kind) の戻り値(省略時は通常戦の 12% / 18%)。
+    hitBands(kind) {
+      return HIT_BANDS[kind] || HIT_BANDS.normal;
     },
-    isHeavyHit(dmg, defMhp) {
-      return dmg > 0 && defMhp > 0 && dmg * 100 >= defMhp * HEAVY_HIT_HP_PCT;
+    isBigHit(dmg, defMhp, bands) {
+      const pct = (bands || HIT_BANDS.normal).big;
+      return dmg > 0 && defMhp > 0 && dmg * 100 >= defMhp * pct;
+    },
+    isHeavyHit(dmg, defMhp, bands) {
+      const pct = (bands || HIT_BANDS.normal).heavy;
+      return dmg > 0 && defMhp > 0 && dmg * 100 >= defMhp * pct;
     },
     // numeric-overhaul P1: 内部戦闘力 = 5ステのべき平均(p=powerMeanP)。
     // ダメージのOVR比補正だけがこれを参照する。p=1で算術平均(旧仕様)と一致し、
@@ -345,6 +367,8 @@ Engine.battle = {
       const maxT    = tier >= 2 ? BIGMATCH_MAX_T    : MAX_T;
       const phases  = tier >= 2 ? BIGMATCH_PHASES   : PHASES;
       const eng     = tier >= 2 ? BIGMATCH_ENG      : ENG;
+      // K-6 追加: 演出専用の段(大ダメージ/特大)の割合。大一番は特大だけ下げる(ファイル先頭の HIT_BANDS)
+      const hitBands = B.hitBands(tier >= 2 ? 'bigMatch' : 'normal');
       const popularityInfluence = opts && opts.popularityInfluence != null ? opts.popularityInfluence : 1.0;
 
       const fullHpL = Math.round(eng.hpBase + charL.st * eng.hpScale);
@@ -567,7 +591,7 @@ Engine.battle = {
                 // 開幕大技の命中は常に大ダメージ扱い(ログも固定で「大ダメージ！」)。特大は実ダメージで判定(K-6)
                 _turnAction = {
                   kind: 'hit', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c,
-                  dmg, isCrit: true, isHeavy: B.isHeavyHit(dmg, def.mhp), isBig: true, openingExecution: true,
+                  dmg, isCrit: true, isHeavy: B.isHeavyHit(dmg, def.mhp, hitBands), isBig: true, openingExecution: true,
                   openingExecutionHit: true, openingExecutionDamageRatio: executionDamage.ratio,
                   openingExecutionDamageBand: executionDamage.band,
                   openingExecutionOvrGap: _openingExecutionGap,
@@ -648,7 +672,7 @@ Engine.battle = {
             pushLog('counter', { turn, name: atk.name, move: mv.n, name2: def.name, move2: cMv.n, dmg: cDmg });
             if (recordFrames) {
               // K-6: 被弾するのは切り返された攻撃側(atk)なので、その最大HPで段を決める
-              _turnAction = { kind: 'counter', atkSide: isLeftAtk ? 'right' : 'left', move: mv.n, counterMove: cMv.n, moveD: mv.d, moveCat: mv.c, dmg: cDmg, isCrit: B.isBigHit(cDmg, atk.mhp), isHeavy: B.isHeavyHit(cDmg, atk.mhp), isBig: cDmg >= 10 };
+              _turnAction = { kind: 'counter', atkSide: isLeftAtk ? 'right' : 'left', move: mv.n, counterMove: cMv.n, moveD: mv.d, moveCat: mv.c, dmg: cDmg, isCrit: B.isBigHit(cDmg, atk.mhp, hitBands), isHeavy: B.isHeavyHit(cDmg, atk.mhp, hitBands), isBig: cDmg >= 10 };
             }
           } else {
             let dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
@@ -674,11 +698,11 @@ Engine.battle = {
             def.consecutiveHits = 0;
             if (dmg >= 10) bigMoves++;
             // K-6: 演出専用の「大ダメージ」(被弾側の最大HPの12%以上)。フレームのフラグと実況ログの注記にだけ使う
-            const bigHit = B.isBigHit(dmg, def.mhp);
+            const bigHit = B.isBigHit(dmg, def.mhp, hitBands);
             if (recordFrames) {
               _turnAction = {
                 kind: 'hit', atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c,
-                dmg, isCrit: bigHit, isHeavy: B.isHeavyHit(dmg, def.mhp), isBig: dmg >= 10,
+                dmg, isCrit: bigHit, isHeavy: B.isHeavyHit(dmg, def.mhp, hitBands), isBig: dmg >= 10,
                 ...(openingCounterBoost ? { openingCounterBoost: true } : {}),
               };
             }
@@ -1101,6 +1125,8 @@ Engine.tagMatch = (() => {
     const B = Engine.battle;
     const TC = TAG_MATCH_CONFIG;
     const recordFrames = !!opts.recordFrames;
+    // K-6 追加: 演出専用の段(大ダメージ/特大)。タッグは最大HPが小さいので割合を上げる(ファイル先頭の HIT_BANDS)
+    const hitBands = B.hitBands('tag');
 
     const bondA = opts.bond_A != null ? opts.bond_A : 50;
     const bondB = opts.bond_B != null ? opts.bond_B : 50;
@@ -1361,7 +1387,7 @@ Engine.tagMatch = (() => {
           pushLog('counter', { turn: totalTurn, phase: ph.name, name: defFighter.name, move: cMv.n, name2: atkFighter.name, dmg: cDmg });
           if (recordFrames) {
             // K-6: 大ダメージ/特大は被弾側(切り返された atkFighter)の最大HP比で決める(演出専用)
-            _turnAction = { attackerId: defFighter.id, defenderId: atkFighter.id, atkSide: atkSide === 'left' ? 'right' : 'left', move: cMv.n, origMove: mv.n, moveD: cMv.d, moveCat: cMv.c, kind: 'counter', dmg: cDmg, isCrit: B.isBigHit(cDmg, atkFighter.mhp), isHeavy: B.isHeavyHit(cDmg, atkFighter.mhp) };
+            _turnAction = { attackerId: defFighter.id, defenderId: atkFighter.id, atkSide: atkSide === 'left' ? 'right' : 'left', move: cMv.n, origMove: mv.n, moveD: cMv.d, moveCat: cMv.c, kind: 'counter', dmg: cDmg, isCrit: B.isBigHit(cDmg, atkFighter.mhp, hitBands), isHeavy: B.isHeavyHit(cDmg, atkFighter.mhp, hitBands) };
           }
           if (isAAttacking) { lossStreakA++; lossStreakB = 0; }
           else { lossStreakB++; lossStreakA = 0; }
@@ -1506,7 +1532,7 @@ Engine.tagMatch = (() => {
           pushLog('hit', { turn: totalTurn, phase: ph.name, name: atkFighter.name, move: mv.n, name2: defFighter.name, dmg, hp: Math.round(defFighter.hp), mhp: defFighter.mhp });
           if (recordFrames) {
             // K-6: 大ダメージ/特大は被弾側の最大HP比で決める(演出専用)
-            _turnAction = { attackerId: atkFighter.id, defenderId: defFighter.id, atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, kind: 'hit', dmg, isCrit: B.isBigHit(dmg, defFighter.mhp), isHeavy: B.isHeavyHit(dmg, defFighter.mhp) };
+            _turnAction = { attackerId: atkFighter.id, defenderId: defFighter.id, atkSide, move: mv.n, moveD: mv.d, moveCat: mv.c, kind: 'hit', dmg, isCrit: B.isBigHit(dmg, defFighter.mhp, hitBands), isHeavy: B.isHeavyHit(dmg, defFighter.mhp, hitBands) };
           }
           if (isAAttacking) { lossStreakB++; lossStreakA = 0; }
           else { lossStreakA++; lossStreakB = 0; }

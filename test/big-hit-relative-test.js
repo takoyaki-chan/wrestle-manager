@@ -3,12 +3,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 //  K-6(2026-09-25 Keisuke裁定A): 「大ダメージ」を被弾側の最大HP比で決める — 回帰テスト
 //    大ダメージ(action.isCrit) = 被弾側の最大HPの12%以上 / 特大(action.isHeavy) = 18%以上
+//    K-6 追加(2026-09-26): 大一番は特大だけ13.75%、タッグは大ダメージ17% / 特大20%(Engine.battle.hitBands)
 //  1. 段判定の境界(整数比較。12%ちょうどを浮動小数の端数で取りこぼさない)
 //  2. 観戦フレームの isCrit/isHeavy が被弾側の実際の最大HPに対する割合と一致する
 //     (シングル通常戦・大一番・カウンター・開幕大技・タッグ)
 //  3. 実況ログの「大ダメージ！」注記がフレームの isCrit と一致する
 //  4. 演出専用: recordFrames の有無で勝敗・MQ・ターン数・HP・実況ログが変わらない
-//  5. 配給の帯: 同格の通常戦で1試合約4回・大一番で約3回・特大は約1回(旧定義は命中の9割超)
+//  5. 配給の帯: 同格の通常戦で1試合約4回・大一番で約3回・タッグで約4回、特大はどれも約1回(旧定義は命中の9割超)
 //     ※ダメージ式・最大HPの式を意図して変えたときは、この帯を実測し直して更新する
 //  6. 被弾セリフの入口 pickDamageLine は action.isCrit だけを見る(ダメージの絶対値では開かない)
 //  7. 観戦iframe共通コア: _isHeavyHit(旧フレームは dmg>=20)と _frameMinDelay(溜めの間の確保)
@@ -52,7 +53,21 @@ const pctOf = (dmg, mhp) => dmg * 100 / mhp;
   check(B.isBigHit(20, 0) === false, '最大HPが不明(0)なら判定しない');
   // 旧定義(絶対値15)では大ダメージだった値が、大きい最大HPでは大ダメージにならない
   check(B.isBigHit(15, 354) === false, '旧定義の dmg≥15 は相対定義では大ダメージとは限らない');
+  // K-6 追加: 形式ごとの段(省略時は通常戦)
+  const nb = B.hitBands('normal'), bm = B.hitBands('bigMatch'), tg = B.hitBands('tag');
+  check(nb.big === 12 && nb.heavy === 18, '通常戦は 12% / 18%');
+  check(bm.big === 12 && bm.heavy === 13.75, '大一番は大ダメージ12%のまま・特大13.75%');
+  check(tg.big === 17 && tg.heavy === 20, 'タッグは 17% / 20%');
+  check(B.hitBands('???') === nb, '未知の形式は通常戦の段');
+  check(B.isHeavyHit(55, 400, bm) === true && B.isHeavyHit(54, 400, bm) === false, '大一番の特大13.75%ちょうど(55/400)は特大・未満は違う');
+  check(B.isHeavyHit(55, 400) === false, '同じ55/400でも通常戦の特大(18%)ではない');
+  check(B.isBigHit(26, 155, tg) === false && B.isBigHit(27, 155, tg) === true, 'タッグの大ダメージは17%(26/155=16.8%は違う・27/155は大)');
+  check(B.isHeavyHit(31, 155, tg) === true && B.isHeavyHit(30, 155, tg) === false, 'タッグの特大は20%(31/155は特大・30/155は違う)');
+  for (const bands of [nb, bm, tg]) {
+    check(bands.heavy >= bands.big, `特大は大ダメージの上の段(heavy ${bands.heavy} ≥ big ${bands.big})`);
+  }
 }
+const pctsFor = tier => Engine.battle.hitBands(tier >= 2 ? 'bigMatch' : 'normal');
 
 // ── 2〜4. フレームのフラグ・実況ログ・演出専用 ────────────────────
 const roster = ALL_CHARS.filter(c => c.pw && c.st);
@@ -74,8 +89,8 @@ for (const tier of [1, 2]) {
       singleHitFrames++;
       const defMhp = act.atkSide === 'left' ? fr.mhpR : fr.mhpL;
       check(typeof act.isCrit === 'boolean' && typeof act.isHeavy === 'boolean', 'フレームは isCrit/isHeavy を真偽値で持つ');
-      const expHeavy = pctOf(act.dmg, defMhp) >= 18;
-      check(act.isHeavy === expHeavy, `isHeavy が最大HP比と不一致 dmg=${act.dmg} mhp=${defMhp}`);
+      const expHeavy = pctOf(act.dmg, defMhp) >= pctsFor(tier).heavy;
+      check(act.isHeavy === expHeavy, `isHeavy が最大HP比と不一致 tier${tier} dmg=${act.dmg} mhp=${defMhp}`);
       if (act.openingExecution) {
         openingSeen++;
         check(act.isCrit === true, '開幕大技の命中は常に大ダメージ');
@@ -108,7 +123,21 @@ check(counterSeen > 20, `カウンターのフレームを見た(${counterSeen})
   check(found >= 3, `開幕大技の命中フレームを確認できた(${found})`);
 }
 
-// タッグ: 被弾側の最大HPは 70+ST(TAG_MATCH_CONFIG)
+// 大一番の開幕大技: 特大は大一番の段(13.75%)で判定する
+{
+  let found = 0;
+  const mk = (id, s) => ({ id, name: 'X' + id, pw: s, sp: s, te: s, st: s, mn: s, style: 'Allround', popularity: 50, traits: [] });
+  for (let i = 0; i < 400 && found < 5; i++) {
+    const r = Engine.battle.simulateMatch(mk(1, 110), mk(2, 70), rngFor('opening2', i), 2, { recordFrames: true });
+    const f = r.frames.find(x => x.action && x.action.openingExecution && x.action.kind === 'hit');
+    if (!f) continue;
+    found++;
+    check(f.action.isHeavy === (pctOf(f.action.dmg, f.mhpR) >= 13.75), '大一番の開幕大技の特大は大一番の段で判定');
+  }
+  check(found >= 3, `大一番の開幕大技の命中フレームを確認できた(${found})`);
+}
+
+// タッグ: 被弾側の最大HPは 70+ST(TAG_MATCH_CONFIG)。段は 17% / 20%(K-6 追加)
 {
   let tagHit = 0;
   const coreTag = r => JSON.stringify([r.winner, r.finType, r.finMove, r.turns, r.mq, r.log, r.perFighter]);
@@ -125,8 +154,8 @@ check(counterSeen > 20, `カウンターのフレームを見た(${counterSeen})
       if (!act || act.kind === 'miss') continue;
       tagHit++;
       const mhp = mhpOf[act.defenderId];
-      check(act.isCrit === (pctOf(act.dmg, mhp) >= 12), `タッグ isCrit 不一致 dmg=${act.dmg} mhp=${mhp}`);
-      check(act.isHeavy === (pctOf(act.dmg, mhp) >= 18), `タッグ isHeavy 不一致 dmg=${act.dmg} mhp=${mhp}`);
+      check(act.isCrit === (pctOf(act.dmg, mhp) >= 17), `タッグ isCrit 不一致 dmg=${act.dmg} mhp=${mhp}`);
+      check(act.isHeavy === (pctOf(act.dmg, mhp) >= 20), `タッグ isHeavy 不一致 dmg=${act.dmg} mhp=${mhp}`);
     }
   }
   check(tagHit > 1000, `タッグの命中フレームを十分に見た(${tagHit})`);
@@ -153,11 +182,33 @@ check(counterSeen > 20, `カウンターのフレームを見た(${counterSeen})
     }
     band[tier] = { crit: crit / n, heavy: heavy / n, share: crit / hits };
   }
+  // タッグ(K-6 追加): 4人とも同格の平坦ステ OVR85
+  {
+    let n = 0, hits = 0, crit = 0, heavy = 0;
+    for (let i = 0; i < 300; i++) {
+      const f = [0, 1, 2, 3].map(k => mk(10 + k, 85, styles[(i + k * 3) % styles.length]));
+      const r = Engine.tagMatch.simulateTagMatch({ fighter1: f[0], fighter2: f[1] }, { fighter1: f[2], fighter2: f[3] },
+        rngFor('bandTag', i), { recordFrames: true, bond_A: 50, bond_B: 50 });
+      n++;
+      for (const fr of r.frames) {
+        const act = fr.action;
+        if (!act || act.kind === 'miss') continue;
+        hits++;
+        if (act.isCrit) crit++;
+        if (act.isHeavy) heavy++;
+      }
+    }
+    band.tag = { crit: crit / n, heavy: heavy / n, share: crit / hits };
+  }
   check(band[1].crit >= 3.0 && band[1].crit <= 5.5, `通常戦の大ダメージが1試合約4回の帯から外れた(${band[1].crit.toFixed(2)})`);
   check(band[1].heavy >= 0.6 && band[1].heavy <= 2.0, `通常戦の特大が1試合約1回の帯から外れた(${band[1].heavy.toFixed(2)})`);
   check(band[1].share < 0.5, `大ダメージが命中の半分以上になった(${(band[1].share * 100).toFixed(0)}%) — 全部が山場に戻っていないか`);
   check(band[2].crit >= 1.8 && band[2].crit <= 4.0, `大一番の大ダメージが1試合約3回の帯から外れた(${band[2].crit.toFixed(2)})`);
-  console.log(`  帯: 通常戦 大${band[1].crit.toFixed(2)}/特大${band[1].heavy.toFixed(2)}(命中の${(band[1].share * 100).toFixed(0)}%) 大一番 大${band[2].crit.toFixed(2)}/特大${band[2].heavy.toFixed(2)}`);
+  check(band[2].heavy >= 0.5 && band[2].heavy <= 1.8, `大一番の特大が1試合約1回の帯から外れた(${band[2].heavy.toFixed(2)}) — 赤フラッシュが出ない/出すぎ`);
+  check(band.tag.crit >= 2.8 && band.tag.crit <= 5.5, `タッグの大ダメージが1試合約4回の帯から外れた(${band.tag.crit.toFixed(2)})`);
+  check(band.tag.heavy >= 0.7 && band.tag.heavy <= 2.5, `タッグの特大(赤フラッシュ・溜め)が1試合1〜2回の帯から外れた(${band.tag.heavy.toFixed(2)})`);
+  check(band.tag.share < 0.3, `タッグの大ダメージが命中の3割以上になった(${(band.tag.share * 100).toFixed(0)}%) — 全部が山場に戻っていないか`);
+  console.log(`  帯: 通常戦 大${band[1].crit.toFixed(2)}/特大${band[1].heavy.toFixed(2)}(命中の${(band[1].share * 100).toFixed(0)}%) 大一番 大${band[2].crit.toFixed(2)}/特大${band[2].heavy.toFixed(2)} タッグ 大${band.tag.crit.toFixed(2)}/特大${band.tag.heavy.toFixed(2)}(命中の${(band.tag.share * 100).toFixed(0)}%)`);
 }
 
 // ── 6. pickDamageLine の入口 ───────────────────────────────
