@@ -12559,9 +12559,12 @@ const Engine = {
         const newAiOrgs = { ...s.aiOrgs };
 
         // orgPop変動
+        // K-16 AI側(2026-09-26): 自団体の対抗戦と同じ表(勝ち+5/引き分け+2/負け−3、Engine.event.warRawPopDelta)に
+        // 節目の係数を掛ける。係数はそれぞれの団体自身の人気で計算する(人気20未満は1.0)。
+        // 旧来の固定値(勝ち+2/負け−0.5/引き分け双方+0.5)は自団体側と揃っていなかった(rival-org-spec §9.2)。
         if (winnerOrgId) {
           const winData = { ...newAiOrgs[winnerOrgId] };
-          winData.orgPop = Engine.util.clamp((winData.orgPop ?? 50) + 2, 0, 100);
+          winData.orgPop = Engine.orgPop.nextMilestonePop(winData.orgPop, Engine.event.warRawPopDelta(1, 0));
           // battleWinsTotal
           if (!s.battleWinsTotal) s = { ...s, battleWinsTotal: {} };
           const bwt = { ...s.battleWinsTotal };
@@ -12577,7 +12580,7 @@ const Engine = {
           newAiOrgs[winnerOrgId] = winData;
 
           const loseData = { ...newAiOrgs[loserOrgId] };
-          loseData.orgPop = Engine.util.clamp((loseData.orgPop ?? 50) - 0.5, 0, 100);
+          loseData.orgPop = Engine.orgPop.nextMilestonePop(loseData.orgPop, Engine.event.warRawPopDelta(0, 1));
           const loseRepId = loserOrgId === orgId ? rep1.id : rep2.id;
           loseData.roster = loseData.roster.map(f => {
             if (f.id !== loseRepId) return f;
@@ -12588,11 +12591,11 @@ const Engine = {
         } else {
           // 引き分け
           const d1 = { ...newAiOrgs[orgId] };
-          d1.orgPop = Engine.util.clamp((d1.orgPop ?? 50) + 0.5, 0, 100);
+          d1.orgPop = Engine.orgPop.nextMilestonePop(d1.orgPop, Engine.event.warRawPopDelta(0, 0));
           d1.lastWarWeek = currentAbsWeek;
           newAiOrgs[orgId] = d1;
           const d2 = { ...newAiOrgs[opponent.id] };
-          d2.orgPop = Engine.util.clamp((d2.orgPop ?? 50) + 0.5, 0, 100);
+          d2.orgPop = Engine.orgPop.nextMilestonePop(d2.orgPop, Engine.event.warRawPopDelta(0, 0));
           d2.lastWarWeek = currentAbsWeek;
           newAiOrgs[opponent.id] = d2;
         }
@@ -18417,15 +18420,24 @@ const Engine = {
       return { results, playerWins, aiWins, winnerPlayerIds };
     },
 
+    /** 対抗戦の団体人気の素の値(自団体・AI団体共通の表): 勝ち越し+5/引き分け+2/負け越し−3。
+     *  節目の係数(Engine.orgPop.applyMilestoneChange)を掛ける前の値。 */
+    warRawPopDelta(myWins, oppWins) {
+      if (myWins > oppWins) return EVENT_CONFIG.warPopReward;
+      if (myWins === oppWins) return 2;
+      return EVENT_CONFIG.warPopPenalty;
+    },
+
     /** Apply war outcome to state (v2: battlePoints 対戦ポイント移動) */
     applyWarOutcome(state, playerWins, aiWins, opponentOrgId) {
-      let rawPopDelta = 0;
-      if (playerWins > aiWins) rawPopDelta = EVENT_CONFIG.warPopReward;
-      else if (playerWins === aiWins) rawPopDelta = 2;
-      else rawPopDelta = EVENT_CONFIG.warPopPenalty;
+      const rawPopDelta = Engine.event.warRawPopDelta(playerWins, aiWins);
       // K-16(2026-09-25): 節目の大会の加減算は、勝ちにも負けにも節目用のゆるい逓減を掛ける
       // (人気20未満は係数1.0で従来どおり)。ログの表記も実際の変化量に合わせる
       const popDelta = Engine.orgPop.applyMilestoneChange(rawPopDelta, state.orgPop || 0);
+      // K-16 AI側(2026-09-26): 相手のAI団体の人気も、AIの立場から同じ表(プレイヤーが勝ち越せばAIは負け越しの−3)と
+      // その団体自身の人気で計算した節目の係数で動かす。内部の数値だけで、ログ・新聞には出さない。
+      const aiOrgs = Engine.orgPop.applyMilestoneToAiOrg(state.aiOrgs, opponentOrgId,
+        Engine.event.warRawPopDelta(aiWins, playerWins));
       const events = [];
       const winLabel = playerWins > aiWins ? '勝ち越し！' : playerWins === aiWins ? '決着つかず' : '負け越し…';
       // 対戦ポイント移動
@@ -18447,7 +18459,8 @@ const Engine = {
       );
       events.push(`⚔ 対抗戦結果: ${playerWins}勝${aiWins}敗 — ${winLabel}（団体人気${Engine.util.formatSignedStatDelta(popDelta, 1)}${bpMsg}）`);
       const newOrgPop = Math.max(0, Math.min(100, state.orgPop + popDelta));
-      const warState = { ...state, orgPop: newOrgPop, battlePoints: bp, warThisSeason: true, pendingEvent: null, orgWarRecord: updOwr };
+      const warState = { ...state, orgPop: newOrgPop, battlePoints: bp, warThisSeason: true, pendingEvent: null, orgWarRecord: updOwr,
+        ...(aiOrgs ? { aiOrgs } : {}) };
       if (!warState.ppvUnlocked && Engine.ppv.checkUnlock(newOrgPop)) {
         warState.ppvUnlocked = true;
         events.push('🏟️ PPV GRAND FINAL への出場資格を獲得！年末の大舞台に選手を送り出せます');
@@ -20147,6 +20160,19 @@ Engine.orgPop = {
   },
   applyMilestoneChange(rawDelta, orgPop) {
     return rawDelta * Engine.orgPop.getMilestoneMultiplier(orgPop);
+  },
+  // K-16 AI側(2026-09-26): AI団体の人気にも節目の大会の加減算を同じ係数で掛ける。係数はその団体自身の
+  // 人気で計算する(K-9: AI団体とプレイヤーの人気の扱いを対称に)。
+  // 人気の欠損(null/undefined)だけを50で補う(0は正当な値。K-9)。戻り値は0〜100に収めた新しい人気。
+  nextMilestonePop(orgPop, rawDelta) {
+    const pop = orgPop ?? 50;
+    return Engine.util.clamp(pop + Engine.orgPop.applyMilestoneChange(rawDelta, pop), 0, 100);
+  },
+  // aiOrgs の1団体に上を掛けた aiOrgs を返す。団体が無い/素の値が0なら aiOrgs をそのまま返す。
+  applyMilestoneToAiOrg(aiOrgs, orgId, rawDelta) {
+    const ao = aiOrgs && orgId ? aiOrgs[orgId] : null;
+    if (!ao || !rawDelta) return aiOrgs;
+    return { ...aiOrgs, [orgId]: { ...ao, orgPop: Engine.orgPop.nextMilestonePop(ao.orgPop, rawDelta) } };
   },
 
   // orgPop リバランス v1.1: 年次減衰を緩和（高帯でも登れる坂に）
@@ -30823,6 +30849,8 @@ Engine.autumnWar = {
   FLOOR: 40,
   CEILING: 80,
   PRIZE: { champion: 1200, runnerUp: 500 }, // 万円
+  // 団体人気の素の値(spec §5.3。自団体・AI団体共通の表)。節目の係数を掛ける前の値
+  POP_DELTA: { champion: 4, runnerUp: 1, semiFinal: -2 },
   EVENT_FINANCE: {
     venueIndex: 8,
     attendance: 12000,
@@ -30830,6 +30858,13 @@ Engine.autumnWar = {
   },
   ORG_ORDER: ['player', 'org_s', 'org_a', 'org_b'],
   MATCH_TIER: 1,
+  /** 団体人気の素の値: 優勝+4/準優勝+1/出場して準決勝敗退−2/不出場0(自団体・AI団体共通) */
+  rawPopDelta(orgId, champion, runnerUp, entered) {
+    const t = Engine.autumnWar.POP_DELTA;
+    if (orgId === champion) return t.champion;
+    if (orgId === runnerUp) return t.runnerUp;
+    return entered ? t.semiFinal : 0;
+  },
 
   _orgRoster(state, orgId) {
     if (orgId === 'player') return state.roster || [];
@@ -31428,12 +31463,22 @@ Engine.autumnWar = {
     const revenueDistribution = Engine.autumnWar.calcRevenueDistribution(s, result);
     const playerEntered = teams.some(t => t.orgId === 'player' && t.available);
     const playerRevenue = revenueDistribution?.shares.find(share => share.orgId === 'player')?.amount || 0;
-    let rawPopDelta = 0, prize = 0;
-    if (champion === 'player') { rawPopDelta = 4; prize = Engine.autumnWar.PRIZE.champion; }
-    else if (runnerUp === 'player') { rawPopDelta = 1; prize = Engine.autumnWar.PRIZE.runnerUp; }
-    else if (playerEntered) rawPopDelta = -2;
+    let prize = 0;
+    if (champion === 'player') prize = Engine.autumnWar.PRIZE.champion;
+    else if (runnerUp === 'player') prize = Engine.autumnWar.PRIZE.runnerUp;
+    const rawPopDelta = Engine.autumnWar.rawPopDelta('player', champion, runnerUp, playerEntered);
     // K-16(2026-09-25): 節目の大会の加減算は、勝ちにも負けにも節目用のゆるい逓減を掛ける(人気20未満は従来どおり)
     const popDelta = Engine.orgPop.applyMilestoneChange(rawPopDelta, s.orgPop || 0);
+    // K-16 AI側(2026-09-26): 出場したAI団体にも同じ表と節目の係数(その団体自身の人気で計算)を掛ける。
+    // 内部の数値だけで、ログ・記事には出さない。
+    if (s.aiOrgs) {
+      let aiOrgs = s.aiOrgs;
+      teams.filter(t => t.available && t.orgId !== 'player').forEach(team => {
+        aiOrgs = Engine.orgPop.applyMilestoneToAiOrg(aiOrgs, team.orgId,
+          Engine.autumnWar.rawPopDelta(team.orgId, champion, runnerUp, true));
+      });
+      if (aiOrgs !== s.aiOrgs) s = { ...s, aiOrgs };
+    }
     if (playerEntered) {
       const totalEventIncome = playerRevenue + prize;
       const seasonStats = s.seasonStats ? {
