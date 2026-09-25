@@ -51,6 +51,28 @@ function _quoteVal(value) {
   return WM_I18N.t('「{line}」', { line: value });
 }
 
+// ── 呼び名(2026-09-25 Keisuke 裁定 / specs/call-name-spec-v1.0.md) ─────────────
+// セリフの中で他の人物を呼ぶ・名指しするときの名前。フルネームは入れない。
+//   基本は名字。話し手→相手の絆が devoted(85以上)なら下の名前(一度切り替えたら50未満に冷えるまで戻さない)。
+//   判定は Engine.relationships.callName(JA)。EN は表示のここで名前辞書(pnGiven / pnSurname)から作る
+//   — 日本語の下の名前は t() の名前自動変換の対象外なので、JA の呼び名を EN 画面の t() へ渡してはいけない。
+// speaker: 話し手の選手 id / 選手オブジェクト。コーチ・記者など選手との絆を持たない話し手は null(=常に名字)。
+// target : 相手の選手 id / 選手オブジェクト / フルネーム / コーチオブジェクト。
+// 戻り値は表示言語の呼び名(相手が不明なら fallback。省略時は '')。敬称(さん・先輩・様…)はセリフ側の文字のまま。
+// 地の文・新聞・見出し・ログ・UIのラベルはフルネームのまま(この関数を使わない)。
+function callNameText(speaker, target, fallback, state) {
+  const st = state || (typeof G !== 'undefined' ? G : null);
+  const speakerId = (speaker != null && typeof speaker === 'object') ? speaker.id : speaker;
+  const R = (typeof Engine !== 'undefined' && Engine.relationships) ? Engine.relationships : null;
+  const cn = (R && typeof R.callName === 'function') ? R.callName(st, speakerId == null ? null : speakerId, target) : null;
+  if (!cn) return fallback != null ? fallback : '';
+  if (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en') {
+    if (cn.form === 'given' && typeof WM_I18N.pnGiven === 'function') return WM_I18N.pnGiven(cn.full);
+    return (typeof WM_I18N.pnSurname === 'function') ? WM_I18N.pnSurname(cn.full) : cn.full;
+  }
+  return cn.ja;
+}
+
 // ── i18n P6-10: 殿堂入り選手の異名(hofEntry.epithet)の表示用ラベル ─────────────
 // 異名は Engine.awards.generateEpithet が生成した**生JAのままG(殿堂エントリ)へ
 // 永続化される**値(D-P6-4「セーブに書く値は変えない」)。表示の瞬間にだけ辞書を引く。
@@ -74,7 +96,19 @@ function _snapshotLine(entry) {
   if (typeof composedSnapshotText !== 'function') {
     return (entry && typeof entry.text === 'string') ? entry.text : '';
   }
-  return composedSnapshotText(entry);
+  return composedSnapshotText(_snapshotSpeechEntry(entry));
+}
+
+// 呼び名(2026-09-25 / specs/call-name-spec-v1.0.md): 垣間見えのうち「本人が喋る」形
+// (R3 別れのモーダル・本人の声 voiceLead)は、セリフの中の {name2} を呼び名(話し手 {name} → 相手)に差し替える。
+// 地の文(scene)・スタッフの報告(staff)はそのまま。保存値(text/vars)は書き換えず、表示用の写しを返す
+function _snapshotSpeechEntry(entry) {
+  if (!entry || typeof entry !== 'object' || typeof entry.tpl !== 'string') return entry;
+  const vars = entry.vars;
+  if (!vars || typeof vars.name2 !== 'string' || !vars.name2) return entry;
+  if (entry.modalType !== 'R3' && !entry.voiceLead) return entry;
+  const target = entry.fighter2Id != null ? entry.fighter2Id : vars.name2;
+  return { ...entry, vars: { ...vars, name2: callNameText(entry.fighterId, target, vars.name2) } };
 }
 
 // ── task-90: 共通数値表記(stat-notation-v1.0) ──────────────────────────
@@ -2147,14 +2181,18 @@ function _flagPickArchetype(fighter) {
   return (fighter && fighter.archetype) || 'standard';
 }
 
-function _flagFormatLine(template, fighter, fighter2) {
+function _flagFormatLine(template, fighter, fighter2, nameIsTarget) {
   // i18n P5-2h残(2026-09-03): 置換前のテンプレでt()を引く(置換後ではEN辞書キーと不一致になり
   // PH入り163行がfail-openしていた=selectDialogueと同型)。t()のparams経由なら名前辞書(PN_EN)の
   // 自動変換も効く。ja時はapplyParamsの置換のみで従来と同一文字列。
+  // 呼び名(2026-09-25): {name2}=話し手(fighter)が呼ぶ相手(fighter2)。フルネームではなく callNameText
+  // (名字、絆が devoted なら下の名前)。表示言語の値を渡すので EN は t() の名前自動変換を経ずにそのまま入る。
+  // nameIsTarget: M-1(裏切り)だけは {name} が相手(離脱者)を指す(flag-dialogue.js M-1 の注記)。
   const tpl = String(template || '');
   const params = {};
   if (fighter) params.name = fighter.name || '';
-  if (fighter2) params.name2 = fighter2.name || '';
+  if (fighter2) params.name2 = callNameText(fighter, fighter2, fighter2.name || '');
+  if (nameIsTarget && fighter2) params.name = params.name2;
   return WM_I18N.t(tpl, params);
 }
 
@@ -2177,7 +2215,12 @@ function _flagBuildPopupOpts(modal) {
   const tmpl = (typeof FLAG_DIALOGUE !== 'undefined')
     ? FLAG_DIALOGUE._pickLine(modal.type, archetype, lineSeed)
     : '';
-  const message = _flagFormatLine(tmpl, speaker, target);
+  // 呼び名(2026-09-25): M-1(裏切り)は残留者(byIds[0])が離脱者(departerId)を {name} で呼ぶ。
+  // 以前は相手が渡らず {name} に話し手自身のフルネームが入っていた(target が null のため)。
+  // 行の選び方(lineSeed)は変えない
+  const message = modal.type === 'M-1'
+    ? _flagFormatLine(tmpl, speaker, _findFighterById(p.departerId), true)
+    : _flagFormatLine(tmpl, speaker, target);
 
   return {
     type: 'fighter',
@@ -2239,7 +2282,7 @@ function _flagBuildM13(modal, meta) {
     name: (master && master.name) || '',
     tone: meta.tone,
     speech: _flagFormatLine(mLine, master, disciple) || '…',
-    detail: `${WM_I18N.t(meta.title)}<br><div style="margin-top:6px;font-size:12px;font-style:italic">${(disciple && disciple.name) || WM_I18N.t('弟子')}: ${_flagFormatLine(dLine, disciple, master)}</div>`,
+    detail: `${WM_I18N.t(meta.title)}<br><div style="margin-top:6px;font-size:12px;font-style:italic">${(disciple && WM_I18N.pn(disciple.name)) || WM_I18N.t('弟子')}: ${_flagFormatLine(dLine, disciple, master)}</div>`,
   };
 }
 
@@ -9928,8 +9971,11 @@ function showDecisionResultModal(displayData) {
 // P6-5配線修正: 旧実装は${nm}で選手名を先に埋め込んでから_u3bSideHtml側のt()に渡していた
 // ため、完成文が辞書キー(プレースホルダ入りの原文)と一致せずENで常に未訳のまま出ていた
 // (フラグセリフ/selectDialogueと同型の配線穴)。t()をプレースホルダ置換の前に通す
-function _choiceEventReporterLine(event, fighter, isUrgent) {
-  const nm = WM_I18N.pn(fighter ? (fighter.name || '選手') : '');
+function _choiceEventReporterLine(event, fighter, isUrgent, state) {
+  // 呼び名(2026-09-25): 取次(コーチ=名字/古参選手=絆で決まる)が選手を呼ぶ名前。敬称「選手」はセリフ側のまま
+  const nm = fighter
+    ? callNameText(_factionReporterSpeaker(state || (typeof G !== 'undefined' ? G : null)), fighter, WM_I18N.pn(fighter.name || '選手'), state)
+    : '';
   switch (event.type) {
     case 'S1': return WM_I18N.t('{name}選手から、タイトル挑戦を希望する申し出が来ています', { name: nm });
     case 'S2': return WM_I18N.t('{name}選手が、因縁の相手との対戦を希望しています', { name: nm });
@@ -9969,7 +10015,7 @@ function showChoiceEventModal(event, state, onChoice) {
   const isUrgent = event.type === 'S4' || event.type === 'E6' || event.type === 'S_grumble' || event.type === 'S_sns';
 
   // Reporter取次セリフ — イベント種別ごとに具体化
-  const reporterLine = _choiceEventReporterLine(event, fighter, isUrgent);
+  const reporterLine = _choiceEventReporterLine(event, fighter, isUrgent, state);
 
   // subject-stage 内容: 選手がいればセリフ、なければ E5 の説明文
   let stageBody = '';
@@ -10128,6 +10174,13 @@ function _factionPickReporter(state) {
     if (veteran) return { kind: 'veteran', ref: veteran };
   }
   return null;
+}
+// 呼び名(2026-09-25 / specs/call-name-spec-v1.0.md): 報告の吹き出しの話し手として、セリフの中で呼ぶ
+// 相手との絆を持つ人。コーチは選手との絆を持たないので null(=常に名字)、古参選手ならその選手。
+// _factionPickReporter は週で決まるので、_factionReporterStrip と同じ人が返る
+function _factionReporterSpeaker(state) {
+  const pick = _factionPickReporter(state);
+  return (pick && pick.kind === 'veteran') ? pick.ref : null;
 }
 // P6-5配線修正: lineTranslated=trueのとき、既にt()済みの文(F07のgetF07Line coachReport等、
 // {name}をテンプレへ埋め込む都合で呼び出し元が先に翻訳したもの)として二重t()を避ける。
@@ -11160,6 +11213,17 @@ function showFactionF07Modal(payload, state, onChoice) {
   const targetName = target ? target.name : (payload.incidentPayload && payload.incidentPayload.targetName) || '';
 
   const vars = { factionName, leaderName, leaderSurname, targetName };
+  // 呼び名(2026-09-25): 報告の吹き出し(コーチ、コーチ不在なら古参選手)がリーダー・対象選手を呼ぶ名前。
+  // コーチは常に名字、古参選手は絆で決まる(specs/call-name-spec-v1.0.md)。表示言語の値を渡すので、
+  // getF07Line 側の pn() は EN 値をそのまま通す
+  const reporterSpeaker = _factionReporterSpeaker(state);
+  const reporterLeaderCall = callNameText(reporterSpeaker, leader || leaderName, leaderName);
+  const reporterVars = {
+    ...vars,
+    leaderName: reporterLeaderCall,
+    leaderSurname: reporterLeaderCall,
+    targetName: targetName ? callNameText(reporterSpeaker, target || targetName, targetName) : targetName,
+  };
 
   // セリフ取得
   // i18n Stage B P5基盤修正: getF07Lineはdict-opts化済み(§9)。プレースホルダ置換**前**の
@@ -11174,9 +11238,9 @@ function showFactionF07Modal(payload, state, onChoice) {
     if (!leaderQuote) leaderQuote = WM_I18N.t('社長、お願いがあります。');
   } else {
     coachLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getF07Line)
-      ? Engine.factions.getF07Line('coachReport', { incidentType, vars }, WM_I18N.t)
+      ? Engine.factions.getF07Line('coachReport', { incidentType, vars: reporterVars }, WM_I18N.t)
       : '';
-    if (!coachLine) coachLine = WM_I18N.t('{leaderSurname}と{factionName}の動きについて報告があります。', { leaderSurname, factionName });
+    if (!coachLine) coachLine = WM_I18N.t('{leaderSurname}と{factionName}の動きについて報告があります。', { leaderSurname: reporterLeaderCall, factionName });
   }
 
   const leaderMeta = leader
@@ -11206,7 +11270,7 @@ function showFactionF07Modal(payload, state, onChoice) {
   // どちらの分岐も呼び出し側で訳し済みになったのでtranslatedは常にtrue
   const reporterTextTranslated = true;
   const reporterText = meta.source === 'leader'
-    ? WM_I18N.t('{name}さんが社長室に向かいました。', { name: leaderSurname || WM_I18N.t('リーダー') })
+    ? WM_I18N.t('{name}さんが社長室に向かいました。', { name: reporterLeaderCall || WM_I18N.t('リーダー') })
     : (coachLine || WM_I18N.t('{faction}の動向について報告があります。', { faction: factionName }));
 
   const observationNote = meta.source === 'leader'
@@ -12325,7 +12389,11 @@ function showFactionCommon3Modal(payload, state, onClose) {
           <div class="fevt-report-title">🤝 ${escHtml(factionName)}${WM_I18N.t('へ加入')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, WM_I18N.t('{name}が{faction}に加わったみたいです。', { name: newcomerName, faction: factionName }), true)}
+        ${_factionReporterStrip(state, WM_I18N.t('{name}が{faction}に加わったみたいです。', {
+          // 呼び名(2026-09-25): 報告者(コーチ=名字/古参選手=絆で決まる)が新加入を呼ぶ名前
+          name: callNameText(_factionReporterSpeaker(state), newcomer || newcomerName, newcomerName),
+          faction: factionName,
+        }), true)}
         <div class="fevt-subject-stage">
           <div class="fc1m-compare u3b-theme-cream">
             ${_u3bSideHtml({
@@ -12530,9 +12598,13 @@ function showFactionCommon1Modal(payload, state, onChoice) {
   // WM_I18N.t()経由にし、下流の_factionReporterStrip呼び出しをtranslated固定で
   // 安全にできるようにする(旧実装は生JAのままで、二重t()回避のtranslated:trueを
   // 付けるとフォールバック時にENで未訳のまま出てしまう構造だった)。
+  // 呼び名(2026-09-25): 報告の吹き出し(コーチ=名字/古参選手=絆で決まる)が A・B を呼ぶ名前
+  const reporterSpeaker = _factionReporterSpeaker(state);
+  const aCall = callNameText(reporterSpeaker, fA || aName, aName);
+  const bCall = callNameText(reporterSpeaker, fB || bName, bName);
   const coachLine = (Engine.factions.getCommon1Line)
-    ? Engine.factions.getCommon1Line('coachReport', { archetypeId, vars }, WM_I18N.t)
-    : WM_I18N.t('{faction}内の{a}と{b}に火種があります。', { faction: factionName, a: aName, b: bName });
+    ? Engine.factions.getCommon1Line('coachReport', { archetypeId, vars: { ...vars, aName: aCall, bName: bCall } }, WM_I18N.t)
+    : WM_I18N.t('{faction}内の{a}と{b}に火種があります。', { faction: factionName, a: aCall, b: bCall });
   const leaderLine = (Engine.factions.getCommon1Line)
     ? Engine.factions.getCommon1Line('leaderDemand', { archetypeId, vars, fighter: leader || fA }, WM_I18N.t)
     : WM_I18N.t('リングで決めたい。');
@@ -12659,8 +12731,10 @@ function showFactionCommon5Modal(payload, state, onChoice) {
   // P6-6配線修正: 下流の_factionReporterStripが「既に英語のためfail-openで無害」というのは
   // 誤りだった(specs/i18n-runtime-spec-v1.0.md §9)——実際はEN走破のi18n-missログを汚染する。
   // translated:trueを渡して二重t()を避ける(フォールバック枝もt()経由に統一し安全に)。
+  // 呼び名(2026-09-25): 報告の吹き出し(コーチ=名字/古参選手=絆で決まる)がリーダーを呼ぶ名前
+  const leaderCall = callNameText(_factionReporterSpeaker(state), leader || leaderName, leaderName);
   const coachLine = (Engine.factions.getCommon5Line)
-    ? Engine.factions.getCommon5Line('coachReport', { archetypeId, vars }, WM_I18N.t)
+    ? Engine.factions.getCommon5Line('coachReport', { archetypeId, vars: { ...vars, leaderName: leaderCall } }, WM_I18N.t)
     : WM_I18N.t('{faction}に取材依頼が来ています。', { faction: factionName });
 
   const html = `
@@ -13090,7 +13164,10 @@ function showUnifiedTitleChallengeModal(payload, state, onChoice) {
   </div>`).join('');
   const html = `
     ${_mdlAHeader(WM_I18N.t('全国統一王座 挑戦権'), `${_mdlASeasonLabel(state)} ・ PLAYER TURN`)}
-    ${_mdlAReporterStrip(state, WM_I18N.t('{org}の王者{name}へ挑む番が来ました', { org: orgName, name: champion.fighter.name }), true)}
+    ${_mdlAReporterStrip(state, WM_I18N.t('{org}の王者{name}へ挑む番が来ました', {
+      // 呼び名(2026-09-25): 取次(コーチ=名字/古参選手=絆で決まる)が他団体の王者を呼ぶ名前
+      org: orgName, name: callNameText(_factionReporterSpeaker(state), champion.fighter, champion.fighter.name),
+    }), true)}
     <div class="mdl-a-subject-stage unified-challenge-office">
       <div class="unified-challenge-champion">
         ${championImg ? `<img src="${escHtml(championImg)}" alt="${escHtml(WM_I18N.pn(champion.fighter.name))}">` : `<div class="unified-challenge-champion-fallback">${escHtml((WM_I18N.pn(champion.fighter.name) || '?').charAt(0))}</div>`}
@@ -13227,9 +13304,11 @@ function showChallengeRequestModal(payload, state, onChoice) {
   // t()に渡していたため(selectDialogue/_flagFormatLineと同型の穴)、完成文が辞書キーと
   // 一致せずENで常に未訳のまま出ていた。テンプレ化してparamsで置換する(nameはt()の
   // convertNamesで自動pn()化されるため個別のWM_I18N.pn()呼び出しは不要)。
+  // 呼び名(2026-09-25): 取次(コーチ=名字/古参選手=絆で決まる)が直訴した選手を呼ぶ名前
+  const requesterCall = callNameText(_factionReporterSpeaker(state), requester, requester.name);
   const coachLine = isInverse
-    ? WM_I18N.t('社長、{reqOrg}の{name}選手から団体戦挑戦の直訴です。{oppOrg}へ、私たち三人で挑みたい、と。', { reqOrg: requesterOrgName, name: requester.name, oppOrg: opponentOrgName })
-    : WM_I18N.t('社長、{name}選手から団体戦挑戦の直訴です。{oppOrg}へ、私たち三人で挑みたい、と。', { name: requester.name, oppOrg: otherOrgName });
+    ? WM_I18N.t('社長、{reqOrg}の{name}選手から団体戦挑戦の直訴です。{oppOrg}へ、私たち三人で挑みたい、と。', { reqOrg: requesterOrgName, name: requesterCall, oppOrg: opponentOrgName })
+    : WM_I18N.t('社長、{name}選手から団体戦挑戦の直訴です。{oppOrg}へ、私たち三人で挑みたい、と。', { name: requesterCall, oppOrg: otherOrgName });
 
   const ovr = (f) => f ? Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5) : '—';
   const ovrA = ovr(requester), ovrB = ovr(opponent);
@@ -14713,7 +14792,10 @@ function _buildB2Step3b(event, state, roster) {
       <div class="mdl-a-header-title">😔 ${WM_I18N.t('敗 者 の 声')}</div>
       <div class="mdl-a-header-meta">AFTERMATH ・ 2 / 2</div>
     </div>
-    ${_mdlAReporterStrip(state, WM_I18N.t('{name}は納得していないようです…', { name: loserName }), true)}
+    ${_mdlAReporterStrip(state, WM_I18N.t('{name}は納得していないようです…', {
+      // 呼び名(2026-09-25): 取次(コーチ=名字/古参選手=絆で決まる)が敗者を呼ぶ名前
+      name: loserF ? callNameText(_factionReporterSpeaker(state), loserF, loserName) : loserName,
+    }), true)}
     <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
       ${_mdlAFlowPortraitHtml({
         line: loserLine,
@@ -16984,6 +17066,16 @@ function showTrialEndMessage() {
 // 既定で二重t()になっていた(視覚上は無害だがEN走破のi18n-missログを汚染していた・
 // specs/i18n-runtime-spec-v1.0.md §9と同型)。他の共通表示点と揃えて
 // lineTranslated引数を追加し、4箇所の呼び出し元すべてでtrueを渡す。
+// 呼び名(2026-09-25 / specs/call-name-spec-v1.0.md): 契約交渉のセリフで選手がライバルを呼ぶ名前。
+// neg.context.rivalName(保存値・フルネーム)は変えず、表示用の写しに rivalCallName(表示言語の呼び名)を足す。
+// Engine.contract.selectDialogue / resolveNegotiation はこの写しを受けて {rivalName} に呼び名を入れる
+// (context は状態へ書き戻されない。数値の分岐 isFounder 等は写しでも同じ)
+function _contractNegForDisplay(neg) {
+  const ctx = neg && neg.context;
+  if (!ctx || !ctx.rivalName) return neg;
+  const call = callNameText(neg.fighterId, ctx.rivalName, ctx.rivalName);
+  return { ...neg, context: { ...ctx, rivalCallName: call } };
+}
 function _negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel, lineTranslated) {
   // 顔と名前から選手詳細を開けるようにする(2026-07-27 Keisuke)。
   // 交渉相手の成績・能力を確かめないまま判断することになっていたため。
@@ -17084,7 +17176,7 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   // fail-openで無害」というのは誤りだった(specs/i18n-runtime-spec-v1.0.md §9・EN走破の
   // i18n-missログを汚染する)。_negSpeakerHtmlのlineTranslated引数(P6-6で追加)で
   // 二重t()そのものを避ける(4箇所の呼び出し元すべてでtrueを渡す)。
-  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, openPhase, neg.context, WM_I18N.t);
+  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, openPhase, _contractNegForDisplay(neg).context, WM_I18N.t);
   const retentionRaise = isTransfer && fighter
     ? Engine.contract.calcRetentionRaiseAmount(neg, fighter, state)
     : 0;
@@ -17252,7 +17344,7 @@ function showContractSuddenDepartureModal(neg, state, onDone) {
   const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
   // i18n Stage B: selectDialogueはdict-opts化済み(§6)。WM_I18N.tを渡し、プレースホルダ
   // 置換前のテンプレを翻訳させる(戻り値をt()で包み直さない)。
-  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, 'sudden_departure', neg.context, WM_I18N.t);
+  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, 'sudden_departure', _contractNegForDisplay(neg).context, WM_I18N.t);
   const wallHtml = _negSpeakerHtml(neg, dialogue, 'neg-badge-sudden', WM_I18N.t('⚡ 突発退団'), true);
 
   const deskHtml = `
@@ -17799,10 +17891,11 @@ function buildCoachTournamentWrapup(kind, state, args) {
         mentionCompletesLine = !wantsDuo && cell.soloComplete === true;
         // i18n Stage B P5-2n: 名前を埋める**前**に辞書を引く。先に置換すると辞書キー
         // (PH入りの原文)と一致せず必ず fail-open する(P5-2d/2h/2j/2l と同型の欠陥)。
-        // 選手名は t() の params 自動変換(D-P6-2)で英語表記になるため、渡すのは生JA名でよい。
+        // 呼び名(2026-09-25): コーチ→選手は常に名字(specs/call-name-spec-v1.0.md)。callNameText は
+        // 表示言語の名字を返すので、t() の名前自動変換を経ずにそのまま入る
         mention = WM_I18N.t(raw, {
-          n1: (spoken[0] && spoken[0].name) || '',
-          n2: (spoken[1] && spoken[1].name) || '',
+          n1: spoken[0] ? callNameText(null, spoken[0], spoken[0].name || '', state) : '',
+          n2: spoken[1] ? callNameText(null, spoken[1], spoken[1].name || '', state) : '',
         });
       }
     }

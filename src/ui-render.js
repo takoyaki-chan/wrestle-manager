@@ -1966,8 +1966,13 @@ function _renderRosterDojoHeader() {
       // t()に params を渡して**辞書を引いてから**置換する(先に置換するとキーが一致しない)。
       // {stat}はステータス名の日本語ラベル(UI辞書側のキー)なので、値の側もt()に通す。
       // reportParams が無い＝旧セーブの置換済みテキスト。その場合は従来どおり素通し(fail-open)。
+      // 呼び名(2026-09-25): コーチ→選手は常に名字(specs/call-name-spec-v1.0.md)。{name} は表示言語の名字
+      // (保存値 reportParams.name はフルネームのまま=旧セーブでも fighterId か名前から引ける)
       const _rp = report && report.reportParams;
-      const _reportParams = _rp ? { name: _rp.name, stat: WM_I18N.t(_rp.stat) } : undefined;
+      const _reportParams = _rp ? {
+        name: callNameText(null, report.fighterId != null ? report.fighterId : _rp.name, _rp.name),
+        stat: WM_I18N.t(_rp.stat),
+      } : undefined;
       let speechText = (report && report.reportText) ? WM_I18N.t(report.reportText, _reportParams) : WM_I18N.t(atmo.text);
       // コーチ報告の表示枠では、対象選手の今週の熱量を優先して伝える。
       // 既存の strain 報告も同じ枠を使うため、同じ週に2種類の警告を重ねない。
@@ -1984,8 +1989,9 @@ function _renderRosterDojoHeader() {
           G.rngSeed || 0, G.season || 1, G.week || 1, heatFighter.id || 0, 0x48454154
         ));
         // i18n Stage B P5-1: t()は{name}のreplaceより前(辞書キーはプレースホルダ入りの原文)。
+        // 呼び名(2026-09-25): コーチ→選手は常に名字(specs/call-name-spec-v1.0.md)
         speechText = WM_I18N.t(heatPool[Engine.rng.int(heatRng, 0, heatPool.length - 1)])
-          .replace('{name}', WM_I18N.pn(heatFighter.name) || WM_I18N.t('この子'));
+          .replace('{name}', callNameText(null, heatFighter, '') || WM_I18N.t('この子'));
         coachHeatFighterId = heatFighter.id;
       }
       html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble">${_quoteLine(speechText)}</div></div>

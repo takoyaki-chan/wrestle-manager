@@ -6036,7 +6036,8 @@ const App = {
           const resolveRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 2));
           // i18n Stage B: resolveNegotiationはdict-opts化済み(specs/i18n-runtime-spec-v1.0.md §6)。
           // WM_I18N.tを渡し、内部のselectDialogueが生成するreactionDialogueを翻訳させる。
-          const result = Engine.contract.resolveNegotiation(resolveRng, G, neg, 0, undefined, WM_I18N.t);
+          // 呼び名(2026-09-25): セリフの {rivalName} を呼び名で埋める表示用の写しを渡す(状態への影響なし)
+          const result = Engine.contract.resolveNegotiation(resolveRng, G, _contractNegForDisplay(neg), 0, undefined, WM_I18N.t);
           G = result.state;
           App._consumeBetrayalNews(neg);
           results.push(result.result);
@@ -6112,7 +6113,8 @@ const App = {
     // selectDialogueが生成するreactionDialogueを翻訳させる(戻り値をt()で包み直さない —
     // 表示先(showContractReactionModal/showContractListenModal→_negSpeakerHtml→
     // _u3bSideHtml)の内部t()は既に訳文のためfail-openで無害)。
-    const result = Engine.contract.resolveNegotiation(resolveRng, G, neg, choiceIdx, undefined, WM_I18N.t);
+    // 呼び名(2026-09-25): セリフの {rivalName} を呼び名で埋める表示用の写しを渡す(状態への影響なし)
+    const result = Engine.contract.resolveNegotiation(resolveRng, G, _contractNegForDisplay(neg), choiceIdx, undefined, WM_I18N.t);
     G = result.state;
     App._consumeBetrayalNews(neg);
 
@@ -6120,7 +6122,7 @@ const App = {
       // 理由を聞く → サブ選択
       showContractListenModal(neg, result.reactionDialogue, G, (subChoice) => {
         const subRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 3));
-        const subResult = Engine.contract.resolveNegotiation(subRng, G, neg, 1, subChoice, WM_I18N.t);
+        const subResult = Engine.contract.resolveNegotiation(subRng, G, _contractNegForDisplay(neg), 1, subChoice, WM_I18N.t);
         G = subResult.state;
         App._consumeBetrayalNews(neg);
         results.push(subResult.result);
