@@ -14703,7 +14703,8 @@ const App = {
     if (result.mediaSpotlight !== undefined) updates.mediaSpotlight = result.mediaSpotlight;
     if (result.lastLargeEventWeek !== undefined) updates.lastLargeEventWeek = result.lastLargeEventWeek;
     if (result.lastB3ChallengeWeek !== undefined) updates.lastB3ChallengeWeek = result.lastB3ChallengeWeek;
-    if (result.orgPopDelta) updates.orgPop = G.orgPop + result.orgPopDelta;
+    // 団体人気は 0〜100 に収める(人気99.9で挑戦状に勝つと100を超えていた)
+    if (result.orgPopDelta) updates.orgPop = Engine.util.clamp(G.orgPop + result.orgPopDelta, 0, 100);
     if (result.battlePoints) updates.battlePoints = result.battlePoints;
     // Phase 4: E-02/E-03 大型イベントの関係値反映
     if (result.relationships) updates.relationships = result.relationships;

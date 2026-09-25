@@ -28623,7 +28623,7 @@ Engine.eventSystem.applyLargeEventEffect = function(event, step, choiceIdx, stat
   if (!event || event.type !== 'B3') return result;
 
   if (step === 0 && choiceIdx !== 0) {
-    // B3辞退: ペナルティなし（UIの表記通り）
+    // B3辞退: 対戦ポイントは動かさない(団体人気の−1は本体 applyLargeEventEffect の B3 step0 で掛かる)
     return result;
   }
 
