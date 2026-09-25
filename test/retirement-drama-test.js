@@ -154,9 +154,19 @@ section('C-5. 上限がある（大舞台でも確率が暴走しない）', () 
 });
 
 section('C-6. 両方の経路が新しい規則を使っている（自団体/AI団体）', () => {
+  // K-13(2026-09-25 Keisuke裁定A): AI団体の試合の怪我も自団体と同じ Engine.injury.check を通るように
+  // なり、careerEndingChance の呼び出しは injury.check の中の1箇所に集約された(両経路がそこを通る)。
+  // 旧版は「呼び出しが2箇所以上(自団体用とAI用の複製)」を数えていた。
   const hits = management.match(/careerEndingChance\(/g) || [];
-  assert.ok(hits.length >= 2,
-    `careerEndingChance の呼び出しが ${hits.length} 箇所。自団体とAI団体の両方で使うこと`);
+  assert.ok(hits.length >= 1, 'careerEndingChance を使っていない');
+  const checkStart = management.indexOf('    check(rng, fighter, matchResult,');
+  const checkBody = management.slice(checkStart, management.indexOf('    tick(roster, freeAgents) {', checkStart));
+  assert.ok(checkStart > 0 && checkBody.includes('careerEndingChance('), 'Engine.injury.check が新しい規則を使っていない');
+  const execShow = management.slice(management.indexOf('  executeShow(state) {'));
+  assert.ok(execShow.includes('Engine.injury.check('), '自団体の興行が Engine.injury.check を通っていない');
+  const aiWeek = management.slice(management.indexOf('processAIWeek(rng, state, org) {'),
+    management.indexOf('processSeasonEnd(rng, state) {'));
+  assert.ok(aiWeek.includes('Engine.injury.check('), 'AI団体の興行が Engine.injury.check を通っていない');
   assert.ok(!/wear >= 40 \? 0\.065 : 0\.025/.test(management),
     '旧実装（舞台を見ない2段）が残っている');
 });

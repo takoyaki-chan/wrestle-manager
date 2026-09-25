@@ -77,6 +77,9 @@ state.achievementItems = {
 
 ### 3.3 減衰モデル — 1年満額 → ×0.5/年
 
+> **2026-09-25 K-9(A) で変更**: `graceAge` は 0（満額は獲得した季だけ、翌季から `0.5^age`）。
+> 下の表・コード・注記文言は旧値（graceAge 1）時点の記録。現行は [v2.1 §3](org-ranking-spec-v2.1.md)。
+
 ```js
 function currentPt(item) {
   const decay = ACHIEVEMENT_CONFIG.decayRate;   // 0.5

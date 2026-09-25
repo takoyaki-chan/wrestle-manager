@@ -49,8 +49,15 @@ assert.strictEqual(playerMatchInjury(0.98, 0).newFighter.injury.weeksLeft, 10);
 assert.strictEqual(playerMatchInjury(0.999999, 0.999999).newFighter.injury.weeksLeft, 16);
 
 // AI通常試合も同じ重症度帯を参照し、独自の4〜8週固定へ戻さない。
+// K-13(2026-09-25 Keisuke裁定A): AI団体の試合の怪我は、帯の参照だけでなく判定そのものを
+// 自団体と同じ Engine.injury.check に通す(上で検査した本線の帯・週数がそのまま使われる)。
+// 旧: AI独自の一律3%(体調30未満8%)+帯参照。挙動の回帰は test/ai-orgpop-injury-parity-test.js。
 const management = readSource('src', 'management.js');
-assert.ok(management.includes('const injuryBand = Engine.injury.severityBand(sevRoll);'));
-assert.ok(management.includes('injuryBand.minWeeks + Engine.rng.int(matchRng, 0, injuryBand.maxWeeks - injuryBand.minWeeks)'));
+const aiWeekStart = management.indexOf('processAIWeek(rng, state, org) {');
+const aiWeekEnd = management.indexOf('processSeasonEnd(rng, state) {');
+assert.ok(aiWeekStart > 0 && aiWeekEnd > aiWeekStart, 'processAIWeek の範囲を特定できる');
+const aiWeek = management.slice(aiWeekStart, aiWeekEnd);
+assert.ok(aiWeek.includes('Engine.injury.check('), 'AI通常試合の怪我は Engine.injury.check を通す');
+assert.ok(!aiWeek.includes('? 0.08 : 0.03'), 'AI独自の一律3%(体調30未満8%)へ戻さない');
 
 console.log('injury-duration-band-test: ok');

@@ -3273,10 +3273,15 @@ function renderShowPrep() {
       <div class="venue-info">${WM_I18N.t('キャパ: {cap}人', { cap: v.cap.toLocaleString() })}</div>
       <div class="venue-info">${WM_I18N.t('コスト: {cost}万', { cost: v.cost })}</div>
       <div class="venue-info">${WM_I18N.t('試合枠: {n}試合', { n: v.maxMatches })}</div>
+      ${Engine.orgPop.isVenueSmallForOrgPop(G.orgPop, i) ? `<div class="venue-info" style="color:var(--c-warning)">${WM_I18N.t('📉 人気の伸び控えめ')}</div>` : ''}
       <div class="venue-risk">${riskLabel}</div>
     </div>`;
   });
   html += '</div>';
+  // K-3(2026-09-25): 人気に対して小さい会場を選んでいるときは、理由を一言だけ添える(数値は出さない)
+  if (Engine.orgPop.isVenueSmallForOrgPop(G.orgPop, G.showVenue)) {
+    html += `<div style="font-size:12px;color:var(--text-sub);margin:6px 0 2px">${WM_I18N.t('📉 人気に対して小さい会場です（人気の伸びが控えめになります）')}</div>`;
+  }
 
   // Match card — 会場規模連動の試合枠
   // pad up OR trim down to match the venue's limit (tag match = 2 slots)
@@ -4501,7 +4506,9 @@ function renderFinance() {
     // ドームまでの距離
     if (curPop < 90) {
       html += `<div style="font-size:12px;color:rgba(241,196,15,0.6);margin-top:6px">${WM_I18N.t('ドーム圏まであと')} <strong style="color:rgba(241,196,15,0.9)">${Math.round((90 - curPop) * 10) / 10}</strong> ${WM_I18N.t('ポイント')}</div>`;
-    } else {
+    } else if (Engine.economy.getDomeSelloutOutlook(G).sellout) {
+      // K-3付随(2026-09-25): 人気90に届いただけでは誘わない。今のロスターの強いカードで
+      // ドームの満員見込みが立つとき(集客予測)だけ案内する(人気90では満枠でも4〜7割で赤字だった)
       html += `<div style="font-size:12px;color:rgba(241,196,15,0.8);margin-top:6px">${WM_I18N.t('🏟️ ドーム圏内です！今シーズン{status}', { status: (G.domeShowsThisSeason || 0) >= 1 ? WM_I18N.t('（今季使用済み）') : WM_I18N.t('の挑戦を検討してください') })}</div>`;
     }
   }
@@ -5000,7 +5007,7 @@ function renderRanking() {
   const _buildAchievementTooltip = (r, currentSeason) => {
     const items = (r && r.achievementItems) || [];
     if (items.length === 0) {
-      return WM_I18N.t('このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/メディア功労賞などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。');
+      return WM_I18N.t('このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/メディア功労賞などで加点。<br>獲得したシーズンだけ満額、翌シーズンから毎年半減。1pt未満で消滅。');
     }
     // age (シーズン跨ぎ回数) でグルーピング: 0=当シーズン, 1=1年前, ...
     const buckets = {};
@@ -5009,19 +5016,13 @@ function renderRanking() {
       if (!buckets[age]) buckets[age] = [];
       buckets[age].push(it);
     });
-    const decay = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG.decayRate != null) ? ACHIEVEMENT_CONFIG.decayRate : 0.5;
-    const grace = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG.graceAge != null) ? ACHIEVEMENT_CONFIG.graceAge : 1;
     const ageLabel = (age) => {
       if (age === 0) return WM_I18N.t('当シーズン ({season}年目)', { season: currentSeason });
       const seasonNum = currentSeason - age;
       return WM_I18N.t('{age}年前 ({season}年目)', { age, season: seasonNum });
     };
-    const currentPt = (it) => {
-      const age = it.age || 0;
-      const orig = it.originalPt || 0;
-      if (age <= grace) return orig;
-      return orig * Math.pow(decay, age - grace);
-    };
+    // 減衰式はエンジンの1本(Engine.achievement.currentPt)を読む。表示側に式を複製しない(K-9で満額期間を変えた)
+    const currentPt = (it) => Engine.achievement.currentPt(it);
     const sortedAges = Object.keys(buckets).map(Number).sort((a, b) => a - b);
     const lines = [];
     let total = 0;
@@ -5038,7 +5039,7 @@ function renderRanking() {
       });
     });
     lines.push(`<b>${WM_I18N.t('合計 {n}pt', { n: Math.round(total) })}</b>`);
-    lines.push(`<span style="opacity:0.7">${WM_I18N.t('※ 翌シーズンまで満額、その後毎年半減。1pt未満で消滅。')}</span>`);
+    lines.push(`<span style="opacity:0.7">${WM_I18N.t('※ 獲得したシーズンだけ満額、翌シーズンから毎年半減。1pt未満で消滅。')}</span>`);
     return lines.join('<br>');
   };
 

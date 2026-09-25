@@ -3973,9 +3973,19 @@ const SHOW_RATING_CONFIG = {
   // 内。0.5刻みで試したところ82.5→28.0%/83→18.0%と閾値付近で急峻に転移するため、
   // これ以上の微調整は長期シミュレーションのフィードバックループ(★評価→orgPop→
   // 翌週以降のカード品質)による非線形感度が大きく、収束が不安定。83を採用)。
+  // K-2(2026-09-25 Keisuke裁定A): 因縁決着+6/因縁カード+2/ファン期待+4件 がキー名の不一致で
+  // 一度も加算されていなかった(上の較正は3項目が死んだ状態のもの)。加算を効かせたうえで、
+  // 本番経路(executeShowの★)の分布が目標の箱に収まるよう再較正した。83/70のままだと
+  // 団体人気の伸びが速まって大きい会場(会場補正0)で興行する期間が増え、★3が18.6%(箱の外)に
+  // なる。グリッド(auto-sim 40季、★5カット/★4カット、本番経路の★): seed42 は 83/70→★3 18.6
+  // ★5 19.4 / 83/69→★5 23.4 / 83/68→★5 23.4 / 83.5/68→★5 18.4 / 84/68→★3 9.3 ★5 21.5 /
+  // 84/69→★3 11.2 ★5 21.5 / 85/68→★5 26.4。seed7919 は 84/68→★3 8.0 ★5 20.8 / 84/69→★3 10.5
+  // ★5 21.9 / 83.5/68→★5 13.0。★5カットは緩めるほど団体人気が早く伸びて大きい会場へ移り、
+  // かえって★5が減る(83.5で下振れ)ため単調ではない。両シードで箱に入り、後半20季でも★3に
+  // 余裕が残る 84/68 を採用。最終確認は docs/worklog.md(2026-09-25 K-2・K-3・K-16)を参照。
   starThresholds: [
-    { min: 83, stars: 5 },
-    { min: 70, stars: 4 },
+    { min: 84, stars: 5 },
+    { min: 68, stars: 4 },
     { min: 50, stars: 3 },
     { min: 30, stars: 2 },
     { min: 0,  stars: 1 },
@@ -3991,6 +4001,22 @@ const SHOW_RATING_CONFIG = {
   orgPopDeltaByStars: { 5: 2.0, 4: 1.0, 3: 0, 2: -0.5, 1: -1.0 },
   // ★ → メディア放映収入倍率
   mediaMult: { 5: 2.0, 4: 1.4, 3: 1.0, 2: 0.6, 1: 0.3 },
+};
+
+// K-3(2026-09-25 Keisuke裁定): 人気が上がったら、小さい会場ほど団体人気の伸びを減らす。
+// ★は会場ごとの出来の評価として残し(venueTierOffsetは不変)、★で決まった団体人気の変化が
+// **プラスのときだけ**「会場の器」の係数を掛ける(マイナスの変化には掛けない)。
+//   見込み客数 E = Engine.economy.calcBaseAttendance(団体人気)
+//   会場の器 V = clamp(席数 ÷ (E × fillRatio), floor, 1.0)
+//   効き始め w = clamp((団体人気 − onsetPop) ÷ (fullPop − onsetPop), 0, 1)
+//   係数 = 1 − (1 − V) × w      (実装: Engine.orgPop.getVenueFitMultiplier)
+// 例: 人気80の★5は 公民館・小ホールB +0.44→+0.09 / 中ホールA +0.18 / 中ホールB +0.31、大ホールの★4は +0.22 のまま。
+const SHOW_ORGPOP_VENUE_FIT = {
+  fillRatio: 0.6,   // 見込み客数の6割が入る箱なら「器が足りている」(V=1)
+  floor: 0.2,       // どれほど小さい箱でも伸びは2割は残す
+  onsetPop: 20,     // 人気20までは影響なし(創設期は公民館で育つのが自然)
+  fullPop: 40,      // 人気40で全部効く
+  noteBelow: 0.9,   // 係数がこれ未満のとき、週のログと会場選択に「伸びは控えめ」の説明を出す(表示のみ)
 };
 
 // Quarter / Season display labels
@@ -8434,8 +8460,11 @@ const ACHIEVEMENT_CONFIG = {
     autumnWar: 10,      // 4団体勝ち残り対抗戦 優勝団体 (autumn-gauntlet-war-spec-v0.1 §5.2)
   },
   // 減衰: age <= graceAge までは満額、その後 decayRate^(age-graceAge) で減衰
+  // age は季をまたぐたびに+1(獲得した季が0)。graceAge 0 = 満額は獲得したその季だけ、
+  // 翌季50%・2季後25%…。K-9(A) 2026-09-25: 旧1(翌季まで2年満額)は今の王者を固定する
+  // 仕組みの1つだったため0へ(S団体の評価の約1/4が実績ptで、序列が70季入れ替わらなかった)。
   decayRate: 0.5,
-  graceAge: 1,
+  graceAge: 0,
   removeBelow: 1,       // 1pt 未満で除去
 };
 // ── 殿堂盾バリアント ──────
@@ -21610,8 +21639,10 @@ const DECISION_DOCS = {
     cooldown: 0,
     body: '長期的な険悪関係にあるペアの間に立ち、関係改善を図る',
     detailText: '勝負の世界では険悪な関係も時に武器になる。だが限度を超えると組織全体を蝕む。社長が間に立ち、最悪の事態を避ける。成功率は約70%。失敗しても関係はそのまま。',
-    effectSummary: '成功時、双方向 bond +5〜+10。失敗時は据え置き。',
-    recommendation: 'W-1（憎い敵ゾーン）が累計4回以上発火したペアに対して使用できる。慢性化する前に手を打てば、亀裂が修復可能になることもある。',
+    // 2026-09-25 総点検04§5: 内部変数名(bond / W-1)と増減の数値を出していた。
+    // ペア選択モーダルの語(「対立累計」「わだかまりが残る」)に揃えて質的に書く。効果の値は不変
+    effectSummary: '成功すれば、二人の間のわだかまりがいくらか解ける。失敗しても関係は変わらない。',
+    recommendation: '対立が何度も重なってきた二人に使える。慢性化する前に手を打てば、亀裂が修復可能になることもある。',
     effect: { target: 'pair', bondDelta: [5, 10], successRate: 0.70 },
   },
   // 派閥解散命令（2026-07-27）。派閥が煩わしいプレイヤーが「解散させる」「今後つくらせない」を
@@ -31961,6 +31992,8 @@ const GAMELOG_TEMPLATES = {
   rivalry_resolution: '{emoji} {winnerName} vs {loserName} — {label}！ 両者人気+{popBonus} 団体人気{orgPopDelta}',
   rivalry_card_org_pop_bonus: '🔥 注目カード効果: 因縁カード編成で団体人気{delta}',
   show_rating_org_pop_update: '📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (現在: {curOrgPop})',
+  // K-3(2026-09-25): 会場の器の係数(SHOW_ORGPOP_VENUE_FIT)で★による伸びが控えめになった回。数値は出さない
+  show_rating_org_pop_update_small_venue: '📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (会場が人気に対して小さく、伸びは控えめ) (現在: {curOrgPop})',
   heat_level_changed: '{emoji} Heat変動: {oldLabel} → {newLabel}（集客倍率 ×{mult}）',
   unified_title_result: { taken: '🌐 {name}が全国統一王座を奪取！', defended: '🌐 {name}が全国統一王座を防衛！' },
 
@@ -32137,6 +32170,7 @@ const GAMELOG_TYPE_CATEGORY = {
   coach_slot_expanded: ['finance'],
   title_reclaim_failure: ['show', 'event'],
   show_rating_org_pop_update: ['show'],
+  show_rating_org_pop_update_small_venue: ['show'],
   challenge_request_coach_summary: ['event'],
   war_match_result_line: ['show'],
   draft_player_acquired: ['finance'],
