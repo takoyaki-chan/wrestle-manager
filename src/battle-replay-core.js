@@ -18,8 +18,19 @@ var BIGMOVE_ANIM_RATE = { Opening: 0.10, Mid: 0.30, End: 0.65, Climax: 1.0 };
 // HP 比率 → CSS クラス (danger / warn / '')
 function hpCls(ratio){ return ratio <= 0.33 ? 'danger' : ratio <= 0.55 ? 'warn' : ''; }
 
-// フレーム最小ディレイ (勝敗フレーム / action 種別 / 大ダメージボーナス)
-function _frameMinDelay(fr){
+// K-6: 「特大」= 大ダメージ(action.isCrit、被弾側の最大HPの12%以上)の上の段(同18%以上)。
+// 判定はエンジンがフレームに焼いた action.isHeavy を読むだけ(最大HPを正しく知っているのはエンジン)。
+// isHeavy を持たない旧フレーム(更新前にセーブされた大会の観戦データ)だけは従来の dmg>=20 で読む。
+function _isHeavyHit(action){
+  if (!action || action.kind === 'miss') return false;
+  if (typeof action.isHeavy === 'boolean') return action.isHeavy;
+  return (action.dmg || 0) >= 20;
+}
+
+// フレーム最小ディレイ (勝敗フレーム / action 種別 / 特大・溜め演出の加算)
+// charged: このフレームで大技の溜め演出(BIGMOVE_CHARGE_MS)が走るか。シングルの溜めは技威力の
+//          確率発動で特大とは別条件なので applyFrame が渡す。タッグの溜めは特大と同条件なので省略可。
+function _frameMinDelay(fr, charged){
   if (!fr) return 800;
   if (fr.winner) return 2200;
   var base = 800;
@@ -28,7 +39,9 @@ function _frameMinDelay(fr){
     else if (fr.action.kind === 'counter') base = FRAME_DELAYS.counter;
     else if (fr.action.isCrit)             base = FRAME_DELAYS.crit;
     else                                   base = FRAME_DELAYS.hit;
-    if (fr.action.kind !== 'miss' && fr.action.dmg >= 20) base += 2000;
+    // 溜め1800 + 技名見せ500 + 衝撃演出 + セリフ余白を吸収(次の攻防が溜めに重なる事故の防止)。
+    // 旧 dmg>=20 はほぼ全命中で成立し、溜めの有無を問わず毎回この間が入っていた(K-6で特大か溜めのときだけに)
+    if (fr.action.kind !== 'miss' && (charged || _isHeavyHit(fr.action))) base += 2000;
   }
   if (fr.events && fr.events.length > 0) base += 500;
   return base;
@@ -70,7 +83,7 @@ function _applyCounterFlash(atkCardEl){
 // - 飛び技 (aerial) は飛翔→着地の時間差を表現するため hitSE を 1100ms 遅延。
 function _playImpactSE(action){
   var cat    = action.moveCat || (typeof guessCategory === 'function' ? guessCategory(action.move) : 'strike');
-  var isBig  = action.dmg >= 20;
+  var isBig  = _isHeavyHit(action); // K-6: 特大のときだけ1.3倍(旧 dmg>=20)
   var volMul = isBig ? 1.3 : 1;
   var fire = function(){
     try { if (typeof hitSE === 'function') hitSE(cat, action.dmg, volMul); } catch(e){}

@@ -4,7 +4,7 @@
 // タッグ固有のセリフ (HOT_TAG_LINES / CUTIN_SAVE_LINES / BETRAYAL_LINES など) は tag-battle-lines.js に残す。
 // 観戦カットインのセリフ (CUTIN_LINES) は本ファイル末尾。消費点は battle-engine-main.js の _getCutinLines。
 
-// ダメージセリフ（長文、クリティカルで発動）
+// ダメージセリフ（長文、大ダメージ＝被弾側の最大HPの12%以上で発動判定）
 const DAMAGE_SERIF_LINES = {
   standard: {
     normal: ["くっ…まだ…まだだ…！","効いた…けど…負けない…！","はぁ…はぁ…立てる…まだ…"],
@@ -72,12 +72,14 @@ const DAMAGE_VOICE_LINES = {
   composed:   ["…っ","ふ…っ","…くっ","…はぁ…っ"]
 };
 
-// ダメージセリフをHP残量ベースで選ぶ
+// ダメージセリフをHP残量ベースで選ぶ。発動判定に入れるのは「大ダメージ」の被弾だけ
+// (K-6: 被弾側の最大HPの12%以上。判定はエンジンがフレームに焼いた action.isCrit — 最大HPを正しく
+//  知っているのはエンジンなので、ここでダメージ値から再計算しない。旧定義は絶対値 dmg≥15)
 // HP 66%超: serif 40%
 // HP 34〜66%: serif 15% / voice 50%
 // HP 33%以下: voice 60%
-function pickDamageLine(fighter, dmg, hpRatio, rng) {
-  if (dmg < 15) return null; // クリティカルヒットのみ
+function pickDamageLine(fighter, action, hpRatio, rng) {
+  if (!action || action.kind === 'miss' || !action.isCrit) return null; // 大ダメージのみ
   const r = rng ? rng() : Math.random();
   const personality = fighter.personality || 'normal';
   const archetype = fighter.archetype || 'standard';
