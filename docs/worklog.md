@@ -1,5 +1,18 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 総点検 — 記録と新聞の「書いてあるのに出ていない」6件を修正(Claude/Opus 5.5・worktree、merge 766ce210)
+
+根拠: docs/fun-audit-v0.1/06-narrative-spotlight.md ①②④、03-career-lifecycle.md ⑦。ゲームの数値は不変(表示専用の欄を除いた状態が main と一致、統計出力も全行一致)。
+
+- **経歴年表・殿堂・年代記**(adf217a2): `Engine.milestone.get` に7種(天頂戦・全国統一王座・4団体戦・歴代最高評価・大会ベストバウト2種・確執)と開眼の行。「特記事項なし」は記録が1件も無い年だけ。引退理由の注記を実際に記録される値で出す。殿堂の実績欄に天頂戦・4団体戦・開眼、既存不具合2件(PPV優勝が実績欄に出ない/「〇〇王座王座」の二重表記)も修正。殿堂の詳細は記録から作り直すので修正前の殿堂入り選手にも効く。開眼は `careerRecord.history` に積む。不変条件テスト「calcHofPoints が数える type は実績欄・年表がすべて描く」(test/career-record-display-coverage-test.js)
+- **引退セレモニーの経歴欄**(56de3645): `buildCareerSummary` を「入団+その選手らしい瞬間(最大3つ、`pickCareerMoments`)+全盛期」に。app.js は state を渡す引数を6か所足しただけ
+- **季末の引退記事**(a764ec10): `commitRetirements` の記事を30点の短信から格付け記事(retirementDeclare)に。殿堂入り特別号への合流は、その季に殿堂入りした人生の記録だけ(K-4裁定に沿う)
+- **非興行週の再掲**(d8a72db8): `Engine.newspaper._isFreshPlayerShow`(興行週かつ今週生成)に1本化
+- **引退記事Lティア第3文**(d6a57294): 戴冠1回以下の選手にだけ使う / **殿堂の異名の数字**(9f7ba49d): 数字入り10本は実際の回数と一致するときだけ候補(保存済みの異名は書き換えない)
+- **追加文面**: 38本(JA/EN)。全文はエージェント報告(本ログの元になった完了報告)と i18n/template-ledger.json
+- **検証**: npm test 287/287、auto-sim 30季 ALL CLEAR、save-regression 6本 ALL CLEAR。ja-golden は main 時点から基準不一致(本件の差は怪我引退の経歴欄の192行のみ・基準は未更新)。i18n-ratchet の基準は main 側の更新漏れも含めて焼き直した(702b38f8)
+- **範囲外で見つけたこと**: EN の年表で既存の王座行がベルト名を日本語のまま出す(テンプレのキー変更が要る)。年表に出ない内部記録(bigMatch・practiceInjury 等)が残る。`peakOVR` の履歴イベントは一度も記録されていない
+
 ## 2026-09-25 総点検 K-2・K-3・K-16 — ★の物語ボーナスを効かせる/小さい会場の人気の伸びを減らす/節目の大会をゆるい逓減に(Claude/Opus 5.5・worktree)
 
 裁定: K-2=A(死んでいた3項目を効かせて★を再較正)、K-3=新案(人気が上がったら小さい会場ほど伸びを減らす)、K-16=節目用のゆるい逓減(勝ち負け両方)。
