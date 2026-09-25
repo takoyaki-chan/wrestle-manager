@@ -1873,7 +1873,9 @@ const Engine = {
       if (rivalry < 80) return 3;
       return 4;
     },
-    getRivalryPairState(G, id1, id2) {
+    // 関係値と因縁記録だけで決まる部分(所属団体の判定を含まない)。getRivalryPairState と、
+    // checkRivalryTitles が引退者・休眠者のペアの記録だけを更新するときの共通部分(2026-09-25)
+    getRivalryPairCore(G, id1, id2) {
       const entry = Engine.title.getRivalry(G, id1, id2) || null;
       const keyAB = `${id1}>${id2}`;
       const keyBA = `${id2}>${id1}`;
@@ -1893,6 +1895,13 @@ const Engine = {
         ? (rivalryAB >= rivalryBA ? id1 : id2)
         : null;
       const band = Engine.title.getRivalryBand(minRivalry);
+      return {
+        entry, rivalryAB, rivalryBA, bondAB, bondBA, minRivalry, maxRivalry, minBond, avgBond,
+        band, resolvedType, isOneSided, aggressor,
+      };
+    },
+    getRivalryPairState(G, id1, id2) {
+      const core = Engine.title.getRivalryPairCore(G, id1, id2);
       const _findOrgId = (id) => {
         if (G.roster?.find(c => c.id === id)) return G.orgId || 'player';
         for (const [aoId, ao] of Object.entries(G.aiOrgs || {})) {
@@ -1904,20 +1913,8 @@ const Engine = {
       const _orgB = _findOrgId(id2);
       const isCrossOrg = !!(_orgA && _orgB && _orgA !== _orgB);
       return {
-        entry,
-        rivalryAB,
-        rivalryBA,
-        bondAB,
-        bondBA,
-        minRivalry,
-        maxRivalry,
-        minBond,
-        avgBond,
-        band,
-        resolvedType,
-        isOneSided,
-        aggressor,
-        matches: entry?.matches || 0,
+        ...core,
+        matches: core.entry?.matches || 0,
         isCrossOrg,
         // 決着に必要な対戦回数をペアごとに散らすために使う（checkResolution）
         idA: id1,
@@ -2082,6 +2079,13 @@ const Engine = {
     },
     // Phase 5: 週次ライバル表示更新
     // Returns { state, events }
+    // 2026-09-25 総点検04⑨/06⑨: 週のログの約3分の2がこの帯の上下で、その8割は自団体と無関係なペア、
+    // 名前が引けない相手(引退者・休眠者)は「?」で出ていた。
+    // - ログは自団体の選手が絡むペアだけに出す
+    // - 名前が引けない相手(=自団体・他団体・FAのどこにもいない引退者・休眠者)が絡むペアは、
+    //   団体の判定・帯の変化の判定・ログから外す。ただし記録(lastBand/oneSided)は関係値だけで
+    //   決まる従来と同じ式で更新し続ける — 復帰した選手の試合(認知イベント)が oneSided を読むため、
+    //   止めると数値が変わる。帯の判定そのもの(getRivalryPairCore)は変えていない
     checkRivalryTitles(state) {
       const rivalries = { ...(state.rivalries || {}) };
       const events = [];
@@ -2091,7 +2095,7 @@ const Engine = {
         (org.roster || []).forEach(c => nameMap.set(c.id, c.name));
       });
       (state.freeAgents || []).forEach(c => nameMap.set(c.id, c.name));
-      const getName = (id) => nameMap.get(id) || '?';
+      const playerIds = new Set((state.roster || []).map(c => c.id));
       const pairsToCheck = new Set(Object.keys(rivalries));
 
       Object.keys(state.relationships || {}).forEach(key => {
@@ -2103,19 +2107,24 @@ const Engine = {
 
       for (const key of pairsToCheck) {
         const [id1, id2] = key.split('-').map(Number);
-        const pairState = Engine.title.getRivalryPairState(state, id1, id2);
         const entry = rivalries[key] || { matches: 0, lastWeek: 0, resolutionCount: 0, lastBand: 0, oneSided: null };
+        const active = nameMap.has(id1) && nameMap.has(id2);
+        const pairState = active
+          ? Engine.title.getRivalryPairState(state, id1, id2)
+          : Engine.title.getRivalryPairCore(state, id1, id2);
         const prevBand = entry.lastBand || 0;
         const nextBand = pairState.band ? pairState.band.tier : 0;
 
-        if (!pairState.resolvedType && nextBand !== prevBand) {
+        if (active && (playerIds.has(id1) || playerIds.has(id2))
+            && !pairState.resolvedType && nextBand !== prevBand) {
+          const n1 = nameMap.get(id1), n2 = nameMap.get(id2);
           if (nextBand > prevBand && pairState.band) {
-            events.push(`${pairState.band.emoji} ${getName(id1)} vs ${getName(id2)} — ${pairState.band.label}が深まっている`);
+            events.push(`${pairState.band.emoji} ${n1} vs ${n2} — ${pairState.band.label}が深まっている`);
           } else if (nextBand > 0) {
             const labelInfo = pairState.band || RIVALRY_THRESHOLDS.find(t => t.tier === nextBand);
-            if (labelInfo) events.push(`${labelInfo.emoji} ${getName(id1)} vs ${getName(id2)} — ${labelInfo.label}に落ち着いた`);
+            if (labelInfo) events.push(`${labelInfo.emoji} ${n1} vs ${n2} — ${labelInfo.label}に落ち着いた`);
           } else if (prevBand > 0) {
-            events.push(`… ${getName(id1)} vs ${getName(id2)} — 因縁はひとまず静まった`);
+            events.push(`… ${n1} vs ${n2} — 因縁はひとまず静まった`);
           }
         }
 
