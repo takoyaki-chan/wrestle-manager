@@ -10,6 +10,22 @@ const TITLE_RING_ESCAPE_BONUS = 0.10;
 // カウンター率+4ptを補強(名勝負製造機・因縁と同じ既存キャップ共有)。
 const TITLE_RING_COUNTER_BONUS = 4;
 
+// K-7(2026-09-25 Keisuke裁定A): 「返し」の上乗せを、HP0の判定だけでなくフォール狙い(ピン)の成否にも効かせる。
+// 旧配線では上乗せがHP0判定(キックアウト/ロープエスケープ)にしか入っておらず、決着の本線である
+// フォール狙いには1つも効いていなかった(ニアフォール0回の試合が約7割・特性はほぼ不発)。
+//   両者の返し(同格なら勝率に中立): 名勝負製造機 / 因縁(0.05〜0.15) / 王座戦(0.10)
+//   片側の返し: 防衛王者の土壇場(0.02、フォールとギブアップ) / 闘志(0.08、HP30%未満のフォールのみ)
+// HP0でもピンでも、上乗せは「返す確率」に足し、上限は式の上限(フォール0.60/締め・ギブアップ0.52)にそろえる。
+// 返しの回数(kickoutCount)はHP0・ピン・丸め込みで共通の上限(通常2回・大一番3回)。使い切ったら返せない。
+// 丸め込みはTE主導の独立した決着なので、これらの上乗せは入れない(奇襲は踏ん張りで返すものではない)。
+const MEISHOUBU_ESCAPE_BONUS = 0.15;
+// 両者の返しは重ねても単独の最大値(因縁4段階・名勝負製造機の0.15)まで。返しは押さえ込まれる側を助けるので、
+// 両者に同じだけ効いても格差のある試合では格下寄りに傾く(大一番・格差8〜15で上乗せ0.15→格上−1.2pt、
+// 因縁4段階+王座戦の0.25→−2.3pt)。足し算のままだと mq spec 不変条件#6(勝率の歪み±2pt以内)を超えるため頭打ちにする。
+const SHARED_RETURN_BONUS_CAP = 0.15;
+const FIGHTING_SPIRIT_RETURN_BONUS = 0.08;
+const FIGHTING_SPIRIT_HP_RATIO = 0.3;
+
 // K-6(2026-09-25 Keisuke裁定A): 観戦演出の「大ダメージ」は被弾側の最大HPに対する割合で決める。
 // 旧定義の絶対値(大ダメージ dmg≥15 / 赤フラッシュ等 dmg≥20)は、最大HPの式(通常 141+2.5×ST・
 // 大一番 272+3.5×ST)でダメージ全体が膨らんだ結果、同格戦の命中のほぼ全部で成立し「全部が山場」になっていた。
@@ -252,10 +268,21 @@ Engine.battle = {
       if (popAdv != null) chance += popAdv * 0.07 * (popMult || 1);
       if (ph.name === 'Climax') chance *= e.kickoutClimaxMult;
       // 闘志: HP低下時のキックアウト率UP
-      if (Traits.has(def, '闘志') && def.hp / def.mhp < 0.3) chance += 0.08;
+      chance += Engine.battle.fightingSpiritBonus(def);
       chance = Engine.util.clamp(chance, 0.05, knee.cap);
       if (def.kickoutCount >= e.kickoutMax) chance = 0;
       return chance;
+    },
+    // 闘志(片側の返し): HP30%未満で返す力が上乗せされる。HP0のキックアウトとフォール狙いの返しが共有する(K-7)
+    fightingSpiritBonus(def) {
+      return (Traits.has(def, '闘志') && def.hp / def.mhp < FIGHTING_SPIRIT_HP_RATIO) ? FIGHTING_SPIRIT_RETURN_BONUS : 0;
+    },
+    // K-7: HP0判定の脱出率に「返し」の上乗せを足す。上限は式そのものの上限(soft-kneeのcap: 0.60/0.52)。
+    // 旧実装は加算後に0.45/0.40で頭打ちにしていたため、MNの高い選手ほど上乗せを足すと脱出率が下がる逆転があった。
+    // また回数上限(kickoutMax/guEscapeMax)に達して0になった側を上乗せで生き返らせていたので、それも止める。
+    addReturnBonus(chance, bonus, cap) {
+      if (!(chance > 0) || !(bonus > 0)) return chance;
+      return Math.max(chance, Math.min(chance + bonus, cap));
     },
     calcGuEscapeChance(def, ph, _eng, popAdv, popMult) {
       const e = _eng || ENG;
@@ -269,29 +296,41 @@ Engine.battle = {
       if (def.kickoutCount >= e.guEscapeMax) chance = 0;
       return chance;
     },
-    checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph) {
+    // K-7: _eng はシングルの試合のTier別設定(大一番は BIGMATCH_ENG の成功基礎14・Climax+18。閾値は通常と同じ35%)。
+    // 旧実装はグローバル ENG を直接読んでいたため、大一番の値がフォール狙いに一度も効いていなかった。
+    // タッグは引数を渡さない(従来どおり ENG)。
+    checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph, _eng) {
+      const e = _eng || ENG;
       if (def.hp <= 0) return false;
       const defHpRatio = def.hp / def.mhp;
-      if (defHpRatio > ENG.pinAttemptHpThreshold) return false;
-      if (dmg < ENG.pinAttemptMinDmg) return false;
+      if (defHpRatio > e.pinAttemptHpThreshold) return false;
+      if (dmg < e.pinAttemptMinDmg) return false;
       if (ph.name === 'Opening') return false;
-      let attemptRate = ENG.pinAttemptBaseRate;
+      let attemptRate = e.pinAttemptBaseRate;
       const mAdv = atkSide === 'left' ? mom : -mom;
-      attemptRate += mAdv * ENG.pinAttemptMomBonus;
+      attemptRate += mAdv * e.pinAttemptMomBonus;
       if (ph.name === 'Climax') attemptRate += 15;
       if (ph.name === 'End') attemptRate += 8;
       // 低HPほど急激にピン試行率アップ (HP0%で+70、HP10%で+50、HP20%で+30)
-      attemptRate += Math.max(0, (ENG.pinAttemptHpThreshold - defHpRatio) * ENG.pinLowHpAttemptScale);
+      attemptRate += Math.max(0, (e.pinAttemptHpThreshold - defHpRatio) * e.pinLowHpAttemptScale);
       return Engine.rng.float(rng) * 100 < Engine.util.clamp(attemptRate, 10, 95);
     },
-    calcPinAttemptSuccess(atk, def, dmg, ph) {
-      let rate = ENG.pinAttemptSuccessBase + (dmg * 0.5) - (def.mn * ENG.pinAttemptMntPenalty);
-      if (ph.name === 'Climax') rate += ENG.pinAttemptClimax;
+    calcPinAttemptSuccess(atk, def, dmg, ph, _eng) {
+      const e = _eng || ENG;
+      let rate = e.pinAttemptSuccessBase + (dmg * 0.5) - (def.mn * e.pinAttemptMntPenalty);
+      if (ph.name === 'Climax') rate += e.pinAttemptClimax;
       if (def.gritTurns > 0) rate -= 10;
       // 低HPほど決まりやすい (HP0%で+35、HP10%で+25、HP20%で+15)
       const defHpRatio = def.hp / def.mhp;
-      rate += Math.max(0, (ENG.pinAttemptHpThreshold - defHpRatio) * ENG.pinLowHpSuccessScale);
+      rate += Math.max(0, (e.pinAttemptHpThreshold - defHpRatio) * e.pinLowHpSuccessScale);
       return Engine.util.clamp(rate, 8, 80);
+    },
+    // K-7: フォール狙いの成功率(%)に防御側の「返し」の上乗せを入れる。HP0判定と同じ規則で、
+    // 返す確率(100−成功率)に足し、上限は式の上限(フォール0.60/締め0.52)。成功率を直接引く形だと
+    // クランプ(8〜80)の手前で上乗せが消えたり(通常戦のClimax)、重ねると3カウントがほぼ入らなくなったりした。
+    applyPinReturnBonus(successRate, bonus, cap) {
+      const ret = Engine.battle.addReturnBonus(1 - successRate / 100, bonus, cap);
+      return (1 - ret) * 100;
     },
 
     // Main match simulation — pure function, no DOM
@@ -380,6 +419,11 @@ Engine.battle = {
       // 通常興行の防衛戦でのみ渡される、王者個人のごく小さな土壇場補正。
       const championDefenseEscape = Array.isArray(ringOpts.championDefenseEscape)
         ? ringOpts.championDefenseEscape : [0, 0];
+      // K-7: 両者に同じだけ効く「返し」の上乗せ(名勝負製造機・因縁・王座戦)。HP0判定とフォール狙いが共有する。
+      // 重ねても SHARED_RETURN_BONUS_CAP まで(カウンター率側の上乗せは従来どおり足し算・counterMaxで頭打ち)。
+      const sharedReturnBonus = Math.min((hasMeishoubu ? MEISHOUBU_ESCAPE_BONUS : 0) + ringEscapeBonus, SHARED_RETURN_BONUS_CAP);
+      // 防衛王者の土壇場(片側)。defIsLeft: 返す側(防御側)が左か
+      const championReturnBonus = (defIsLeft) => Number(championDefenseEscape[defIsLeft ? 0 : 1]) || 0;
       const trustRingDebuff = Array.isArray(ringOpts.trustDebuff) ? ringOpts.trustDebuff : [0, 0];
       const buffRingBonus = Array.isArray(ringOpts.ovBuff) ? ringOpts.ovBuff : [0, 0];
       const ringOvAdjustL = (Number(trustRingDebuff[0]) || 0) + (Number(buffRingBonus[0]) || 0);
@@ -392,7 +436,7 @@ Engine.battle = {
       let _turnAction = null;
       let _turnKickout = null;   // { count, escapeType: 'fall'|'tko'|'gu' }
       let _turnPinAttempt = null; // 'success' | 'kickout2'
-      let _turnRollup = null;     // 'success'
+      let _turnRollup = null;     // 'success' | 'kickout2'(K-7: 丸め込みをカウント2で返した)
       let _turnTkoStop = false;
       function pushFrame(phName) {
         if (!recordFrames) return;
@@ -659,10 +703,8 @@ Engine.battle = {
                 const _popAdvKo = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
                 const _popMultKo = (tier >= 2 ? 2.0 : 1.0);
                 let koChance = B.calcKickoutChance(def, ph, eng, _popAdvKo, _popMultKo);
-                const defenderChampionBonus = fType === 'fall'
-                  ? (Number(championDefenseEscape[isLeftAtk ? 1 : 0]) || 0) : 0;
-                const koFlatBonus = (hasMeishoubu ? 0.15 : 0) + ringEscapeBonus + defenderChampionBonus;
-                if (koFlatBonus > 0) koChance = Math.min(koChance + koFlatBonus, 0.45);
+                const defenderChampionBonus = fType === 'fall' ? championReturnBonus(!isLeftAtk) : 0;
+                koChance = B.addReturnBonus(koChance, sharedReturnBonus + defenderChampionBonus, eng.kickoutKnee.cap);
                 if (Engine.rng.float(rng) < koChance) {
                   escaped = true;
                   def.hp = Math.round(def.mhp * 0.05);
@@ -677,9 +719,7 @@ Engine.battle = {
                 const _popAdvGu = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
                 const _popMultGu = (tier >= 2 ? 2.0 : 1.0);
                 let escChance = B.calcGuEscapeChance(def, ph, eng, _popAdvGu, _popMultGu);
-                const defenderChampionBonus = Number(championDefenseEscape[isLeftAtk ? 1 : 0]) || 0;
-                const guFlatBonus = (hasMeishoubu ? 0.15 : 0) + ringEscapeBonus + defenderChampionBonus;
-                if (guFlatBonus > 0) escChance = Math.min(escChance + guFlatBonus, 0.40);
+                escChance = B.addReturnBonus(escChance, sharedReturnBonus + championReturnBonus(!isLeftAtk), eng.guEscapeKnee.cap);
                 if (Engine.rng.float(rng) < escChance) {
                   escaped = true;
                   def.hp = Math.round(def.mhp * 0.05);
@@ -711,9 +751,44 @@ Engine.battle = {
                 }
               }
             }
-            else if (!winner && moveTier !== 'small' && B.checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph)) {
-              const successRate = B.calcPinAttemptSuccess(atk, def, dmg, ph);
+            // K-7: 丸め込み技は丸め込み専用の判定を先に評価する(TE主導の独立した決着)。
+            // 旧実装は汎用のフォール狙いを先に評価していたため、低HP時の丸め込み技の約7〜8割が
+            // 「ピン」決着に吸われ、番狂わせ体質(+8)もほぼ届いていなかった。タッグは元からこの順。
+            else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < eng.rollupHpThreshold) {
+              let rSuccess = eng.rollupBaseSuccess + (atk.te * eng.rollupTecBonus);
+              // 番狂わせ体質: 格上相手の丸め込み成功率UP
+              if (Traits.has(atk, '番狂わせ体質') && Engine.util.ov(def) > Engine.util.ov(atk)) rSuccess += 8;
+              // K-7: 返しの回数(kickoutCount)はHP0判定・フォール狙いと共通。使い切った側はもう返せない
+              if (def.kickoutCount >= eng.kickoutMax) rSuccess = 100;
+              if (Engine.rng.float(rng) * 100 < rSuccess) {
+                winner = atkSide;
+                finType = '丸め込み';
+                finishPhase = ph.name;
+                finMove = mv.n;
+                pushLog('rollup', { name: atk.name, move: mv.n });
+                if (recordFrames) _turnRollup = 'success';
+              } else {
+                // 丸め込みもカウント2で返せばニアフォール。フォール狙いの返しと同じ流れ(粘りバフ・ドラマ集計)に乗せる
+                def.kickoutCount++;
+                def.gritTurns = eng.gritDuration;
+                pushLog('rollupFail', { name: def.name });
+                totalKickouts++;
+                if (recordFrames) _turnRollup = 'kickout2';
+              }
+            }
+            else if (!winner && moveTier !== 'small' && mv.c !== 'rollup'
+                     && B.checkPinAttempt(rng, mv, atk, def, dmg, mom, atkSide, ph, eng)) {
               const isSubPin = mv.c === 'submission';
+              // K-7: 返しの上乗せ(両者分+防衛王者の土壇場+闘志)。闘志はHP0判定と同じくフォール(キックアウト)にだけ効く
+              const pinReturnBonus = sharedReturnBonus + championReturnBonus(!isLeftAtk)
+                + (isSubPin ? 0 : B.fightingSpiritBonus(def));
+              // K-7: 返しの回数はHP0判定と共通の上限(通常2回・大一番3回。ギブアップの脱出も同じ枠)。
+              // 使い切った側は返せない(旧: ピンの返しは無制限で、上乗せが重なると3カウントが入らず時間切れまで続いた)
+              const returnsLeft = def.kickoutCount < (isSubPin ? eng.guEscapeMax : eng.kickoutMax);
+              const successRate = returnsLeft
+                ? B.applyPinReturnBonus(B.calcPinAttemptSuccess(atk, def, dmg, ph, eng), pinReturnBonus,
+                    isSubPin ? eng.guEscapeKnee.cap : eng.kickoutKnee.cap)
+                : 100;
               if (Engine.rng.float(rng) * 100 < successRate) {
                 winner = atkSide;
                 finType = isSubPin ? 'ギブアップ' : 'ピン';
@@ -725,23 +800,11 @@ Engine.battle = {
                   if (isSubPin) _turnKickout = { count: 0, escapeType: 'gu' };
                 }
               } else {
+                def.kickoutCount++;
                 def.gritTurns = eng.gritDuration;
                 pushLog(isSubPin ? 'pinFailSub' : 'pinFailFall', { name: def.name });
                 totalKickouts++;
                 if (recordFrames) _turnPinAttempt = isSubPin ? 'kickout2_sub' : 'kickout2';
-              }
-            }
-            else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < eng.rollupHpThreshold) {
-              let rSuccess = eng.rollupBaseSuccess + (atk.te * eng.rollupTecBonus);
-              // 番狂わせ体質: 格上相手の丸め込み成功率UP
-              if (Traits.has(atk, '番狂わせ体質') && Engine.util.ov(def) > Engine.util.ov(atk)) rSuccess += 8;
-              if (Engine.rng.float(rng) * 100 < rSuccess) {
-                winner = atkSide;
-                finType = '丸め込み';
-                finishPhase = ph.name;
-                finMove = mv.n;
-                pushLog('rollup', { name: atk.name, move: mv.n });
-                if (recordFrames) _turnRollup = 'success';
               }
             }
             else if (!winner && atk.consecutiveHits >= eng.tkoConsecutiveThreshold

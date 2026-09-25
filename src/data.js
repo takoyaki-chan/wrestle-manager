@@ -864,6 +864,8 @@ const BATTLE_LOG_TEMPLATES = {
     pinFailSub: '  → 締めに入った！ だが{name}が振りほどいた！',
     pinFailFall: '  → フォール！ だが{name}がカウント2で返した！',
     rollup: '★ {name}、まさかの{move}で3カウント！ 大金星！',
+    // K-7: 丸め込みをカウント2で返した(フォール狙いの返し pinFailFall と対になる行)
+    rollupFail: '  → 丸め込み！ だが{name}がカウント2で返した！',
     refStop: '★ レフェリーストップ！ {name}のTKO勝利！',
     timeout: '⏰ 時間切れ判定により、{name}の勝利！',
   },
@@ -932,6 +934,7 @@ const BATTLE_LOG_LINE_KINDS = {
     pinFailSub: { cls: null, spoiler: true },
     pinFailFall: { cls: null, spoiler: true },
     rollup: { cls: 'finish', spoiler: true },
+    rollupFail: { cls: null, spoiler: true },
     refStop: { cls: 'finish', spoiler: true },
     timeout: { cls: 'finish', spoiler: false },
   },
@@ -982,7 +985,11 @@ const BIGMATCH_ENG = {
   rollupBaseSuccess: 10,
   rollupHpThreshold: 0.25,
   finisherUnlockHpThreshold: 0.40,
-  pinAttemptHpThreshold: 0.25,
+  // K-7(2026-09-25): フォール狙いの成否はTier別の値を読むようになった(旧実装はグローバルENG直読みで、
+  // 下の成功基礎14・Climax+18は一度も効いていなかった)。成功率を下げた分が大一番の「返し合い」になる。
+  // フォール狙いの閾値は旧 0.25 の上書きを外し、実際にずっと動いていた 0.35(ENG)を継承する。
+  // 計測(同格/格差の大一番): 閾値25%は返しを増やさず(ニアフォール+0.06)格下勝率だけを1〜2.4pt下げた
+  // (決着の手前で削り合いが長くなるため)。裁定「勝率は変えずに」に合わせて採らない。
   pinAttemptSuccessBase: 14,
   pinAttemptClimax: 18,
   kickoutMax: 3,
@@ -17999,6 +18006,9 @@ const NEWS_HEADLINE_TEMPLATES = {
 // task-77 §5: 引退記事のティア別テンプレ(確定版・一字一句変更不可)。
 // A-2: L(reigns>=2 または peakOVR>=90) / A(reigns>=1 または peakOVR>=80) / B(peakOVR>=65) / C(それ以外)
 // {reigns} を含むバリアント(L-1/L-2/A-1/A-3)は reigns>=1 のときだけ選ぶ(Engine.newspaper.pickRetirementVariant)。
+// maxReigns を持つバリアントは、戴冠数がその値以下のときだけ選ぶ(2026-09-25 面白さ総点検 06 §5)。
+// L-3「ベルトの数で語られる選手ではなかった」は、複数回戴冠(L の条件の片方が reigns>=2)の選手に
+// 当たると事実と食い違うので、戴冠1回以下(=ピークOVRで L に入った選手)に限る。本文は変えない。
 const RETIREMENT_TEMPLATES = {
   L: [
     { headline: '{org}・{name}が引退 {seasons}シーズンの現役に区切り',
@@ -18006,7 +18016,8 @@ const RETIREMENT_TEMPLATES = {
     { headline: '{name}、現役を退く 一つの区切りが{org}に',
       body: '{org}で{seasons}シーズンを過ごし、{age}歳での決断となった。{reigns}度ベルトを巻いた選手だが、記者が覚えているのはむしろ落とした試合の翌週の上がり方のほうだ。この先しばらく、この団体の試合を見る人は、無意識に比べる相手を持つことになる。' },
     { headline: '{age}歳の{name}が引退 {org}の中心が空く',
-      body: '{org}に{seasons}シーズン。ベルトの数で語られる選手ではなかったが、対戦相手の格を引き上げる役を長く担い続けてきた。同じ場所に誰を置いても、しばらくは前任者の輪郭が透けて見えるだろう。空いた分の大きさが正確に測れるのは、来季の興行を何本か見てからになる。' },
+      body: '{org}に{seasons}シーズン。ベルトの数で語られる選手ではなかったが、対戦相手の格を引き上げる役を長く担い続けてきた。同じ場所に誰を置いても、しばらくは前任者の輪郭が透けて見えるだろう。空いた分の大きさが正確に測れるのは、来季の興行を何本か見てからになる。',
+      maxReigns: 1 },
   ],
   A: [
     { headline: '{org}・{name}が現役引退 {seasons}シーズンに幕',
@@ -19236,6 +19247,12 @@ const CAREER_MILESTONE_TEMPLATES = {
   retireInjuryCareerEnding: '重傷により現役続行不可',
   retireAge: '年齢による引退',
   injuryRetire: '怪我による引退',
+  // 2026-09-25(面白さ総点検 03-⑦): 実際に記録される reason 値(lastrun / motivation /
+  //   contractEnd / sudden)の注記。旧来の想定キー(injury_wear 等)は1件も記録されていなかった
+  retireLastRun: 'ラストランを終えて',
+  retireMotivation: 'モチベーション喪失により',
+  retireContractEnd: '契約満了を機に',
+  retireSudden: '突然の退団とともに',
   // 大舞台
   summitWin: '頂上決戦 勝利',
   summitLose: '頂上決戦 敗北',
@@ -19293,6 +19310,38 @@ const CAREER_MILESTONE_TEMPLATES = {
   springTagDetailChampion: '{name}とのタッグで頂点に立つ',
   springTagDetailRunnerUp: '{name}とのタッグで決勝進出',
   springTagDetailEntry: '{name}とのタッグで参戦',
+  // ── 2026-09-25(面白さ総点検 06-①): careerRecord.history に記録されていたのに年表が
+  //    読み捨てていた7種+開眼。優勝行(天頂戦 優勝/4団体勝ち残り対抗戦 優勝)は ui-ledger に
+  //    既訳があるので本表へは入れず、management.js の定数から引く(§15-3) ──
+  // 天頂戦(history type 'ppvTournament'。result は敗退したラウンド)
+  tenchosenRunnerUp: '天頂戦 準優勝',
+  tenchosenSemiFinal: '天頂戦 準決勝敗退',
+  tenchosenQuarterFinal: '天頂戦 準々決勝敗退',
+  tenchosenFirstRound: '天頂戦 出場（1回戦敗退）',
+  tenchosenEntry: '天頂戦 出場',
+  // 全国統一王座(history type 'unifiedTitle')。戴冠/奪取の文面は HOF_HIGHLIGHT_TEMPLATES と共用し、
+  //   ここには防衛1回ごとの行だけを置く
+  unifiedDefense: '全国統一王座 {n}度目の防衛',
+  // 4団体勝ち残り対抗戦(history type 'autumnWar')。団体戦なので結果はチームの成績、
+  //   注記は本人の勝ち星
+  autumnWarRunnerUp: '4団体勝ち残り対抗戦 準優勝',
+  autumnWarSemiFinal: '4団体勝ち残り対抗戦 準決勝敗退',
+  autumnWarEntry: '4団体勝ち残り対抗戦 出場',
+  autumnWarDetailWins: '個人{n}勝',
+  // 歴代最高評価の更新・大会ベストバウト(試合評価は「ベストマッチ賞（試合評価 N）」と同じ見せ方)
+  mqRecord: '歴代最高評価を更新（試合評価 {mq}）',
+  tenchosenBestBout: '天頂戦 大会ベストバウト（試合評価 {mq}）',
+  jtBestBout: 'ジュニアトーナメント 大会ベストバウト（試合評価 {mq}）',
+  // 選手間の確執(AI団体の対立イベント。history type 'feud')
+  feud: '{name} との確執',
+  feudNoName: '選手間の確執',
+  feudTalk: '話し合いで収束',
+  feudMatchWin: 'リング上の決着戦に勝利',
+  feudMatchLose: 'リング上の決着戦に敗れる',
+  feudMatchDraw: 'リング上の決着戦は引き分け',
+  feudIgnore: '団体は静観',
+  // 開眼(history type 'kaigan'。Engine.kaigan.processMatchResults が発火した試合で積む)
+  kaigan: '格上との一戦を境に開眼',
   // シーズン区切り(text は非表示。detail だけが「キャリアN年目」列の下に出る)
   seasonEnd: 'キャリア{n}年目 終了',
   // 既訳の無いフォールバック団体ラベル(既訳のあるものは management.js 側に置く・§15-3)
@@ -19337,6 +19386,15 @@ const HOF_HIGHLIGHT_TEMPLATES = {
   unifiedCrownGeneration: '全国統一王座 戴冠(第{n}代)',
   unifiedCapture: '全国統一王座 奪取',
   unifiedDefense: '全国統一王座 防衛{n}度',
+  // 2026-09-25(面白さ総点検 06-①): calcHofPoints は加点しているのに実績欄に出なかった2大会と開眼。
+  //   天頂戦の優勝行・4団体勝ち残り対抗戦の優勝行は ui-ledger に既訳があるので本表へは入れず、
+  //   management.js の定数(_WM_TENCHOSEN_CHAMPION_JA / _WM_AUTUMN_WAR_CHAMPION_JA)から引く(§15-3)
+  tenchosenRunnerUp: '天頂戦 準優勝',
+  tenchosenSemiFinal: '天頂戦 ベスト4',
+  autumnWarChampionGauntlet: '4団体勝ち残り対抗戦 優勝（{n}人抜き）',
+  autumnWarGauntlet: '4団体勝ち残り対抗戦 {n}人抜き',
+  autumnWarTotal: '4団体勝ち残り対抗戦 通算{n}勝',
+  kaigan: '格上との一戦を境に開眼',
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -20052,6 +20110,16 @@ const CHRONICLE_CHAPTER_TEMPLATES = {
     ppvMainStreak: '<strong>{name}</strong> PPVメインイベント {count}度制覇・{streak}連覇（{years}）',
     ppvMainMulti: '<strong>{name}</strong> PPVメインイベント {count}度制覇（{years}）',
     ppvMainOnce: '<strong>{name}</strong> PPVメインイベント制覇',
+    // 2026-09-25(面白さ総点検 06-①): 天頂戦・4団体勝ち残り対抗戦・全国統一王座が章に1行も出なかった
+    tenchosenMulti: '<strong>{name}</strong> 天頂戦 {count}度優勝（{years}）',
+    tenchosenOnce: '<strong>{name}</strong> 天頂戦優勝',
+    tenchosenRunnerUp: '<strong>{name}</strong> 天頂戦準優勝',
+    autumnWarStreak: '<strong>{name}</strong> 4団体勝ち残り対抗戦 {count}度優勝・{streak}連覇（{years}）',
+    autumnWarMulti: '<strong>{name}</strong> 4団体勝ち残り対抗戦 {count}度優勝（{years}）',
+    autumnWarOnce: '<strong>{name}</strong> 4団体勝ち残り対抗戦優勝',
+    autumnWarGauntlet: '<strong>{name}</strong> 4団体勝ち残り対抗戦 {count}人抜き',
+    unifiedMulti: '<strong>{name}</strong> 全国統一王座 {count}度戴冠（{years}）',
+    unifiedOnce: '<strong>{name}</strong> 全国統一王座 戴冠',
     warWin: '<strong>{name}</strong> 対抗戦勝利',
     warLoss: '対抗戦 <strong>{name}</strong> 敗退',
     warRecord: '<strong>{name}</strong> 対抗戦{total}戦{wins}勝{losses}敗',

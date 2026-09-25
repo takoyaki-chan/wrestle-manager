@@ -9300,7 +9300,7 @@ const App = {
       // 引退演出データを保持（pendingRetirements形式）
       const pendingLastRunRetirements = retiredWithRecords.map(f => {
         const { line, category } = Engine.retirement.selectLine(f, 'lastrun', updState, lrLineRng);
-        const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t);
+        const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t, updState);
         return { fighter: f, route: 'lastrun', line, category, summary, canRetain: false };
       });
       G = { ...updState, _pendingLastRunRetirements: pendingLastRunRetirements };
@@ -10818,7 +10818,7 @@ const App = {
           const latestRetire = [...history].reverse().find(h => h.type === 'retire');
           const route = latestRetire?.reason === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
           const { line, category } = Engine.retirement.selectLine(f, route, G, fbRng);
-          const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t);
+          const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t, G);
           console.warn('[WM] injury retirement recovered via fallback', { id: f.id, name: f.name, route });
           return { fighter: f, route, line, category, summary };
         });
@@ -10867,7 +10867,7 @@ const App = {
         });
         delete retiredFighter.growthLog;
         const { line, category } = Engine.retirement.selectLine(retiredFighter, 'lastrun', G, lrLineRng);
-        const summary = Engine.retirement.buildCareerSummary(retiredFighter, WM_I18N.t);
+        const summary = Engine.retirement.buildCareerSummary(retiredFighter, WM_I18N.t, G);
         return { fighter: retiredFighter, route: 'lastrun', line, category, summary, canRetain: false };
       });
       pendingLastRunRetirements = [...pendingLastRunRetirements, ...synthesizedRetirements];
@@ -10891,7 +10891,7 @@ const App = {
         const lrFbRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAD3, 0xF));
         const recovered = orphanedLR.map(f => {
           const { line, category } = Engine.retirement.selectLine(f, 'lastrun', G, lrFbRng);
-          const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t);
+          const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t, G);
           console.warn('[WM] lastrun retirement recovered via 3rd-tier fallback', { id: f.id, name: f.name });
           return { fighter: f, route: 'lastrun', line, category, summary, canRetain: false };
         });
@@ -11885,7 +11885,7 @@ const App = {
           const recF = r._recoveredFighter;
           const lineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xAA18, recF.id));
           const { line } = Engine.retirement.selectLine(recF, 'motivation', G, lineRng);
-          const summary = Engine.retirement.buildCareerSummary(recF, WM_I18N.t);
+          const summary = Engine.retirement.buildCareerSummary(recF, WM_I18N.t, G);
           const delay = (newInjuries.length + flavorEvents.length) * 100 + 200;
           wmDiag('[WM][motiv-retire-diag] firing recovered showRetirementPopups', { id: recF.id, name: recF.name });
           setTimeout(() => showRetirementPopups([{ fighter: recF, route: 'motivation', line, summary }]), delay);
@@ -11895,7 +11895,7 @@ const App = {
         if (!f) return;
         const lineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xAA18, f.id));
         const { line } = Engine.retirement.selectLine(f, 'motivation', G, lineRng);
-        const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t);
+        const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t, G);
         const retiredF = Engine.career.addEvent(Engine.career.ensure(f), { type: 'retire', reason: 'motivation', season: G.season, age: f.age });
         delete retiredF.growthLog;
         G = { ...G,

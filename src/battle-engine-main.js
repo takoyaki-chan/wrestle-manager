@@ -1064,8 +1064,13 @@ function _beginPinSequence(fr){
 
 function _buildPinCtrl(fr){
   const seq = [];
+  // K-7: このフレームの押さえ込み自体で決着したか。時間切れはエンジンが最終フレームに winner を
+  // 書き込むので、最後のターンが「返し」だったときに winner だけ見ると3カウント/タップを出してしまう
+  // (その後に「判定勝ち」が出て矛盾する)。返したことはそのまま見せ、決着の告知は結果画面に任せる。
+  const decidedHere = fr.winner != null && fr.finishPhase !== 'Timeout';
 
-  // フレームスキーマ: pinAttempt='success'|'kickout2', kickout={count,escapeType}, rollup='success', tkoStop=true
+  // フレームスキーマ: pinAttempt='success'|'kickout2'|'kickout2_sub', kickout={count,escapeType},
+  // rollup='success'|'kickout2'(K-7: 丸め込みを返した → 下の丸め込み分岐が「返したーーっ！」で締める), tkoStop=true
   // action.isCrit があればダメージセリフを先頭に
   if (fr.action && fr.action.kind !== 'miss' && fr.action.isCrit && !fr.rollup) {
     const defSide = fr.action.atkSide === 'left' ? 'right' : 'left';
@@ -1136,7 +1141,7 @@ function _buildPinCtrl(fr){
     const defChar = atkSide === 'left' ? S.R : S.L;
     const moveName = fr.action ? (fr.action.move || '') : '';
     if (atkChar && defChar) seq.push({ kind: 'introBig', text: WM_I18N.t('{atk}が{def}に{move}をがっちりロック！', { atk: atkChar.name, def: defChar.name, move: moveName }), dramatic: true });
-    const isWin = fr.winner != null;
+    const isWin = decidedHere;
     if (isWin) {
       seq.push({ kind: 'finishClick', label: WM_I18N.t('…！？') });
       if (defChar) seq.push({ kind: 'count', text: WM_I18N.t('{def}がタップ！！', { def: defChar.name }), cls: 'tap' });
@@ -1166,7 +1171,7 @@ function _buildPinCtrl(fr){
   if (count >= 1) seq.push({ kind: 'count', text: WM_I18N.t('ワン！'), cls: '' });
   if (count >= 2) seq.push({ kind: 'count', text: WM_I18N.t('ツー！'), cls: 'two' });
   seq.push({ kind: 'finishClick', label: WM_I18N.t('…！？') });
-  if (fr.winner != null) {
+  if (decidedHere) {
     seq.push({ kind: 'count', text: WM_I18N.t('3ーーーーっ！！！'), cls: 'three' });
   } else {
     seq.push({ kind: 'count', text: WM_I18N.t('返したーーーーっ！！'), cls: 'kickout' });

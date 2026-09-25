@@ -113,7 +113,7 @@ MVPレース順位は**トップ10しか無く、1週古い**（recalc は advan
 | `winStreakMilestone` | 100 | 5/10/15/20/25/30 連勝。強度補正で節目スケール(+4/連勝、5連勝=+0〜上限+40)と団体記録との距離(更新+40/王手+20)が乗る。2026-08-13裁定「ただの5連勝は一面ではない」: 5連勝は王手+主役補正上限でも240<top(260)で一面不可、記録絡みのみ一面資格 |
 | `loseStreakMilestone` | 95 | 同じ節目 |
 | `transferDone` | 150 | 所属が変わった週。**レンタルは数えない**。初回は基準づくりのみ |
-| `retirementDeclare` | 180 | `retiredFighters` の新規。オフに確定するので開幕号に載る |
+| `retirementDeclare` | 180 | `retiredFighters` の新規(季中の引退)。**季末の引退**は `Engine.retirement.commitRetirements` が同じ形の `retirementDeclare` を newsItems として返し、App が業界ニュースキューへ積む(開幕号に載る。2026-09-25〜。それまでは汎用の `retirement` 30点の短信だった) |
 
 #### 3-1a. 引退記事の格付け（task-77・2026-08-02）
 
@@ -131,9 +131,15 @@ MVPレース順位は**トップ10しか無く、1週古い**（recalc は advan
 **B**(peakOVR>=65) / **C**(それ以外)。各ティア3バリアント(`RETIREMENT_TEMPLATES`)を、
 同一号に同ティアが複数出る場合は `pickRetirementVariant` が順繰りに回して同文の並びを避ける。
 `{reigns}` を含むバリアントは reigns>=1 のときだけ選ぶ(無冠の看板/レジェンドには非使用バリアントを割り当てる)。
+`maxReigns` を持つバリアントは戴冠数がその値以下のときだけ選ぶ(2026-09-25)。L-3「ベルトの数で語られる
+選手ではなかった」は `maxReigns: 1`(複数回戴冠の選手には当てない。本文は不変)。
 
 入口は `_newsRetirements`(AIシーズン末キュー→aiAceRetirement/aiRetirement)と
-`retirementDeclare`(週次スキャン)の2系統。`aiInjuryRetirement`(怪我引退)は本文を独自の負傷フレーバーのまま
+`retirementDeclare`(自団体。週次スキャン=季中の引退 / `commitRetirements`=季末の引退)の2系統。
+自団体の `retirementDeclare` は引退した季 `retiredSeason` を持ち、殿堂入り・引退特別号へ合流するときは
+**その季に殿堂入りした記録だけ**を引く(`_findHallOfFameEntry(state, id, { retiredSeason })`、
+紙面側 `_npV3HofEntry(id, inductionSeason)`)。同じIDの再登場は別人(裁定K-4)なので、前の人生の
+殿堂入り(異名・防衛数)で今の人生の引退を特別号にしない。`retiredSeason` を持たない記事(AI・旧号)は従来どおりIDで引く。`aiInjuryRetirement`(怪我引退)は本文を独自の負傷フレーバーのまま
 維持し、強度補正のみ格スコアを効かせる。peakOVR は `careerRecord.peakOVR`(衰え前のピーク)を使い、
 現在OVR(衰え後)では代用しない。reigns は `careerRecord.totalTitleWins`。
 
@@ -206,6 +212,15 @@ promising以下しかいなければ1名だけ。raw/material しかいない年
 クールダウンの記録は `publish` 側で行う——`generate()` は状態を書かない純粋関数のままにする。
 
 **対応する出来事が無い週は作らない。** 紙面が薄い号があってよい。
+
+### 3-5. 自団体の興行記事は「その週の号」だけ（2026-09-25）
+
+自団体の興行結果(`state.currentNewspaper`。App が興行後に `generatedWeek/generatedSeason` 付きで置く)は、
+**興行週で、かつ今週生成された結果**のときだけ記事(`playerShowNormal`/`playerShowTitle`)と
+詳報(`playerShowData`=本紙つづき)に載せる(`Engine.newspaper._isFreshPlayerShow`)。
+`currentNewspaper` は次の興行週の頭まで残るので、存在だけを見ると非興行週の号・新年号に前週の興行記事が
+今週の日付で再掲されていた。生成週を持たない旧データは「興行週である」ことだけで判定する。
+非興行週の号が空になることはある(埋め方は別途)。
 
 ---
 
