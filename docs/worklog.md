@@ -1,5 +1,56 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 K-1 第2歩(移行計画 第1段)— 先読みの副作用・王座移動の記事・記録の引数・記録の経歴を直し、道場の節目の二重表示を止めた(Claude/Opus 5.5・worktree)
+
+裁定 K-1「興行後の処理を一本化する(A・段階的)」の第2歩。`docs/fun-audit-v0.1/k1-parity-report.md` §8 第1段の4件+関連の既存不具合1件。
+
+### 0. ハーネスの基準の取り直し(src 変更なし・e9c84571)
+- main に K-2+K-3+K-16・K-11・K-12・K-14・通知とログ・記録と新聞が入り、seed 42 の fixture が変わって `npm run test:k1:parity` が組めなくなっていた(S2W14 の健康な選手10人、派閥がリーダー+3人)
+- scenarios.js: 基準状態の怪我人を入力側で復帰、factions の派閥員の下限を実使用の3人に
+- allowlist.js: K1-A15 を外す(K-12 の `Engine.showTagMatch` で解消済み)、K1-X03(怪我の経歴の日付が実プレイで0季0週)を実測項目として追加、既存項目に fixture の変化で見えた同じ原因の場所を追加。40件のまま PASS
+
+### 1. K1-P01 結果画面の先読み tickWeek が本番の G を書き換える(5e438f7a)
+- relationships.js: 逓減カウンターの減衰(`processWeeklyDecay`)・W-1 の累計回数と嫌悪伝染のクールダウン(`processWeeklyStoryEvents`)・関係フラグのクールダウン(`_enqueueModalWithCooldown`)を「写してから書く」形に
+- management.js: ブレークスルー記録へのスナップショット台詞(tickWeek)・他団体の怪我引退の経歴の区切り(AI 週次興行)も同様
+- app.js `prepareShowResultInlinePopups`: 先読みに G の複製(structuredClone、無ければ JSON 往復)を渡す。G に関数・Set・Map が無いことを実ページで確認(`frames: undefined` のキーだけ)
+- **調べて分かったこと**: `_enqueueModal` は共有配列への push のまま残した。試合の関係値処理(applyMatchResult → 関係フラグ・M-15)は一時の relState に積み、呼び出し側(executeShow ほか約10か所)は relationships と relationshipCounters しか取り戻さないので、ポップアップは push だけを通って本番に届いている。写して足す形にすると auto-sim の指紋が変わった(38bd4a45→46a88829)。純化は第3段で取り戻す側をそろえてから
+- 数値: auto-sim の指紋 **不変**(30季 seed42 38bd4a45、10季 seed7919 --care e4ea411e)。実プレイだけ W-1 の二重計上・ポップアップの重複・クールダウンの先送りが消える
+
+### 2. K1-E07 王座移動の記事が実プレイで消える(2f0d847b)
+- app.js `_finalizeShowImpl`: crownChampion の titleChange 記事を G ではなく s に積む。乱入者が奪って即空位にした王座は「新王者」の記事にしない(乱入の結果は別の知らせで出る)
+
+### 3. K1-E06 実プレイの記録に matchType と勝者を渡す+§7 X09 記録更新の経歴が消える(53926df8)
+- app.js `_finalizeShowImpl`: updateRecord にエンジンと同じ matchType・winnerId/winnerIds を渡す(タッグ記録・記録更新の記事が出る)
+- management.js: `Engine.mq._recordCareerStamp` / `applyRecordCareerStamp`(冪等)を追加し、updateRecord が `careerStamp` を返す。executeShow は `s = { ...s, roster, … }` の後で、app.js は最後の `G = { ...s }` の直前で刻み直す
+- tickWeek の他団体の週次興行でも同じ理由で刻印が消えていたので直した。置き場所は `newAiOrgs` の中でその場で消す後始末(`_lastMatchResults` ほか)の**後**。先に刻むと団体のオブジェクトが作り直されて後始末が届かず、前週の試合結果が翌週に残って世界が変わった(S5W28 で分岐することを週ごとのハッシュで突き止めて位置を決めた)
+- 数値: auto-sim の指紋 38bd4a45 → **ce3e56c9**。毎週の G(経歴の history と新聞を除く)のハッシュは30季すべて一致、最終 G の差は careerRecord.history の中だけ(他団体の記録更新4回×2人=8件)。auto-sim の集計行は約350行すべて同一
+- ハーネス mq-record: 両経路の記録(シングル41・タッグ44)・記事3本・経歴の刻印2件が一致。title-defense: 両経路に titleChange の記事
+
+### 4. 道場の節目の台詞が2週続けて同じ選手から出る(e77f7dd2)
+- 原因: 週の一覧 `weekLogFeed`(道場「休憩中の選手」の素材)を、興行の無い週(processWeek)は空にしてから積むのに、興行週(closeShowResult)と PPV の2経路は空にせず足していた。前週の垣間見えが翌週の道場にも残り、抽選を経ない確定枠(宿命のライバル・深い絆・退団の噂)が2週続いた。成長の節目通知の保留(`_milestoneQueue`)とは別物で、そちらには触れていない
+- 修正: 3経路とも tickWeek 直後に G を作り直すところで `weekLogFeed: []` にしてから今週分を積む(エンジンは weekLogFeed を読まないので tickWeek の入力は変えない)
+- 計測(auto-sim 30季 seed42 に読み取り専用の模擬を入れ、旧運用と新運用を同じ走行で比較): 確定枠が2週続けて同じ **19 → 0**、同じ季に同じ選手の同じ節目が2回以上 20組 → 2組(残る2組はエンジンが別の週に改めて生んだもの)。K-14 の報告の「40組」とは数え方が違う
+
+### 検証
+- `npm run test:k1:parity`: PASS(登録 **37**件 = 40 −P01 −E07 −E06。未登録0・消えた0)
+- `npm test`: 288本中287 PASS → 落ちた newspaper-priority-test の §9(旧パターン `App._pushIndustryNews(crown.newsEvent)` の存在を検査していた)を新しい積み先の検査に直して PASS(79e0e6ba)
+- 新テスト `test/k1-stage1-test.js`(6項目): 修正前の src では6件とも FAIL することを確認
+- `node test/auto-sim.js 30 42`: ALL CLEAR(違反0・台帳検査0)、指紋 ce3e56c9
+- `node test/balance-baseline.js`: 逸脱なし
+- `npm run test:ui:walkthrough`: PASS(373手・Issues 0、PPV の週も通過)
+
+### 触ったファイル
+- src/relationships.js / src/management.js / src/app.js
+- test/k1-parity/scenarios.js・allowlist.js / test/k1-stage1-test.js(新規)/ test/newspaper-priority-test.js
+- docs/fun-audit-v0.1/k1-parity-report.md(改訂注記・該当行・§8 第1段の実施結果)/ docs/worklog.md / docs/game-system-roadmap.md / docs/実機確認バックログ.md
+- 並行作業の領分(ニアフォール・呼び名・タッグ勝利セリフ・tag-battle-*)には触れていない
+
+### 残課題(第3段へ)
+- `_modalQueue` と関係フラグの「共有配列への push」頼みを、取り戻す側をそろえて純化する
+- 他団体の週次興行の後始末が「その場で消す」に頼っている(`_lastMatchResults` ほか)
+- PPV・大会・統一王座の遠征・B2/B3・対抗戦の updateRecord も、記録の刻印が後段の書き戻しで消えている可能性(未確認・§7 X11)
+- tickWeek には入力の入れ子をその場で書き換える箇所がまだある(関係フラグの配列、シーズン末の他団体の契約処理など)。先読みは複製で守っている
+
 ## 2026-09-25 総点検 K-2・K-3・K-16 — ★の物語ボーナスを効かせる/小さい会場の人気の伸びを減らす/節目の大会をゆるい逓減に(Claude/Opus 5.5・worktree)
 
 裁定: K-2=A(死んでいた3項目を効かせて★を再較正)、K-3=新案(人気が上がったら小さい会場ほど伸びを減らす)、K-16=節目用のゆるい逓減(勝ち負け両方)。

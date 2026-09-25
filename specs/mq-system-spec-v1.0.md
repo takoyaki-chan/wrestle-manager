@@ -343,6 +343,8 @@ const BIG_NEWS_TYPES = new Set([
 
 - シングルは`metadata.winnerId`必須、タッグは`metadata.winnerIds`(2件)必須。**いずれも解決できない場合(ドロー等)は数値記録のみ更新し記事化を静かにスキップ**する(記録は嘘をつかないが、勝者を名指しできない記事は書けない)
 - タッグの変数充填規則: `{nameA1}`=勝者組OVR上位(`_sortByOvrDesc`)。名前解決は`_findFighter`(roster/aiOrgs/freeAgents/retiredFighters を順に走査)、`{stage}`は`STAGE_LABELS`(normal/ai/ppv/junior/tenchosen/springTag/autumnWar→日本語)、`{orgName}`は勝者(タッグはエース)の所属組織名
+- **呼び出し側は `matchType`('singles'/'tag')と勝者(`winnerId` / `winnerIds`)を必ず渡す**。渡さないとタッグの評価がシングルの記録と比べられ、記事も出ない。通常興行はエンジン(`Engine.executeShow`)と実プレイ(`App._finalizeShowImpl`)が同じ引数を渡す(2026-09-26 K-1 第1段 K1-E06 で実プレイ側を修正)
+- **経歴への刻印(シングルのみ)**: 記録更新の瞬間に勝者・敗者の `careerRecord.history` へ `mqAllTimeRecord` を1件ずつ刻む(`Engine.mq._recordCareerStamp` → `applyRecordCareerStamp`。出来事の形は `Engine.career.addPairEvent` と同じ)。`updateRecord` は戻り値 `careerStamp` でこの内容も返す。興行処理のように**記録を更新した後で選手の一覧を丸ごと書き戻す**呼び出し側は、書き戻しの後で `applyRecordCareerStamp(state, careerStamp)` を呼び直す(冪等: 同じ季・週・評価の出来事がすでにある選手には積まない)。刻み直している場所: `Engine.executeShow`(`s = { ...s, roster, … }` の後)、`App._finalizeShowImpl`(最後の `G = { ...s }` の直前)、tickWeek の他団体の週次興行(aiOrgs の書き戻しと消費済みの印の後始末の後)。以前はこの3か所とも刻印が書き戻しで消えていた(2026-09-26 K-1 第1段 §7 X09)
 
 ### 7.4 P5: 大物ルーキー/期待のライバル/トップ王者重傷
 
