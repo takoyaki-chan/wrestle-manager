@@ -8113,17 +8113,26 @@ const Engine = {
         s = { ...s, pendingAwards: { ...s.pendingAwards, hallOfFame: Engine.awards.checkHallOfFame(s) } };
       }
 
-      // 10. 新聞 retirement イベント (App 側で _pushNewsEvent する用)
+      // 10. 新聞: 格付けされた引退記事 retirementDeclare(App 側で _pushNewsEvent する用)
+      // 2026-09-25(面白さ総点検 06-②): 季末の引退は、以前は type:'retirement' の汎用テンプレ・
+      // 30点の短信だった。格付け記事は季中に retiredFighters を走査する scanRosterNews にしか無く、
+      // retiredFighters は表彰式の完了時に空になるので、季末の引退は一度も拾われていなかった
+      // (同格のAI選手は肩記事になる)。季中の引退と同じ data(戴冠歴・ピークOVR・在籍・現役王者か)で
+      // 積み、generate() の格付け(retirementGrade)と殿堂特別号(composeHallOfFameRetirement)へ合流させる。
+      // seasons は applySeasonEnd が今季を数え終えた後の値なので +1 しない(季中の scanRosterNews は +1)。
+      // retiredSeason は殿堂の記録を「この人生」のものだけ引くための鍵(K-4: 同じIDの再登場は別人)
       retiredWithRecords.forEach(f => {
-        const ovr = Engine.util.ov(f);
-        if (ovr >= 70 || (f.age || 17) >= 25) {
-          const seasons = f.careerSeasons || 0;
-          newsItems.push({
-            type: 'retirement',
-            characterId: f.id,
-            data: { name: f.name, org: s.orgName || 'あなたの団体', detail: `${seasons}シーズンの現役生活` },
-          });
-        }
+        const cs = Engine.newspaper._retirementCareerStats(f);
+        newsItems.push({
+          type: 'retirementDeclare',
+          characterId: f.id,
+          data: {
+            name: f.name, org: s.orgName || _NP_PLAYER_ORG_FALLBACK_JA, orgMissing: !s.orgName,
+            age: f.age || '', seasons: f.careerSeasons || 1,
+            reigns: cs.reigns, peakOVR: cs.peakOVR, wasChampion: cs.wasChampion,
+            retiredSeason: s.season,
+          },
+        });
       });
 
       return { state: s, events, newsItems };
@@ -31784,10 +31793,16 @@ Engine.newspaper = {
   // 通常の引退格（最大+120）とは別枠で積み、天頂戦級の記事と競る特別号にする。
   HOF_RETIREMENT_BONUS: 150,
 
-  /** allHallOfFame（旧セーブは hallOfFame）から選手の殿堂入り記録を引く。 */
-  _findHallOfFameEntry(state, fighterId) {
+  /** allHallOfFame（旧セーブは hallOfFame）から選手の殿堂入り記録を引く。
+   *  opts.retiredSeason(任意): 引退した季が分かっているときは、その季に殿堂入りした記録だけを引く
+   *  (2026-09-25)。同じIDは別の人生で再登場する(K-4裁定: 同姓同名の別人として扱う)ので、IDだけで
+   *  最初に一致した記録を返すと、前の人生の殿堂入り(異名・防衛数)で今の人生の引退記事を書いてしまう。
+   *  殿堂入りは引退した季の表彰式で行われるので、inductionSeason が引退した季と一致する。 */
+  _findHallOfFameEntry(state, fighterId, opts) {
     if (!state || fighterId == null) return null;
-    const sameId = h => h && String(h.id) === String(fighterId);
+    const lifeSeason = (opts && opts.retiredSeason != null) ? Number(opts.retiredSeason) : null;
+    const sameId = h => h && String(h.id) === String(fighterId)
+      && (lifeSeason == null || Number(h.inductionSeason) === lifeSeason);
     const all = state.allHallOfFame || {};
     for (const entries of Object.values(all)) {
       const hit = Array.isArray(entries) ? entries.find(sameId) : null;
@@ -32658,12 +32673,16 @@ Engine.newspaper = {
       if (!r || r.id == null || seenRetired[String(r.id)]) return;
       seenRetired[String(r.id)] = 1;
       const cs = Engine.newspaper._retirementCareerStats(r);
+      // 2026-09-25: 殿堂の記録を「この人生」のものだけ引く鍵(季末の commitRetirements と同じ)。
+      // 同じIDの前の人生の retire も履歴に残りうるので、最後の retire の季を使う
+      const lastRetire = ((r.careerRecord && r.careerRecord.history) || []).filter(e => e && e.type === 'retire').pop();
       pushes.push({
         type: 'retirementDeclare', characterId: r.id,
         data: {
           name: r.name, org: s.orgName || _NP_PLAYER_ORG_FALLBACK_JA, orgMissing: playerOrgMissing,
           age: r.age || '', seasons: (r.careerSeasons || 0) + 1,
           reigns: cs.reigns, peakOVR: cs.peakOVR, wasChampion: cs.wasChampion,
+          retiredSeason: (lastRetire && lastRetire.season != null) ? lastRetire.season : s.season,
         },
       });
     });
@@ -33459,7 +33478,9 @@ Engine.newspaper = {
           const variant = Engine.newspaper.pickRetirementVariant(grade.tier, d.reigns || 0, _retiredVariantCounts);
           const queuedHof = industryEvents.find(x => x && x.type === 'hallOfFame'
             && String(x.characterId) === String(ev.characterId));
-          const hofEntry = Engine.newspaper._findHallOfFameEntry(state, ev.characterId)
+          // 2026-09-25: retiredSeason を持つ記事(季中・季末の自団体の引退)は「この人生」の殿堂入りだけを引く
+          const hofEntry = Engine.newspaper._findHallOfFameEntry(state, ev.characterId,
+            d.retiredSeason != null ? { retiredSeason: d.retiredSeason } : undefined)
             || (queuedHof ? {
               id: ev.characterId, name: d.name,
               titleReigns: queuedHof.data?.titles || d.reigns || 0,

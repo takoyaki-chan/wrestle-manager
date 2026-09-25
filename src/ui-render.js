@@ -8319,9 +8319,12 @@ function _npV3KurodaColumn(wp, seasonNum, weekNum) {
 
 // 殿堂入り記録は新聞記事とは別に恒久保存される。ここから照合することで、
 // 専用フラグ追加前に発行済みのバックナンバーも特別紙面へ描き替えられる。
-function _npV3HofEntry(fighterId) {
+// inductionSeason(任意): 指定すると、その季に殿堂入りした記録だけを引く(2026-09-25。同じIDの
+// 再登場は別人 — K-4裁定 — なので、前の人生の殿堂入りで今の人生の引退記事を描き替えない)
+function _npV3HofEntry(fighterId, inductionSeason) {
   if (fighterId == null) return null;
-  const sameId = h => h && String(h.id) === String(fighterId);
+  const sameId = h => h && String(h.id) === String(fighterId)
+    && (inductionSeason == null || Number(h.inductionSeason) === Number(inductionSeason));
   const all = (typeof G !== 'undefined' && G.allHallOfFame) || {};
   for (const entries of Object.values(all)) {
     const hit = Array.isArray(entries) ? entries.find(sameId) : null;
@@ -8335,6 +8338,10 @@ function _npV3IsHofRetirement(story) {
   if (!story) return false;
   const retirementTypes = ['retirementDeclare', 'aiAceRetirement', 'aiRetirement', 'aiInjuryRetirement'];
   if (!retirementTypes.includes(story.type)) return false;
+  // 2026-09-25: 引退した季(retiredSeason)を持つ自団体の引退記事は、生成時に「この人生」の殿堂入りを
+  // 引いて hallOfFameRetirement を決めている。IDだけで殿堂を探し直すと、同じIDの前の人生の殿堂入りで
+  // 特別号に描き替えてしまうので、生成時の判定に従う。持たない記事(旧号・AI)は従来どおり照合する
+  if (story.newsData && story.newsData.retiredSeason != null) return !!story.newsData.hallOfFameRetirement;
   return !!(story.newsData?.hallOfFameRetirement || _npV3HofEntry(story.characterId));
 }
 
@@ -8342,8 +8349,9 @@ function _npV3IsHofRetirement(story) {
 // 通常の一面トップとは写真量、見出し、功績帯、勲章で明確に格を分ける。
 function _npV3HallOfFameRetirement(ts, seasonNum, weekNum) {
   const id = ts.characterId || null;
-  const entry = _npV3HofEntry(id) || {};
   const data = ts.newsData || {};
+  // retiredSeason を持つ記事は、その季に殿堂入りした記録だけを使う(前の人生の記録を混ぜない)
+  const entry = (data.retiredSeason != null ? _npV3HofEntry(id, data.retiredSeason) : _npV3HofEntry(id)) || {};
   const fighter = ALL_CHARS.find(c => c.id === id) || {};
   const name = entry.name || fighter.name || '';
   const orgId = entry.orgId || (id ? _npFindFighterOrgKey(G, id) : null);
