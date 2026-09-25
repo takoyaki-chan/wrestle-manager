@@ -10754,7 +10754,8 @@ function _hofShieldImg(level, id, size) {
   return `<img src="${url}" style="width:${size}px;height:auto;display:block;margin:0 auto" alt="${_getHofStarText(level)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:${Math.round(size*0.6)}px;text-align:center">${_getHofShieldEmoji(level)}</span>`;
 }
 function _getHighlightIcon(type) {
-  return { titleWin: '👑', titleDefense: '🛡️', titleLoss: '💔', juniorTournament: '🏟️', ppvMainEvent: '🏆', springTagLeague: '🌸', unifiedTitle: '🌐' }[type] || '📌';
+  // 2026-09-25: 天頂戦(⛰️)・4団体勝ち残り対抗戦(🍁)・開眼(👁️)を追加(記録タブのバッジ・年表と同じ記号)
+  return { titleWin: '👑', titleDefense: '🛡️', titleLoss: '💔', juniorTournament: '🏟️', ppvMainEvent: '🏆', springTagLeague: '🌸', unifiedTitle: '🌐', ppvTournament: '⛰️', autumnWar: '🍁', kaigan: '👁️' }[type] || '📌';
 }
 
 function _getAllHofEntries() {
@@ -10905,19 +10906,17 @@ function showHofDetail(idx) {
 
   // §6 キャリアハイライト年表
   // i18n P7-25: 保存値 `h.careerHighlights[].text` は**連結し終えた生JAの完成文**として
-  // Gへ永続しているため、辞書キーとは一致せず t() では訳せない。語り文(§18-1)と同じ
-  // 自己検証型fail-openで解く:
-  //   1. まず dict 無し(JA)で再生成し、保存値と行数・text が1バイト一致するか確かめる
-  //      = 素材(careerRecord)が揃っていて、テンプレも保存当時と同一である証拠
-  //   2. 一致したときだけ、現在の言語の dict(WM_I18N.t)で作り直した配列を出す
-  //   3. 一致しない(旧セーブで素材が欠けている / テンプレが変わった)なら保存値を優先
-  // JAモードでは 2 の結果が 1 と同一(t()はja素通し+PH置換のみ)なので表示は1バイト不変。
+  // Gへ永続しているため、辞書キーとは一致せず t() では訳せない。エントリに残っている素材
+  // (careerRecord = 殿堂入り時点の post-join 履歴そのもの)から、現在の言語の dict で再生成する。
+  // 2026-09-25(面白さ総点検 06-①): 以前は「JAの再生成が保存値と1バイト一致したときだけ」再生成版を
+  // 出していた。実績欄の生成を直した(天頂戦・4団体勝ち残り対抗戦・PPV GRAND FINAL の優勝と開眼を
+  // 描く/「○○王座王座」の二重表記を解消)ので、その照合だと直す前に殿堂入りした選手は
+  // 取りこぼしと二重表記のある保存値へ戻ってしまう。素材がある限り再生成を正とし、保存値は
+  // 素材の無い旧エントリ(と、再生成が空になるのに保存値がある場合)にだけ使う。
   let highlights = h.careerHighlights || [];
-  if (h.careerRecord && h.careerRecord.history) {
+  if (h.careerRecord && Array.isArray(h.careerRecord.history)) {
     const hlJa = Engine.awards.buildCareerHighlights(h.careerRecord, orgName, G);
-    const matches = highlights.length === 0
-      || (hlJa.length === highlights.length && hlJa.every((x, i) => x.text === highlights[i].text));
-    if (matches) {
+    if (hlJa.length > 0 || highlights.length === 0) {
       highlights = Engine.awards.buildCareerHighlights(h.careerRecord, orgName, G, WM_I18N.t);
     }
   }
