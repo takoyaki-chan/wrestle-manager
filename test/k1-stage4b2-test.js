@@ -10,6 +10,9 @@
 //       buildInjuryRetirementPresentations。引退者をロスターから外し、経歴・引退者の記録・関係値の凍結・仲の良い選手の
 //       気落ち(M-22)・王座の返上(この興行の王座戦の結果も見る)・引退ポップアップのデータまで。実プレイの画面は
 //       結果画面の怪我の欄に全治の週数を出さず、閉じた後に本人の引退ポップアップ→周りの反応(M-22)の順
+//    3. K1-E04 突然の退団: Engine.show.applySuddenDepartures。信頼15未満の選手が1興行2.5%で去る(士気・M-23・
+//       王座の返上・経歴・行き先・演出データ)。入力の他団体ロスターを書き換えない。興行週は closeShowResult が
+//       tickWeek の後・週送りの前に取り出してトーストで見せる(processWeek と同じ関数)
 //
 //  両経路の一致そのものは npm run test:k1:parity(実ブラウザ)が見る。ここは関数の中身と、
 //  app.js が共通の関数を呼んでいること(文面)を確かめる。前半(F01/E05/X03/E02)は test/k1-stage4b-test.js。
@@ -198,6 +201,76 @@ section('E03: 実プレイ(app.js)とエンジン(executeShow)が同じ関数で
   const ui = readSource('src', 'ui-common.js');
   const blk = ui.slice(ui.indexOf('function _pbInjuryBlock('), ui.indexOf('function _pbInjuryBlock(') + 800);
   assert.ok(/ir\.retireType \? ''/.test(blk), '結果画面の怪我の欄が引退者にも全治の週数を出す');
+});
+
+// ── 3. K1-E04 突然の退団 ──
+section('E04: applySuddenDepartures — 信頼15未満の選手が去る(ロスターから外れ、士気−4.59、M-23、経歴、行き先、演出データ)', () => {
+  assert.ok(typeof Engine.show.applySuddenDepartures === 'function', 'Engine.show.applySuddenDepartures が無い');
+  const s0 = clone(baseState);
+  const low = s0.roster[0];
+  const roster = s0.roster.map(c => c.id === low.id ? { ...c, trust: 3, popularity: 60 } : { ...c, trust: Math.max(c.trust || 50, 40) });
+  let hit = null;
+  for (let seed = 1; seed < 5000 && !hit; seed++) {
+    const s = { ...s0, rngSeed: seed, roster, lockerRoomMorale: 50, _modalQueue: [] };
+    const before = clone(s);
+    const out = Engine.show.applySuddenDepartures(s);
+    if (out.state._pendingSuddenDepartures) hit = { s, before, out };
+  }
+  assert.ok(hit, '5000シードで一度も退団が起きない(2.5%)');
+  const { s, before, out } = hit;
+  const { _modalQueue: _a, ...restS } = s;
+  const { _modalQueue: _b, ...restBefore } = before;
+  assert.deepStrictEqual(restS, restBefore, '入力の状態が書き換わった(他団体のロスターの差し替えを含む)');
+  const st = out.state;
+  assert.ok(!st.roster.some(c => c.id === low.id), '去った選手がロスターに残っている');
+  assert.strictEqual(st.roster.length, roster.length - 1, '信頼15以上の選手まで去った');
+  assert.ok(Math.abs(st.lockerRoomMorale - (50 - 4.59)) < 1e-9, `士気 ${st.lockerRoomMorale}`);
+  assert.ok((st._modalQueue || []).some(m => m.type === 'M-23' && m.payload.toId === low.id), '突然離脱の波紋(M-23)が積まれていない');
+  assert.strictEqual(st._pendingSuddenDepartures.length, 1);
+  assert.strictEqual(st._pendingSuddenDepartures[0].id, low.id);
+  // 人気60 → 他団体(スター争奪 or 乱数で1団体)。経歴に suddenDeparture、信頼は50に戻る
+  const moved = Object.values(st.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === low.id)
+    || (st.freeAgents || []).find(f => f.id === low.id);
+  assert.ok(moved, '去った選手の行き先が無い');
+  assert.strictEqual(moved.trust, 50);
+  assert.ok((moved.careerRecord.history || []).some(h => h.type === 'suddenDeparture'), '経歴に suddenDeparture が無い');
+  assert.ok(out.events.some(e => /荷物をまとめて団体を去った/.test(e)));
+  // 信頼15以上しかいなければ何も起きない(状態はそのまま)
+  const calm = { ...s0, roster: s0.roster.map(c => ({ ...c, trust: 30 })) };
+  const none = Engine.show.applySuddenDepartures(calm);
+  assert.strictEqual(none.state, calm);
+  assert.deepStrictEqual(none.events, []);
+  assert.strictEqual(none.titleMsg, null);
+});
+
+section('E04: 王者が去ったら王座を返上し、その一文(titleMsg)を返す', () => {
+  const s0 = clone(baseState);
+  const champ = s0.roster[0];
+  const roster = s0.roster.map(c => c.id === champ.id ? { ...c, trust: 2 } : { ...c, trust: 60 });
+  const titles = { ...s0.titles, world: { ...(s0.titles && s0.titles.world), championId: champ.id, defenses: 2 } };
+  let out = null;
+  for (let seed = 1; seed < 5000 && !out; seed++) {
+    const r = Engine.show.applySuddenDepartures({ ...s0, rngSeed: seed, roster, titles, _modalQueue: [] });
+    if (r.state._pendingSuddenDepartures) out = r;
+  }
+  assert.ok(out, '退団が起きない');
+  assert.strictEqual(out.state.titles.world.championId, null, '王座が空位になっていない');
+  assert.ok(out.titleMsg && /王座返上/.test(out.titleMsg), `titleMsg=${out.titleMsg}`);
+});
+
+section('E04: 実プレイ(app.js)とエンジン(executeShow)が同じ関数で退団を処理し、興行週の画面がトーストで見せる', () => {
+  assert.ok(/Engine\.show\.applySuddenDepartures\(s\)/.test(finalizeBody()), '_finalizeShowImpl が Engine.show.applySuddenDepartures を呼んでいない');
+  assert.ok(/Engine\.show\.applySuddenDepartures\(s\)/.test(executeShowBody()), 'executeShow が Engine.show.applySuddenDepartures を呼んでいない');
+  assert.ok(!/Engine\.trust\.checkSuddenDepartures\(/.test(executeShowBody()), 'executeShow が自前の退団処理を持っている');
+  const app = readSource('src', 'app.js');
+  const close = app.slice(app.indexOf('  closeShowResult() {'), app.indexOf('  closeShowResult() {') + 40000);
+  const tick = close.indexOf('Engine.tickWeek(G');
+  const take = close.indexOf('G._pendingSuddenDepartures');
+  const adv = close.indexOf('App.advanceFromWeekSummary();');
+  assert.ok(tick > 0 && take > tick && take < adv, 'closeShowResult が tickWeek の後・週送りの前に _pendingSuddenDepartures を取り出していない');
+  assert.ok(/App\._showSuddenDepartureToasts\(pendingSuddenDeparturesShow/.test(close), 'closeShowResult が突然の退団のトーストを出していない');
+  const pw = app.slice(app.indexOf('  processWeek() {'), app.indexOf('  processWeek() {') + 30000);
+  assert.ok(/App\._showSuddenDepartureToasts\(pendingSuddenDepartures,/.test(pw), 'processWeek が共通のトーストを使っていない');
 });
 
 if (failed > 0) {

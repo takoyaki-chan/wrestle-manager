@@ -9164,6 +9164,15 @@ const App = {
     // s は finalizeShow 冒頭で {...G} から派生しているため、s を base にして問題ない。
     // K-1 第1段 §7 X09: 歴代最高評価の更新をキャリアに刻み直す(途中の roster の書き戻しで消えた分。冪等)
     recordCareerStamps.forEach(stamp => { s = Engine.mq.applyRecordCareerStamp(s, stamp); });
+    // K-1 4-B-7(K1-E04): 突然の退団(信頼15未満・1興行2.5%。trust-system-spec §13.3)。エンジンと同じ
+    // Engine.show.applySuddenDepartures を、興行の処理を全部終えた状態(s.roster が最新・一時参加の選手は外した後)で
+    // 1回呼ぶ。以前は呼び出しが無く、表示コードだけが残っていた。前兆は「💭よそよそしい」(信頼40未満)と、信頼20を
+    // 割った週の「退団を考えているという噂」(ログ1行+道場の確定枠の吹き出し)。去った選手はトースト(closeShowResult)で見せる
+    {
+      const sd = Engine.show.applySuddenDepartures(s);
+      s = sd.state;
+      if (sd.titleMsg) events.push(sd.titleMsg);
+    }
     // K-1 4-B-6(K1-E03): 怪我による引退の演出データ(_pendingInjuryRetirements)。エンジンと同じ関数で組み、
     // closeShowResult が本人の引退ポップアップ(showRetirementPopups)で見せる。引退セリフは興行前の状態(G は
     // この時点でまだ興行前)で選ぶ。経歴の要約は画面の言語で訳し、団体名を入れる(エンジンは訳さない)
@@ -10992,6 +11001,17 @@ const App = {
     // 興行終了後にshowCardをリセット（renderShowPrep の pad/trim で会場に応じた枠数に自動調整）
     G = { ...G, showCard: [] };
 
+    // K-1 4-B-7(K1-E04): 突然の退団(_finalizeShowImpl で起きる)。processWeek と同じトーストで見せる。
+    // 週送りの前に取り出す(残すと翌週の processWeek が1週遅れで同じトーストを出す)
+    const pendingSuddenDeparturesShow = G._pendingSuddenDepartures || null;
+    if (G._pendingSuddenDepartures) {
+      const { _pendingSuddenDepartures: _, ...cleanSdShow } = G;
+      G = cleanSdShow;
+    }
+    if (pendingSuddenDeparturesShow && pendingSuddenDeparturesShow.length > 0) {
+      App._showSuddenDepartureToasts(pendingSuddenDeparturesShow, injuries.length * 100 + 150);
+    }
+
     // v1.4w: 防衛マイルストーン検出
     const _postDefenses = G.titles?.world?.defenses || 0;
     if (_postDefenses > _preDefenses) {
@@ -11750,6 +11770,22 @@ const App = {
     refreshAll();
   },
 
+  // §13.4 突然の退団のトースト(K-1 4-B-7)。興行週(closeShowResult)と非興行週(processWeek)で同じものを出す。
+  // 週送りの全消去(advanceFromWeekSummary → dismissAllPopups)の後に開くようタイマーに載せる。
+  // showNotifEventToast は他のポップアップが開いていれば共有の待ち行列に並ぶ(待ちの保険は共有ゲート側)
+  _showSuddenDepartureToasts(departures, baseDelay) {
+    (departures || []).forEach((d, i) => {
+      if (!d) return;
+      setTimeout(() => showNotifEventToast({
+        type: 'N_sudden_departure',
+        fighter: d.id,
+        name: d.name,
+        text: WM_I18N.t('🚪 {name}が荷物をまとめて団体を去った。誰も止められなかった。', { name: d.name }),
+        detail: d.destination === 'rival' ? WM_I18N.t('{name}は他団体へ移籍した。', { name: d.name }) : WM_I18N.t('{name}はフリーとなった。', { name: d.name }),
+      }), (baseDelay || 0) + i * 200);
+    });
+  },
+
   processWeek() {
     if (App._guardAwardsStage?.('processWeek')) return false;
     Audio.play('tick');
@@ -11994,7 +12030,7 @@ const App = {
       }
     }
 
-    // §13.4: 突然の退団表示
+    // §13.4: 突然の退団表示(興行週は closeShowResult が同じ関数で出す)
     const pendingSuddenDepartures = G._pendingSuddenDepartures || null;
     if (G._pendingSuddenDepartures) {
       const { _pendingSuddenDepartures: _, ...cleanSd } = G;
@@ -12002,15 +12038,7 @@ const App = {
     }
     if (pendingSuddenDepartures && pendingSuddenDepartures.length > 0) {
       const sdDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 150;
-      pendingSuddenDepartures.forEach((d, i) => {
-        setTimeout(() => showNotifEventToast({
-          type: 'N_sudden_departure',
-          fighter: d.id,
-          name: d.name,
-          text: WM_I18N.t('🚪 {name}が荷物をまとめて団体を去った。誰も止められなかった。', { name: d.name }),
-          detail: d.destination === 'rival' ? WM_I18N.t('{name}は他団体へ移籍した。', { name: d.name }) : WM_I18N.t('{name}はフリーとなった。', { name: d.name }),
-        }), sdDelay + i * 200);
-      });
+      App._showSuddenDepartureToasts(pendingSuddenDepartures, sdDelay);
     }
 
     // P1: スキャンダル通知ポップアップ

@@ -12,6 +12,11 @@
 //   4. 本人のポップアップを閉じる → 「引退の置き土産」(M-22)が出る → 閉じる
 //   5. ポップアップが全部閉じ、「週を処理」で次の週へ進める(止まらない)
 //   6. 例外ゼロ
+//  突然の退団(K1-E04)の週も同じ形で通す: departure シナリオ(信頼6の選手が6人)+退団が出る乱数シード →
+//   結果画面 → 「結果を確認 →」1回で週が進み、去った選手はフリー/他団体へ → 退団のトースト(D型)が1枚出て OK で閉じる →
+//   次の週へ進める・翌週に同じトーストが出直さない・例外ゼロ
+//  注: 関係性フラグのポップアップ(M-22/M-23)はキューに積まれたことだけ確かめる。表示は既存の不具合
+//      (_drainFlagModalQueue が window.G を見る)で実プレイでは出ないため、裁定待ち(k1-parity-report.md 参照)
 //
 //  使い方: node test/ui-walkthrough/injury-retire-departure-check.js
 // ══════════════════════════════════════════════════════════════════════════════
@@ -86,7 +91,7 @@ async function closeOne(page) {
     const pick = (sel) => Array.from(document.querySelectorAll(sel)).find(vis) || null;
     document.querySelectorAll('[data-check-close]').forEach(el => el.removeAttribute('data-check-close'));
     // C3 の通知 / 派閥の演出の CONTINUE / 直訴などの決断は「NO」/ A型の決断(最初の選択肢)/ A型の続行ボタン / TAP TO CONTINUE
-    const btn = pick('.mdl-c-footer-btn') || pick('.fevt-continue-btn')
+    const btn = pick('.mdl-c-footer-btn') || pick('#mdlDOverlay .mdl-d-btn') || pick('.fevt-continue-btn')
       || pick('.fevt-decision-card[data-choice="NO"]')
       || pick('#mdlAOverlay.active .mdl-a-decision-card') || pick('#mdlAOverlay.active .mdl-a-continue-btn:not([disabled])')
       || (pick('#mdlAOverlay.active .mdl-a-tap-hint') ? pick('#mdlAOverlay.active .mdl-a-tap-hint') : null);
@@ -255,6 +260,98 @@ async function injuryCase(browser, server, fixtureText, check) {
   }
 }
 
+async function departureCase(browser, server, fixtureText, check) {
+  const { context, page, errs } = await newPage(browser, server, fixtureText);
+  try {
+    const loaded = await page.evaluate(() => window.__k1.loadBase());
+    if (!loaded.ok) throw new Error(`loadBase failed: ${loaded.reason}`);
+    const base = withoutOrphanFactions(loaded.state);
+    const sc = scenarios.find(s => s.name === 'departure');
+    const probeG0 = sc.build(base, {}).G0;
+    const seeds = Array.from({ length: 600 }, (_, i) => 9001 + i * 7);
+    const seedInfo = await page.evaluate(({ G0, seeds }) => window.__k1.searchSeed(G0, seeds, { minDeparted: 1 }), { G0: probeG0, seeds });
+    check('突然の退団が出る乱数シードが見つかる', seedInfo.seed != null, seedInfo);
+    if (seedInfo.seed == null) return;
+    const G0 = sc.build(base, { rngSeed: seedInfo.seed }).G0;
+    const who = await page.evaluate(({ G0 }) => {
+      const show = Engine.executeShow(JSON.parse(JSON.stringify(G0)));
+      return (show.state._pendingSuddenDepartures || []).map(d => ({ id: d.id, name: d.name, destination: d.destination }));
+    }, { G0 });
+    const dep = who[0];
+    console.log(`  去る選手 #${dep.id} ${dep.name}(${dep.destination === 'rival' ? '他団体へ' : 'フリー'}) / rngSeed ${seedInfo.seed}`);
+
+    // 1. 興行 → 全試合スキップ → 結果画面 → 「結果を確認 →」を1回
+    await page.evaluate(({ G0 }) => {
+      G = JSON.parse(JSON.stringify(G0));
+      showScreen('week');
+      App.executeShow();
+      App.skipAllMatches();
+    }, { G0 });
+    const opened = await waitFor(page, `() => { const o = document.getElementById('showResultOverlay'); return o && o.classList.contains('active'); }`);
+    check('結果画面が開く', opened);
+    const weekBefore = (await read(page)).week;
+    await page.click('#showResultOverlay .pb-close-btn');
+
+    // 2. 週が1つ進み、去った選手はロスターにいない。演出データは消化済み
+    await page.waitForTimeout(300);
+    const st = await page.evaluate(id => ({
+      week: G.week, weekPhase: G.weekPhase,
+      inRoster: (G.roster || []).some(f => f.id === id),
+      inFA: (G.freeAgents || []).some(f => f.id === id),
+      inAI: Object.values(G.aiOrgs || {}).some(o => (o.roster || []).some(f => f.id === id)),
+      pendingLeft: !!G._pendingSuddenDepartures,
+      m23: (G._modalQueue || []).filter(m => m.type === 'M-23' && m.payload && m.payload.toId === id).map(m => m.scope || null),
+    }), dep.id);
+    check('1回の操作で週が1つ進む', st.week === weekBefore + 1 && st.weekPhase === 'manage', st);
+    check('去った選手はロスターから消え、フリーか他団体にいる', !st.inRoster && (st.inFA || st.inAI), st);
+    check('演出データ(_pendingSuddenDepartures)は週送りの前に消化され、翌週へ持ち越さない', !st.pendingLeft, st);
+    check('「突然離脱の波紋」(M-23)が自団体の出来事としてキューに積まれている', st.m23.length === 1 && st.m23[0] === 'own', st.m23);
+
+    // 3. 退団のトースト(D型・OK で閉じる。60秒で自動で閉じる保険つき)が出る。ほかのポップアップは順に閉じる
+    const toastSrc = `() => { const o = document.getElementById('mdlDOverlay'); return !!o && o.classList.contains('active') && o.textContent.includes('荷物をまとめて団体を去った') && o.textContent.includes(${JSON.stringify(dep.name)}); }`;
+    const seen = [];
+    let toast = false;
+    for (let i = 0; i < 15 && !toast; i++) {
+      toast = await waitFor(page, toastSrc, 2500);
+      if (toast) break;
+      const closed = await closeOne(page);
+      if (closed) seen.push(closed);
+    }
+    if (seen.length) console.log(`  (退団のトーストの前に出たもの: ${JSON.stringify(seen)})`);
+    const tText = await page.evaluate(() => { const o = document.getElementById('mdlDOverlay'); return o ? o.textContent.replace(/\s+/g, ' ').trim().slice(0, 200) : null; });
+    check('退団のトーストが出る(名前と行き先)', toast && tText.includes(dep.destination === 'rival' ? '他団体へ移籍した' : 'フリーとなった'), tText);
+    const toastCount = await page.evaluate(() => document.querySelectorAll('#mdlDOverlay.active').length);
+    check('トーストは1枚だけ(二重に出ない)', toastCount === 1, toastCount);
+    if (toast) {
+      await page.click('#mdlDOverlay .mdl-d-btn');
+      await page.waitForTimeout(400);
+    }
+    const again = await waitFor(page, toastSrc, 1500);
+    check('OK を1回押すと閉じ、同じトーストはもう出ない', !again);
+    for (let i = 0; i < 20; i++) {
+      const closed = await closeOne(page);
+      if (closed) continue;
+      await page.waitForTimeout(1200);
+      if (!(await closeOne(page))) break;
+    }
+
+    // 4. 次の週へ進める。翌週(非興行週)の processWeek で同じトーストが出直さない
+    const adv = await page.$('[data-walk-role="advance-week"]');
+    check('「週を処理」ボタンが押せる状態にある', !!adv && await adv.isVisible());
+    const wBefore = (await read(page)).week;
+    if (adv) {
+      await adv.click();
+      const moved = await waitFor(page, `() => G.week === ${wBefore + 1}`, 10000);
+      check('次の週へ進める(止まらない)', moved, { before: wBefore, now: (await read(page)).week });
+      const dup = await waitFor(page, toastSrc, 2500);
+      check('翌週に同じ退団のトーストが出直さない', !dup);
+    }
+    check('例外ゼロ', errs.length === 0, errs);
+  } finally {
+    await context.close();
+  }
+}
+
 (async () => {
   const fixtureText = buildFixture();
   const server = await startStaticServer({ projectRoot: ROOT });
@@ -267,6 +364,8 @@ async function injuryCase(browser, server, fixtureText, check) {
   try {
     console.log('\n=== 怪我による引退(K1-E03)の週 ===');
     await injuryCase(browser, server, fixtureText, check);
+    console.log('\n=== 突然の退団(K1-E04)の週 ===');
+    await departureCase(browser, server, fixtureText, check);
   } finally {
     await browser.close();
     await server.close();

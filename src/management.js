@@ -15442,6 +15442,91 @@ const Engine = {
       return s;
     },
 
+    // 突然の退団(K-1 4-B-7 / K1-E04。trust-system-spec §13.3・§1.2 臨界帯)。信頼15未満の選手が1興行あたり2.5%で去る
+    // (Engine.trust.checkSuddenDepartures。乱数 0xDE7A)。興行の処理を全部終えた状態(state.roster が最新)で1回呼ぶ。
+    //   O-08: 残る全員 → 去った選手の bond −8〜−15(乱数 0xBE3A)+ポップアップ M-23(突然離脱の波紋)
+    //   ロッカールーム士気 −4.59/人・王座の返上・仲の良い選手の信頼への波及
+    //   経歴(suddenDeparture)をつけて、人気40以上は他団体へ(スター争奪 claimDepartedStar → 無ければ乱数で1団体)、
+    //   それ以外はフリー(枠が無ければ休眠プール)
+    //   演出データ _pendingSuddenDepartures(実プレイの closeShowResult がトーストで見せる)
+    // 以前の実プレイにはこの呼び出しが無く、表示コードだけが残っていた。
+    // 戻り値: { state, events, titleMsg }(events は文字列。実プレイはログに積まず、トーストと関係性ポップアップで見せる。
+    // titleMsg は王座を返上したときの一文=実プレイもログに積む)
+    applySuddenDepartures(state) {
+      let s = state;
+      const events = [];
+      let titleMsg = null;
+      const departureRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xDE7A, s.season, s.week));
+      const departureResult = Engine.trust.checkSuddenDepartures(departureRng, s);
+      if (departureResult.departed.length === 0) return { state: s, events, titleMsg };
+      const orgName = state.orgName;
+      // O-08: 突然離脱 — roster除外前に関係値更新
+      const sdRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3A, s.season, s.week));
+      const rosterIds = departureResult.roster.map(c => c.id);
+      departureResult.departed.forEach(d => {
+        s = Engine.relationships.applyFromRoster(s, rosterIds, d.fighter.id, { min: -15, max: -8 }, { min: 0, max: 0 }, sdRelRng);
+        if (s.relationships && rosterIds.length > 0 && Engine.relationships.flags) {
+          s = Engine.relationships.flags._enqueueModal(s, 'M-23', {
+            fromId: rosterIds[0],
+            toId: d.fighter.id,
+            fighterId: d.fighter.id,
+            affectedIds: rosterIds.slice(0, 3),
+            mode: 'sudden_departure',
+          });
+        }
+      });
+      s = { ...s, roster: departureResult.roster, lockerRoomMorale: departureResult.lockerRoomMorale };
+      // 王者が突然退団した場合は王座を空位にする
+      const vcSD = Engine.title.validateChampion(s);
+      if (vcSD.msg) { s = { ...s, titles: vcSD.titles }; events.push(vcSD.msg); titleMsg = vcSD.msg; }
+      // Phase 3 R3: 仲の良い選手を失ったtrust影響
+      departureResult.departed.forEach(d => {
+        const updatedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, d.fighter.id, s.relationships, { name: d.name, reason: '突然退団' });
+        s = { ...s, roster: updatedRoster };
+      });
+      departureResult.departed.forEach(d => {
+        events.push(`🚪 ${d.name}が荷物をまとめて団体を去った。誰も止められなかった。`);
+        // Phase E: 突然退団 history を fighter に先付け
+        const destType = d.destination === 'rival' ? 'rival' : 'freeAgent';
+        const fighterWithHist = Engine.career.addEvent(d.fighter, {
+          type: 'suddenDeparture', season: s.season, week: s.week,
+          fromOrg: orgName || 'プレイヤー団体',
+          destinationType: destType,
+          destinationOrg: destType === 'rival' ? '他団体' : 'フリーエージェント',
+        });
+        // 退団先振り分け
+        const starClaim = Engine.rival.claimDepartedStar(departureRng, s, fighterWithHist, { fromOrgName: orgName || 'player', via: 'sudden_departure_claim' });
+        if (starClaim.claimed) {
+          s = starClaim.state;
+          events.push(`Transfer: ${d.name} -> ${starClaim.orgName}${starClaim.ejected ? ` / out: ${starClaim.ejected.name}` : ''}`);
+          return;
+        }
+        if (d.destination === 'rival') {
+          const aiOrgs = Object.entries(s.aiOrgs || {});
+          if (aiOrgs.length > 0) {
+            const [orgId, org] = aiOrgs[Math.floor(Engine.rng.float(departureRng) * aiOrgs.length)];
+            const absWeekNow = Engine.util.absWeek(s.season, s.week);
+            let transferred = { ...fighterWithHist, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
+            transferred = Engine.orgTimeline.transfer(transferred, orgId, s.season, s.week);
+            delete transferred.trustCap; delete transferred.s4Count;
+            // 写してから書く(以前は入力と共有している団体オブジェクトの roster をその場で差し替えていた)
+            s = { ...s, aiOrgs: { ...s.aiOrgs, [orgId]: { ...org, roster: [...(org.roster || []), transferred] } } };
+          }
+        } else {
+          let faFighter = { ...fighterWithHist, trust: 50, salaryBonus: 0, orgId: undefined };
+          delete faFighter.trustCap; delete faFighter.s4Count;
+          if (Engine.util.canAddToFA(s)) {
+            faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
+            s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+          } else {
+            s = Engine.util.redirectToDormantPool(s, faFighter);
+          }
+        }
+      });
+      s = { ...s, _pendingSuddenDepartures: departureResult.departed };
+      return { state: s, events, titleMsg };
+    },
+
     // 試合成長(K-1 4-B-4 / K1-E02。specs/growth-system-spec-v2.2.md §7)。怪我処理の後、ロスターに残っている出場選手に。
     //   matchGrowth = (基本0.5 + 相手の強さ + 好試合(MQ≥65) + 敗北 + コーチ) × 関係性倍率(険悪ゾーンの伸び) × 年齢倍率
     //   × 怪我の成長ペナルティ(適応力は+0.2軽減)。伸びる能力は1〜2個を乱数(1732)で選ぶ
@@ -16245,72 +16330,11 @@ const Engine = {
     recordCareerStamps.forEach(stamp => { s = Engine.mq.applyRecordCareerStamp(s, stamp); });
 
     // §13.4: 突然の退団チェック（trust < 15, 2.5%/興行、trust更新前に判定）
-    const departureRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xDE7A, s.season, s.week));
-    const departureResult = Engine.trust.checkSuddenDepartures(departureRng, s);
-    if (departureResult.departed.length > 0) {
-      // O-08: 突然離脱 — roster除外前に関係値更新
-      const sdRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xBE3A, s.season, s.week));
-      const rosterIds = departureResult.roster.map(c => c.id);
-      departureResult.departed.forEach(d => {
-        s = Engine.relationships.applyFromRoster(s, rosterIds, d.fighter.id, { min: -15, max: -8 }, { min: 0, max: 0 }, sdRelRng);
-        if (s.relationships && rosterIds.length > 0 && Engine.relationships.flags) {
-          s = Engine.relationships.flags._enqueueModal(s, 'M-23', {
-            fromId: rosterIds[0],
-            toId: d.fighter.id,
-            fighterId: d.fighter.id,
-            affectedIds: rosterIds.slice(0, 3),
-            mode: 'sudden_departure',
-          });
-        }
-      });
-      s = { ...s, roster: departureResult.roster, lockerRoomMorale: departureResult.lockerRoomMorale };
-      // 王者が突然退団した場合は王座を空位にする
-      const vcSD = Engine.title.validateChampion(s);
-      if (vcSD.msg) { s = { ...s, titles: vcSD.titles }; events.push(vcSD.msg); }
-      // Phase 3 R3: 仲の良い選手を失ったtrust影響
-      departureResult.departed.forEach(d => {
-        const updatedRoster = Engine.trust.applyDepartureTrustImpact(s.roster, d.fighter.id, s.relationships, { name: d.name, reason: '突然退団' });
-        s = { ...s, roster: updatedRoster };
-      });
-      departureResult.departed.forEach(d => {
-        events.push(`🚪 ${d.name}が荷物をまとめて団体を去った。誰も止められなかった。`);
-        // Phase E: 突然退団 history を fighter に先付け
-        const destType = d.destination === 'rival' ? 'rival' : 'freeAgent';
-        const fighterWithHist = Engine.career.addEvent(d.fighter, {
-          type: 'suddenDeparture', season: s.season, week: s.week,
-          fromOrg: state.orgName || 'プレイヤー団体',
-          destinationType: destType,
-          destinationOrg: destType === 'rival' ? '他団体' : 'フリーエージェント',
-        });
-        // 退団先振り分け
-        const starClaim = Engine.rival.claimDepartedStar(departureRng, s, fighterWithHist, { fromOrgName: state.orgName || 'player', via: 'sudden_departure_claim' });
-        if (starClaim.claimed) {
-          s = starClaim.state;
-          events.push(`Transfer: ${d.name} -> ${starClaim.orgName}${starClaim.ejected ? ` / out: ${starClaim.ejected.name}` : ''}`);
-          return;
-        }
-        if (d.destination === 'rival') {
-          const aiOrgs = Object.entries(s.aiOrgs || {});
-          if (aiOrgs.length > 0) {
-            const [orgId, org] = aiOrgs[Math.floor(Engine.rng.float(departureRng) * aiOrgs.length)];
-            const absWeekNow = Engine.util.absWeek(s.season, s.week);
-            let transferred = { ...fighterWithHist, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
-            transferred = Engine.orgTimeline.transfer(transferred, orgId, s.season, s.week);
-            delete transferred.trustCap; delete transferred.s4Count;
-            org.roster = [...(org.roster || []), transferred];
-          }
-        } else {
-          let faFighter = { ...fighterWithHist, trust: 50, salaryBonus: 0, orgId: undefined };
-          delete faFighter.trustCap; delete faFighter.s4Count;
-          if (Engine.util.canAddToFA(s)) {
-            faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
-            s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
-          } else {
-            s = Engine.util.redirectToDormantPool(s, faFighter);
-          }
-        }
-      });
-      s = { ...s, _pendingSuddenDepartures: departureResult.departed };
+    // K-1 4-B-7(K1-E04): 実プレイ(app.js)と同じ Engine.show.applySuddenDepartures を通す
+    {
+      const sd = Engine.show.applySuddenDepartures(s);
+      s = sd.state;
+      events.push(...sd.events);
     }
 
     // 全国統一王座の一時ゲストを相手団体へ戻し、共有の王座解決器へ渡す。
