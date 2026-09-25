@@ -3826,7 +3826,7 @@
     "胸の内に、<span class=\"marker danger\">新たな火種</span>がくすぶり始めた。": "A <span class=\"marker danger\">new spark</span> has begun to smolder inside her.",
     "能 力 急 上 昇": "A Sudden Leap",
     "能力": "Ability",
-    "能力-3 / 連携不可 / 団体への信頼-1": "Ability -3 / no teamwork / trust in the promotion -1",
+    "能力-3 / 連携不可 / 団体への信頼が下がる": "Ability -3 / no teamwork / trust in the promotion drops",
     "能力レーダーチャート": "Ability radar chart",
     "脚の振りや踏み込みを使い、相手の上半身や足元を狙う打撃。": "A strike that uses the swing of the leg and a step in to target the upper body or the legs.",
     "腕や頭部を直接ぶつけ、相手の動きと姿勢を止める打撃。": "A strike that drives an arm or the head straight in to stop her movement and her posture.",

@@ -490,22 +490,85 @@ function directSim(state, a1, a2, b1, b2) {
 })();
 
 // ══════════════════════════════════════════════════════════════════════════
-//  E. プレビューの文言 = 実際の効果(K-12 追加)
+//  E. 警告の文言 = 実際の効果(K-12 追加)。信頼は数値で出さない(trust-system-spec §16)
+//     E-2. 春のタッグリーグの編成画面にも同じ警告(同じ判定・同じ数字・同じ文言)
 // ══════════════════════════════════════════════════════════════════════════
-(function previewWordingMatchesTheEffect() {
-  const JA = '能力-3 / 連携不可 / 団体への信頼-1';
-  const EN = 'Ability -3 / no teamwork / trust in the promotion -1';
-  const uiCommon = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-common.js'), 'utf8');
+const uiCommonSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-common.js'), 'utf8').replace(/\r\n/g, '\n');
+function extractFunction(source, name) {
+  const token = `\nfunction ${name}(`;
+  const start = source.indexOf(token);
+  if (start < 0) throw new Error(`${name} が見つからない`);
+  if (source.indexOf(token, start + token.length) >= 0) throw new Error(`${name} が複数ある`);
+  const open = source.indexOf('{', source.indexOf(')', start));
+  let depth = 0;
+  for (let i = open; i < source.length; i++) {
+    if (source[i] === '{') depth++;
+    else if (source[i] === '}') depth--;
+    if (depth === 0) return source.slice(start + 1, i + 1);
+  }
+  throw new Error(`${name} の終わりが見つからない`);
+}
+
+(function warningWordingMatchesTheEffect() {
+  const JA = '能力-3 / 連携不可 / 団体への信頼が下がる';
+  const EN = 'Ability -3 / no teamwork / trust in the promotion drops';
   const langEn = fs.readFileSync(path.join(__dirname, '..', 'src', 'lang-en.js'), 'utf8');
   const ledger = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'i18n', 'ui-ledger.json'), 'utf8'));
-  ok(uiCommon.includes(`WM_I18N.t('${JA}')`), '興行プレビューの不仲の警告は「団体への信頼-1」(効果は試合後の trust -1)');
-  ok(!uiCommon.includes("WM_I18N.t('能力-3 / 連携不可 / 相手との関係-1')"), '効果と食い違う旧文言「相手との関係-1」が残っていない');
-  ok(!/trust|morale/i.test(JA), '内部変数名を出さない');
+  eq((uiCommonSource.match(new RegExp(`WM_I18N\\.t\\('${JA.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}'\\)`, 'g')) || []).length, 1,
+    '不仲の警告の2行目は「団体への信頼が下がる」(効果は試合後の trust -1)。文言は1か所(_tagDiscordEffectText)');
+  ok(extractFunction(uiCommonSource, '_tagDiscordEffectText').includes(`WM_I18N.t('${JA}')`), '文言は _tagDiscordEffectText が持つ');
+  ok(/\$\{WM_I18N\.t\('⚠ 不仲'\)\} \$\{Math\.round\(bond\)\}<div[^>]*>\$\{_tagDiscordEffectText\(\)\}<\/div>/.test(uiCommonSource),
+    '興行プレビューの ⚠ 不仲 は共通の文言を使う');
+  ok(!/WM_I18N\.t\('能力-3 \/ 連携不可 \/ (相手との関係-1|団体への信頼-1)'\)/.test(uiCommonSource), '旧文言(相手との関係-1 / 団体への信頼-1)が残っていない');
+  ok(!/[-−+]\s*\d/.test(JA.split('/').pop()) && !/trust|morale/i.test(JA), '信頼の変化は数値で出さない・内部変数名を出さない');
   const row = ledger.find(r => r.key === JA);
   ok(row && row.en === EN, `UI台帳に新しい文言と英訳がある: ${row && row.en}`);
-  ok(!ledger.some(r => r.key === '能力-3 / 連携不可 / 相手との関係-1'), 'UI台帳から旧キーを削った');
+  ok(!ledger.some(r => /^能力-3 \/ 連携不可 \/ (相手との関係-1|団体への信頼-1)$/.test(r.key)), 'UI台帳から旧キーを削った');
   ok(langEn.includes(JSON.stringify(JA) + ': ' + JSON.stringify(EN)), 'lang-en.js を台帳から再生成した');
-  ok(!langEn.includes('relationship -1'), 'EN からも旧文言が消えている');
+  ok(!langEn.includes('relationship -1') && !langEn.includes('promotion -1'), 'EN からも旧文言が消えている');
+})();
+
+(function springEntryModalShowsTheSameWarning() {
+  const SL = Engine.springTagLeague;
+  const src = ['_tagDiscordEffectText', '_stlDiscordWarnHtml', '_stlEntryModalHtml'].map(n => extractFunction(uiCommonSource, n)).join('\n');
+  const stubs = {
+    _mdlAHeader: () => '', escHtml: s => String(s), getUpperUrl: () => '', _stlFaceImg: () => '', _STL_STYLE_CREAM: {},
+  };
+  const i18n = { t: (text, params) => WM_I18N.t(text, params), pn: s => s };
+  const build = (G, App) => new Function('G', 'App', 'Engine', 'WM_I18N', ...Object.keys(stubs),
+    `${src}\nreturn { _stlEntryModalHtml, _stlDiscordWarnHtml };`)(G, App, Engine, i18n, ...Object.values(stubs));
+  let G = Engine.createInitialState(4242, true);
+  const announced = SL.announce(G);
+  G = { ...G, week: SL.ENTRY_WEEK, springTagLeague: { ...announced, announcedSeason: G.season } };
+  const [x, y, z] = SL._eligible(G.roster);
+  // x と y: 逆向き(大きいID→小さいID)だけ冷えた → 低い方9で不仲。x と z は良好
+  G = { ...G, relationships: { [relKey(x.id, y.id)]: { bond: 70 }, [revKey(x.id, y.id)]: { bond: 9 }, [relKey(x.id, z.id)]: { bond: 70 }, [revKey(x.id, z.id)]: { bond: 65 } } };
+  const JA = WM_I18N.t('能力-3 / 連携不可 / 団体への信頼が下がる');
+  const nPlayerSlots = G.springTagLeague.teams.filter(t => t.orgId === 'player').length;
+  const pairsWith = (a, b) => Array.from({ length: nPlayerSlots }, (_, i) => (i === 0 ? { f1Id: a, f2Id: b } : { f1Id: null, f2Id: null }));
+
+  const fnDiscord = build(G, { _stlEntrySelection: { activeSlot: 0, pairs: pairsWith(x.id, y.id) } });
+  const warn = fnDiscord._stlDiscordWarnHtml(x.id, y.id, false);
+  ok(warn.includes(`⚠ 不仲 ${Math.round(ST.pairBond(G, x.id, y.id))}`) && warn.includes('⚠ 不仲 9'), '編成画面の警告の数字は判定と同じ低い方の絆');
+  ok(warn.includes(`<small>${JA}</small>`), '編成画面の警告の2行目は通常興行のプレビューと同じ文言');
+  ok(/class="stl-discord-warn"/.test(warn), '編成画面の警告は専用クラス(色はトークン)');
+  const compact = fnDiscord._stlDiscordWarnHtml(y.id, x.id, true);
+  ok(compact.includes('⚠ 不仲 9') && !compact.includes('<small>'), 'おすすめペアのチップは1行だけ(並び順に依らず同じ判定)');
+  eq(fnDiscord._stlDiscordWarnHtml(x.id, z.id, false), '', '不仲でないペアには警告を出さない');
+  eq(fnDiscord._stlDiscordWarnHtml(x.id, null, false), '', '2人そろうまでは警告を出さない');
+
+  const modalDiscord = fnDiscord._stlEntryModalHtml();
+  const summary = modalDiscord.slice(modalDiscord.indexOf('stl-summary-bar'));
+  ok(summary.includes('⚠ 不仲 9') && summary.includes(JA), '選んだ2人が不仲なら、編成画面の下の帯に警告が出る');
+  ok(!summary.includes('stl-summary-chem'), '不仲のときは相性の記号の代わりに警告(通常興行のプレビューが 🤝 の代わりに出すのと同じ)');
+  const modalGood = build(G, { _stlEntrySelection: { activeSlot: 0, pairs: pairsWith(x.id, z.id) } })._stlEntryModalHtml();
+  ok(!modalGood.slice(modalGood.indexOf('stl-summary-bar')).includes('⚠ 不仲'), '良好なペアを選んだときは警告が出ない');
+  ok(extractFunction(uiCommonSource, '_stlDiscordWarnHtml').includes('Engine.showTagMatch.isDiscord(G, f1Id, f2Id)'),
+    '編成画面の判定は試合と同じ Engine.showTagMatch.isDiscord');
+
+  const html = fs.readFileSync(path.join(__dirname, '..', 'src', 'index.html'), 'utf8');
+  const css = (html.match(/\.stl-discord-warn[^{]*\{[^}]*\}/g) || []).join('\n');
+  ok(css.includes('var(--cream-red)') && !/#[0-9a-fA-F]{3,6}\b/.test(css), '編成画面の警告の色はトークン(Cream の赤)で、16進の直書きなし');
 })();
 
 // ══════════════════════════════════════════════════════════════════════════
