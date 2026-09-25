@@ -15171,6 +15171,260 @@ const Engine = {
   },
 
   // ══════════════════════════════════════════════════════════
+  //  show: 通常興行の試合後処理の共通部品(K-1「興行後の処理を一本化する」第3段/第4段 4-B)
+  //  エンジン(Engine.executeShow = auto-sim)と実プレイ(app.js App._finalizeShowImpl)の
+  //  両方がここを呼ぶ。片方にだけ書き写すと二つの世界に分かれる(docs/fun-audit-v0.1/k1-parity-report.md)。
+  //  どれも純関数: 引数の状態・ロスターをその場で書き換えず、新しい値を返す。
+  // ══════════════════════════════════════════════════════════
+  show: {
+    // 試合評価による選手人気・連敗・直近の勝敗(K-1 4-B-1 / K1-F01)。
+    // シングルは Engine.applyMQPopularity そのもの。タッグは同じ式を A1↔B1・A2↔B2 の2組に分けて通す
+    // (メイン低評価の人気減・ヒール適性の加点・連敗・勝利ボーナスもシングルと同じ。2026-09-26 Keisuke 裁定)。
+    // 以前は実プレイが左右に同じ選手を入れて呼んでいたため、タッグの敗者も勝者扱い(勝ちの人気・連敗リセット)だった。
+    // 戻り値: { roster, popEvents }
+    applyMatchPopularity(roster, match, result, isMainEvent, orgPop, state = null) {
+      if (!result) return { roster, popEvents: [] };
+      if (result.matchType !== 'tag') {
+        return Engine.applyMQPopularity(roster, result, isMainEvent, orgPop, state);
+      }
+      if (!match || !match.teamA || !match.teamB) return { roster, popEvents: [] };
+      const winner = result.winner === 'teamA' ? 'left'
+        : result.winner === 'teamB' ? 'right'
+          : result.winner;
+      const popEvents = [];
+      let out = roster;
+      [
+        [match.teamA.fighter1, match.teamB.fighter1],
+        [match.teamA.fighter2, match.teamB.fighter2],
+      ].forEach(([aId, bId]) => {
+        const res = Engine.applyMQPopularity(out, { mq: result.mq, winner, left: { id: aId }, right: { id: bId } }, isMainEvent, orgPop, state);
+        out = res.roster;
+        popEvents.push(...res.popEvents);
+      });
+      return { roster: out, popEvents };
+    },
+
+    // 派閥抗争ポイント・派閥内ポイントの試合ごとの加点(K-1 4-B-2 / K1-E05。
+    // specs/faction-rivalry-points-spec-v0.1.md §2、faction-internal-rank-spec-v0.2.md §3.2/§3.3)。
+    // 勝者の派閥に加点する。タッグはチーム代表(fighter1)。引き分けは加点なし。F09(_f09Locked)は ×1.8・週の上限なし。
+    // opts.common1MatchIdx: その興行で Common-1 予約を清算した試合の番号。派閥内ポイントは
+    // applyCommon1MatchResult(§3.1)で入れ済みなので、この試合には isCommon1 を立てて二重加算を防ぐ(実プレイだけが使う)。
+    // factions.js の加点関数は受け取った状態をその場で書き換えるので、書き換わる入れ子(抗争ポイントの各ペア・
+    // 週の上限の記録・派閥内ポイント・派閥)を写してから渡す。数値はその場で書き換えた場合と同じ。
+    // 注: isMain はカードの isSummit(PPV の頂上決戦の印)を見ている。通常興行のカードには立たないので、
+    // 通常興行ではメイン加算(抗争 +0.3・派閥内 +2)が掛からない(エンジンの従来どおり。仕様との差は報告済み)
+    accrueFactionPoints(state, validMatches, results, opts = {}) {
+      const F = Engine.factions;
+      if (!F || typeof F.accrueRivalryPointsFromMatch !== 'function') return state;
+      let s = state;
+      let copied = false;
+      const copyOnce = () => {
+        if (copied) return;
+        copied = true;
+        s = { ...s };
+        if (s.factionRivalryPoints) {
+          s.factionRivalryPoints = Object.fromEntries(Object.entries(s.factionRivalryPoints).map(([k, v]) => [k, v && typeof v === 'object' ? { ...v } : v]));
+        }
+        if (s._rivalryPointsWeekly) s._rivalryPointsWeekly = { ...s._rivalryPointsWeekly };
+        if (s.factionInternalPoints && typeof s.factionInternalPoints === 'object') {
+          s.factionInternalPoints = Object.fromEntries(Object.entries(s.factionInternalPoints).map(([k, v]) => [k, v && typeof v === 'object' ? { ...v } : v]));
+        }
+        if (Array.isArray(s.factions)) s.factions = s.factions.map(f => (f && typeof f === 'object' ? { ...f } : f));
+      };
+      const common1Idx = opts.common1MatchIdx != null ? opts.common1MatchIdx : -1;
+      for (let i = 0; i < validMatches.length; i++) {
+        const m = validMatches[i]; const r = results[i];
+        if (!m || !r) continue;
+        let fighterIdA, fighterIdB, winner;
+        if (m.matchType === 'tag' && m.teamA && m.teamB) {
+          fighterIdA = m.teamA.fighter1;
+          fighterIdB = m.teamB.fighter1;
+          winner = r.winner === 'teamA' ? 'A' : (r.winner === 'teamB' ? 'B' : 'draw');
+        } else {
+          fighterIdA = m.left; fighterIdB = m.right;
+          winner = r.winner === 'left' ? 'A' : (r.winner === 'right' ? 'B' : 'draw');
+        }
+        if (winner === 'draw') continue;
+        const matchCtx = {
+          fighterIdA, fighterIdB, winner,
+          isMain: !!m.isSummit,
+          isTitle: !!m.isTitle,
+          isTag: m.matchType === 'tag',
+          isF09: !!m._f09Locked,
+        };
+        if (i === common1Idx) matchCtx.isCommon1 = true;
+        copyOnce();
+        s = F.accrueRivalryPointsFromMatch(s, matchCtx);
+        // 派閥内ポイント加算（spec: faction-internal-rank-spec-v0.2 §3.2/§3.3）
+        if (typeof F.accrueInternalPointsFromExternalMatch === 'function') {
+          s = F.accrueInternalPointsFromExternalMatch(s, matchCtx);
+        }
+      }
+      return s;
+    },
+
+    // シングル戦の怪我判定1人分(K-1 4-B-3 / 報告書 §7 X03)。Engine.injury.check に渡す引数をここで組む:
+    //   乱数は選手ごとに derive(rngSeed, season, week, 999, 試合番号, 選手ID)
+    //   週・季(中傷・重傷の経歴の日付。以前の実プレイは 0 を渡し「0季0週」で残っていた)
+    //   険悪ペア(rivalry≥60 ∧ 平均bond≤30)のアクシデント率×2(bond-rivalry P-3。Engine.injury.hostileMatchMult)
+    //   舞台の格 stage(前座 undercard < メイン main < 王座戦 title。壮絶な幕切れの重み)と王者ID(幕切れの型)
+    // opts.hostileMult: 呼び出し側が1試合に1回計算した倍率(省略時はここで計算)
+    // opts.titleChampionId: 幕切れの型の判定に使う王者(両経路とも興行前の王者を渡す)
+    // 引退の扱い(retireType が付いたときの処理)は呼び出し側。実プレイはまだ引退させない(4-B-6 / K1-E03 で扱う)
+    rollMatchInjury(state, result, matchIdx, fighter, opts = {}) {
+      if (!fighter || !result || !result.left || !result.right) return null;
+      const s = state;
+      const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, matchIdx, fighter.id));
+      const hostileMult = opts.hostileMult != null
+        ? opts.hostileMult
+        : Engine.injury.hostileMatchMult(s.relationships, result.left.id, result.right.id);
+      const stage = result.isTitleMatch ? 'title' : (matchIdx === 0 ? 'main' : 'undercard');
+      let flavorOpts = { ...(Engine.coach.buildInjuryFlavorOpts(s, fighter.id) || {}), stage, titleChampionId: opts.titleChampionId };
+      if (hostileMult !== 1.0) flavorOpts = { ...flavorOpts, injuryMult: (flavorOpts.injuryMult || 1.0) * hostileMult };
+      return Engine.injury.check(rng, fighter, result, Engine.coach.getInjuryMult(s, fighter.id), s.week, s.season,
+        Engine.coach.getInjurySeverityDowngrade(s, fighter.id), flavorOpts);
+    },
+
+    // 試合成長(K-1 4-B-4 / K1-E02。specs/growth-system-spec-v2.2.md §7)。怪我処理の後、ロスターに残っている出場選手に。
+    //   matchGrowth = (基本0.5 + 相手の強さ + 好試合(MQ≥65) + 敗北 + コーチ) × 関係性倍率(険悪ゾーンの伸び) × 年齢倍率
+    //   × 怪我の成長ペナルティ(適応力は+0.2軽減)。伸びる能力は1〜2個を乱数(1732)で選ぶ
+    // タッグの相手の強さは相手2人の平均(2026-09-26 Keisuke 裁定。以前の実プレイは強い方を使っていた)。
+    // 以前の実プレイには年齢倍率・関係性倍率が無かった(27歳以上も試合で伸び、19〜20歳・険悪ゾーンの伸びが出なかった)。
+    // 乱入選手(isIntrusion)は伸ばさない。戻り値: 新しいロスター
+    applyMatchGrowth(state, roster, validMatches, results) {
+      const s = state;
+      let out = roster;
+      const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
+      results.forEach((r, _gIdx) => {
+        // タッグ試合の成長処理
+        if (r.matchType === 'tag') {
+          const m = validMatches[_gIdx];
+          const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
+          const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
+            : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
+          allIds.forEach(charId => {
+            const fighter = out.find(c => c.id === charId);
+            if (!fighter || fighter.isIntrusion) return;
+            const won = winTeamIds.includes(charId);
+            const isTeamA = charId === m.teamA.fighter1 || charId === m.teamA.fighter2;
+            const oppIds = isTeamA ? [m.teamB.fighter1, m.teamB.fighter2] : [m.teamA.fighter1, m.teamA.fighter2];
+            const oppOvr = oppIds.reduce((sum, id) => sum + Engine.util.ov(out.find(c => c.id === id) || {}), 0) / 2;
+            const selfOvr = Engine.util.ov(fighter);
+            const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
+            const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
+            const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
+            const resultBonus = won ? 0.0 : 0.2;
+            const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
+            let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
+            matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
+            if (fighter.growthPenalty) {
+              const rawMult = fighter.growthPenalty.multiplier;
+              matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
+            }
+            const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
+            const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
+            const pool = [...allStats];
+            const chosen = [];
+            for (let i = 0; i < numStats; i++) { const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1); chosen.push(pool.splice(idx, 1)[0]); }
+            const growthPerStat = matchGrowth / numStats;
+            const partnerId = isTeamA ? (charId === m.teamA.fighter1 ? m.teamA.fighter2 : m.teamA.fighter1) : (charId === m.teamB.fighter1 ? m.teamB.fighter2 : m.teamB.fighter1);
+            const partnerName = (out.find(c => c.id === partnerId) || {}).name || '?';
+            const oppNames = oppIds.map(id => (out.find(c => c.id === id) || {}).name || '?').join('&');
+            const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
+            out = out.map(c => {
+              if (c.id !== charId) return c;
+              let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+              const _mD = {};
+              chosen.forEach(stat => {
+                const cap = nc.trainCap?.[stat] || 100;
+                const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
+                if (gain > 0) { nc[stat] += gain; nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain; _mD[stat] = gain; }
+              });
+              if (nc.growthLog && !nc.isRental) {
+                // i18n P7-28: 完成文detailは不変(セーブ値不変)。表示点が言語別に組み直せるよう
+                // 充填前テンプレ+充填値を追加フィールドで併記する(§14-3と同型)
+                const _me = { season: s.season, week: s.week, type: 'match', detail: `タッグ(${partnerName}) vs ${oppNames}`, result: _mRes,
+                  detailTpl: 'タッグ({partner}) vs {opps}', detailVars: { partner: partnerName, opps: oppNames } };
+                if (Object.keys(_mD).length > 0) _me.deltas = _mD;
+                nc.growthLog = [...nc.growthLog, _me];
+              }
+              return nc;
+            });
+          });
+          return;
+        }
+        [
+          { charId: r.left.id, won: r.winner === 'left' },
+          { charId: r.right.id, won: r.winner === 'right' },
+        ].forEach(({ charId, won }) => {
+          const fighter = out.find(c => c.id === charId);
+          if (!fighter || fighter.isIntrusion) return; // 怪我引退でロスター離脱済み / 乱入選手
+
+          // 対戦相手OVR取得（引退済みでも matchResult からOVRを算出）
+          const oppId = charId === r.left.id ? r.right.id : r.left.id;
+          const oppInRoster = out.find(c => c.id === oppId);
+          const oppRaw = charId === r.left.id ? r.right : r.left;
+          const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
+          const selfOvr = Engine.util.ov(fighter);
+
+          // §2.3 成長計算 — AI統一成長 Phase1: MATCH_GROWTH_BASE定数化
+          const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
+          const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
+          const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
+          const resultBonus = won ? 0.0 : 0.2;
+          const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
+          let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
+          // v2.0: 試合成長にも年齢倍率を適用
+          matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
+
+          // §3.3 growthPenalty適用（適応力持ちは0.2軽減）
+          if (fighter.growthPenalty) {
+            const rawMult = fighter.growthPenalty.multiplier;
+            matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
+          }
+
+          // §2.5 成長ステータス選択（1〜2個）
+          const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
+          const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
+          const pool = [...allStats];
+          const chosen = [];
+          for (let i = 0; i < numStats; i++) {
+            const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1);
+            chosen.push(pool.splice(idx, 1)[0]);
+          }
+          const growthPerStat = matchGrowth / numStats;
+
+          const _mOpp = charId === r.left.id ? (r.right.name || '?') : (r.left.name || '?');
+          const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
+          out = out.map(c => {
+            if (c.id !== charId) return c;
+            let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
+            const _mD = {};
+            chosen.forEach(stat => {
+              const cap = nc.trainCap?.[stat] || 100;
+              const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
+              if (gain > 0) {
+                nc[stat] = nc[stat] + gain;
+                nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
+                _mD[stat] = gain;
+              }
+            });
+            if (nc.growthLog && !nc.isRental) {
+              // i18n P7-28: §14-3と同型の追加フィールド(detail自体はセーブ値不変)
+              const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes,
+                detailTpl: 'vs {name}', detailVars: { name: _mOpp } };
+              if (Object.keys(_mD).length > 0) _me.deltas = _mD;
+              nc.growthLog = [...nc.growthLog, _me];
+            }
+            return nc;
+          });
+        });
+      });
+      return out;
+    },
+  },
+
+  // ══════════════════════════════════════════════════════════
   //  executeShow: Process all show matches (immutable)
   //  Output: { state, results, injuryResults, events } or { error }
   // ══════════════════════════════════════════════════════════
@@ -15585,30 +15839,11 @@ const Engine = {
     const mainEventIdx = 0; // first match (showCard[0]) is main event
     results.forEach((r, idx) => {
       const isMainEvent = idx === mainEventIdx;
-      if (r.matchType === 'tag') {
-        // タッグ試合: 4人それぞれに人気変動
-        const m = validMatches[idx];
-        const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
-        const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
-          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
-        roster = roster.map(c => {
-          if (!allIds.includes(c.id)) return c;
-          const isWinner = winTeamIds.includes(c.id);
-          const isDraw = r.winner === 'draw';
-          let rawGain = r.mq >= 70 ? 3 : r.mq >= 50 ? 2 : r.mq >= 30 ? 1 : 0;
-          if (isWinner) rawGain += 1;
-          if (Traits.has(c, 'ファンサービス')) rawGain += 1;
-          rawGain *= Engine.coach.getPopGainMult(s, c.id);
-          let popDelta = Engine.popularity.applyDiminishing(rawGain, c.popularity);
-          const streakResult = Engine.popularity.checkLosingStreak(c, isWinner || isDraw);
-          popDelta += streakResult.popDelta;
-          return { ...c, popularity: Engine.util.clamp((c.popularity || 0) + popDelta, 1, 100), losingStreak: streakResult.losingStreak, lastMatchResult: isWinner ? 'win' : (isDraw ? 'draw' : 'loss') };
-        });
-      } else {
-        const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0, s);
-        roster = mqPop.roster;
-        events.push(...mqPop.popEvents);
-      }
+      // K-1 4-B-1(K1-F01): シングル・タッグとも実プレイ(app.js)と同じ Engine.show.applyMatchPopularity を通す。
+      // タッグにもメイン低評価の人気減・ヒール適性の加点が掛かる(2026-09-26 裁定。以前のタッグの式には無かった)
+      const mqPop = Engine.show.applyMatchPopularity(roster, validMatches[idx], r, isMainEvent, s.orgPop || 0, s);
+      roster = mqPop.roster;
+      events.push(...mqPop.popEvents);
     });
     // 集客v2: ★算出
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);
@@ -15663,25 +15898,16 @@ const Engine = {
     const matchInjuredIds = new Array(results.length).fill(null); // Phase 2: 試合別怪我選手ID
     // bond-rivalry plan P-3: 険悪ペア（rivalry≥60 ∧ avg bond≤30）のシングル戦はアクシデント率2倍
     // (式はAI団体の興行と共通の Engine.injury.hostileMatchMult。K-13 で共有化)
-    const _hostileMatchMult = (leftId, rightId) => Engine.injury.hostileMatchMult(s.relationships, leftId, rightId);
-    const _mergeFlavorOpts = (base, extraMult, stage) => {
-      const withStage = stage ? { ...(base || {}), stage, titleChampionId: _titleChampId } : base;
-      if (extraMult === 1.0) return withStage;
-      return { ...(withStage || {}), injuryMult: ((withStage && withStage.injuryMult) || 1.0) * extraMult };
-    };
     // C「壮絶な幕切れ」の舞台の格。前座 < メイン < 王座戦 の順に重い
     // (特別興行・天頂戦は別経路で処理されるため、ここは通常興行のみ)
+    // K-1 4-B-3(§7 X03): 怪我判定の引数(週・季・険悪ペア倍率・舞台の格・王者)は実プレイ(app.js)と同じ
+    // Engine.show.rollMatchInjury で組む。王者は興行前の王者(s.titles。この興行の王座の結果は titles にある)
     const _titleChampId = (s.titles && s.titles.world) ? s.titles.world.championId : null;
-    const _stageOf = (r, idx) => {
-      if (r.isTitleMatch) return 'title';
-      return idx === 0 ? 'main' : 'undercard';
-    };
     results.forEach((r, idx) => {
       if (r.matchType === 'tag') return; // タッグ試合の怪我はPhase 5で対応
-      const hostileMult = _hostileMatchMult(r.left.id, r.right.id);
+      const hostileMult = Engine.injury.hostileMatchMult(s.relationships, r.left.id, r.right.id);
       const lc = roster.find(c => c.id === r.left.id);
-      const injRngL = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.left.id));
-      const li = Engine.injury.check(injRngL, lc, r, Engine.coach.getInjuryMult(s, r.left.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.left.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.left.id), hostileMult, _stageOf(r, idx)));
+      const li = Engine.show.rollMatchInjury(s, r, idx, lc, { hostileMult, titleChampionId: _titleChampId });
       if (li) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = lc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -15710,8 +15936,7 @@ const Engine = {
         }
       }
       const rc = roster.find(c => c.id === r.right.id);
-      const injRngR = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 999, idx, r.right.id));
-      const ri = Engine.injury.check(injRngR, rc, r, Engine.coach.getInjuryMult(s, r.right.id), s.week, s.season, Engine.coach.getInjurySeverityDowngrade(s, r.right.id), _mergeFlavorOpts(Engine.coach.buildInjuryFlavorOpts(s, r.right.id), hostileMult, _stageOf(r, idx)));
+      const ri = Engine.show.rollMatchInjury(s, r, idx, rc, { hostileMult, titleChampionId: _titleChampId });
       if (ri) {
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = rc.id;
         // v1.3-1: §4.2/§4.3 怪我引退チェック
@@ -15857,162 +16082,14 @@ const Engine = {
 
     // ── Phase B: 派閥抗争ポイント蓄積（spec: faction-rivalry-points-spec-v0.1 §2） ──
     // 試合結果ごとにペアの派閥に勝者ポイントを加算。タッグはチーム代表(fighter1)を使用。
-    if (Engine.factions && typeof Engine.factions.accrueRivalryPointsFromMatch === 'function') {
-      for (let i = 0; i < validMatches.length; i++) {
-        const m = validMatches[i]; const r = results[i];
-        if (!m || !r) continue;
-        let fighterIdA, fighterIdB, winner;
-        if (m.matchType === 'tag' && m.teamA && m.teamB) {
-          fighterIdA = m.teamA.fighter1;
-          fighterIdB = m.teamB.fighter1;
-          winner = r.winner === 'teamA' ? 'A' : (r.winner === 'teamB' ? 'B' : 'draw');
-        } else {
-          fighterIdA = m.left; fighterIdB = m.right;
-          winner = r.winner === 'left' ? 'A' : (r.winner === 'right' ? 'B' : 'draw');
-        }
-        if (winner === 'draw') continue;
-        const matchCtx = {
-          fighterIdA, fighterIdB, winner,
-          isMain: !!m.isSummit,
-          isTitle: !!m.isTitle,
-          isTag: m.matchType === 'tag',
-          isF09: !!m._f09Locked,
-        };
-        s = Engine.factions.accrueRivalryPointsFromMatch(s, matchCtx);
-        // 派閥内ポイント加算（spec: faction-internal-rank-spec-v0.2 §3.2/§3.3）
-        if (typeof Engine.factions.accrueInternalPointsFromExternalMatch === 'function') {
-          s = Engine.factions.accrueInternalPointsFromExternalMatch(s, matchCtx);
-        }
-      }
-    }
+    // K-1 4-B-2(K1-E05): 実プレイ(app.js)と同じ Engine.show.accrueFactionPoints を通す
+    s = Engine.show.accrueFactionPoints(s, validMatches, results);
 
     // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える
-    const matchGrowthRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 1732));
-    results.forEach((r, _gIdx) => {
-      // タッグ試合の成長処理
-      if (r.matchType === 'tag') {
-        const m = validMatches[_gIdx];
-        const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
-        const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
-          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
-        allIds.forEach(charId => {
-          const fighter = roster.find(c => c.id === charId);
-          if (!fighter) return;
-          const won = winTeamIds.includes(charId);
-          const isTeamA = charId === m.teamA.fighter1 || charId === m.teamA.fighter2;
-          const oppIds = isTeamA ? [m.teamB.fighter1, m.teamB.fighter2] : [m.teamA.fighter1, m.teamA.fighter2];
-          const oppOvr = oppIds.reduce((sum, id) => sum + Engine.util.ov(roster.find(c => c.id === id) || {}), 0) / 2;
-          const selfOvr = Engine.util.ov(fighter);
-          const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
-          const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
-          const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
-          const resultBonus = won ? 0.0 : 0.2;
-          const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
-          let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
-          matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
-          if (fighter.growthPenalty) {
-            const rawMult = fighter.growthPenalty.multiplier;
-            matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
-          }
-          const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
-          const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
-          const pool = [...allStats];
-          const chosen = [];
-          for (let i = 0; i < numStats; i++) { const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1); chosen.push(pool.splice(idx, 1)[0]); }
-          const growthPerStat = matchGrowth / numStats;
-          const partnerId = isTeamA ? (charId === m.teamA.fighter1 ? m.teamA.fighter2 : m.teamA.fighter1) : (charId === m.teamB.fighter1 ? m.teamB.fighter2 : m.teamB.fighter1);
-          const partnerName = (roster.find(c => c.id === partnerId) || {}).name || '?';
-          const oppNames = oppIds.map(id => (roster.find(c => c.id === id) || {}).name || '?').join('&');
-          const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
-          roster = roster.map(c => {
-            if (c.id !== charId) return c;
-            let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
-            const _mD = {};
-            chosen.forEach(stat => {
-              const cap = nc.trainCap?.[stat] || 100;
-              const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
-              if (gain > 0) { nc[stat] += gain; nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain; _mD[stat] = gain; }
-            });
-            if (nc.growthLog && !nc.isRental) {
-              // i18n P7-28: 完成文detailは不変(セーブ値不変)。表示点が言語別に組み直せるよう
-              // 充填前テンプレ+充填値を追加フィールドで併記する(§14-3と同型)
-              const _me = { season: s.season, week: s.week, type: 'match', detail: `タッグ(${partnerName}) vs ${oppNames}`, result: _mRes,
-                detailTpl: 'タッグ({partner}) vs {opps}', detailVars: { partner: partnerName, opps: oppNames } };
-              if (Object.keys(_mD).length > 0) _me.deltas = _mD;
-              nc.growthLog = [...nc.growthLog, _me];
-            }
-            return nc;
-          });
-        });
-        return;
-      }
-      [
-        { charId: r.left.id, won: r.winner === 'left' },
-        { charId: r.right.id, won: r.winner === 'right' },
-      ].forEach(({ charId, won }) => {
-        const fighter = roster.find(c => c.id === charId);
-        if (!fighter) return; // 怪我引退でロスター離脱済み
+    // K-1 4-B-4(K1-E02): 実プレイ(app.js)と同じ Engine.show.applyMatchGrowth を通す(年齢倍率・関係性倍率・
+    // タッグの相手は2人の平均)
+    roster = Engine.show.applyMatchGrowth(s, roster, validMatches, results);
 
-        // 対戦相手OVR取得（引退済みでも matchResult からOVRを算出）
-        const oppId = charId === r.left.id ? r.right.id : r.left.id;
-        const oppInRoster = roster.find(c => c.id === oppId);
-        const oppRaw = charId === r.left.id ? r.right : r.left;
-        const oppOvr = oppInRoster ? Engine.util.ov(oppInRoster) : Engine.util.ov(oppRaw);
-        const selfOvr = Engine.util.ov(fighter);
-
-        // §2.3 成長計算 — AI統一成長 Phase1: MATCH_GROWTH_BASE定数化
-        const matchGrowthBase = GROWTH_CONFIG.matchGrowthBase;
-        const opponentBonus = Engine.util.clamp((oppOvr - selfOvr) / 15, -0.2, 0.5);
-        const closeMatchBonus = r.mq >= 65 ? 0.3 : 0.0;
-        const resultBonus = won ? 0.0 : 0.2;
-        const coachMatchBonus = Engine.coach.getMatchGrowthBonus(s, charId);
-        let matchGrowth = (matchGrowthBase + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) * (fighter._relationshipGrowthMult || 1.0);
-        // v2.0: 試合成長にも年齢倍率を適用
-        matchGrowth *= ageMultiplier(fighter.age || 17, fighter.traits);
-
-        // §3.3 growthPenalty適用（適応力持ちは0.2軽減）
-        if (fighter.growthPenalty) {
-          const rawMult = fighter.growthPenalty.multiplier;
-          matchGrowth *= (rawMult < 1.0 && Traits.has(fighter, '適応力')) ? Math.min(1.0, rawMult + 0.2) : rawMult;
-        }
-
-        // §2.5 成長ステータス選択（1〜2個）
-        const allStats = ['pw', 'sp', 'te', 'st', 'mn'];
-        const numStats = Engine.rng.float(matchGrowthRng) < 0.5 ? 1 : 2;
-        const pool = [...allStats];
-        const chosen = [];
-        for (let i = 0; i < numStats; i++) {
-          const idx = Engine.rng.int(matchGrowthRng, 0, pool.length - 1);
-          chosen.push(pool.splice(idx, 1)[0]);
-        }
-        const growthPerStat = matchGrowth / numStats;
-
-        const _mOpp = charId === r.left.id ? (r.right.name || '?') : (r.left.name || '?');
-        const _mRes = r.winner === 'draw' ? 'draw' : (won ? 'win' : 'lose');
-        roster = roster.map(c => {
-          if (c.id !== charId) return c;
-          let nc = { ...c, seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) } };
-          const _mD = {};
-          chosen.forEach(stat => {
-            const cap = nc.trainCap?.[stat] || 100;
-            const gain = Math.max(0, Math.min(Math.round(growthPerStat), cap - nc[stat]));
-            if (gain > 0) {
-              nc[stat] = nc[stat] + gain;
-              nc.seasonGrowth[stat] = (nc.seasonGrowth[stat] || 0) + gain;
-              _mD[stat] = gain;
-            }
-          });
-          if (nc.growthLog && !nc.isRental) {
-            // i18n P7-28: §14-3と同型の追加フィールド(detail自体はセーブ値不変)
-            const _me = { season: s.season, week: s.week, type: 'match', detail: `vs ${_mOpp}`, opponent: _mOpp, result: _mRes,
-              detailTpl: 'vs {name}', detailVars: { name: _mOpp } };
-            if (Object.keys(_mD).length > 0) _me.deltas = _mD;
-            nc.growthLog = [...nc.growthLog, _me];
-          }
-          return nc;
-        });
-      });
-    });
     // §2.4 TODO: 調子連動（試合後の調子変動）— 調子システム実装時に有効化
 
     // v1.2: タイトルマッチ実施時に絶対週数を記録

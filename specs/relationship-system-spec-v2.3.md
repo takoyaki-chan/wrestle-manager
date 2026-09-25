@@ -113,7 +113,7 @@
 
 **実装場所**:
 - `src/management.js` `Engine.economy.calcHostileCardBonus` 新設、`calcAttendance` に加算
-- `src/management.js` 試合解決ループ内、`_hostileMatchMult` で injury check 引数に乗算
+- アクシデント率: 倍率は `Engine.injury.hostileMatchMult`(AI団体の興行と共通。K-13)。自団体の通常興行では `Engine.show.rollMatchInjury` が `flavorOpts.injuryMult` に乗算し、**エンジン(`Engine.executeShow`)と実プレイ(`App._finalizeShowImpl`)の両方がそこを通る**(K-1 第4段 4-B-3、2026-09-26。以前の実プレイは倍率を渡しておらず、週・季も 0 を渡していたため怪我の経歴が「0季0週」で残った)
 
 ### §D.3 P-4 派閥的険悪閾値 + 嫌悪伝染
 

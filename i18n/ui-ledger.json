@@ -2348,7 +2348,7 @@
     "hasPlaceholder": true,
     "hasProperNoun": false,
     "kept": true,
-    "note": "growthLog matchエントリのdetailTpl(App.finalizeShowのタッグ戦。management.jsの「タッグ({partner}) vs {opps}」とはJA文が別だが同じ情報を表す)。P7-28。app.jsは走査対象外につき手追加"
+    "note": "growthLog matchエントリのdetailTpl(旧 App.finalizeShowのタッグ戦。management.jsの「タッグ({partner}) vs {opps}」とはJA文が別だが同じ情報を表す)。P7-28。app.jsは走査対象外につき手追加。2026-09-26 K-1 第4段 4-B-4 で実プレイもEngine.show.applyMatchGrowth(「タッグ({partner}) vs {opps}」)を通すようになり新規には書かれない。既存セーブの成長ログ表示のために残す"
   },
   {
     "key": "vs {name}",

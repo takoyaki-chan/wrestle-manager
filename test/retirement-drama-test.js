@@ -162,8 +162,16 @@ section('C-6. 両方の経路が新しい規則を使っている（自団体/AI
   const checkStart = management.indexOf('    check(rng, fighter, matchResult,');
   const checkBody = management.slice(checkStart, management.indexOf('    tick(roster, freeAgents) {', checkStart));
   assert.ok(checkStart > 0 && checkBody.includes('careerEndingChance('), 'Engine.injury.check が新しい規則を使っていない');
+  // K-1 第4段 4-B-3(2026-09-26): 自団体の興行の怪我判定は Engine.show.rollMatchInjury に切り出し、
+  // エンジン(executeShow)と実プレイ(app.js _finalizeShowImpl)の両方がそこを通る。その中で Engine.injury.check を呼ぶ
+  const rollStart = management.indexOf('    rollMatchInjury(state, result, matchIdx, fighter, opts = {}) {');
+  const rollBody = management.slice(rollStart, management.indexOf('\n    },', rollStart));
+  assert.ok(rollStart > 0 && rollBody.includes('Engine.injury.check('), 'Engine.show.rollMatchInjury が Engine.injury.check を通っていない');
   const execShow = management.slice(management.indexOf('  executeShow(state) {'));
-  assert.ok(execShow.includes('Engine.injury.check('), '自団体の興行が Engine.injury.check を通っていない');
+  assert.ok(execShow.includes('Engine.show.rollMatchInjury('), '自団体の興行(エンジン)が Engine.show.rollMatchInjury を通っていない');
+  const app = read('src/app.js');
+  const fin = app.slice(app.indexOf('  _finalizeShowImpl() {'));
+  assert.ok(fin.slice(0, 60000).includes('Engine.show.rollMatchInjury('), '自団体の興行(実プレイ)が Engine.show.rollMatchInjury を通っていない');
   const aiWeek = management.slice(management.indexOf('processAIWeek(rng, state, org) {'),
     management.indexOf('processSeasonEnd(rng, state) {'));
   assert.ok(aiWeek.includes('Engine.injury.check('), 'AI団体の興行が Engine.injury.check を通っていない');
@@ -172,7 +180,12 @@ section('C-6. 両方の経路が新しい規則を使っている（自団体/AI
 });
 
 section('C-7. 舞台の格が試合から渡っている', () => {
-  assert.ok(/_stageOf/.test(management), '舞台を決めるヘルパーが無い');
+  // K-1 第4段 4-B-3: 舞台の格は Engine.show.rollMatchInjury の中で決める(旧 executeShow の _stageOf。両経路共通)
+  const rollStart = management.indexOf('    rollMatchInjury(state, result, matchIdx, fighter, opts = {}) {');
+  const rollBody = management.slice(rollStart, management.indexOf('\n    },', rollStart));
+  assert.ok(rollStart > 0 && /result\.isTitleMatch \? 'title' : \(matchIdx === 0 \? 'main' : 'undercard'\)/.test(rollBody),
+    '舞台を決める式(王座戦/メイン/前座)が Engine.show.rollMatchInjury に無い');
+  assert.ok(/stage,/.test(rollBody), '舞台の格を Engine.injury.check に渡していない');
   assert.ok(/isTitleMatch.*'title'/.test(management) || /'title'/.test(management),
     '王座戦が舞台として扱われていない');
 });

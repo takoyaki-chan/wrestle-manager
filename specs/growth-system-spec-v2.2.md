@@ -145,10 +145,16 @@ baseWear(10 ± 3)
 ## §7 試合成長
 
 ```
-matchGrowth = (0.5 + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) × ageMul
+matchGrowth = (0.5 + opponentBonus + closeMatchBonus + resultBonus + coachMatchBonus) × relMul × ageMul × growthPenalty
+opponentBonus = clamp((相手OVR − 自分OVR) / 15, −0.2, +0.5)
 ```
 
 MQ≥65の好試合 +0.3、敗北 +0.2。AIも同じ試合結果・コーチ経路を使う。
+
+- `relMul` は関係性の伸び(険悪ゾーンなど。週次の関係処理が付ける `_relationshipGrowthMult`、無ければ1.0)。`ageMul` は §2 の年齢倍率(27歳以上0、19〜20歳1.15、17歳以下0.7 など)。`growthPenalty` は §8 の怪我の成長ペナルティ
+- 伸びる能力は1〜2個を乱数(`derive(rngSeed, season, week, 1732)`)で選び、`round(matchGrowth ÷ 個数)` を trainCap まで足す
+- タッグの相手OVRは相手2人の平均(2026-09-26 Keisuke 裁定)
+- **自団体の通常興行は、エンジン(`Engine.executeShow` = auto-sim)と実プレイ(`App._finalizeShowImpl`)の両方が `Engine.show.applyMatchGrowth` を通す**(K-1 第4段 4-B-4、2026-09-26)。以前の実プレイは自前の式で relMul・ageMul が無く(ベテランが試合で伸び続け、衰えが約半分の速さだった)、タッグの相手は強い方を使っていた
 
 ## §8 外部乗算
 

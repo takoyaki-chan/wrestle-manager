@@ -63,6 +63,9 @@ module.exports = [
       'chronicle.fighterArchive[*](presence)', 'relationships.*.frozen', 'relationships.*.bond', 'relationships.*.rivalry',
       'relationshipCounters.*', '_pendingInjuryRetirements', 'factions[*].memberIds', 'newsSeen.**',
       'roster[*].pw', 'roster[*].sp', 'roster[*].te', 'roster[*].st', 'roster[*].mn', 'roster[*].seasonGrowth.*',
+      // 第4段 4-B-4 で K1-E02 を外して見えるようになった: 引退者の分だけ試合成長の乱数(1732)がずれ、
+      // 他の選手の成長ログの伸び(deltas)も入れ替わる
+      'roster[*].growthLog',
       // 2026-09-26 追加(B): 引退した選手の挑戦試合の打診が消える・ロスターが変わって派閥イベントが変わる・
       // 怪我引退のポップアップ(M-22)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
       'challengeRequest.pendingThisWeek', '_pendingFactionEvent', 'relModalWindow[*].own',
@@ -100,22 +103,16 @@ module.exports = [
     mustAppear: true, refs: 'management.js:15494-15561 / app.js なし(表示だけ app.js:12045 にある)',
     note: 'Engine.trust.checkSuddenDepartures の呼び出しはエンジンの executeShow だけ。実プレイでは表示コードだけが残っていて、発生源が無い。',
   },
-  {
-    id: 'K1-E05', title: '派閥抗争ポイント・派閥内ポイントの試合ごとの加点',
-    // title-defense: 2026-09-26 の fixture 更新で派閥員(66)が派閥外の王者と戦うようになり、派閥内ポイントの差が出る
-    category: 'processing', side: 'engine', impact: '数値', scenarios: ['factions', 'title-defense'], checkpoints: ['A', 'B'],
-    // factionRivalryPoints.*: 2026-09-26(main 取り込み後の fixture)基準状態に派閥が2つあり、その2派閥の
-    // 選手どうしの試合でエンジンだけが抗争ポイントの記録そのもの(1-2)を作る
-    patterns: ['factionRivalryPoints.*', 'factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB', 'factionInternalPoints.*', 'factionInternalPoints.*.*', '_rivalryPointsWeekly'],
-    mustAppear: true, refs: 'management.js:15263-15292 / app.js なし',
-    note: 'accrueRivalryPointsFromMatch / accrueInternalPointsFromExternalMatch は実プレイで一度も呼ばれない。'
-      + '実プレイ側の値が動くのは F09 のスイープボーナス(K1-A13)だけ。',
-  },
+  // K1-E05(派閥抗争ポイント・派閥内ポイントの試合ごとの加点が実プレイに無い)は K-1 第4段 4-B-2 で解消したので
+  // 外した(2026-09-26)。両経路が Engine.show.accrueFactionPoints を通す。F09 の試合も ×1.8 で加点される。
+  // 残る抗争ポイントの差は F09 のスイープボーナス(+15。実プレイだけ)で、K1-A13 に数える。
   {
     id: 'K1-A13', title: '派閥対抗戦 F09 の決着(スイープボーナス・年表・決着記事・クールダウン・予約の解除)',
     category: 'processing', side: 'app', impact: '数値', scenarios: ['factions'], checkpoints: ['A', 'B'],
-    patterns: ['_pendingF09', 'factionTimeline', 'factionEventCooldowns.*', '_industryNewsEvents'],
-    mustAppear: true, refs: 'app.js:8530-8618 / エンジン側なし(_f09Locked は加点倍率にだけ使う)',
+    // factionRivalryPoints.*.pointsA/B: 試合ごとの加点は両経路で一致(第4段 4-B-2)。差はスイープボーナス +15 だけ
+    patterns: ['_pendingF09', 'factionTimeline', 'factionEventCooldowns.*', '_industryNewsEvents',
+      'factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB'],
+    mustAppear: true, refs: 'app.js _finalizeShowImpl の F09 決着(applyF09SweepBonus) / エンジン側なし(_f09Locked は加点倍率にだけ使う)',
   },
   // K1-E06(実プレイの歴代最高評価の記録に matchType と勝者が渡らない)は K-1 第1段で解消したので外した(2026-09-26)。
   // app.js _finalizeShowImpl がエンジンと同じ引数を渡す。あわせて §7 X09(記録更新の経歴の刻印が roster の書き戻しで
@@ -156,22 +153,11 @@ module.exports = [
   },
   // K1-A15(タッグ不仲ペアの試合後 信頼−1)は、裁定 K-12 の実装(7ba3738e: Engine.showTagMatch に4経路を
   // 通した)で差が消えたので外した(2026-09-26)。以後この場所に差が出ると「未登録」で落ちる。
-  {
-    id: 'K1-X03', title: '怪我の経歴の日付(実プレイは怪我判定に週・季として 0 を渡すので、中傷・重傷の経歴が「0季0週」になる)',
-    category: 'formula', side: 'both', impact: '表示', scenarios: ['departure'], checkpoints: ['A', 'B'],
-    patterns: ['roster[*].careerHistory'],
-    mustAppear: true, refs: 'app.js _finalizeShowImpl の Engine.injury.check(…, 0, 0, …) / management.js executeShow は s.week, s.season を渡す',
-    note: '報告書 §7 X03(コード読解で確認済み)を 2026-09-26 の fixture 更新で実測した(departure で選手41が中傷)。'
-      + '同じシナリオの選手44のブレークスルーの経歴(K1-A02)もこの項目に数えられる(場所が同じため)。',
-  },
-  {
-    id: 'K1-F01', title: 'タッグの人気・連敗・勝敗の付け方(実プレイは敗者も勝者扱い)',
-    category: 'formula', side: 'both', impact: '数値', scenarios: ['tag-mixed', 'mq-record', 'tag-lowbond'], checkpoints: ['A', 'B'],
-    // _industryNewsEvents(B): 勝敗の付け方が違うので、週次の新聞が拾う連敗の節目(loseStreakMilestone)が変わる
-    // (第1段で K1-E06 を外して見えるようになった。mq-record で実測)
-    patterns: ['roster[*].popularity', 'roster[*].losingStreak', 'roster[*].lastMatchResult', '_industryNewsEvents'],
-    mustAppear: true, refs: 'management.js:14990-15010 / app.js:8258-8271(left と right に同じ選手を入れて applyMQPopularity を呼ぶため、どちらが勝っても勝者判定になる)',
-  },
+  // K1-X03(怪我判定の引数。実プレイは週・季に 0 を渡し、険悪ペアの怪我率×2 と舞台の格を渡していなかった)は
+  // K-1 第4段 4-B-3 で解消したので外した(2026-09-26)。両経路が Engine.show.rollMatchInjury で引数を組む。
+  // K1-F01(タッグの人気・連敗・勝敗の付け方。実プレイは敗者も勝者扱い)は K-1 第4段 4-B-1 で解消したので外した
+  // (2026-09-26)。両経路が Engine.show.applyMatchPopularity を通す。タッグにもメイン低評価の人気減と
+  // ヒール適性の加点が掛かる(裁定)。以後この場所に差が出ると「未登録」で落ちる。
   {
     id: 'K1-A07', title: 'タッグ試合の直近戦績(recentMatches・対角4ペア)',
     category: 'processing', side: 'app', impact: '表示', scenarios: ['tag-mixed', 'mq-record', 'tag-lowbond'], checkpoints: ['A', 'B'],
@@ -193,12 +179,9 @@ module.exports = [
     mustAppear: true, refs: 'management.js:15048-15052 / app.js なし',
     note: 'B では週次の行動がプロモ(エンジン)と練習(実プレイ)に分かれ、収入・人気・コンディション・乱数(tickMain)の消費まで変わる(K1-B01〜B05)。',
   },
-  {
-    id: 'K1-E02', title: '試合成長の式(年齢倍率・関係性倍率・タッグの相手OVRの取り方)',
-    category: 'formula', side: 'both', impact: '数値', checkpoints: ['A', 'B'],
-    patterns: ['roster[*].pw', 'roster[*].sp', 'roster[*].te', 'roster[*].st', 'roster[*].mn', 'roster[*].seasonGrowth.*', 'roster[*].growthLog', 'roster[*].statPeak.*'],
-    mustAppear: true, refs: 'management.js:15294-15420(×_relationshipGrowthMult ×ageMultiplier、タッグは相手2人の平均) / app.js:8715-8805(どちらも無し、タッグは相手の最大)',
-  },
+  // K1-E02(試合成長の式。実プレイに年齢倍率・関係性倍率が無く、タッグの相手は強い方)は K-1 第4段 4-B-4 で
+  // 解消したので外した(2026-09-26)。両経路が Engine.show.applyMatchGrowth を通す(タッグの相手は2人の平均=裁定)。
+  // tickWeek 後(B)の能力の差は週次の練習/プロモの差(K1-E01)の波及で、K1-B06 に数える。
   {
     id: 'K1-A01', title: 'キャリア最高評価(careerBestMQ)の更新と信頼ボーナス(+1.2)',
     category: 'processing', side: 'app', impact: '数値', checkpoints: ['A', 'B'],
