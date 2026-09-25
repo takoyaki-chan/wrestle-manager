@@ -62,9 +62,13 @@ assert.ok(html.includes('.wm-tag-ring-fighter.tag-highlight .wm-tag-full-figure{
 assert.ok(html.includes('.wm-tag-ring-fighter.tag-highlight-hot .wm-tag-full-figure{animation:wmFigureHotTagTouchAura'), 'hot-tag highlight must follow the incoming fighter silhouette');
 assert.ok(html.includes('.wm-tag-ring-fighter.tag-highlight-hot{animation:none}'), 'touch highlights must not animate the rectangular fighter panel');
 assert.ok(html.includes('.vic-win-line{position:relative;margin-bottom:8px;padding:11px 16px;border:1px solid rgba(122,101,48,.52);border-radius:10px;color:#211d15;background:rgba(250,246,236,.98)'), 'tag victory dialogue must use the standard white speech bubble with dark text');
-assert.ok(main.includes('const winLine = WM_I18N.t(pickTagWinLine(winFinisher));'), 'winner dialogue must not receive a full partner name');
+// K-14(2026-09-25): 勝者セリフの {partner} は呼び名(名字/絆85以上で下の名前)。フルネームは渡さない
+assert.ok(main.includes('const winLine = pickTagWinLine(winFinisher, _tagCallName(winFinisher, winPartner), WM_I18N.t);'), 'winner dialogue must receive the partner call name, not the full name');
+assert.ok(!/pickTagWinLine\([^)]*winPartner\.name/.test(main), 'winner dialogue must not receive a full partner name');
+assert.ok(!main.includes('WM_I18N.t(pickTagWinLine('), 'filled winner line must not be re-wrapped in t()');
 assert.ok(!main.includes('const lossLine =') && !main.includes('<div class="vic-loss-line">'), 'tag result must not force a loser quote into the winner-focused screen');
-assert.ok(lines.includes('const TAG_MATCH_WIN_NAMELESS_LINES = {') && lines.includes('function pickTagWinLine(fighter) {'), 'tag winner dialogue must use a name-free line pool');
+assert.ok(lines.includes('const TAG_MATCH_WIN_NAMELESS_LINES = {') && lines.includes('function pickTagWinLine(fighter, partnerCallName, dict) {'), 'tag winner dialogue draws from the cell lines plus the name-free pool');
+assert.ok(lines.includes("if (!partnerCallName) pool = pool.filter((line) => line.indexOf('{partner}') < 0);"), 'without a call name, lines that name the partner must not be drawn');
 assert.ok(mobile.includes('/* Tag battle presentation v2 */'), 'tag presentation must retain a phone layout');
 assert.ok(mobile.includes('.wm-tag-exchange-panel { grid-column: 1 / -1; grid-row: 1;'), 'phone tag layout must keep the exchange panel above both teams');
 

@@ -73,6 +73,22 @@ function callNameText(speaker, target, fallback, state) {
   return cn.ja;
 }
 
+// K-14(2026-09-25): タッグ観戦画面(iframe)へ渡す、パートナー同士の呼び名の表。
+// 観戦画面には絆(G)が無いので親で決める。キーは向きのある '話し手id:相手id'(関係値の 'a>b' とは別物)。
+// どちらが決め手(=勝者セリフの話し手)になるかは再生まで分からないので、両チームの4方向ぶんを載せる。
+// 値は表示言語の呼び名(観戦画面は t() で包まずにそのまま {partner} へ入れる)
+function tagMatchCallNames(teamA, teamB, state) {
+  const out = {};
+  [teamA, teamB].forEach(team => {
+    const a = team && team.fighter1;
+    const b = team && team.fighter2;
+    if (!a || !b || a.id == null || b.id == null) return;
+    out[`${a.id}:${b.id}`] = callNameText(a, b, '', state);
+    out[`${b.id}:${a.id}`] = callNameText(b, a, '', state);
+  });
+  return out;
+}
+
 // ── i18n P6-10: 殿堂入り選手の異名(hofEntry.epithet)の表示用ラベル ─────────────
 // 異名は Engine.awards.generateEpithet が生成した**生JAのままG(殿堂エントリ)へ
 // 永続化される**値(D-P6-4「セーブに書く値は変えない」)。表示の瞬間にだけ辞書を引く。

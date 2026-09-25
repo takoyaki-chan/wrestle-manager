@@ -4877,6 +4877,8 @@ const App = {
         bgmMasterVol: Audio.bgmMasterVol,
         chemA: replay.result.chemA,
         chemB: replay.result.chemB,
+        // K-14: 勝者セリフの {partner} に入れる呼び名(観戦画面には絆が無いので親で決める)
+        callNames: (typeof tagMatchCallNames === 'function') ? tagMatchCallNames({ fighter1: fA1, fighter2: fA2 }, { fighter1: fB1, fighter2: fB2 }, G) : {},
       },
     };
     let sent = false;
@@ -7399,6 +7401,8 @@ const App = {
         bgmMasterVol: Audio.bgmMasterVol,
         chemA: result.chemA,
         chemB: result.chemB,
+        // K-14: 勝者セリフの {partner} に入れる呼び名(観戦画面には絆が無いので親で決める)
+        callNames: (typeof tagMatchCallNames === 'function') ? tagMatchCallNames({ fighter1: f1, fighter2: f2 }, { fighter1: f3, fighter2: f4 }, G) : {},
       }
     };
     let sent = false;

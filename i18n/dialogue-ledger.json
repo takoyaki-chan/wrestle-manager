@@ -4989,20 +4989,6 @@
     }
   },
   {
-    "key": "{partner}…あ、ありがとな…！ あたし、頑張れた…！",
-    "en": "{partner}... th-thanks...! I made it through...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "delinquent",
-      "personality": "shy"
-    }
-  },
-  {
     "key": "{partner}…あたしの力不足だ。お前を勝たせてやれなかった…",
     "en": "{partner}... I wasn't good enough. Couldn't get you that win...",
     "files": [
@@ -5014,48 +5000,6 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "earnest"
-    }
-  },
-  {
-    "key": "{partner}…あなたを信じてよかった。この勝ちは二人のものよ。",
-    "en": "{partner}... trusting you was the right call. This win is ours, both of ours.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "seductive",
-      "personality": "earnest"
-    }
-  },
-  {
-    "key": "{partner}…ありがとう。二人でつかんだ勝ち、悪くないでしょ？",
-    "en": "Thank you, {partner}. A win the two of us took — not bad, was it?",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "seductive",
-      "personality": "normal"
-    }
-  },
-  {
-    "key": "{partner}…う、嬉しい…二人で、勝てて…わ…",
-    "en": "{partner}... I-I'm so glad... we won, together...",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "seductive",
-      "personality": "shy"
     }
   },
   {
@@ -5115,20 +5059,6 @@
     }
   },
   {
-    "key": "{partner}…ほ、本当に…ありがとう…！",
-    "en": "{partner}... th-thank you... really...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "standard",
-      "personality": "shy"
-    }
-  },
-  {
     "key": "{partner}…わ、悪い…あたしのせいで…",
     "en": "{partner}... m-my bad... this was on me...",
     "files": [
@@ -5185,8 +5115,36 @@
     }
   },
   {
-    "key": "{partner}、あなたが繋いでくれたから…最後まで折れずにいられたの。",
-    "en": "You held the line for me, {partner}... that's why I never broke.",
+    "key": "{partner}、ありがとう！ 一人じゃ、ここまで持たなかったよ。",
+    "en": "Thanks, {partner}! On my own, I'd never have lasted that long.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "{partner}、ありがとな！ おかげで、真っ向から行けたんだ！",
+    "en": "Thanks, {partner}! With you backin' me up, I could go right at 'em!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "{partner}、いい感じに噛み合ってたじゃない？ おかげで楽させてもらったわ♪",
+    "en": "We meshed pretty nicely, didn't we, {partner}? Made my job easy ♪",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5195,12 +5153,12 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive",
-      "personality": "earnest"
+      "personality": "easygoing"
     }
   },
   {
-    "key": "{partner}、あなたを信じてよかった。この勝ち、二人のものだよ。",
-    "en": "{partner}, I was right to trust you. This win belongs to both of us.",
+    "key": "{partner}、ハイタッチ〜♪ 合図なしで通じちゃうの、マジ最高じゃん！",
+    "en": "High five, {partner}~ ♪ We didn't even need to signal each other. Totally the best!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5209,49 +5167,7 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
-      "personality": "earnest"
-    }
-  },
-  {
-    "key": "{partner}、ありがとう。二人だから勝てたよ。",
-    "en": "Thank you, {partner}. We won because there were two of us.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "standard",
-      "personality": "normal"
-    }
-  },
-  {
-    "key": "{partner}、ありがとな！ 二人だから勝てたんだ！",
-    "en": "Thanks, {partner}! Took the both of us to pull that off!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "delinquent",
-      "personality": "normal"
-    }
-  },
-  {
-    "key": "{partner}、お前を信じてよかった。この勝ちは二人のもんだ。",
-    "en": "{partner}, trusting you was right. This win belongs to us both.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "delinquent",
-      "personality": "earnest"
+      "personality": "easygoing"
     }
   },
   {
@@ -5283,36 +5199,8 @@
     }
   },
   {
-    "key": "{partner}〜お疲れさま♪ 息ぴったりだったでしょ？",
-    "en": "{partner}~ well done ♪ We were right in time with each other, no?",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "seductive",
-      "personality": "easygoing"
-    }
-  },
-  {
-    "key": "{partner}〜お疲れさま！ 私たち、息ぴったりだったね〜",
-    "en": "{partner}~ nice work! We were so in step out there~",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "standard",
-      "personality": "easygoing"
-    }
-  },
-  {
-    "key": "{partner}〜お疲れさん！ 私ら息ぴったりだったろ？",
-    "en": "{partner}~ good work! We were right in sync, yeah?",
+    "key": "{partner}、目ぇ合っただけで分かったろ？ 楽しかったな〜♪",
+    "en": "One look and we both knew the play, right, {partner}? That was a blast~ ♪",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5350,8 +5238,8 @@
     }
   },
   {
-    "key": "{partner}が繋いでくれたから…あたし、最後まで踏ん張れた。",
-    "en": "You kept it going for me, {partner}... that's why I held on to the end.",
+    "key": "{partner}が粘ってくれた分、こっちも倒れずに済んだんだ。…ありがてえ。",
+    "en": "You hung in there, {partner}, so I didn't go down either. ...Appreciate it.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5361,34 +5249,6 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "earnest"
-    }
-  },
-  {
-    "key": "{partner}が繋いでくれたから…最後まで諦めずに済んだ。",
-    "en": "You kept it alive for me, {partner}... that's why I never had to quit.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "standard",
-      "personality": "earnest"
-    }
-  },
-  {
-    "key": "{partner}さん…あ、ありがとうございますわ…！",
-    "en": "{partner}... th-thank you ever so much...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "ojousama",
-      "personality": "shy"
     }
   },
   {
@@ -5476,36 +5336,8 @@
     }
   },
   {
-    "key": "{partner}さん…ほ、本当に…ありがとうございました…！",
-    "en": "{partner}... th-thank you so much... really...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "shy"
-    }
-  },
-  {
-    "key": "{partner}さん、ありがとうございました。二人で掴んだ勝ちです。",
-    "en": "Thank you so much, {partner}. The two of us earned this one.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "normal"
-    }
-  },
-  {
-    "key": "{partner}さん、ありがとうございますわ。二人で掴んだ勝利ですのね。",
-    "en": "Thank you, {partner}. A victory the two of us took together.",
+    "key": "{partner}さん、感謝するわ。…この一勝は、二人で積み上げたぶんの結果ね。",
+    "en": "Thank you, {partner}. ...This win is simply what the two of us built, step by step.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5515,34 +5347,6 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "normal"
-    }
-  },
-  {
-    "key": "{partner}さん、お疲れさまです♪ 息ぴったりでしたね〜",
-    "en": "Nice work, {partner} ♪ We were right in step, weren't we~",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "easygoing"
-    }
-  },
-  {
-    "key": "{partner}さん、お疲れさまですわ♪ 息ぴったりでしたわね〜",
-    "en": "Well done, {partner} ♪ We were perfectly in step, were we not~",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "ojousama",
-      "personality": "easygoing"
     }
   },
   {
@@ -5616,34 +5420,6 @@
     }
   },
   {
-    "key": "{partner}さんが繋いでくださったからこそ、掴めた勝利ですの。",
-    "en": "It is only because you held on for me, {partner}, that this victory came at all.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "ojousama",
-      "personality": "earnest"
-    }
-  },
-  {
-    "key": "{partner}さんが繋いでくれたバトン…無駄にせずに済みました。",
-    "en": "The baton you handed me, {partner}... I didn't waste it.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "earnest"
-    }
-  },
-  {
     "key": "{partner}さんっ…ごめんなさいっ…わたくしのせいでっ…！",
     "en": "{partner}...! I am so sorry... it was all my fault...!",
     "files": [
@@ -5672,22 +5448,8 @@
     }
   },
   {
-    "key": "{partner}さんっ…！ ありがとうございます…二人で、勝てました…！",
-    "en": "{partner}...! Thank you... we won, the two of us...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "emotional"
-    }
-  },
-  {
-    "key": "{partner}さんっ…！ やりましたわ…二人で、勝ったのですわ…！",
-    "en": "{partner}...! We have done it... the two of us have won...!",
+    "key": "{partner}さんに預けた信頼に、しかと応えていただきましたわ。",
+    "en": "The trust I placed in you was answered in full, {partner}. I am truly grateful.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5696,48 +5458,7 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
-      "personality": "emotional"
-    }
-  },
-  {
-    "key": "{partner}さんのおかげです。本当に、ありがとうございました。",
-    "en": "This is all thanks to you, {partner}. Truly, thank you.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
       "personality": "earnest"
-    }
-  },
-  {
-    "key": "{partner}さんを信じておりまして、本当によかったですわ。",
-    "en": "I am so very glad that I placed my faith in you, {partner}.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 2,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "ojousama"
-    }
-  },
-  {
-    "key": "{partner}さんを信じてよかったです…ちゃんと、勝てました！",
-    "en": "I was right to believe in you, {partner}... and we really did win!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "normal"
     }
   },
   {
@@ -5811,8 +5532,8 @@
     }
   },
   {
-    "key": "{partner}っ…！ ありがとう…二人で、勝ったよ…！",
-    "en": "{partner}...! Thank you... we won — the two of us...!",
+    "key": "{partner}っ…！ ありがとう…ありがとうっ…！ 二人で勝てたんだよ、ほんとに…！",
+    "en": "{partner}...! Thank you — thank you...! We actually won this, the two of us...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5822,48 +5543,6 @@
     "cell": {
       "archetype": "standard",
       "personality": "emotional"
-    }
-  },
-  {
-    "key": "{partner}っ…！ やったぜ…二人で、勝ったんだ…！",
-    "en": "{partner}...! We did it... the two of us took it...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "delinquent",
-      "personality": "emotional"
-    }
-  },
-  {
-    "key": "{partner}っ…！ やったわ…二人で、勝ったのよ…！",
-    "en": "{partner}...! We did it... the two of us won...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "seductive",
-      "personality": "emotional"
-    }
-  },
-  {
-    "key": "{partner}となら…だ、大丈夫って…信じてた、の…",
-    "en": "With {partner}... I-I knew it would be all right... I believed that...",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "seductive",
-      "personality": "shy"
     }
   },
   {
@@ -6354,101 +6033,6 @@
     }
   },
   {
-    "key": "…{partner}、あ、ありがとう…二人で、勝てたね…",
-    "en": "...{partner}, th-thank you... we won, the two of us...",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "shy"
-    }
-  },
-  {
-    "key": "…{partner}、ありがとう。",
-    "en": "...Thank you, {partner}.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 2,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": null
-  },
-  {
-    "key": "…{partner}、ありがとう。二人だから、だね。",
-    "en": "...Thank you, {partner}. Because it was the two of us.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "quiet"
-    }
-  },
-  {
-    "key": "…{partner}、ありがとう。二人だから、勝てたね。",
-    "en": "...Thanks, {partner}. It took both of us to win that one.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "normal"
-    }
-  },
-  {
-    "key": "…{partner}、ありがとう。二人で、勝った。",
-    "en": "...Thank you, {partner}. The two of us. We won.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "normal"
-    }
-  },
-  {
-    "key": "…{partner}、お疲れ。息、ぴったりだった。",
-    "en": "...Good work, {partner}. We were in step.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "easygoing"
-    }
-  },
-  {
-    "key": "…{partner}、お疲れさま。息、ぴったりだったね〜",
-    "en": "...Good work, {partner}. We were right in step there~",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "easygoing"
-    }
-  },
-  {
     "key": "…{partner}、ご、ごめん…私のせいで…",
     "en": "...{partner}, I-I'm sorry... it was me...",
     "files": [
@@ -6572,22 +6156,8 @@
     }
   },
   {
-    "key": "…{partner}、信じてよかったよ。この勝ちは、二人のものだね。",
-    "en": "...Glad I trusted you, {partner}. This win belongs to the both of us.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "earnest"
-    }
-  },
-  {
-    "key": "…{partner}、恩に着る。",
-    "en": "...I owe you, {partner}.",
+    "key": "…{partner}、恩に着る。この借りは、次のリングで返す。",
+    "en": "...Owe you one, {partner}. I'll pay it back in the ring next time.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6642,50 +6212,8 @@
     }
   },
   {
-    "key": "…{partner}。二人で、勝ったよ。…約束、守れたね。",
-    "en": "...{partner}. The two of us won. ...We kept our promise.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "emotional"
-    }
-  },
-  {
-    "key": "…{partner}。信じて、よかった。この勝ちは、二人の。",
-    "en": "...{partner}. Right to trust you. This win is ours.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "earnest"
-    }
-  },
-  {
-    "key": "…{partner}が繋いだ。だから、勝てた。",
-    "en": "...{partner} held on. That's why we won.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "earnest"
-    }
-  },
-  {
-    "key": "…{partner}が繋いでくれたから、最後まで立てた。ありがとう。",
-    "en": "...You kept it alive, {partner}, so I stayed on my feet. Thank you.",
+    "key": "…{partner}が踏みとどまってくれたから、最後まで立っていられた。ありがとう。",
+    "en": "...You stood your ground, {partner}, so I stayed on my feet to the end. Thank you.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6695,20 +6223,6 @@
     "cell": {
       "archetype": "composed",
       "personality": "earnest"
-    }
-  },
-  {
-    "key": "…{partner}さん、ありがとうございました。",
-    "en": "...Thank you, {partner}. Truly.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "quiet"
     }
   },
   {
@@ -6723,50 +6237,8 @@
     "cell": null
   },
   {
-    "key": "…{partner}さん、感謝いたしますわ。",
-    "en": "...My thanks to you, {partner}.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "ojousama",
-      "personality": "quiet"
-    }
-  },
-  {
-    "key": "…{partner}さんと、だからですの。",
-    "en": "...It was with {partner}. That is the whole of it.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "ojousama",
-      "personality": "quiet"
-    }
-  },
-  {
-    "key": "…{partner}さんと、だから勝てました。",
-    "en": "...It was with {partner}. That's why we won.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "quiet"
-    }
-  },
-  {
-    "key": "…{partner}と、だから…ね。",
-    "en": "...Because it was {partner}. That's all.",
+    "key": "…{partner}となら、筋書きどおりに運ぶわね。",
+    "en": "...With you, {partner}, everything goes exactly to script.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6779,19 +6251,8 @@
     }
   },
   {
-    "key": "…{partner}と、だから勝てた。",
-    "en": "...With {partner}. That's the only reason we won.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 2,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": null
-  },
-  {
-    "key": "…{partner}と、だから勝てた。それだけだよ。",
-    "en": "...We won because it was with {partner}. That's all it is.",
+    "key": "…{partner}となら、負けない。今日で証明した。",
+    "en": "...With {partner}, we don't lose. Proved it today.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6799,13 +6260,13 @@
     "hasPlaceholder": true,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "composed",
-      "personality": "quiet"
+      "archetype": "cool",
+      "personality": "bold"
     }
   },
   {
-    "key": "…{partner}となら、勝てる。",
-    "en": "...With {partner}, I win.",
+    "key": "…{partner}と組めば勝てると読んでた。読み通り。",
+    "en": "...Figured teaming with {partner} would win it. Read it right.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6818,8 +6279,8 @@
     }
   },
   {
-    "key": "…{partner}となら勝てる気がしてた。…当たったよ。",
-    "en": "...I had a feeling we'd win with {partner}. ...Turns out I was right.",
+    "key": "…{partner}の役に、ちゃんと立てたかな…？ …おかげで、頑張りきれたよ",
+    "en": "...Was I any real help to you, {partner}...? ...Thanks to you, I made it all the way.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6828,7 +6289,7 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
-      "personality": "normal"
+      "personality": "shy"
     }
   },
   {
@@ -7589,20 +7050,6 @@
     "cell": null
   },
   {
-    "key": "……{partner}、ありがとう。",
-    "en": "...Thanks, {partner}.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "quiet"
-    }
-  },
-  {
     "key": "……{partner}、ごめん。",
     "en": "...{partner}. Sorry.",
     "files": [
@@ -7617,8 +7064,8 @@
     }
   },
   {
-    "key": "……{partner}と、だから。",
-    "en": "...Because of {partner}. That's it.",
+    "key": "……{partner}がいなければ、負けてた。",
+    "en": "...Without {partner}, I'd have lost.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -7627,6 +7074,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……{partner}と組んだから、勝てたの。…分かってるよね？",
+    "en": "...We won because I teamed with you, {partner}. ...You know that, don't you?",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "quiet"
     }
   },
@@ -11954,6 +11415,20 @@
     }
   },
   {
+    "key": "……ありがとう。……次も、組む。",
+    "en": "...Thanks. ...Next time, same team.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……ありがとう。…いい場所だった",
     "en": "...Thank you. ...It was a good place.",
     "files": [
@@ -12062,6 +11537,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……ありがとう。二人で勝ったの、ちゃんと伝わった？",
+    "en": "...Thank you. Everyone could tell it took both of us, right?",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "quiet"
     }
   },
@@ -37933,6 +37422,20 @@
     }
   },
   {
+    "key": "…あ、ありがとう。こういうの、面と向かって言うの…慣れてないの…",
+    "en": "...Th-thank you. Saying it to your face like this... I'm not used to it...",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…あ、ありがとうございました……。{tenure_farewell}{rivalry}…ご迷惑ばかりで……申し訳ありません……。",
     "en": "...Th-thank you so very much...{tenure_farewell}{rivalry} I was nothing but trouble... I am sorry...",
     "files": [
@@ -39011,6 +38514,20 @@
     }
   },
   {
+    "key": "…あの場面、{partner}が耐えた。だから、勝ち切れた。",
+    "en": "...{partner} held on back there. That's how we closed it out.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "…あの子にも言い分があった。それを聞かずにいたのは、こっちの落ち度だね",
     "en": "...She had her side of it. Not hearing it was my failing.",
     "files": [
@@ -39528,6 +39045,34 @@
     }
   },
   {
+    "key": "…ありがとう、{partner}。いい仕事をしてくれたね。おかげで、こっちは落ち着いて戦えたんだ。",
+    "en": "...Thank you, {partner}. You did good work, so I could keep a calm head out there.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "…ありがとう、{partner}さん。先に崩してくれたから、組み立てが楽になったの。",
+    "en": "...Thank you, {partner}. You broke them down first, so the rest was easy to plan.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…ありがとう、ございました…",
     "en": "...Thank you, everyone...",
     "files": [
@@ -39833,6 +39378,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "quiet"
+    }
+  },
+  {
+    "key": "…ありがとう。二人で削って、二人で取った。",
+    "en": "...Thanks. Wore them down together, took it together.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
     }
   },
   {
@@ -42524,6 +42083,20 @@
     }
   },
   {
+    "key": "…あんたとだから、勝てた。それ以上は言わねえ。",
+    "en": "...Won 'cause it was you. Not sayin' more than that.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…あんたとは、どうも肌が合わなくてね。…今日は、それが助かる",
     "en": "...You and I never did mix well. ...Today that helps.",
     "files": [
@@ -44112,6 +43685,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…え、えっと…ありがとう。…二人で勝てたの、まだちょっと、信じられなくて…",
+    "en": "...U-um... thank you. ...I still can't quite believe we won, the two of us...",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "shy"
     }
   },
@@ -48468,6 +48055,20 @@
     }
   },
   {
+    "key": "…ご一緒したのが、{partner}さんでよかった。…それだけ。",
+    "en": "...I am glad it was you beside me, {partner}. ...That is all.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…ご厚意に甘えます。必ず復帰してお返しいたします",
     "en": "...I'll accept your kindness. I will return and repay it.",
     "files": [
@@ -51579,6 +51180,20 @@
     }
   },
   {
+    "key": "…ちゃんと、やれた。…{partner}に、ついていけた。",
+    "en": "...Held up fine. ...Kept pace with {partner}.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…ちゃんとやるよ。恥ずかしくない仕事をしたいからね",
     "en": "...I'll do it right. I'd like the work to hold up.",
     "files": [
@@ -53298,20 +52913,6 @@
     }
   },
   {
-    "key": "…っ、{partner}…ありがとう…",
-    "en": "...Kh. {partner}... thank you...",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "shy"
-    }
-  },
-  {
     "key": "…っ、{partner}…ごめん…私の、せいで…",
     "en": "...Kh. {partner}... sorry... my fault...",
     "files": [
@@ -53330,20 +52931,6 @@
     "en": "...Kh. {partner}... sorry.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "emotional"
-    }
-  },
-  {
-    "key": "…っ、{partner}…勝った。二人で。",
-    "en": "...Kh. {partner}... we won. Together.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -54051,6 +53638,34 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "…っ。……あり、がと。……今の、聞こえた？",
+    "en": "...Kh. ...Th-thanks. ...Did you catch that?",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…っ。…勝った。{partner}と、二人で。…勝ったんだ。",
+    "en": "...Kh. We won — {partner} and me. ...We actually won.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "emotional"
     }
   },
   {
@@ -55659,6 +55274,20 @@
     }
   },
   {
+    "key": "…なんとなく、今日は負けない気がしてたんだ。…当たったね。",
+    "en": "...Somehow I just knew we wouldn't lose today. ...Guess I was right.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "…ねえ、あの人との試合、組んでくれない？ 決着つけたくてさ",
     "en": "...Say, would you book me against her? I want it finished.",
     "files": [
@@ -57101,6 +56730,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "…ふふ。ありがとう、と言っておくわ。",
+    "en": "...Hehe. Consider yourself thanked.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
     }
   },
   {
@@ -60498,34 +60141,6 @@
     }
   },
   {
-    "key": "…やったな、{partner}。二人なら、負けない。",
-    "en": "...We did it, {partner}. Two of us. We don't lose.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "bold"
-    }
-  },
-  {
-    "key": "…やったね、{partner}。二人なら、負ける気がしないよ。",
-    "en": "...Nicely done, {partner}. With the two of us, I don't see us losing.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "bold"
-    }
-  },
-  {
     "key": "…やったよ。…ここまで来れたか",
     "en": "...I did it. ...So I made it this far after all.",
     "files": [
@@ -60678,6 +60293,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "quiet"
+    }
+  },
+  {
+    "key": "…やりやすかった。余計なこと、考えずに済んだ。",
+    "en": "...Easy to work with. Didn't have to think about anything extra.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
     }
   },
   {
@@ -61445,34 +61074,6 @@
     "cell": {
       "archetype": "composed",
       "personality": "easygoing"
-    }
-  },
-  {
-    "key": "…わ、私、頑張れた…{partner}と…",
-    "en": "...I-I got through it... with {partner}...",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "shy"
-    }
-  },
-  {
-    "key": "…わ、私、頑張れたよ…{partner}のおかげ…",
-    "en": "...I-I held up out there... thanks to {partner}...",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "shy"
     }
   },
   {
@@ -64913,6 +64514,20 @@
     }
   },
   {
+    "key": "…二人で勝つ、と決めてた。…決めた通りに、なった。",
+    "en": "...We'd decided to win together. ...It went just as we decided.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "…二人で決めようね",
     "en": "...Let's settle it together, okay?",
     "files": [
@@ -66204,6 +65819,20 @@
     }
   },
   {
+    "key": "…信じたのは、正しかった。…いい判断だった。",
+    "en": "...Trusting you was right. ...Good call.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "…信じていた。まだやれると",
     "en": "...I believed it. That I still had more.",
     "files": [
@@ -67421,6 +67050,20 @@
     }
   },
   {
+    "key": "…助かったわ。組んだ相手が{partner}で、よかったかも。",
+    "en": "...That helped, {partner}. Glad it was you I got paired with, I think.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…努力が足りなかった。もう一度、一からやり直す",
     "en": "...I didn't put in enough. I'm starting over from nothing.",
     "files": [
@@ -67770,8 +67413,8 @@
     }
   },
   {
-    "key": "…勝った。{partner}と組むの、好き。",
-    "en": "...We won. I like teaming with {partner}.",
+    "key": "…勝った。{partner}と組むのは、嫌いじゃない。",
+    "en": "...Won. Don't mind teaming up with {partner} at all.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -68050,20 +67693,6 @@
     }
   },
   {
-    "key": "…勝っちゃった。{partner}と組むの、やっぱいいな〜",
-    "en": "...And we won. Teaming with {partner} really does suit me~",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "easygoing"
-    }
-  },
-  {
     "key": "…勝っちゃった。…ふぅん",
     "en": "...Well, I won. ...Huh.",
     "files": [
@@ -68246,6 +67875,20 @@
     }
   },
   {
+    "key": "…勝てた理由？ 隣を見れば分かるでしょ。",
+    "en": "...Why we won? Just look who was next to me.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…勝てなくなった、か。……うん",
     "en": "...So I stopped winning. ...Yeah.",
     "files": [
@@ -68341,6 +67984,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "…勝因は、組んだ相手。考えるまでもないことだわ。",
+    "en": "...What won it was who I teamed with. There's nothing more to analyze.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
     }
   },
   {
@@ -72605,6 +72262,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "…感謝いたします。言葉は、あとで改めて。",
+    "en": "...My thanks. The proper words can wait until later.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "quiet"
     }
   },
   {
@@ -81853,20 +81524,6 @@
     }
   },
   {
-    "key": "…約束、守った。{partner}…っ。",
-    "en": "...Kept the promise. {partner}...",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "cool",
-      "personality": "emotional"
-    }
-  },
-  {
     "key": "…素直に下げたわね。…嫌いじゃないわ、そういうの。…また、上げさせるから。",
     "en": "...You lowered it without fuss. ...I don't mind that. ...I'll make you raise it again.",
     "files": [
@@ -83262,30 +82919,16 @@
     }
   },
   {
-    "key": "…見たか。{partner}と、あたしのタッグだ。",
-    "en": "...You saw. {partner} and me. That's the team.",
+    "key": "…見たか。これが、この二人の仕事。",
+    "en": "...You saw. That's how this pair works.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
-    "hasPlaceholder": true,
+    "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool",
-      "personality": "bold"
-    }
-  },
-  {
-    "key": "…見た？ {partner}と組めば、こんなもんさ。",
-    "en": "...See that? Pair me with {partner} and this is what you get.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
       "personality": "bold"
     }
   },
@@ -83540,6 +83183,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "…見立てどおりだったわ。信じて正解。この勝ち、半分は{partner}の手柄よ。",
+    "en": "...Just as I judged. Trusting you was right — half of this win is yours, {partner}.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
     }
   },
   {
@@ -83861,20 +83518,6 @@
     "cell": {
       "archetype": "standard",
       "personality": "quiet"
-    }
-  },
-  {
-    "key": "…言葉はいらない。{partner}、ありがとう。…それだけだ。",
-    "en": "...No need for words. Thank you, {partner}. ...That's all.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "composed",
-      "personality": "emotional"
     }
   },
   {
@@ -91202,6 +90845,20 @@
     }
   },
   {
+    "key": "あ、あの、{partner}さん……ほ、本当に……ありがとうございました……！",
+    "en": "U-um, {partner}... th-thank you... so, so much...!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "あ、あの、社長……。その……減らしてくださって、大丈夫ですから……。本当に",
     "en": "U-um, President... Well... it is quite all right to reduce it... Truly.",
     "files": [
@@ -91244,6 +90901,20 @@
     }
   },
   {
+    "key": "あ、ありがとうございます…こ、こういう時、どんなお顔をすればよいのかしら…",
+    "en": "Th-thank you... At a moment like this, I do not quite know what face to make...",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "あ、ありがとうございます…そう言っていただけると、頑張れます…",
     "en": "Th-thank you... hearing you say that, I can keep going...",
     "files": [
@@ -91254,6 +90925,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "あ、ありがとな…！ …こ、こっち見んなよ、照れんだろ…",
+    "en": "Th-thanks...! ...D-don't look at me like that, it's embarrassin'...",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
       "personality": "shy"
     }
   },
@@ -91534,6 +91219,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "あ〜、楽だった。{partner}が合わせてくれるから、こっちは乗っかるだけだったよね〜",
+    "en": "Ahh, that was easy. You set it all up, {partner}, so I just rode along~",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "easygoing"
     }
   },
@@ -92776,6 +92475,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "あっ…勝てた…。{partner}さん、今日はずいぶん助けてもらっちゃいましたね。",
+    "en": "Ah... we won... You really helped me out a lot today, {partner}.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
       "personality": "normal"
     }
   },
@@ -99417,6 +99130,20 @@
     }
   },
   {
+    "key": "あら、勝ってしまいましたわ。こんなに楽しいのなら、{partner}さんとまたご一緒したいものね。",
+    "en": "Oh my, we have won. With this much fun, {partner}, I would gladly team up again.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "あら、勝ってしまいましたわ〜。うちの団体、なかなかやりますでしょ？",
     "en": "Oh my, I have gone and won~ Our promotion is rather good, is it not?",
     "files": [
@@ -100331,6 +100058,20 @@
     }
   },
   {
+    "key": "あらあら、打ち合わせもなしに、こんなに揃うものなのね。",
+    "en": "Goodness, we moved so neatly together, and without a single rehearsal.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "あらあら、聞いてくださらないのね。……ふふ、では甘えてしまいましょうか",
     "en": "Oh dear, you will not listen to me. ...My, then I shall let myself be spoiled.",
     "files": [
@@ -101021,6 +100762,20 @@
     "en": "Thank you. I'll go and freshen up, then.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "ありがとう。二人がかりで追い詰めるのって、なかなか愉しいものね♪",
+    "en": "Thank you. Cornering them as a pair... that was rather enjoyable ♪",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -102313,6 +102068,20 @@
     }
   },
   {
+    "key": "ありがとうございますっ…！ す、すみません、涙が止まらなくて…っ",
+    "en": "Thank you so much...! S-sorry, I can't stop crying...",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "ありがとうございますわ……皆様の声援、確かに届きましたの",
     "en": "Thank you all... your support reached me, every bit of it.",
     "files": [
@@ -102534,6 +102303,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "ありがとう！ って、それしか言葉が出てこないや！ 最高だったよ！",
+    "en": "Thank you! Yeah, that's all I can manage to say! That was the best!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
     }
   },
   {
@@ -103167,6 +102950,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "あんたを信じてよかった。…この勝ちは、二人のもんだ。",
+    "en": "Trustin' you was the right move. ...This win's ours. Both of us.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "earnest"
     }
   },
   {
@@ -112469,20 +112266,6 @@
     }
   },
   {
-    "key": "おやりになりましたわね{partner}さん！ 二人揃えば負けませんわ！",
-    "en": "You were magnificent, {partner}! The two of us together do not lose!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "ojousama",
-      "personality": "bold"
-    }
-  },
-  {
     "key": "おらぁっ！ これで終わりだ！",
     "en": "Rrraaah! This ends it!",
     "files": [
@@ -114478,7 +114261,7 @@
     }
   },
   {
-    "key": "お疲れさん！　あたしらの勝ちだ！",
+    "key": "お疲れさん！　私らの勝ちだ！",
     "en": "Good work! That one's ours!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
@@ -114668,6 +114451,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "お約束、果たせましたわね、{partner}さん…っ！ …嬉しくて、言葉になりませんの…",
+    "en": "The promise is kept, {partner}...! ...I am far too happy to say anything sensible...",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
     }
   },
   {
@@ -121922,6 +121719,20 @@
     }
   },
   {
+    "key": "この二人なら崩れない。…最初から、そう信じていたわ。",
+    "en": "The two of us would not crumble. ...I believed that from the very start.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "この人がいなかったら…今の私はいない。それだけは…わかる",
     "en": "If she hadn't been here... I wouldn't be me. That much I'm sure of...",
     "files": [
@@ -127678,6 +127489,20 @@
     }
   },
   {
+    "key": "ご、ごめんなさい、うまく言えなくて…でも、ほんとに、ありがとうございます…！",
+    "en": "S-sorry, I can't find the right words... but really, thank you so much...!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "ご、ごめんなさいませ…少しだけ、休ませてくださいまし…",
     "en": "I-I do apologize... please allow me just a little rest...",
     "files": [
@@ -128752,13 +128577,13 @@
     }
   },
   {
-    "key": "ご覧になって？ {partner}さんとわたくしのタッグですのよ！",
-    "en": "Did you see? That is {partner} and myself as a team!",
+    "key": "ご覧になって？ これに並ぶタッグなど、どこにもいないでしょうね。",
+    "en": "Did you see? I am afraid no other team comes close.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
-    "hasPlaceholder": true,
+    "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
@@ -131105,8 +130930,8 @@
     }
   },
   {
-    "key": "ぜ、全部…{partner}のおかげ、だ…！",
-    "en": "A-All of it... that was {partner}...!",
+    "key": "ぜ、全部…{partner}のおかげ、だ…！ …い、今のナシ、忘れろ…",
+    "en": "A-all of it... that was thanks to you, {partner}...! ...F-forget I said that.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -132736,6 +132561,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "だ、大丈夫って、思えたの…{partner}が、そこにいたから…",
+    "en": "I-I felt like it would be okay... because you were right there, {partner}...",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
       "personality": "shy"
     }
   },
@@ -134519,6 +134358,20 @@
     }
   },
   {
+    "key": "どうだ、{partner}！ 私らが組みゃ、どこの誰が来たって負けねえんだよ！",
+    "en": "How 'bout that, {partner}! Us two together? Doesn't matter who shows up. We don't lose!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "どうだ、これがウチの実力だ。舐めんなよ",
     "en": "Well? That's what we can do. Don't take us light.",
     "files": [
@@ -134558,6 +134411,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "どう？ ざっとこんなもんだよ。…なんてね、ほとんど{partner}のおかげ。",
+    "en": "How's that? Easy as anything. ...Kidding — it was mostly thanks to you, {partner}.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
     }
   },
   {
@@ -135518,6 +135385,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "なんとか、なりましたね…{partner}さんのおかげです。ありがとうございました！",
+    "en": "We somehow pulled it off... all thanks to you, {partner}. Thank you!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
     }
   },
   {
@@ -137792,6 +137673,20 @@
     }
   },
   {
+    "key": "ふぅ…{partner}を信じて任せたの、正解だったわね。この勝ちは、二人で分け合いましょう。",
+    "en": "Phew... trusting you was the right call, {partner}. Let's split this win between us.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "ふぅ……ちょっと、休ませて……すぐ、戻るから……",
     "en": "Hah... let me rest a little... I will be back soon...",
     "files": [
@@ -137838,6 +137733,20 @@
     "en": "Phew... I won! Did that show what I can do?",
     "files": [
       "data.js:GLIMPSE_B_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "ふぅ……見てもらえましたか？ これが、二人で組んだ実力です！",
+    "en": "Phew... did you all see? That's what the two of us can really do!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -138407,6 +138316,20 @@
     }
   },
   {
+    "key": "ふふ…{partner}さんがいて、負ける理由がどこにあるのかしら？",
+    "en": "Hehe... with you at my side, {partner}, what reason could there possibly be to lose?",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "ふふ……あなたたちが嫌がる顔、見ていたいの。それじゃ、ダメかしら?",
     "en": "Mm... I want to watch the faces you make when you hate it. Is that so wrong of me?",
     "files": [
@@ -138916,8 +138839,8 @@
     }
   },
   {
-    "key": "ふふ、{partner}となら負ける気がしないわ。",
-    "en": "Mm. With {partner} beside me, losing never crosses my mind.",
+    "key": "ふふ、{partner}がいると、負けるところが想像できないの。…相手の子には気の毒だけど♪",
+    "en": "Hehe... with you here, {partner}, I can't picture us losing. ...Pity the other girls ♪",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -139802,6 +139725,20 @@
     }
   },
   {
+    "key": "ふふっ…！ {partner}、あの子たちの悔しそうな顔、見えた？ 二人で勝つと、たまらないわね♪",
+    "en": "Hehe...! See their sour faces, {partner}? Winning as a pair is simply delicious ♪",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "ふふっ、いよいよドームね",
     "en": "Mm. So it's the Dome at last.",
     "files": [
@@ -140592,6 +140529,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "へへっ、私ら、けっこういいコンビじゃねえ？",
+    "en": "Heh. We make a pretty solid pair, don't we?",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
     }
   },
   {
@@ -145963,6 +145914,20 @@
     }
   },
   {
+    "key": "み、みっともない姿は…お見せせずに済みましたかしら…？ {partner}さんのおかげですわ…",
+    "en": "D-did I manage not to look unseemly...? It is all thanks to you, {partner}...",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "み、みんなで勝てて……ほんとに嬉しい。私なんかがここに立ってていいのかな",
     "en": "W-we won together... I'm so happy. Am I really the one who should be up here, though?",
     "files": [
@@ -149686,20 +149651,6 @@
     }
   },
   {
-    "key": "やった…{partner}となら勝てるって、信じてた！",
-    "en": "We did it... I knew we could win together, {partner}!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "standard",
-      "personality": "normal"
-    }
-  },
-  {
     "key": "やった……! 見ててくれましたか!",
     "en": "We got them...! Tell me you saw that!",
     "files": [
@@ -149738,6 +149689,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "やった…やったぜ…！ ちくしょう、嬉しくて声が震えやがる…！",
+    "en": "We did it... we actually did it...! Ugh, my voice won't stop shakin'...!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
       "personality": "emotional"
     }
   },
@@ -149924,20 +149889,6 @@
     }
   },
   {
-    "key": "やったぜ{partner}！ 私ら、いいコンビだろ？",
-    "en": "We got 'em, {partner}! We make a pretty good pair, huh?",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "delinquent",
-      "personality": "normal"
-    }
-  },
-  {
     "key": "やったぜ！ 新しい団体！\n楽しみすぎて眠れねーよ！",
     "en": "Hell yeah! New promotion!\nToo pumped to sleep tonight!",
     "files": [
@@ -149994,30 +149945,16 @@
     }
   },
   {
-    "key": "やったな{partner}！ 二人揃えば、負ける気がしないよ！",
-    "en": "We did it, {partner}! With the two of us out there, losing isn't on the table!",
+    "key": "やったね！ 二人で組んだら負けるかって？ …まさか、だよ。",
+    "en": "We did it! Could the two of us lose? ...Not a chance.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
-    "hasPlaceholder": true,
+    "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "standard",
-      "personality": "bold"
-    }
-  },
-  {
-    "key": "やったな{partner}！ 私らが組みゃ、負ける気がしねえ！",
-    "en": "We did it, {partner}! Us two together, losing's not happening!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "delinquent",
+      "archetype": "composed",
       "personality": "bold"
     }
   },
@@ -150036,8 +149973,8 @@
     }
   },
   {
-    "key": "やったわね{partner}。二人揃えば、負ける気なんてしないわ。",
-    "en": "We did it, {partner}. With the two of us, losing is not a thought I have.",
+    "key": "やったわね、{partner}。この二人なら、もっと上まで行けるわ…！",
+    "en": "We did it, {partner}. The two of us can climb a lot higher than this...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -151086,8 +151023,8 @@
     }
   },
   {
-    "key": "やりましたね{partner}さん！ 二人揃えば負けません！",
-    "en": "We did it, {partner}! Together, we don't lose!",
+    "key": "やりましたね、{partner}さん！ 二人で全力を出し切れば、負けません！",
+    "en": "We did it, {partner}! When we both go all out, we don't lose!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -152247,6 +152184,20 @@
     }
   },
   {
+    "key": "よしっ！ 組むって決まった時から、いけるって思ってたんだ♪",
+    "en": "Yes! I had a good feeling about us the moment we got paired up ♪",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "よし！もっと強くなります！",
     "en": "Right! I'm getting stronger!",
     "files": [
@@ -152368,6 +152319,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "よっしゃ♪ 組んでると、しんどい試合も遊んでるみてえだな",
+    "en": "Alright ♪ Teamin' up, even a rough match feels like goofin' around.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
       "personality": "easygoing"
     }
   },
@@ -153525,6 +153490,20 @@
     }
   },
   {
+    "key": "わ、わたし……ちゃんと、やれてましたか……？ 一緒だったから、足が止まらなかったんです……！",
+    "en": "D-did I do okay out there...? Having you with me kept my legs moving...!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "わ、わたし…まだまだ…！",
     "en": "I-I've still got more...!",
     "files": [
@@ -153539,8 +153518,8 @@
     }
   },
   {
-    "key": "わ、わたし…頑張れました…{partner}さんのおかげです…！",
-    "en": "I-I made it through... all because of you, {partner}...!",
+    "key": "わ、わたし…一度も、逃げなかったの…！ {partner}さんが一緒に出てくれたから…！",
+    "en": "I-I never ran away, not once...! Because you were out there with me, {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -153745,34 +153724,6 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
-      "personality": "shy"
-    }
-  },
-  {
-    "key": "わ、私…頑張れた…{partner}のおかげ…！",
-    "en": "I-I got through it... it's because of {partner}...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "standard",
-      "personality": "shy"
-    }
-  },
-  {
-    "key": "わ、私…頑張れましたわ…{partner}さんのおかげで…！",
-    "en": "I-I managed it... thanks entirely to {partner}...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "ojousama",
       "personality": "shy"
     }
   },
@@ -168247,6 +168198,20 @@
     "cell": null
   },
   {
+    "key": "今の、ちゃんと見ていてくれた？ これが私たちのやり方。…忘れさせないわ。",
+    "en": "Were you watching closely? That's how we do it. ...And no one gets to forget it.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "今の、見えた？ これがうちの組の力よ",
     "en": "Did you see that? That's what my group is made of.",
     "files": [
@@ -172903,6 +172868,34 @@
     }
   },
   {
+    "key": "信じてよかった。二人とも、まだまだ強くなれるね！",
+    "en": "Glad I trusted you. And we've both still got plenty of room to grow!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "信じてよかったです…ほら、ちゃんと勝てましたよ！",
+    "en": "I was right to believe in you... See? We really did win!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "信じられない…。でも…嬉しい…！",
     "en": "I can't believe it... But... I'm so happy...!",
     "files": [
@@ -177502,6 +177495,20 @@
     }
   },
   {
+    "key": "勝ちましたのね…！ 二人で…！ …ごめんなさい、今だけは、お行儀を忘れさせて…",
+    "en": "We won...! Together...! ...Forgive me — just this once, let me forget my manners...",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "勝ちましたよ、社長。まだいけます。",
     "en": "We won, President. And there's more where that came from.",
     "files": [
@@ -178544,6 +178551,20 @@
     }
   },
   {
+    "key": "勝ったよ、{partner}！ 二人でもぎ取った一勝だよ！ ね、抱きついていい？",
+    "en": "We won, {partner}! We wrestled that one away together! Hey — can I hug you?",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "勝ったよ。……いい試合だった、とだけ。",
     "en": "I won. ...Good match, and that's all I'll say.",
     "files": [
@@ -179059,8 +179080,8 @@
     }
   },
   {
-    "key": "勝っちゃいました♪ {partner}さんと組めて、楽しかったです〜",
-    "en": "We won ♪ Teaming up with {partner} was such fun~",
+    "key": "勝っちゃいました♪ {partner}さんと組めて楽しかったです、またやりましょうね〜！",
+    "en": "We won ♪ Teaming up with you was so much fun, {partner}. Let's do it again soon~!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -179101,30 +179122,16 @@
     }
   },
   {
-    "key": "勝っちゃった♪ やっぱり{partner}と組むと、楽しいわ〜",
-    "en": "And we won ♪ Teaming with {partner} really is a pleasure~",
+    "key": "勝っちゃった♪ 楽しい上に勝ち星まで付いてくるなんて、この組み合わせ、お得よね♪",
+    "en": "We won ♪ It's fun AND it comes with a win? This pairing's a real bargain ♪",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
-    "hasPlaceholder": true,
+    "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive",
-      "personality": "easygoing"
-    }
-  },
-  {
-    "key": "勝っちゃった。{partner}と組むの、やっぱ楽しい〜",
-    "en": "And we won. Teaming with {partner} really is the best~",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "standard",
       "personality": "easygoing"
     }
   },
@@ -179185,6 +179192,20 @@
     }
   },
   {
+    "key": "勝っちゃった〜♡ 組むの楽しすぎて、試合ってこと忘れてたかも♪",
+    "en": "We won~ ♡ Teaming up was so fun I kinda forgot it was a match ♪",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "勝っちゃった〜。…でもね、まだ終わってない気がするの",
     "en": "Well, I won~ ...Though something tells me we're not finished.",
     "files": [
@@ -179212,24 +179233,24 @@
     }
   },
   {
-    "key": "勝っちゃったぜ♪ {partner}と組むの、やっぱ楽しいわ〜",
-    "en": "And we took it ♪ Teaming with {partner} is a blast~",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "delinquent",
-      "personality": "easygoing"
-    }
-  },
-  {
     "key": "勝っちゃったね。…気にしなくていいよ。",
     "en": "I ended up winning. ...Don't dwell on it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "勝っちゃったね〜。一緒だと楽しいし、次もこれでいっか♪",
+    "en": "We won~. It's fun with you, so... same pairing next time? Sure, why not ♪",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -179390,20 +179411,6 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
-      "personality": "easygoing"
-    }
-  },
-  {
-    "key": "勝ってしまいましたわ♪ {partner}さんと組むの、楽しいですの〜",
-    "en": "We have gone and won ♪ Teaming with {partner} is such a delight~",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "ojousama",
       "personality": "easygoing"
     }
   },
@@ -188829,6 +188836,20 @@
     }
   },
   {
+    "key": "当然の結果よ。…でも、{partner}と一緒だと、負ける気が全然しないわね。",
+    "en": "Of course we won. ...But with you around, {partner}, I never once felt like losing.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "当然の結果よ。うちを甘く見ないことね",
     "en": "The obvious result. Best not to underestimate us.",
     "files": [
@@ -194058,6 +194079,20 @@
     }
   },
   {
+    "key": "持ちこたえてくださったから、最後に全力で当たれたのだもの。",
+    "en": "Because you held out for me, I could meet them with everything I had at the end.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "持っていかれた。……何も言えないです。",
     "en": "It's gone. ...I don't know what to say.",
     "files": [
@@ -195755,6 +195790,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed"
+    }
+  },
+  {
+    "key": "時間を稼いでくれたから…こちらは落ち着いて、勝ち筋を選べたの。",
+    "en": "You bought me time... so I could calmly pick our way to the win.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
     }
   },
   {
@@ -215659,20 +215708,6 @@
     }
   },
   {
-    "key": "約束…守れたわね、{partner}…っ！",
-    "en": "The promise... we kept it, {partner}...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "seductive",
-      "personality": "emotional"
-    }
-  },
-  {
     "key": "約束、守ってくれたね。……そういうのは、ちゃんと覚えておくよ",
     "en": "You kept your word. ...That sort of thing, I do remember.",
     "files": [
@@ -215686,8 +215721,8 @@
     }
   },
   {
-    "key": "約束、守れましたわね…{partner}さん…っ！",
-    "en": "We kept our promise, did we not... {partner}...!",
+    "key": "約束、守れましたね、{partner}さん…っ！ よかった…ほんとに、よかったです…！",
+    "en": "We kept our promise, {partner}...! I'm so glad... so, so glad...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -215695,7 +215730,7 @@
     "hasPlaceholder": true,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "ojousama",
+      "archetype": "polite",
       "personality": "emotional"
     }
   },
@@ -215724,6 +215759,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite"
+    }
+  },
+  {
+    "key": "約束どおりね…！ 私たちを甘く見た子たちに、たっぷり思い知らせてやったわ♪",
+    "en": "Just as we promised...! We made the ones who underestimated us pay for it ♪",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
     }
   },
   {
@@ -217215,36 +217264,8 @@
     }
   },
   {
-    "key": "絶対勝つって、約束したもんね…{partner}…っ！",
-    "en": "We promised each other we'd win... didn't we, {partner}...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "standard",
-      "personality": "emotional"
-    }
-  },
-  {
-    "key": "絶対勝つって約束…守れましたね、{partner}さん…っ！",
-    "en": "That promise to win... we kept it, {partner}...!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "emotional"
-    }
-  },
-  {
-    "key": "絶対勝つって言ったろ…！ な、{partner}…っ！",
-    "en": "Told you we'd win...! Right, {partner}...!",
+    "key": "絶対勝つって言ったろ…！ な、{partner}…？ 言ったとおりになったろ…っ！",
+    "en": "Told you we'd win...! Right, {partner}...? Just like I said...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -217253,6 +217274,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "絶対勝とうねって、控室で言ったよね…っ！ ほんとになった…！",
+    "en": "We said we'd win, back in the locker room...! And we really did...!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "emotional"
     }
   },
@@ -219453,6 +219488,20 @@
     }
   },
   {
+    "key": "苦しいところを繋いでもらったおかげで…最後まであきらめずにいられたわ。",
+    "en": "You got us through the rough stretch... so I could keep going without giving up.",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "苦しい時期を乗り越えた選手たちの姿に……涙が出そうだ",
     "en": "Looking at wrestlers who came through the hard years... I am close to tears.",
     "files": [
@@ -220099,27 +220148,13 @@
     }
   },
   {
-    "key": "見たか、これが{partner}と私のタッグの力だ！",
-    "en": "See that? That's what {partner} and I are together!",
+    "key": "見たかよ！ このタッグが最強だ。文句あるやつ、いるか？",
+    "en": "You see that? This team's the strongest there is. Anybody wanna argue?",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "standard",
-      "personality": "bold"
-    }
-  },
-  {
-    "key": "見たかよ！ {partner}と私のタッグ、最強だぜ！",
-    "en": "You see that? {partner} and me — nobody beats this team!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
+    "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent",
@@ -220155,24 +220190,24 @@
     }
   },
   {
-    "key": "見た？ これが{partner}と私のタッグよ。",
-    "en": "Did you watch? That is what {partner} and I are.",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "seductive",
-      "personality": "bold"
-    }
-  },
-  {
     "key": "見た？ これが格の違いってやつよ",
     "en": "See that? That's what a gap in class looks like.",
     "files": [
       "data-faction-dialogue.js:FACTION_F08_POST_MATCH_WINNER_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "見た？ 二人で組めば、この程度は当たり前よ？",
+    "en": "See that? Put the two of us together and this is a given. Any doubts?",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -220518,20 +220553,6 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive"
-    }
-  },
-  {
-    "key": "見ましたか、これが{partner}さんと私のタッグです！",
-    "en": "Did you see that? That is {partner} and me as a team!",
-    "files": [
-      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "cell": {
-      "archetype": "polite",
-      "personality": "bold"
     }
   },
   {
@@ -221473,6 +221494,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "託してもらった試合、ちゃんと勝ちで返せました。…いい試合でしたね！",
+    "en": "You trusted me with this one, and I paid you back with a win. ...What a good match!",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
       "personality": "earnest"
     }
   },
@@ -227642,6 +227677,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool"
+    }
+  },
+  {
+    "key": "途中から、次に何をするか全部わかっちゃいました♪ すごくないですか！？",
+    "en": "Halfway through, I could tell exactly what you'd do next ♪ Isn't that amazing!?",
+    "files": [
+      "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
     }
   },
   {
