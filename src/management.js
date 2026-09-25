@@ -11657,11 +11657,16 @@ const Engine = {
             }];
 
             // orgTimeline close
+            // K-1 第1段(K1-P01): 経歴の区切りは写してから書く。retiree は写しだが orgTimeline の項目は
+            // 入力と共有しているので、直接書くと結果画面の先読み tick が本番 G の経歴を閉じていた
             if (retiree.orgTimeline) {
-              const lastEntry = retiree.orgTimeline[retiree.orgTimeline.length - 1];
+              const lastIdx = retiree.orgTimeline.length - 1;
+              const lastEntry = retiree.orgTimeline[lastIdx];
               if (lastEntry && !lastEntry.toSeason) {
-                lastEntry.toSeason = state.season;
-                lastEntry.toWeek = state.week;
+                const closed = { ...lastEntry };
+                closed.toSeason = state.season;
+                closed.toWeek = state.week;
+                retiree.orgTimeline = retiree.orgTimeline.map((e, i) => (i === lastIdx ? closed : e));
               }
             }
 
@@ -14905,17 +14910,21 @@ const Engine = {
       if (snap.embedded) {
         if (snap.source === 'breakthrough') {
           // _pendingGrowthEvents のbreakthroughエントリを探して追記
+          // K-1 第1段(K1-P01): 項目は写してから書き、配列ごと差し替える。入力の項目に直接書くと、
+          // 結果画面の先読み tick が本番 G のブレークスルー記録へ台詞を書き込んでいた
           const pgEvents = s._pendingGrowthEvents || [];
-          const btLog = pgEvents.find(
+          const btIdx = pgEvents.findIndex(
             e => e.type === 'breakthrough' && e.fighterId === snap.fighterId
           );
-          if (btLog) {
+          if (btIdx >= 0) {
+            const btLog = { ...pgEvents[btIdx] };
             // i18n P7-2: 完成文(snapshotText)はセーブ値として不変。表示点が辞書を引き直せる
             // よう充填前テンプレ+充填値を併記する(§14-3。表示は ui-common.js の _snapshotLine)
             btLog.snapshotText = snap.text;
             btLog.snapshotTpl = snap.tpl;
             btLog.snapshotVars = snap.vars;
             btLog.snapshotVoiceLead = snap.voiceLead;
+            s = { ...s, _pendingGrowthEvents: pgEvents.map((e, i) => (i === btIdx ? btLog : e)) };
           }
         }
         // warVictory embedded は通常ログとして追加（モーダルは既に表示済み）

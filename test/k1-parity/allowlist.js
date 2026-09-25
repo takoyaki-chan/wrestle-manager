@@ -66,6 +66,8 @@ module.exports = [
       // 2026-09-26 追加(B): 引退した選手の挑戦試合の打診が消える・ロスターが変わって派閥イベントが変わる・
       // 怪我引退のポップアップ(M-22)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
       'challengeRequest.pendingThisWeek', '_pendingFactionEvent', 'relModalWindow[*].own',
+      // 怪我引退のポップアップ(M-22)はエンジンだけが積む(第1段で K1-P01 を外して見えるようになった)
+      '_modalQueue',
     ],
     sides: { A: ['engOnly', 'appOnly', 'both'] },
     mustAppear: true, refs: 'management.js:15084-15190(引退・O-04・信頼・王座) / app.js:8317-8331(怪我だけ付けて残す)',
@@ -84,6 +86,8 @@ module.exports = [
       'aiOrgs.*.roster[*].*', 'aiOrgs.*.roster[*].*.*', 'aiOrgs.*.matchupLog', 'h2h.*', 'h2h.*.*', 'h2h.*.lastMatch.*',
       // 退団のポップアップ(M-23)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
       'relModalWindow[*].own',
+      // 第1段で K1-P01 を外して見えるようになった: M-23 はエンジンだけが積む。移籍先で戦った退団者の逓減カウンター
+      '_modalQueue', 'relationshipCounters.*',
     ],
     mustAppear: true, refs: 'management.js:15494-15561 / app.js なし(表示だけ app.js:12045 にある)',
     note: 'Engine.trust.checkSuddenDepartures の呼び出しはエンジンの executeShow だけ。実プレイでは表示コードだけが残っていて、発生源が無い。',
@@ -125,6 +129,8 @@ module.exports = [
       'roster[*](presence)', 'retiredFighters[*](presence)', 'retiredIds', 'retiredSeasons.*',
       'chronicle.fighterArchive[*](presence)', 'relationshipHistory.retiredRivalries', 'relationships.*', 'relationships.*.*',
       'rivalries.*', 'rivalries.*.*', 'roster[*]._departureBondImpact', 'roster[*].trust', 'newsSeen.**',
+      // 第1段で K1-P01 を外して見えるようになった(B): 引退した選手は W-1 の回数に数えられない
+      'w1FireCount.*',
     ],
     mustAppear: true, refs: 'app.js:9272-9344(finalize)・10867-10970(closeShowResult 前半) / エンジン側なし',
   },
@@ -220,18 +226,10 @@ module.exports = [
     patterns: ['h2h.*.history[*].lc', 'h2h.*.history[*].bt', 'h2h.*.history[*].fc', 'h2h.*.history[*].rc'],
     mustAppear: true, refs: 'app.js:8957-8975, 11620-11644 / management.js:15445(meta なし)',
   },
-  {
-    id: 'K1-P01', title: '結果画面の先読み tickWeek が G を直接書き換える(逓減カウンター・W-1回数・モーダル・フラグCD)',
-    category: 'leak', side: 'app', impact: '数値', checkpoints: ['A', 'B', 'P'],
-    patterns: ['relationshipCounters.*', 'relationshipCounters.*.count', 'relationshipCounters.*.lastWeek',
-      'w1FireCount.*', '_modalQueue', 'relationshipFlagCounters.*', 'relationshipFlagCounters.*.lastWeek',
-      // 2026-09-26 追加(fixture の更新で見えた同じ種類の書き換え): 他団体の怪我引退で経歴の区切り
-      // (orgTimeline の toSeason/toWeek)、ブレークスルーの記録へのスナップショットの台詞
-      'aiOrgs.*.roster[*].orgTimeline[*].toSeason', 'aiOrgs.*.roster[*].orgTimeline[*].toWeek', '_pendingGrowthEvents[*].*'],
-    sides: { P: ['changed'] },
-    mustAppear: true, refs: 'app.js:10286-10288(prepareShowResultInlinePopups) → relationships.js:784-798(カウンターを直接減らす), 886/936(w1FireCount), 2754-2770(_modalQueue / flagCounters)',
-    note: 'W-1 回数は実プレイの興行週だけ二重に数えられ、「慢性的険悪ペア(累計4回)」の書類が早く出る。関係性モーダルも1件重複して積まれる。',
-  },
+  // K1-P01(結果画面の先読み tickWeek が G を直接書き換える)は K-1 第1段で解消したので外した(2026-09-26)。
+  // エンジン側で逓減カウンター・W-1 回数・伝染のクールダウン・関係フラグのクールダウン・他団体の経歴の区切り・
+  // ブレークスルー記録の台詞を「写してから書く」形にし、先読みには G の複製を渡す(app.js prepareShowResultInlinePopups)。
+  // 以後、先読み(P)で G が変わると「未登録」で落ちる。
   {
     id: 'K1-T01', title: '_pendingReclaim の null 正規化(エンジンだけ saveDoctor の戻り値を常に採用)',
     category: 'transient', side: 'engine', impact: '一時', checkpoints: ['A', 'B'],

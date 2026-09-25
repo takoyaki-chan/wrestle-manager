@@ -10243,7 +10243,15 @@ const App = {
     App._glimpseCascadeShownThisShow = false;
 
     try {
-      const previewBaseState = App._buildShowResultPreviewState(G);
+      // K-1 第1段(K1-P01): 先読みには G の複製を渡す。tickWeek には入れ子の中身をその場で書き換える
+      // 箇所がまだ残っている(関係性ポップアップの待ち行列・関係フラグの記録など。relationships.js の
+      // _enqueueModal の注記)。G と共有したまま回すと、本番の G が興行後処理の前に書き換わり、
+      // W-1 の回数の二重計上・ポップアップの重複・クールダウンの先送りが起きていた。
+      // G に関数・Set・Map は入っていない(2026-09-26 実ページで確認)。structuredClone が無い環境は
+      // セーブと同じ JSON の往復で代える
+      let previewSource;
+      try { previewSource = structuredClone(G); } catch (_) { previewSource = JSON.parse(JSON.stringify(G)); }
+      const previewBaseState = App._buildShowResultPreviewState(previewSource);
       const previewTick = Engine.tickWeek(previewBaseState);
       const previewState = previewTick?.state || null;
       if (!previewState) return;
