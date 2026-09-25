@@ -11383,12 +11383,14 @@ const Engine = {
         if (matchResults.length > 0) {
           const aiAvgMQ = Math.round(matchResults.reduce((a, r) => a + (r.mq || 0), 0) / matchResults.length);
           const aiStars = aiAvgMQ >= 80 ? 5 : aiAvgMQ >= 65 ? 4 : aiAvgMQ >= 50 ? 3 : aiAvgMQ >= 35 ? 2 : 1;
-          const aiRawDelta = SHOW_RATING_CONFIG.orgPopDeltaByStars[aiStars] || 0;
           // K-9(A) 2026-09-25: 旧 `orgPop || 50` は人気0を「値なし」と扱い、崩れた団体を翌週ほぼ50へ
           // 戻していた(Bが0.5→46.5に跳ねた実例)。0は正当な値なので、欠損(null/undefined)だけを
           // `??` で50に補う。AI団体の人気を読む同じ書き方(このファイル14箇所)をすべて揃えた。
-          const aiPopDelta = Engine.orgPop.applyOrgPopChange(aiRawDelta, nextOrgData.orgPop ?? 50, null);
-          nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop ?? 50) + aiPopDelta, 0, 100);
+          // K-9(A) 追補: ★→増減・人気帯の逓減に加え、低人気の下支え(人気15未満は下落なし+底上げ、
+          // 30未満は下落半減+底上げ)も自団体の興行と同じ関数(applyShowPopularity)で掛ける。
+          // ★の決め方(平均MQ)はAIのまま。rng は逓減を有効にするために渡すだけで、乱数は消費しない。
+          const aiOrgPopRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0x4F51, org.id.charCodeAt(4) || 0));
+          nextOrgData.orgPop = Engine.applyShowPopularity(roster, matchResults, nextOrgData.orgPop ?? 50, aiOrgPopRng, aiStars).orgPop;
         }
 
         // AI団体 wins/losses/draws/streak 更新（プレイヤー団体processSettlementと同等）

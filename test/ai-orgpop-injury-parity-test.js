@@ -1,6 +1,7 @@
 'use strict';
 // K-9(A) / K-13(A) 2026-09-25 Keisuke裁定の回帰テスト。
 //   K-9 ① AI団体の人気0を「値なし」と扱わない(旧 `orgPop || 50` で0→約50へワープしていた)
+//       ①追補 低人気の下支え(人気15未満/30未満)もAI団体の興行に自団体と同じ関数で掛ける
 //       ② AI団体の人気にも自団体と同じ年次減衰を、同じタイミング(オフ第1週)で掛ける
 //       ③ 大会などの実績ptは獲得した季だけ満額(graceAge 0)。翌季50%・2季後25%…
 //   K-13 AI団体の試合の怪我を自団体と同じ Engine.injury.check で判定する
@@ -54,8 +55,34 @@ function firstShow(state, orgId, fromWeek) {
   const state = { ...base, aiOrgs: { ...base.aiOrgs, org_b: { ...base.aiOrgs.org_b, orgPop: 0 } } };
   const show = firstShow(state, 'org_b', 2);
   assert.ok(show && (show.out._lastMatchResults || []).length > 0, 'B団体の興行が立つ');
-  // 1興行の★による増減は −1〜+2。0から始めれば結果は0〜2に収まる(旧実装は約49〜52へ跳ねた)
-  assert.ok(show.out.orgPop >= 0 && show.out.orgPop <= 2, `人気0から1興行で ${show.out.orgPop}(0〜2であるべき)`);
+  // 人気0からの1興行は、低人気の下支えを含めても 0〜+3(★5) に収まる(旧実装は約49〜52へ跳ねた)
+  assert.ok(show.out.orgPop >= 0 && show.out.orgPop <= 3, `人気0から1興行で ${show.out.orgPop}(0〜3であるべき)`);
+}
+
+// ── K-9 ①追補: 低人気の下支えもAI団体の興行に自団体と同じ関数(applyShowPopularity)で掛かる ──
+// 試合の評価を固定(平均MQ40=★2、★2の素の増減は−0.5)して、人気帯ごとの1興行の結果を見る。
+//   人気0 : 15未満は下落なし+★2で+0.5 → 0.5  (下支えなし=旧AIなら 0 のまま)
+//   人気20: 30未満は下落半減(−0.25)+★2で+0.3 → +0.05、逓減×0.70 → 20.035 (旧AIなら 19.5)
+//   人気50: 下支えの対象外。★2の−0.5がそのまま → 49.5 (旧AIと同じ。下支え以外は変えない)
+{
+  const base = { ...Engine.createInitialState(4343, true), season: 3, offSeason: false, weekPhase: 'manage', industryNewsQueue: [] };
+  const cases = [[0, 0.5], [20, 20.035], [50, 49.5]];
+  cases.forEach(([pop, expected]) => {
+    const state = { ...base, aiOrgs: { ...base.aiOrgs, org_b: { ...base.aiOrgs.org_b, orgPop: pop } } };
+    const calls = [];
+    const origShowPop = Engine.applyShowPopularity;
+    const show = withStubs({
+      'Engine.mq.finalize': () => ({ mq: 40, mqInventory: null }),
+      'Engine.applyShowPopularity': function (roster, results, orgPop, rng, stars) {
+        calls.push({ orgPop, stars, hasRng: !!rng });
+        return origShowPop.apply(this, arguments);
+      },
+    }, () => firstShow(state, 'org_b', 2));
+    assert.ok(show && (show.out._lastMatchResults || []).length > 0, 'B団体の興行が立つ');
+    assert.strictEqual(calls.length, 1, 'AI興行の人気変化は applyShowPopularity を1回通る(自団体と同じ関数)');
+    assert.deepStrictEqual(calls[0], { orgPop: pop, stars: 2, hasRng: true }, '★は平均MQから、逓減を有効にして渡す');
+    assert.ok(Math.abs(show.out.orgPop - expected) < 1e-9, `人気${pop}・★2の1興行 → ${show.out.orgPop}(${expected}であるべき)`);
+  });
 }
 
 // ── K-9 ②: オフ第1週に自団体と同じ年次減衰がAI団体にも掛かる ────────────────────
