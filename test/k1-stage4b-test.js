@@ -6,6 +6,10 @@
 //  ■ 何を守るか(エンジン Engine.executeShow と実プレイ App._finalizeShowImpl が同じ関数を通すこと)
 //    1. K1-F01 タッグの人気: Engine.show.applyMatchPopularity。負けたチームは負けとして数え(勝ちの人気
 //       ボーナスなし・連敗が続く・直近の結果が「負け」)、タッグにもメイン低評価の人気減とヒール適性の加点が掛かる
+//    2. K1-E05 派閥ポイント: Engine.show.accrueFactionPoints。試合ごとに抗争ポイント・派閥内ポイントが入る
+//       (週の上限20・F09 ×1.8・Common-1 の試合は派閥内ポイントを二重に入れない)。入力の状態を書き換えない
+//    3. §7 X03 怪我判定の情報: Engine.show.rollMatchInjury。週・季・険悪ペア×2・舞台の格・王者を渡す
+//    4. K1-E02 試合成長: Engine.show.applyMatchGrowth。年齢倍率・関係性倍率、タッグの相手は2人の平均(裁定)
 //
 //  両経路の一致そのものは npm run test:k1:parity(実ブラウザ)が見る。ここは関数の中身と、
 //  app.js が共通の関数を呼んでいること(文面)を確かめる。

@@ -1,5 +1,61 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 K-1 第4段 4-B 前半 — タッグの勝敗と人気・派閥ポイント・怪我判定の情報・試合成長の式を実プレイにも(Claude/Opus 5.5・worktree)
+
+裁定 K-1「興行後の処理を一本化する(A・段階的)」第4段 4-B(エンジンにあるのに実プレイで起きていない処理を実プレイにも)の前半4件。Keisuke 承認済み(2026-09-25 第3回の確認)。書き写さず、`Engine.executeShow` の該当部分を名前の付いた純関数 `Engine.show.*`(management.js、executeShow の直前)に切り出し、エンジンと実プレイ(`App._finalizeShowImpl`)の両方がそれを呼ぶ形にした(=第3段 3-1 の部分実施)。切り出しだけの段階で auto-sim の指紋が不変であることを確かめてから実プレイを呼び替えた。
+
+### 1. K1-F01 タッグの勝敗と人気(3121fcae)— `Engine.show.applyMatchPopularity(roster, match, result, isMainEvent, orgPop, state)`
+- シングルは `Engine.applyMQPopularity` そのもの。タッグは同じ式を A1↔B1・A2↔B2 の2組で通す
+- 実プレイは左右に同じ選手を入れて呼んでいたので、タッグの敗者も勝者扱い(勝ちの人気・連敗リセット・直近「勝ち」)だった → 負けは負け、連敗が続く
+- 裁定: タッグにもメイン低評価の人気減。**ヒール適性の加点は実プレイのタッグで効いていた**(applyMQPopularity を通っていたため)ので残し、エンジンにもそろえた
+- エンジンの数値が動くのはここだけ: 旧タッグ式のまま切り出した段階で10季の指紋不変(06c52932)→ 裁定の式で 40季 seed42 15fd9b8c → 4e201797。受動プローブ(新式で進めつつ同じ入力に旧式を当てる)で、タッグ95試合・380人のうちメイン低評価20人・ヒール適性6人、|Δ人気| 平均0.12・最大3
+- 人気の増減の知らせ(popEvents)は実プレイでは従来どおり捨てている(§7 X08。今回の範囲外)
+
+### 2. K1-E05 派閥ポイント(f5867916)— `Engine.show.accrueFactionPoints(state, validMatches, results, opts)`
+- executeShow の加点ループをそのまま移し、実プレイは F02③ の後(エンジンと同じ位置)で呼ぶ。F09 の各試合も ×1.8 で入り、勝ち越しボーナス +15 は従来どおり実プレイだけ(K1-A13)
+- factions.js の加点関数は受け取った状態をその場で書き換えるので、書き換わる入れ子(各ペアの記録・週の上限・派閥内ポイント・派閥)を写してから渡す(値は同じ。入力の G を汚さない)
+- Common-1 で清算した試合は `opts.common1MatchIdx` で `isCommon1` を立て、派閥内ポイントの二重加算を防ぐ(§3.1/§3.5。実プレイだけが使う)
+- 指紋不変(4e201797)。**auto-sim の世界は40季・20季とも派閥が一度もできない**ので、決着までの週数は headless 進行(6シード×30季)で測った: 記録184件中164件は非敵対の派閥どうしで4週後に自然沈静化、先取100の決着5件は記録ができてから93〜132週(中央値104)、40週時点の先行側38〜63pt。旧実プレイはスイープボーナスしか入らず先取100はほぼ起きなかった
+- **分かったこと(裁定待ち・変えていない)**: ①メイン補正(抗争 +0.3・派閥内 +2pt)はカードの `isSummit`(PPV の印)を見ていて通常興行では掛からない ②40週の強制和解 F06 は `_pendingForceCloseRivalry` を立てるだけで拾う処理がどこにも無く、そのうえ `checkRivalryResolution` がその記録で毎週 return して後ろの記録の判定を止める。今回から実プレイでも記録ができるので起きうる
+
+### 3. §7 X03 怪我判定に渡す情報(45ddf491)— `Engine.show.rollMatchInjury(state, result, matchIdx, fighter, opts)`
+- 乱数・週・季・険悪ペア×2(`Engine.injury.hostileMatchMult`)・舞台の格(title/main/undercard)・王者(両経路とも興行前の王者)を組んで `Engine.injury.check` を呼ぶ。引退の扱いは呼び出し側のまま(実プレイは記録するだけ=4-B-6 で扱う)
+- 指紋不変(4e201797)。差分テストでは怪我の経歴6件の日付が「0季0週」→「2季14週」(怪我の有無・種類・週数は同じ)
+
+### 4. K1-E02 試合成長の式(f456410c)— `Engine.show.applyMatchGrowth(state, roster, validMatches, results)`
+- エンジンの式をそのまま移した(乱入選手を伸ばさない印の確認だけ追加。エンジンには乱入選手がいない)。実プレイは自前の約90行をやめて呼ぶ
+- 実プレイで変わる: 年齢倍率(27歳以上0・25〜26歳0.1・23〜24歳0.5・19〜20歳1.15・**17歳以下0.7**)・関係性倍率、タッグの相手は2人の平均(裁定。旧は強い方)、タッグの成長ログの文面「vs w/相方 vs 相手&相手」→「タッグ(相方) vs 相手&相手」
+- 指紋不変(4e201797)。受動プローブ(auto-sim 40季)で1出場あたりの伸びの差: 17歳以下 −0.64 / 19〜20歳 +0.15 / 23〜24歳 −0.35 / 25〜26歳 −0.42 / 27歳以上 −0.52。27歳以上は1季に約17試合 → 試合の +約9/季が消え、季の能力合計の減り(エンジンの世界で27〜29歳 −14.6/季)に対して旧実プレイは約 −6/季だった見込み
+
+### 実プレイの数値の変化(差分テストの各シナリオ・1興行)
+- 表は `docs/fun-audit-v0.1/k1-parity-report.md` §8「4-B 前半の実施結果」。要点: タッグの敗者の人気 −0.4〜−1.0・連敗が続く(tag 系4本)/派閥ポイント 0/15 → 18/33(factions)/怪我の経歴の日付(4本)/20歳の伸び +1〜+2、23・27・31歳の +1 が 0、タッグ相手の平均で +1 が 0
+- 長期: タッグの敗者1人・1試合あたり人気 −1.06、連敗は平均4試合ぶん長く続く(旧はタッグのたびに0へ)
+
+### 許容リスト(経路差分テスト)
+- 37 → **33**。外した: K1-F01・K1-E05・K1-X03・K1-E02
+- 付け替え: F09 のスイープボーナスの抗争ポイントの差 → K1-A13 に `factionRivalryPoints.*.pointsA/B`。injury シナリオの成長ログの差(怪我引退で乱数1732がずれる)→ K1-E03 に `roster[*].growthLog`。tickWeek 後(B)の能力・人気の差は K1-B06(週次の練習/プロモの差の波及)
+
+### 検証
+- 新テスト `test/k1-stage4b-test.js`(17項目): 項目ごとに、直前のコミットの src では該当項目が全部 FAIL することを確認(F01 4件・E05 5件・X03 4件・E02 4件)
+- `test/retirement-drama-test.js` の C-6/C-7(executeShow の本文に `Engine.injury.check` と `_stageOf` があるかを見ていた)を、共通部品 `Engine.show.rollMatchInjury` を両経路が通ること・舞台の格の式があることの検査に直した(c7ef1102)
+- `npm test`: main 取り込み前 293/294(上の C-6/C-7)→ 直して、取り込み後 **297/297 PASS**
+- `npm run test:k1:parity`: 項目ごとに PASS、取り込み後も **PASS(33件・未登録0・消えた0)**
+- `node test/auto-sim.js 40 42`: 取り込み後 ALL CLEAR(指紋 bdb5ffd4、台帳検査の違反0)。取り込み後も「タッグの人気だけ旧式に戻すと main と同じ指紋(10季 a3335607)」を確認=エンジンで動くのは 4-B-1 だけ
+- `node test/balance-baseline.js`: 逸脱なし
+- `npm run test:ui:walkthrough`: 取り込み前 PASS(344手・Issues 0)、取り込み後も PASS(343手・Issues 0・PPV の週も通過・次の季の第1週まで)
+
+### 触ったファイル
+- src/management.js(`Engine.show` 新設・executeShow の4か所を呼び出しに)/ src/app.js(`_finalizeShowImpl` の4か所)
+- test/k1-stage4b-test.js(新規)/ test/k1-parity/allowlist.js / test/retirement-drama-test.js / i18n/ui-ledger.json(旧タッグ成長ログのテンプレは既存セーブの表示用に残すと注記)
+- specs: tag-match-system-spec-v0.1 §5.3(新設)/ growth-system-spec-v2.2 §7 / faction-rivalry-points-spec-v0.1 §2.7(新設)/ faction-internal-rank-spec-v0.2 §3.5 / relationship-system-spec-v2.3 §D.2
+- docs/fun-audit-v0.1/k1-parity-report.md(改訂注記・該当4行・§8 4-B 前半の実施結果)/ docs/実機確認バックログ.md / docs/game-system-roadmap.md
+- 並行作業の領分(0を値なしとして扱う既定値・K-16 の processAIWar/applyWarOutcome/秋の4団体戦)には触れていない。main 取り込みは衝突なし
+
+### 残課題
+- 4-B 後半(プロモ蓄積のリセット E01・怪我による引退 E03・突然の退団 E04)は次の作業
+- 裁定待ち: 派閥ポイントのメイン補正が通常興行で掛からない件/F06 の40週強制和解の旗を拾う処理が無い件(上の2)
+- 人気の増減の知らせ(popEvents)を実プレイでも出すか(§7 X08)
+
 ## 2026-09-26 K-9(A) の残り — 挑戦状とメディア密着のAI団体の人気を自団体と同じ表・同じ逓減で(Claude/Opus 5.5・worktree・未マージ)
 
 裁定 K-9(A)「AI団体の人気の扱いをプレイヤーとそろえる」の残り。K-16 AI側の作業で見つかった食い違い3点(次の項の表)を直した。
