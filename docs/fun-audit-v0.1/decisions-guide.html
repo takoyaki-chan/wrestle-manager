@@ -1,0 +1,971 @@
+<title>総点検 裁定ガイド</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#ece6da; --panel:#fbf8f1; --panel-2:#f2ecdf; --ink:#29241d; --ink-2:#5e5548; --line:#d6cab3;
+  --gold:#b98b2c; --gold-ink:#7a6530; --now:#b4573a; --now-soft:#f3dfd5; --new:#2e7b57; --new-soft:#dcefe4;
+  --neutral:#b8ac97; --neutral-2:#cfc4b0; --on-fill:#ffffff; --on-gold:#29241d;
+  --sure:#2e7b57; --sim:#a8720f; --taste:#3a679c; --sure-soft:#dcefe4; --sim-soft:#f6e8c8; --taste-soft:#dde7f3;
+  --font-body:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --font-label:"Oswald","Noto Sans JP",sans-serif;
+  --font-num:"Bebas Neue","Oswald","Noto Sans JP",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#24221e; --panel:#2e2a24; --panel-2:#36312a; --ink:#efe6d4; --ink-2:#b8ac96; --line:#4d4539;
+    --gold:#d4a843; --gold-ink:#e2bd64; --now:#e2875f; --now-soft:#4a3128; --new:#6cc497; --new-soft:#253d31;
+    --neutral:#6f6555; --neutral-2:#7a6f5d; --on-fill:#1b1813; --on-gold:#1b1813;
+    --sure:#6cc497; --sim:#e6b24f; --taste:#8cb2e2; --sure-soft:#253d31; --sim-soft:#473a1f; --taste-soft:#26344a;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#24221e; --panel:#2e2a24; --panel-2:#36312a; --ink:#efe6d4; --ink-2:#b8ac96; --line:#4d4539;
+  --gold:#d4a843; --gold-ink:#e2bd64; --now:#e2875f; --now-soft:#4a3128; --new:#6cc497; --new-soft:#253d31;
+  --neutral:#6f6555; --neutral-2:#7a6f5d; --on-fill:#1b1813; --on-gold:#1b1813;
+  --sure:#6cc497; --sim:#e6b24f; --taste:#8cb2e2; --sure-soft:#253d31; --sim-soft:#473a1f; --taste-soft:#26344a;
+}
+*{box-sizing:border-box}
+.card > *, .stack > *, .stack-lg > *, .two > *, .opts > *, .sheet > *{min-width:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15.5px;line-height:1.8;margin:0}
+.wrap{max-width:900px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+h1,h2,h3{text-wrap:balance;line-height:1.35;margin:0}
+h1{font-size:34px;font-weight:900;letter-spacing:.01em}
+h2{font-size:23px;font-weight:900}
+h3{font-size:16px;font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--font-label);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink)}
+.lead{color:var(--ink-2);max-width:66ch}
+.stack{display:flex;flex-direction:column;gap:14px}
+.stack-lg{display:flex;flex-direction:column;gap:28px}
+header.top{display:flex;flex-direction:column;gap:10px;padding-block:8px 20px}
+.notice{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--now);border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.notice h2{font-size:18px}
+.notice ul, .card ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.legend div{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:999px;padding:1px 10px;white-space:nowrap;line-height:1.7}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pill.sure{color:var(--sure);background:var(--sure-soft)}
+.pill.sim{color:var(--sim);background:var(--sim-soft)}
+.pill.taste{color:var(--taste);background:var(--taste-soft)}
+.pill.size{color:var(--ink-2);background:var(--panel-2)}
+.pill.size::before{display:none}
+.table-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:660px;font-size:14px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--font-label);font-weight:600;letter-spacing:.06em;font-size:12.5px;color:var(--ink-2);text-transform:uppercase;background:var(--panel-2)}
+tr:last-child td{border-bottom:none}
+td.k{font-family:var(--font-num);font-size:20px;letter-spacing:.04em;color:var(--gold-ink);white-space:nowrap}
+td a{color:inherit}
+.rec{font-weight:700}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+.card-head{display:flex;gap:14px;align-items:flex-start}
+.card-head .num{font-family:var(--font-num);font-size:40px;line-height:1;color:var(--gold);min-width:56px}
+.card-head .ttl{display:flex;flex-direction:column;gap:6px}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.oneline{font-size:16.5px;font-weight:700}
+.sub{font-family:var(--font-label);font-weight:600;font-size:12.5px;letter-spacing:.12em;color:var(--ink-2);text-transform:uppercase;margin-top:4px}
+.fig{margin:0;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:12px 12px 8px;overflow-x:auto}
+.fig svg{display:block;width:100%;min-width:430px;height:auto}
+.fig figcaption{font-size:12.5px;color:var(--ink-2);padding-top:6px;line-height:1.6}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;grid-template-columns:34px 1fr;gap:4px 10px;background:var(--panel)}
+.opt .letter{font-family:var(--font-num);font-size:26px;line-height:1.1;color:var(--ink-2)}
+.opt.is-rec{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.opt.is-rec .letter{color:var(--gold)}
+.opt h3 small{font-weight:500;color:var(--gold-ink);font-size:12.5px;margin-left:6px;white-space:nowrap}
+.opt p, .opt ul{grid-column:2;font-size:14.5px;color:var(--ink)}
+.opt .meta{color:var(--ink-2);font-size:13px}
+.ask{background:var(--new-soft);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.ask .sub{color:var(--new);margin:0}
+.ask p{font-weight:700}
+.why{color:var(--ink-2);font-size:14.5px}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.86em;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:0 4px;word-break:break-all}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.two{grid-template-columns:1fr}.card{padding:18px 16px}.card-head .num{font-size:32px;min-width:44px}h1{font-size:27px}}
+.divider{border:none;border-top:1px solid var(--line);margin:8px 0}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.sheet-row{display:grid;grid-template-columns:52px 1fr;gap:6px 12px;align-items:start;padding-block:10px;border-bottom:1px solid var(--line)}
+.sheet-row:last-of-type{border-bottom:none}
+.sheet-row .k{font-family:var(--font-num);font-size:21px;color:var(--gold-ink);line-height:1.2}
+.sheet-row .q{font-size:14px;font-weight:700}
+.choices{grid-column:2;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px}
+.choices label{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.choices input{accent-color:var(--gold)}
+.choices .recmark{font-size:11.5px;color:var(--gold-ink);font-weight:700}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+button{font-family:var(--font-body);font-size:14px;font-weight:700;border-radius:6px;padding:8px 16px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);cursor:pointer}
+button.primary{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
+button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible{outline:3px solid var(--taste);outline-offset:2px}
+textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px;line-height:1.6;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--ink);resize:vertical}
+#copy-status{font-size:13px;color:var(--new);min-height:1.4em}
+#answer-out{min-height:300px}
+.toc{display:flex;flex-wrap:wrap;gap:6px}
+.toc a{font-size:13px;text-decoration:none;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:2px 12px}
+.toc a:hover{border-color:var(--gold)}
+.group-title{display:flex;flex-direction:column;gap:4px;padding-top:10px}
+/* SVG */
+.fig svg text{font-family:var(--font-body);fill:var(--ink);font-size:13px}
+.fig svg .t-muted{fill:var(--ink-2)}
+.fig svg .t-small{font-size:11.5px}
+.fig svg .t-bold{font-weight:700}
+.fig svg .t-now{fill:var(--now)}
+.fig svg .t-new{fill:var(--new)}
+.fig svg .t-gold{fill:var(--gold-ink)}
+.fig svg .t-big{font-family:var(--font-num);font-size:26px;letter-spacing:.03em}
+.fig svg .t-on{fill:var(--on-fill)}
+.fig svg .t-on-gold{fill:var(--on-gold)}
+.fig svg .ring-now{fill:none;stroke:var(--now);stroke-width:26}
+.fig svg .ring-new{fill:none;stroke:var(--new);stroke-width:26}
+.fig svg .box{fill:var(--panel);stroke:var(--line);stroke-width:1.2}
+.fig svg .box-now{fill:var(--now-soft);stroke:var(--now);stroke-width:1.2}
+.fig svg .box-new{fill:var(--new-soft);stroke:var(--new);stroke-width:1.2}
+.fig svg .f-now{fill:var(--now)}
+.fig svg .f-new{fill:var(--new)}
+.fig svg .f-gold{fill:var(--gold)}
+.fig svg .f-neu{fill:var(--neutral)}
+.fig svg .f-neu2{fill:var(--neutral-2)}
+.fig svg .f-sim{fill:var(--sim)}
+.fig svg .ln{stroke:var(--ink-2);stroke-width:1.4;fill:none}
+.fig svg .ln-grid{stroke:var(--line);stroke-width:1;fill:none}
+.fig svg .ln-now{stroke:var(--now);stroke-width:2.2;fill:none}
+.fig svg .ln-new{stroke:var(--new);stroke-width:2.2;fill:none}
+.fig svg .ln-dash{stroke-dasharray:5 4}
+.fig svg .ah{fill:var(--ink-2)}
+.fig svg .ah-new{fill:var(--new)}
+.fig svg .ghost{fill:var(--new-soft);stroke:var(--new);stroke-width:1.4;stroke-dasharray:4 3}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="wrap stack-lg">
+
+<header class="top">
+  <div class="eyebrow">面白さ総点検 v0.1 ・ 2026-09-25</div>
+  <h1>決めてほしい16件</h1>
+  <p class="lead">総点検で「Keisukeさんの判断が要る」とした項目を、図と具体例で説明し直しました。各項目の最後に、はい/いいえで答えられる質問を1つずつ置いています。いちばん下の回答シートで選んでコピーすれば、そのままチャットに貼れます。1件ずつの返事でも構いません。</p>
+  <nav class="toc" aria-label="項目へ移動">
+    <a href="#k1">K-1</a><a href="#k2">K-2</a><a href="#k3">K-3</a><a href="#k4">K-4</a><a href="#k5">K-5</a><a href="#k6">K-6</a><a href="#k7">K-7</a><a href="#k8">K-8</a><a href="#k9">K-9</a><a href="#k10">K-10</a><a href="#k11">K-11</a><a href="#k12">K-12</a><a href="#k13">K-13</a><a href="#k14">K-14</a><a href="#k15">K-15</a><a href="#k16">K-16</a><a href="#sheet">回答シート</a>
+  </nav>
+</header>
+
+<section class="notice" aria-labelledby="fix-title">
+  <h2 id="fix-title">先に訂正: 資金の件</h2>
+  <ul>
+    <li>前回「資金は2年目以降ほぼ意味を失う」と書いたのは誤りでした。撤回します。</li>
+    <li>根拠にしたのは自動プレイヤーでの計測です。自動プレイヤーはコーチを雇わず、補強もほとんどしないので、実際のプレイよりずっとお金を使いません。</li>
+    <li>手元の実セーブ(3〜7月)は実際のプレイですが、給与の下り坂・ケアの再設計・数値オーバーホールより前の版なので、根拠にはしません。</li>
+    <li>今の版で「資金がいつ効かなくなるか」を言えるデータはありません。Keisukeさんの体感(5〜6年目以降、あるいはもっと先)を正とします。</li>
+    <li>この誤りに引きずられていた K-8(賞金の行き先)はおすすめを変えました。K-3(会場)にも注意書きを足しています。</li>
+  </ul>
+</section>
+
+<section class="stack" aria-labelledby="legend-title">
+  <h2 id="legend-title">確かさの目印</h2>
+  <div class="legend">
+    <div><span class="pill sure">コードで確定</span><p>遊び方に関係なく、今のコードでそうなっている。直すかどうかだけ決めればよい。</p></div>
+    <div><span class="pill sim">自動プレイヤーで計測</span><p>仕組みはコードで確認済み。ただし大きさは自動プレイヤーで測ったので、実際のプレイとはずれることがある。</p></div>
+    <div><span class="pill taste">方向性</span><p>正解は無く、ゲームをどうしたいかで決まる。</p></div>
+  </div>
+  <p class="why">規模の目安: 小=数時間、中=数日、大=それ以上。数値が動く変更は、直したあと auto-sim で1本測り直します。</p>
+</section>
+
+<section class="stack" aria-labelledby="overview-title">
+  <h2 id="overview-title">一覧</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>何の話か</th><th>確かさ</th><th>おすすめ</th><th>規模</th></tr></thead>
+      <tbody>
+        <tr><td class="k"><a href="#k1">K-1</a></td><td>興行後の処理が2か所に書かれていて、中身がずれている</td><td><span class="pill sure">確定</span></td><td class="rec">A 段階的に一本化</td><td>大</td></tr>
+        <tr><td class="k"><a href="#k2">K-2</a></td><td>因縁の決着・ファン期待を組んでも★が上がらない</td><td><span class="pill sure">確定</span></td><td class="rec">A 効かせて★を較正し直す</td><td>小+中</td></tr>
+        <tr><td class="k"><a href="#k3">K-3</a></td><td>大きい会場ほど団体人気が伸びにくい</td><td><span class="pill sure">仕組み確定</span> <span class="pill sim">差の大きさ</span></td><td class="rec">体感しだいで A か C</td><td>大 / 小</td></tr>
+        <tr><td class="k"><a href="#k4">K-4</a></td><td>引退した選手が同じ名前・顔で新人として戻ってくる</td><td><span class="pill sure">確定</span> <span class="pill taste">扱い方</span></td><td class="rec">A+B 別人扱い+襲名の一言</td><td>中</td></tr>
+        <tr><td class="k"><a href="#k5">K-5</a></td><td>社長が試合の能力値を直接+5する「後押し」</td><td><span class="pill sure">確定</span></td><td class="rec">A 撤去して関係への作用に</td><td>小</td></tr>
+        <tr><td class="k"><a href="#k6">K-6</a></td><td>命中のほぼ全部が「大ダメージ」扱い</td><td><span class="pill sure">確定</span></td><td class="rec">A 最大HPの12%以上を基準に</td><td>小</td></tr>
+        <tr><td class="k"><a href="#k7">K-7</a></td><td>試合の約7割でニアフォールが起きない</td><td><span class="pill sure">配線確定</span> <span class="pill sim">効果は試算</span></td><td class="rec">A 返しの仕組みをつなぎ直す</td><td>中</td></tr>
+        <tr><td class="k"><a href="#k8">K-8</a></td><td>大会の賞金が、世界設定と違って団体の資金に入る</td><td><span class="pill sure">確定</span> <span class="pill taste">どちらに合わせるか</span></td><td class="rec">B 世界設定の文言を直す</td><td>小</td></tr>
+        <tr><td class="k"><a href="#k9">K-9</a></td><td>AI団体の順位(S&gt;A&gt;B)が一度も入れ替わらない</td><td><span class="pill sure">確定</span></td><td class="rec">A まず3点だけ</td><td>小〜中</td></tr>
+        <tr><td class="k"><a href="#k10">K-10</a></td><td>ベビーフェイス×ヒールの控室の衝突が仕様の約3倍</td><td><span class="pill sure">確定</span> <span class="pill sim">影響の大きさ</span></td><td class="rec">A 仕様値に戻す</td><td>小</td></tr>
+        <tr><td class="k"><a href="#k11">K-11</a></td><td>他団体の控室の出来事がポップアップで出る</td><td><span class="pill sure">仕組み確定</span></td><td class="rec">A 自団体だけにする</td><td>小</td></tr>
+        <tr><td class="k"><a href="#k12">K-12</a></td><td>不仲タッグの「能力−3」が実際には効いていない</td><td><span class="pill sure">確定</span></td><td class="rec">A 表示どおり効かせる</td><td>小</td></tr>
+        <tr><td class="k"><a href="#k13">K-13</a></td><td>自団体の選手はAIより約2倍怪我をする</td><td><span class="pill sure">式が別</span> <span class="pill sim">差の大きさ</span></td><td class="rec">A AIも同じ式に揃える</td><td>小〜中</td></tr>
+        <tr><td class="k"><a href="#k14">K-14</a></td><td>書いてあるのに出ていないセリフ</td><td><span class="pill sure">確定</span></td><td class="rec">A 出す(出し場所が無い表は消す)</td><td>小</td></tr>
+        <tr><td class="k"><a href="#k15">K-15</a></td><td>時間切れ引き分けの復活</td><td><span class="pill taste">方向性</span></td><td class="rec">B 今は据え置き</td><td>—</td></tr>
+        <tr><td class="k"><a href="#k16">K-16</a></td><td>団体人気が対抗戦・秋の大会で一気に動く</td><td><span class="pill sure">確定</span></td><td class="rec">A 興行と同じ逓減に通す</td><td>小</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="group-title">
+  <div class="eyebrow">最優先の6件</div>
+  <h2>土台と、ゲームの原則に関わるもの</h2>
+</div>
+
+<!-- K-1 -->
+<article class="card" id="k1">
+  <div class="card-head"><div class="num">K-1</div><div class="ttl">
+    <h2>興行後の処理を一本化するか</h2>
+    <div class="badges"><span class="pill sure">コードで確定</span><span class="pill size">規模 大(段階的)</span></div>
+  </div></div>
+  <p class="oneline">興行が終わった後の処理が2か所に書かれていて、中身が少しずつずれています。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>興行が終わると、人気・成長・怪我・王座・信頼などをまとめて更新する処理が走ります。これが<b>画面側(app.js、約1,700行)</b>と<b>エンジン側</b>の2か所にあります。</li>
+    <li>Keisukeさんが遊ぶと画面側が動きます。auto-sim(毎ターンの自動検査や数値の較正)はエンジン側を動かします。</li>
+    <li>例1: 画面側では、試合に出た選手のプロモ蓄積が減りません。そのため「バランス」方針の選手は、季初の3興行を過ぎると黙って練習ばかりするようになります。エンジン側では毎回減るので、auto-simの選手は毎週プロモをします。</li>
+    <li>例2: 画面側では、試合で得る成長に年齢の倍率が掛かりません。自団体のベテランは、auto-simで確かめた設計の半分くらいしか衰えません。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 434" role="img" aria-label="今は興行の結果が画面側とエンジン側の2本の処理に分かれ、4つの食い違いがある。一本化した後は1本の処理が遊ぶゲームとauto-simの両方に同じ数字を渡す。">
+      <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+      <text x="0" y="16" class="t-bold">今: 同じ興行の後処理が2本ある</text>
+      <rect x="0" y="30" width="108" height="42" rx="5" class="box"/><text x="54" y="56" text-anchor="middle">興行の結果</text>
+      <rect x="150" y="30" width="176" height="42" rx="5" class="box-now"/><text x="238" y="50" text-anchor="middle" class="t-bold">画面側の後処理</text><text x="238" y="66" text-anchor="middle" class="t-small t-muted">app.js(実際に遊ぶとき)</text>
+      <rect x="368" y="30" width="192" height="42" rx="5" class="box"/><text x="464" y="56" text-anchor="middle">Keisukeさんが遊ぶゲーム</text>
+      <line x1="108" y1="51" x2="146" y2="51" class="ln" marker-end="url(#ah1)"/><line x1="326" y1="51" x2="364" y2="51" class="ln" marker-end="url(#ah1)"/>
+      <rect x="0" y="92" width="108" height="42" rx="5" class="box"/><text x="54" y="118" text-anchor="middle">興行の結果</text>
+      <rect x="150" y="92" width="176" height="42" rx="5" class="box"/><text x="238" y="112" text-anchor="middle" class="t-bold">エンジン側の後処理</text><text x="238" y="128" text-anchor="middle" class="t-small t-muted">Engine.executeShow</text>
+      <rect x="368" y="92" width="192" height="42" rx="5" class="box"/><text x="464" y="112" text-anchor="middle">auto-sim・数値の較正</text><text x="464" y="128" text-anchor="middle" class="t-small t-muted">成長・★・信頼の基準</text>
+      <line x1="108" y1="113" x2="146" y2="113" class="ln" marker-end="url(#ah1)"/><line x1="326" y1="113" x2="364" y2="113" class="ln" marker-end="url(#ah1)"/>
+      <rect x="0" y="150" width="560" height="134" rx="6" class="box-now"/>
+      <text x="14" y="172" class="t-bold t-now">2本の食い違い(確認できた分)</text>
+      <text x="14" y="194">・プロモ蓄積が画面側だけ減らない</text>
+      <text x="14" y="214">・試合成長の年齢倍率が画面側だけ無い(ベテランが衰えにくい)</text>
+      <text x="14" y="234">・王座の設立・契約枠の拡大・ブレークスルーは画面側にしか無い</text>
+      <text x="14" y="254">・内紛・挑戦状の試合で、画面側だけ因縁の効果が抜ける</text>
+      <text x="14" y="274" class="t-small t-muted">ほかに auto-sim 側は、人間関係が初期化されず、選択イベントを捨てている</text>
+      <text x="0" y="320" class="t-bold t-new">一本化した後</text>
+      <rect x="0" y="334" width="108" height="42" rx="5" class="box"/><text x="54" y="360" text-anchor="middle">興行の結果</text>
+      <rect x="150" y="334" width="176" height="42" rx="5" class="box-new"/><text x="238" y="354" text-anchor="middle" class="t-bold">エンジンの後処理</text><text x="238" y="370" text-anchor="middle" class="t-small t-muted">1本だけ</text>
+      <rect x="368" y="326" width="192" height="36" rx="5" class="box"/><text x="464" y="349" text-anchor="middle">遊ぶゲーム</text>
+      <rect x="368" y="378" width="192" height="36" rx="5" class="box"/><text x="464" y="401" text-anchor="middle">auto-sim・数値の較正</text>
+      <line x1="108" y1="355" x2="146" y2="355" class="ln" marker-end="url(#ah1)"/>
+      <path d="M326,348 L364,344" class="ln" marker-end="url(#ah1)"/><path d="M326,362 L364,394" class="ln" marker-end="url(#ah1)"/>
+      <text x="238" y="426" text-anchor="middle" class="t-small t-new t-bold">両方に同じ数字が届く</text>
+    </svg>
+    <figcaption>上が今、下が一本化した後。画面の見た目は変わりません。</figcaption>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>エンジン側に一本化し、画面はそれを呼ぶ <small>おすすめ</small></h3>
+      <p>最初の一歩は「同じ興行を両方に流して差分を一覧にするテスト」だけで、ここでは数値は動きません。そのあと食い違いを1つずつエンジン側へ移します。</p>
+      <p class="meta">変わること: 画面は同じ。プロモのリズムやベテランの衰えが設計どおりになり、auto-simで測った数字が実際のプレイと一致するようになります。気になる点: 移すたびに数値が少し動きます。K-2 のように1件ずつ裁定が要るものもあります。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>差分テストだけ置き、ずれは見つけ次第埋める</h3>
+      <p class="meta">規模は中。2本のままなので、今後も新しいずれが入りえます。</p></div>
+    <div class="opt"><div class="letter">C</div><h3>今のまま</h3>
+      <p class="meta">auto-simの結果と実際のプレイがずれたままになります。</p></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>興行後の処理をエンジン側へ一本化する工事を、段階的に進めてよいですか?(最初はずれを一覧にするテストだけで、数値は動きません)</p></div>
+</article>
+
+<!-- K-2 -->
+<article class="card" id="k2">
+  <div class="card-head"><div class="num">K-2</div><div class="ttl">
+    <h2>★評価の「効いていない3項目」を効かせるか</h2>
+    <div class="badges"><span class="pill sure">効いていないのは確定</span><span class="pill sim">直した後の効果は計測</span><span class="pill size">規模 小+中</span></div>
+  </div></div>
+  <p class="oneline">因縁の決着戦やファンが見たいカードを組んでも、興行の★が上がりません。本来は上がる設計です。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>興行の★は「試合の出来(最大60点)+客席の埋まり(最大15点)+ボーナス(最大25点)」の合計で決まります。大ホール〜大会場では83点で★5、70点で★4です(会場による違いは K-3)。</li>
+    <li>ボーナスのうち<b>「因縁の決着 +6」「因縁カード +2」「ファン期待カード +4/件」</b>の3つが、2026年3月末から一度も加算されていません。★を計算する側と呼ぶ側で、情報の名前が食い違っているためです(<code>hasRivalryResolution</code> を読むのに <code>rivalryResolved</code> を渡している、など)。</li>
+    <li>★は団体人気(★5で+2.0、★4で+1.0、逓減前)、Heat、放映収入の倍率に効きます。</li>
+    <li>今の★の基準(何点で★5か)は、この3つが効いていない状態で調整されています。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 250" role="img" aria-label="例の興行: 試合の出来55点、客席12点、今効いているボーナス6点で合計73点の★4。効いていないボーナス10点が加われば83点で★5になる。">
+      <text x="20" y="18" class="t-bold">例: 宿敵の決着戦をメインにし、ファン期待カードを1つ組んだ興行</text>
+      <line x1="370" y1="40" x2="370" y2="104" class="ln ln-dash"/><text x="366" y="36" text-anchor="end" class="t-small t-muted">★4(70点)</text>
+      <line x1="435" y1="40" x2="435" y2="104" class="ln ln-dash"/><text x="440" y="36" text-anchor="start" class="t-small t-muted">★5(83点)</text>
+      <rect x="20" y="52" width="275" height="36" class="f-neu"/>
+      <rect x="295" y="52" width="60" height="36" class="f-neu2"/>
+      <rect x="355" y="52" width="30" height="36" class="f-gold"/>
+      <rect x="385" y="52" width="50" height="36" class="ghost"/>
+      <text x="157" y="75" text-anchor="middle" class="t-bold">試合の出来 55</text>
+      <text x="325" y="75" text-anchor="middle" class="t-small">客席 12</text>
+      <line x1="20" y1="94" x2="520" y2="94" class="ln-grid"/>
+      <text x="20" y="110" class="t-small t-muted">0点</text><text x="520" y="110" text-anchor="end" class="t-small t-muted">100点</text>
+      <rect x="20" y="126" width="14" height="14" class="f-gold"/><text x="42" y="138" class="t-small">今効いているボーナス 6(王座戦+3・試合数+3)</text>
+      <rect x="20" y="150" width="14" height="14" class="ghost"/><text x="42" y="162" class="t-small t-new t-bold">効いていないボーナス +10(因縁の決着+6・ファン期待+4)</text>
+      <text x="20" y="204" class="t-bold t-now">今: 73点 → ★4</text>
+      <text x="20" y="230" class="t-bold t-new">本来: 83点 → ★5</text>
+    </svg>
+    <figcaption>点数は仕組みを示すための例です。監査では、実際の興行データでもボーナスが3点→17点、★4→★5になる例を確認しました。</figcaption>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>効かせる。そのうえで★の基準を上げ直し、★の出やすさ全体は今と同じにする <small>おすすめ</small></h3>
+      <p>因縁やファンの期待に応えた興行ほど★が上がりやすくなり、そうでない興行は今より少し★が出にくくなります。考えてカードを組む社長が報われます。</p>
+      <p class="meta">自動プレイヤーでの目安(1シード): 因縁を重視して組むと、20年後の団体人気が55→64。今の実装では、因縁重視の組み方は★の平均が6方針中いちばん低くなっています。作業: 配線は小、★の基準の較正に100季1本。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>3項目を仕様と画面から消す</h3>
+      <p class="meta">数値は今のまま。仕様と画面の説明が実態に合うだけです。</p></div>
+    <div class="opt"><div class="letter">C</div><h3>今のまま(効かないまま)</h3></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>因縁の決着・因縁カード・ファン期待を★に効かせ、★の基準を較正し直してよいですか?</p></div>
+</article>
+
+<!-- K-3 -->
+<article class="card" id="k3">
+  <div class="card-head"><div class="num">K-3</div><div class="ttl">
+    <h2>大きい会場ほど団体人気が伸びにくい仕組みをどうするか</h2>
+    <div class="badges"><span class="pill sure">仕組みは確定</span><span class="pill sim">差の大きさは自動プレイヤーで計測</span><span class="pill size">A 大 / C 小</span></div>
+  </div></div>
+  <p class="oneline">小さい会場ほど★の基準が甘く、団体人気は★だけで増えます。お客の数は人気に入りません。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>★5に必要な点数は会場で変わります(下の図)。公民館〜小ホールBは18点甘く、空席のペナルティもありません。</li>
+    <li>団体人気の増減は★だけで決まります。150人の公民館で★5を取っても、6,000人のアリーナで★5を取っても、人気の伸びは同じです。</li>
+    <li>自動プレイヤーで比べると、会場を公民館のままにした方が20年後の団体人気は高くなりました(84 対 55)。</li>
+    <li><b>ただし</b>自動プレイヤーはお金をあまり使わないので、公民館のままでも困りませんでした。実際のプレイでは、給与を払うのに大きい会場の収入が要るはずです。つまり実際は「お金のために会場を上げる」と「人気のために小さい箱に留まる」の綱引きになっている可能性が高く、この綱引きはどこにも表示されていません。</li>
+    <li>もう1点: 団体人気90で「ドーム圏内です」と案内が出ますが、計算上その時点のドームは38〜56%しか埋まらず、収支は赤字です。</li>
+  </ul>
+  <div class="stack">
+    <figure class="fig">
+      <svg viewBox="0 0 560 250" role="img" aria-label="★5に必要な点数: 公民館から小ホールBは65点、市民会館から中ホールBは75点、大ホールから大会場は83点、ドームは86点。">
+        <text x="0" y="18" class="t-bold">★5に必要な点数</text>
+        <text x="0" y="56">公民館〜小ホールB</text><text x="0" y="74" class="t-small t-muted">150〜500席</text>
+        <rect x="200" y="46" width="221" height="30" class="f-new"/><text x="428" y="67" class="t-bold">65</text>
+        <text x="0" y="112">市民会館〜中ホールB</text><text x="0" y="130" class="t-small t-muted">800〜2,000席</text>
+        <rect x="200" y="102" width="255" height="30" class="f-gold"/><text x="462" y="123" class="t-bold">75</text>
+        <text x="0" y="168">大ホール〜大会場</text><text x="0" y="186" class="t-small t-muted">3,500〜12,000席</text>
+        <rect x="200" y="158" width="282" height="30" class="f-neu"/><text x="489" y="179" class="t-bold">83</text>
+        <text x="0" y="224">ドーム</text><text x="0" y="242" class="t-small t-muted">22,500席</text>
+        <rect x="200" y="214" width="292" height="30" class="f-now"/><text x="499" y="235" class="t-bold">86</text>
+      </svg>
+      <figcaption>満点は100点。小さい会場は、同じ出来でも★が上がりやすい。</figcaption>
+    </figure>
+    <figure class="fig">
+      <svg viewBox="0 0 560 250" role="img" aria-label="自動プレイヤーでの団体人気の推移。会場を公民館のままにすると5年目68、10年目83、20年目84。人気に合わせて会場を上げると5年目52、10年目58、20年目55。">
+        <text x="0" y="18" class="t-bold">団体人気の推移(自動プレイヤー)</text>
+        <line x1="60" y1="210" x2="520" y2="210" class="ln-grid"/><line x1="60" y1="165" x2="520" y2="165" class="ln-grid"/><line x1="60" y1="120" x2="520" y2="120" class="ln-grid"/><line x1="60" y1="75" x2="520" y2="75" class="ln-grid"/><line x1="60" y1="30" x2="520" y2="30" class="ln-grid"/>
+        <text x="50" y="214" text-anchor="end" class="t-small t-muted">0</text><text x="50" y="124" text-anchor="end" class="t-small t-muted">50</text><text x="50" y="34" text-anchor="end" class="t-small t-muted">100</text>
+        <text x="60" y="232" text-anchor="middle" class="t-small t-muted">開始</text><text x="175" y="232" text-anchor="middle" class="t-small t-muted">5年目</text><text x="290" y="232" text-anchor="middle" class="t-small t-muted">10年目</text><text x="520" y="232" text-anchor="middle" class="t-small t-muted">20年目</text>
+        <polyline points="60,192 175,88 290,61 520,58" class="ln-new"/>
+        <polyline points="60,192 175,117 290,107 520,111" class="ln-now"/>
+        <circle cx="175" cy="88" r="4" class="f-new"/><circle cx="290" cy="61" r="4" class="f-new"/><circle cx="520" cy="58" r="4" class="f-new"/>
+        <circle cx="175" cy="117" r="4" class="f-now"/><circle cx="290" cy="107" r="4" class="f-now"/><circle cx="520" cy="111" r="4" class="f-now"/>
+        <text x="505" y="48" text-anchor="end" class="t-small t-new t-bold">公民館のまま 84</text>
+        <text x="505" y="132" text-anchor="end" class="t-small t-now t-bold">人気に合わせて会場を上げる 55</text>
+      </svg>
+      <figcaption>自動プレイヤーでの計測(会場を上げる方は3シード、公民館のままは2シード)。お金の制約が実際より緩い世界の数字です。</figcaption>
+    </figure>
+  </div>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt"><div class="letter">A</div><h3>団体人気の伸びに「その興行に来たお客の量」を掛ける <small>会場を上げると伸びが鈍る感覚があるならこれ</small></h3>
+      <p>★は今どおり「その会場なりの出来」の評価として残します。大きい会場を沸かせるほど人気が大きく伸び、小さい箱で満員を続けても伸びは小さくなります。小さい箱で札止めになったら「チケットが取れなかったファンの声」を記事にして、上の会場へ進む時期を知らせます。</p>
+      <p class="meta">作業: 大。★と団体人気の関係を100季で較正し直します。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>小さい会場の甘さ(−18点)を縮める</h3>
+      <p class="meta">小さい会場で★5が出にくくなるだけで、「お客の数が人気に入らない」理屈は残ります。作業: 小。</p></div>
+    <div class="opt"><div class="letter">C</div><h3>仕組みは今のまま。「ドーム圏内です」の案内だけ、満員の見込みが立つときに限る <small>特に問題を感じていないならこれ</small></h3>
+      <p class="meta">作業: 小。</p></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>実際に遊んでいて、会場を大きくしたら団体人気の伸びが鈍った、と感じたことはありますか?(感じたなら A、特に感じないなら C をおすすめします)</p></div>
+</article>
+
+<!-- K-4 -->
+<article class="card" id="k4">
+  <div class="card-head"><div class="num">K-4</div><div class="ttl">
+    <h2>引退した選手が同じ名前・顔で新人として戻ってくる件</h2>
+    <div class="badges"><span class="pill sure">仕組みは確定</span><span class="pill taste">扱い方は方向性</span><span class="pill size">規模 中</span></div>
+  </div></div>
+  <p class="oneline">引退から5季たつと、同じキャラクターが17〜19歳の新人として再デビューします。前の人生の記録や因縁がそのまま付いてきます。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>世界の選手の数を保つため、引退した選手は5季の休みのあと若返り、新人として戻る仕組みがあります(休眠プール)。この仕組み自体は必要なものです。</li>
+    <li>自動プレイヤーで30〜40季回すと、引退者の約7割が約10季後に再デビューしていました。</li>
+    <li>困るのは、記録が「選手ごと」ではなく「IDごと」に紐づいていることです(下の図)。</li>
+    <li>別件(こちらは不具合として直します): AI団体が契約満了にした23歳以上のベテランが、同じオフに17〜19歳へ若返ってドラフトに並びます。例: 28歳・ピーク101の選手が、同じオフに18歳で同じ団体へ入団。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 262" role="img" aria-label="ある選手の年表。1年目に17歳でデビューし、9年目に26歳で引退して殿堂入り。5季の休みのあと14年目に17歳で再デビュー。殿堂に同じ人が2件載り、前の人生の因縁と対戦成績を持ったまま、2度目の引退記事が前の人生の数字で書かれる。">
+      <defs><marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+      <text x="0" y="18" class="t-bold">ある選手Xの年表</text>
+      <line x1="20" y1="112" x2="545" y2="112" class="ln"/>
+      <text x="20" y="130" text-anchor="middle" class="t-small t-muted">1年目</text><text x="280" y="130" text-anchor="middle" class="t-small t-muted">9年目</text><text x="442" y="130" text-anchor="middle" class="t-small t-muted">14年目</text>
+      <rect x="20" y="80" width="260" height="24" rx="4" class="f-gold"/>
+      <text x="26" y="72" class="t-bold">1度目の人生: 17歳→26歳</text><text x="26" y="97" class="t-small t-on-gold">戴冠3回・殿堂入り・宿敵あり</text>
+      <rect x="280" y="86" width="162" height="12" class="ghost"/>
+      <text x="361" y="72" text-anchor="middle" class="t-small t-muted">休み(5季)</text>
+      <rect x="442" y="80" width="100" height="24" rx="4" class="f-now"/>
+      <text x="492" y="72" text-anchor="middle" class="t-bold t-now">2度目</text><text x="492" y="97" text-anchor="middle" class="t-small t-on">17歳・同じ顔</text>
+      <rect x="226" y="156" width="330" height="96" rx="6" class="box-now"/>
+      <text x="238" y="178" class="t-bold t-now">2度目の人生で起きること</text>
+      <text x="238" y="200" class="t-small">・殿堂に同じ人が2件載る(在籍年の表示も狂う)</text>
+      <text x="238" y="220" class="t-small">・前の人生の因縁と対戦成績を、新人の時点で持っている</text>
+      <text x="238" y="240" class="t-small">・2度目の引退記事が、前の人生の異名と数字で書かれる</text>
+      <path d="M492,104 L470,152" class="ln" marker-end="url(#ah4)"/>
+      <text x="0" y="178" class="t-small t-muted">自動プレイヤーの30〜40季で</text><text x="0" y="198" class="t-small t-muted">引退者の約7割が再デビュー</text><text x="0" y="218" class="t-small t-muted">(再デビューまで中央値10季)</text>
+    </svg>
+    <figcaption>1度目と2度目で記録が混ざるのが問題です。戻ってくる仕組みそのものは残します。</figcaption>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt"><div class="letter">A</div><h3>別人として扱う</h3>
+      <p>記録を「人生ごと」に分け、戻ってくるときは因縁・対戦成績を白紙にします。殿堂入り・戴冠経験のある選手は、戻るまでの休みを15季程度に延ばします(20〜40年のプレイではほぼ戻らない)。</p></div>
+    <div class="opt is-rec"><div class="letter">A+B</div><h3>別人として扱い、戻ってきたときに「襲名」として一言だけ触れる <small>おすすめ</small></h3>
+      <p>記録はAと同じく人生ごとに分けます。そのうえで道場や新聞で「◯◯の名を継ぐ新人」と一言添え、プロレスの襲名文化として見せます。</p></div>
+    <div class="opt"><div class="letter">C</div><h3>今のまま</h3>
+      <p class="meta">記録の混ざりは残ります。</p></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>戻ってきた選手は「別人(二代目)」として記録を分け、殿堂級の選手は戻りにくくする、でよいですか?</p></div>
+</article>
+
+<!-- K-5 -->
+<article class="card" id="k5">
+  <div class="card-head"><div class="num">K-5</div><div class="ttl">
+    <h2>社長が試合の能力値を直接上げる「後押し」をやめるか</h2>
+    <div class="badges"><span class="pill sure">コードで確定</span><span class="pill size">規模 小</span></div>
+  </div></div>
+  <p class="oneline">団体内の対立イベントで一方を「後押し」すると、その選手の能力が試合中だけ+5されます。社長が勝敗に手を入れています。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>大型イベント B2(団体内の対立)で、社長は「話し合い」「後押し」「放置」を選べます。</li>
+    <li>「後押し」を選ぶと、その選手はパワー・スピード・テクニック・スタミナが+5された状態で試合をします。</li>
+    <li>CLAUDE.md の柱②「社長は舞台を作る人。試合中の直接操作はしない」と、柱③「数値を捻じ曲げない」に引っかかります。</li>
+    <li>ヒントにある「相手はえこひいきと感じる」という代償は、実装されていません。</li>
+    <li>発生は年0〜0.45回と少ないので、バランスへの影響は小さく、原則の問題です。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 136" role="img" aria-label="後押しした側の勝率は62.7%から73.6%に上がる。">
+      <text x="0" y="18" class="t-bold">後押しした側の勝率</text>
+      <text x="0" y="56">後押しなし</text><rect x="170" y="40" width="226" height="28" class="f-neu"/><text x="404" y="60" class="t-bold">62.7%</text>
+      <text x="0" y="102">後押しあり(能力+5)</text><rect x="170" y="86" width="265" height="28" class="f-now"/><text x="443" y="106" class="t-bold t-now">73.6%(+11pt)</text>
+    </svg>
+    <figcaption>同じ組み合わせで試合ごとに新しい乱数を使って計測。</figcaption>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>能力+5を撤去し、人間関係への作用に置き換える <small>おすすめ</small></h3>
+      <p>後押しされた側は信頼が上がり、されなかった側には不満が残る(ヒントどおりの「えこひいき」)。試合の結果は選手自身の力で決まります。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>今のまま</h3></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>後押しの能力+5を外して、信頼・不満への作用に置き換えてよいですか?</p></div>
+</article>
+
+<!-- K-6 -->
+<article class="card" id="k6">
+  <div class="card-head"><div class="num">K-6</div><div class="ttl">
+    <h2>「大ダメージ」の基準を相対的にするか</h2>
+    <div class="badges"><span class="pill sure">コードで確定</span><span class="pill size">規模 小(演出だけ)</span></div>
+  </div></div>
+  <p class="oneline">今は命中するとほぼ毎回「大ダメージ」扱いで、BIG HITの演出と被弾セリフが毎ターン出ています。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>CLAUDE.md のルールは「ダメージ15以上のときだけ大ダメージ(被弾セリフ・ボイス)を判定する」です。</li>
+    <li>その後、最大HPの式が変わってダメージ全体が大きくなりました。通常戦の最大HPは約320〜390で、1回の命中は20〜70ダメージです。15以上はほぼ全部になります。</li>
+    <li>その結果、BIG HITの文字・赤いフラッシュ・画面の揺れ・カメラの寄り・「深く入った!」の実況・被弾セリフの抽選が毎回走ります。被弾セリフは1試合に4〜7回出て、同じ行が繰り返されます。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 290" role="img" aria-label="1回の命中のダメージ分布。すべてが15以上なので今は全部が大ダメージ。案の基準(最大HPの12%、この例では約43)を超えるのは右側の一部だけで、1試合あたり12回から約4回になる。">
+      <text x="0" y="18" class="t-bold">1回の命中のダメージ(同格の通常戦、OVR85)</text>
+      <text x="0" y="40" class="t-small t-now t-bold">今の基準 15以上 → 1試合12回、全部が大ダメージ</text>
+      <text x="0" y="58" class="t-small t-new t-bold">案: 最大HPの12%以上(この例では約43) → 1試合約4回(大一番は約3回)</text>
+      <line x1="50" y1="226" x2="500" y2="226" class="ln"/>
+      <rect x="52" y="224.3" width="28" height="1.7" class="f-now"/>
+      <rect x="84" y="76" width="28" height="150" class="f-now"/>
+      <rect x="116" y="174.2" width="28" height="51.8" class="f-now"/>
+      <rect x="148" y="137.2" width="28" height="88.8" class="f-now"/>
+      <rect x="180" y="132.2" width="28" height="93.8" class="f-now"/>
+      <rect x="212" y="159.4" width="28" height="66.6" class="f-now"/>
+      <rect x="244" y="190.2" width="28" height="35.8" class="f-new"/>
+      <rect x="276" y="207.5" width="28" height="18.5" class="f-new"/>
+      <rect x="308" y="185.2" width="28" height="40.8" class="f-new"/>
+      <rect x="340" y="184.7" width="28" height="41.3" class="f-new"/>
+      <rect x="372" y="194.8" width="28" height="31.2" class="f-new"/>
+      <rect x="404" y="210.9" width="28" height="15.1" class="f-new"/>
+      <rect x="436" y="221" width="28" height="5" class="f-new"/>
+      <rect x="468" y="225" width="28" height="1" class="f-new"/>
+      <line x1="226" y1="70" x2="226" y2="232" class="ln-new ln-dash"/>
+      <line x1="50" y1="70" x2="50" y2="232" class="ln-now ln-dash"/>
+      <text x="50" y="246" text-anchor="middle" class="t-small t-muted">15</text><text x="114" y="246" text-anchor="middle" class="t-small t-muted">25</text><text x="178" y="246" text-anchor="middle" class="t-small t-muted">35</text><text x="242" y="246" text-anchor="middle" class="t-small t-muted">45</text><text x="306" y="246" text-anchor="middle" class="t-small t-muted">55</text><text x="370" y="246" text-anchor="middle" class="t-small t-muted">65</text><text x="434" y="246" text-anchor="middle" class="t-small t-muted">75</text>
+      <text x="275" y="268" text-anchor="middle" class="t-small t-muted">ダメージ(5刻み)</text>
+      <text x="232" y="84" class="t-small t-new">ここから右が案の大ダメージ</text>
+    </svg>
+    <figcaption>800試合・約9,600回の命中から集計。赤は、今は大ダメージ扱いだが案では普通の命中になる範囲。緑は案でも大ダメージになる範囲です(案の基準線は40〜45の区間の中にあります)。</figcaption>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>「被弾側の最大HPの12%以上」を大ダメージにする <small>おすすめ</small></h3>
+      <p>通常戦で1試合約4回、大一番で約3回になります。勝敗は1つも変わりません(演出だけ)。HP帯による使い分け(66%超はセリフ、34〜66%はセリフ少なめで悲鳴、33%以下は悲鳴だけ)はそのまま残します。CLAUDE.md の「dmg≥15」の文言を書き換えます。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>数字だけ上げる(例: ダメージ40以上)</h3>
+      <p class="meta">簡単ですが、HPの式がまた変わるとずれます。</p></div>
+    <div class="opt"><div class="letter">C</div><h3>今のまま</h3></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>大ダメージを「被弾側の最大HPの12%以上」に変え、CLAUDE.md のルールもそう書き換えてよいですか?</p></div>
+</article>
+
+<div class="group-title">
+  <div class="eyebrow">そのほかの10件</div>
+  <h2>手触りと世界の方向性に関わるもの</h2>
+</div>
+
+<!-- K-7 -->
+<article class="card" id="k7">
+  <div class="card-head"><div class="num">K-7</div><div class="ttl">
+    <h2>ニアフォール(カウント2.9)を増やすか</h2>
+    <div class="badges"><span class="pill sure">配線は確定</span><span class="pill sim">効果は試算</span><span class="pill size">規模 中</span></div>
+  </div></div>
+  <p class="oneline">今は試合の約7割で、ニアフォールが一度も起きません。「返し」の仕組みが決着の本線につながっていないためです。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>決着の多く(64〜82%)は「相手のHPが減ったところでフォール狙い → 成功」です。</li>
+    <li>因縁・王座戦・名勝負製造機・闘志・防衛王者の「返しやすさ」ボーナスは、HPが0まで削られたときの判定にしか入っていません。そこまで行く試合は少ないので、ほとんど使われていません。</li>
+    <li>番狂わせ体質(格上に丸め込みやすい)は、丸め込みの判定がフォール狙いの後ろにあるため、ほぼ届きません(2万組で結果が変わったのは最大14組)。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 300" role="img" aria-label="技が当たり、相手のHPが減っているとフォール狙いになり、3カウントで決着するかカウント2で返す。返しやすさのボーナスはHPが0になったときの判定にしかなく、案ではフォール狙いの判定へ移す。ニアフォールが一度も無い試合は67%から53〜58%に減る試算。">
+      <defs><marker id="ah7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="ah7n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-new"/></marker></defs>
+      <rect x="0" y="14" width="120" height="40" rx="5" class="box"/><text x="60" y="39" text-anchor="middle">技が当たる</text>
+      <rect x="150" y="14" width="160" height="40" rx="5" class="box"/><text x="230" y="39" text-anchor="middle">相手のHPが減っている</text>
+      <rect x="340" y="14" width="120" height="40" rx="5" class="box"/><text x="400" y="39" text-anchor="middle" class="t-bold">フォール狙い</text>
+      <line x1="120" y1="34" x2="146" y2="34" class="ln" marker-end="url(#ah7)"/><line x1="310" y1="34" x2="336" y2="34" class="ln" marker-end="url(#ah7)"/>
+      <rect x="330" y="84" width="110" height="36" rx="5" class="box"/><text x="385" y="107" text-anchor="middle" class="t-small">3カウント(決着)</text>
+      <rect x="450" y="84" width="110" height="36" rx="5" class="box-new"/><text x="505" y="100" text-anchor="middle" class="t-small t-bold">カウント2で返す</text><text x="505" y="114" text-anchor="middle" class="t-small">=ニアフォール</text>
+      <path d="M400,54 L386,80" class="ln" marker-end="url(#ah7)"/><path d="M412,54 L496,80" class="ln" marker-end="url(#ah7)"/>
+      <rect x="0" y="92" width="290" height="70" rx="6" class="box-now"/>
+      <text x="12" y="112" class="t-small t-bold t-now">HPが0になったときの判定(めったに通らない)</text>
+      <text x="12" y="132" class="t-small">ここに入っているボーナス:</text>
+      <text x="12" y="150" class="t-small">因縁・王座戦・名勝負製造機・闘志・防衛王者</text>
+      <path d="M290,110 C320,106 330,74 372,58" class="ln-new ln-dash" marker-end="url(#ah7n)"/>
+      <text x="300" y="150" class="t-small t-new t-bold">案: フォール狙いの判定へ移す</text>
+      <text x="0" y="198" class="t-bold">ニアフォールが一度も無い試合の割合</text>
+      <text x="0" y="230">今</text><rect x="120" y="214" width="268" height="24" class="f-now"/><text x="396" y="232" class="t-bold t-now">67%</text>
+      <text x="0" y="270">案(試算)</text><rect x="120" y="254" width="212" height="24" class="f-new"/><rect x="332" y="254" width="20" height="24" class="ghost"/><text x="360" y="272" class="t-bold t-new">53〜58%</text>
+    </svg>
+    <figcaption>同格の通常戦。ニアフォールは1試合あたり0.46回 → 0.65〜0.76回の試算で、勝率は変わりません。</figcaption>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>返しボーナスをフォール狙いの判定に合流させ、丸め込みの判定を先にする <small>おすすめ</small></h3>
+      <p>勝率は変えません。因縁や王座のように両者に効くものは勝率に中立で、片側だけのものは±2pt以内に抑えます。大一番ほど返し合いが増えるようにし、スタイルの違い(技巧派は丸め込み、精神力型は粘り)も決着の形に出るようにします。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>今のまま</h3></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>勝率は変えずに、ニアフォールが増えるよう返しの仕組みをつなぎ直してよいですか?</p></div>
+</article>
+
+<!-- K-8 -->
+<article class="card" id="k8">
+  <div class="card-head"><div class="num">K-8</div><div class="ttl">
+    <h2>大会の賞金の行き先</h2>
+    <div class="badges"><span class="pill sure">食い違いは確定</span><span class="pill taste">どちらに合わせるかは方向性</span><span class="pill size">規模 小</span></div>
+  </div></div>
+  <p class="oneline">世界設定では「賞金は国庫から選手個人へ。団体の財政には影響しない」。実装では団体の資金に入っています。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>PPVの賞金(優勝2,000万・準優勝1,000万・出場500万/人)とジュニアトーナメントの賞金が、団体の資金に入ります。コードのコメントには「国庫支出」と書かれています。</li>
+    <li>前回はこれを「お金の緊張が無い理由の1つ」として挙げましたが、その前提が誤りでした(冒頭の訂正)。お金の面からは推奨しません。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 150" role="img" aria-label="リーグ(国庫)からの賞金は、今の実装では団体の資金へ、世界設定では選手個人へ渡る。">
+      <defs><marker id="ah8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+      <rect x="0" y="52" width="150" height="46" rx="5" class="box"/><text x="75" y="72" text-anchor="middle" class="t-bold">リーグ(国庫)</text><text x="75" y="89" text-anchor="middle" class="t-small t-muted">PPV・ジュニアの賞金</text>
+      <rect x="330" y="10" width="200" height="40" rx="5" class="box-now"/><text x="430" y="35" text-anchor="middle" class="t-bold">団体の資金</text>
+      <rect x="330" y="100" width="200" height="40" rx="5" class="box-new"/><text x="430" y="125" text-anchor="middle" class="t-bold">選手個人</text>
+      <path d="M150,66 L326,32" class="ln" marker-end="url(#ah8)"/><path d="M150,84 L326,118" class="ln" marker-end="url(#ah8)"/>
+      <text x="238" y="38" text-anchor="middle" class="t-small t-now t-bold">今の実装</text>
+      <text x="238" y="124" text-anchor="middle" class="t-small t-new t-bold">世界設定</text>
+    </svg>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt"><div class="letter">A</div><h3>世界設定を正とし、賞金を選手個人へ</h3>
+      <p class="meta">選手の懐が温まると契約更改で強気になる、などの物語につなげられます。ただし団体の収入が減るので、序盤の経営は今より厳しくなります。</p></div>
+    <div class="opt is-rec"><div class="letter">B</div><h3>実装を正とし、世界設定の文言を「団体に支給」に改める <small>おすすめ</small></h3>
+      <p class="meta">今の手触りを変えません。後半のお金の使い道を考えるときに、Aの案をあらためて検討します。</p></div>
+    <div class="opt"><div class="letter">C</div><h3>今のまま(食い違いは残る)</h3></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>賞金は今どおり団体に入れる前提で、世界設定の文言の方を直してよいですか?</p></div>
+</article>
+
+<!-- K-9 -->
+<article class="card" id="k9">
+  <div class="card-head"><div class="num">K-9</div><div class="ttl">
+    <h2>AI団体の順位(S&gt;A&gt;B)が動かない件</h2>
+    <div class="badges"><span class="pill sure">確定(AI同士の結果なので自動プレイヤーの腕に関係しない)</span><span class="pill size">A 小〜中</span></div>
+  </div></div>
+  <p class="oneline">AI3団体の順位が、70季のあいだ一度も入れ替わりません。選手の実力差は小さいのに、「今強い団体がもっと得をする」仕組みが重なっています。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>S団体とA団体の評価の差は約160点。そのうち選手の実力の差は約24点だけです(下の図)。</li>
+    <li>残りは、大会の実績点が2年間満額で残ること、S団体が最初から伝統点の満点(50)を持っていることから来ています。</li>
+    <li>大会の出場枠も団体の順位で決まる(5/4/3/2人)ので、上位ほど実績を稼ぎやすく、人材も下位から上位へしか流れません。</li>
+    <li>不具合も1つあります。AI団体の人気は0まで下がると、翌週に50へ戻ります(書き方の問題で、同じ形が14か所)。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 130" role="img" aria-label="S団体とA団体の評価の差約164点の内訳。実力24、伝統点など30、実績点110。">
+      <text x="0" y="18" class="t-bold">S団体とA団体の評価の差(約160点)の中身</text>
+      <rect x="20" y="36" width="72" height="36" class="f-new"/><rect x="92" y="36" width="90" height="36" class="f-gold"/><rect x="182" y="36" width="330" height="36" class="f-now"/>
+      <text x="56" y="59" text-anchor="middle" class="t-bold t-on">24</text><text x="137" y="59" text-anchor="middle" class="t-bold t-on-gold">30</text><text x="347" y="59" text-anchor="middle" class="t-bold t-on">110</text>
+      <text x="20" y="94" class="t-small t-new t-bold">選手の実力</text><text x="96" y="94" class="t-small t-gold t-bold">伝統点など</text><text x="186" y="94" class="t-small t-now t-bold">大会の実績点(2年間満額で残る)</text>
+      <text x="20" y="118" class="t-small t-muted">2シードの計測の中央値をまとめた目安</text>
+    </svg>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>まず3点だけ <small>おすすめ</small></h3>
+      <ul><li>人気が0→50に戻る不具合を直す</li><li>大会の実績点の満額期間を、その季だけにする</li><li>AI団体の人気にも、プレイヤーと同じ年次減衰を入れる</li></ul></div>
+    <div class="opt"><div class="letter">B</div><h3>さらに踏み込む</h3>
+      <p class="meta">大会の出場枠を個人の実績で配る。控えが多すぎるS団体から移籍希望が出る。AI団体にも財布を持たせ、スター世代が老いたときに自然に衰える。いずれも「抗争の器」などと一緒に設計します。</p></div>
+    <div class="opt"><div class="letter">C</div><h3>今のまま</h3></div>
+  </div>
+  <p class="why">補足: プレイヤーが1位になった後は、同じ仕組みがプレイヤーを1位に居続けさせる方向に働く、と考えられます(推定)。</p>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>まずAの3点(不具合の修正と、実績点・人気の扱いをプレイヤーと揃える)を進めてよいですか?</p></div>
+</article>
+
+<!-- K-10 -->
+<article class="card" id="k10">
+  <div class="card-head"><div class="num">K-10</div><div class="ttl">
+    <h2>ベビーフェイス×ヒールの控室の衝突</h2>
+    <div class="badges"><span class="pill sure">値は確定</span><span class="pill sim">影響の大きさは計測</span><span class="pill size">A 小</span></div>
+  </div></div>
+  <p class="oneline">同じ団体のベビーフェイスとヒールは、毎週12%の確率でぶつかって仲が大きく悪くなります。仕様は4%で、変化の幅も今の約半分です。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>2026年4月末に9%→12%へ上げられ、変化の幅も仕様の約2倍になっています。</li>
+    <li>10人のロスターならベビーフェイス×ヒールの組は約6組、16人なら約16組です。</li>
+    <li>自動プレイヤーの計測(大きいロスター)では、控室が荒れた週の97.5%が、この衝突だけで説明できました。社長には止める手がありません。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 160" role="img" aria-label="衝突の確率は仕様の週4%に対して今は12%。1回で絆が下がる幅は仕様の3〜6に対して今は6〜10。">
+      <text x="0" y="18" class="t-bold">週あたりの衝突の確率</text>
+      <text x="0" y="46" class="t-small">仕様</text><rect x="60" y="32" width="80" height="20" class="f-new"/><text x="148" y="47" class="t-small t-bold">4%</text>
+      <text x="0" y="74" class="t-small">今</text><rect x="60" y="60" width="240" height="20" class="f-now"/><text x="308" y="75" class="t-small t-bold t-now">12%</text>
+      <text x="0" y="106" class="t-bold">1回で絆が下がる幅</text>
+      <text x="0" y="132" class="t-small">仕様</text><rect x="120" y="118" width="75" height="18" class="f-new"/><text x="203" y="132" class="t-small t-bold">3〜6</text>
+      <text x="0" y="156" class="t-small">今</text><rect x="195" y="142" width="100" height="18" class="f-now"/><text x="303" y="156" class="t-small t-bold t-now">6〜10</text>
+    </svg>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>まず仕様値(週4%・変化幅半分)に戻す <small>おすすめ</small></h3></div>
+    <div class="opt"><div class="letter">B</div><h3>Aに加えて作り直す</h3>
+      <p class="meta">ぶつかった二人はまず因縁(熱)が上がる。試合で当ててもらえないと仲が悪くなり、当てて激闘すると少し戻る。社長のカードが控室の空気を動かす形です。「抗争の器」と一緒に設計します。</p></div>
+    <div class="opt"><div class="letter">C</div><h3>今のまま</h3></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>まず仕様値(週4%)に戻してよいですか?(作り直しは抗争の器のときに一緒に考えます)</p></div>
+</article>
+
+<!-- K-11 -->
+<article class="card" id="k11">
+  <div class="card-head"><div class="num">K-11</div><div class="ttl">
+    <h2>他団体の控室の出来事がポップアップで出る件</h2>
+    <div class="badges"><span class="pill sure">仕組みは確定</span><span class="pill sim">画面での見え方は未確認</span><span class="pill size">A 小</span></div>
+  </div></div>
+  <p class="oneline">関係性の出来事のポップアップが年に約67件あり、そのうち92%は他団体の選手どうしの話です。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>8/13に「関係性の変化は試合後に通知しない」と決めましたが、関係性のポップアップ(M-15〜M-24)はAI団体の出来事も積んでいて、表示する側に団体の絞り込みがありません。</li>
+    <li>社長が知りえない他団体の控室の出来事を、毎週見せていることになります。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 170" role="img" aria-label="関係性ポップアップ年約67件のうち、他団体の選手どうしの出来事が約62件で92%、自団体の出来事が約5件で8%。">
+      <circle cx="90" cy="85" r="60" class="ring-new"/>
+      <circle cx="90" cy="85" r="60" class="ring-now" stroke-dasharray="346.8 377" transform="rotate(-90 90 85)"/>
+      <text x="90" y="92" text-anchor="middle" class="t-big">92%</text>
+      <rect x="190" y="46" width="14" height="14" class="f-now"/><text x="212" y="58">他団体の選手どうしの出来事 約62件/年</text>
+      <rect x="190" y="80" width="14" height="14" class="f-new"/><text x="212" y="92">自団体の出来事 約5件/年</text>
+      <text x="190" y="128" class="t-small t-muted">合計 約67件/年(ほぼ毎週1件以上)</text>
+    </svg>
+    <figcaption>エンジン上の計測です。実際の画面にどう出ているかは、実機で見てもらえると確実です。</figcaption>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>自団体の出来事だけにする <small>おすすめ</small></h3>
+      <p class="meta">他団体の摩擦は、新聞に「他団体の控室から」として1号1本まで載せ、世界の広がりとして見せます。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>関係性のポップアップを全部やめ、道場や新聞に移す</h3></div>
+    <div class="opt"><div class="letter">C</div><h3>今のまま</h3></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>関係性のポップアップは自団体の選手だけにしてよいですか?</p></div>
+</article>
+
+<!-- K-12 -->
+<article class="card" id="k12">
+  <div class="card-head"><div class="num">K-12</div><div class="ttl">
+    <h2>不仲タッグの「能力−3」</h2>
+    <div class="badges"><span class="pill sure">コードで確定</span><span class="pill size">規模 小</span></div>
+  </div></div>
+  <p class="oneline">仲の悪い2人(絆20以下)でタッグを組むと「能力−3」と表示されますが、実際には何も起きていません。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>能力を下げる処理が、エンジンが使っていない名前(<code>power</code> など)を書き換えています。3,000試合で結果が1つも変わりませんでした。</li>
+    <li>「残り全試合スキップ」とエンジン側の経路では、関係の悪化(−1)も含めて何も適用されません。押したボタンで結果が変わります。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 120" role="img" aria-label="不仲ペアの勝率は今42.1%。表示どおり能力−3を効かせると33.9%。">
+      <text x="0" y="18" class="t-bold">不仲ペアの勝率(同格の相手)</text>
+      <text x="0" y="54">今(効いていない)</text><rect x="190" y="38" width="152" height="26" class="f-neu"/><text x="350" y="57" class="t-bold">42.1%</text>
+      <text x="0" y="98">表示どおり効かせる</text><rect x="190" y="82" width="122" height="26" class="f-now"/><text x="320" y="101" class="t-bold t-now">33.9%(−8pt)</text>
+    </svg>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>表示どおり効かせる(3つの経路で同じにする) <small>おすすめ</small></h3>
+      <p class="meta">不仲のタッグを組むかどうかが、本当の判断になります。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>表示を消す(ペナルティなし)</h3></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>不仲タッグの能力−3を、表示どおり効かせてよいですか?</p></div>
+</article>
+
+<!-- K-13 -->
+<article class="card" id="k13">
+  <div class="card-head"><div class="num">K-13</div><div class="ttl">
+    <h2>自団体とAIの怪我の起こりやすさ</h2>
+    <div class="badges"><span class="pill sure">式が別なのは確定</span><span class="pill sim">差の大きさは計測</span><span class="pill size">規模 小〜中</span></div>
+  </div></div>
+  <p class="oneline">自団体の選手は、AI団体の選手より約2倍怪我をします(重傷は約2.8倍)。計算式が別になっているためです。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>自団体は、体調・残りHP・試合の長さで決まります(1試合あたり実効約6%)。AIは一律3%(体調30未満なら8%)です。</li>
+    <li>AIと同じ式にすると、自団体の選手のピークが約+4、怪我による引退が約5分の1になるという試算があります。</li>
+    <li>8/1の方針「AI団体とプレイヤーの成長は完全に対称に」とも関わります。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 140" role="img" aria-label="1人1シーズンあたりの怪我は、自団体1.01件(軽0.48・中0.39・重0.14)、AI 0.53件(軽0.33・中0.13・重0.05)。">
+      <text x="0" y="18" class="t-bold">1人1シーズンあたりの怪我</text>
+      <text x="0" y="52">自団体</text>
+      <rect x="80" y="36" width="120" height="26" class="f-neu2"/><rect x="200" y="36" width="97.5" height="26" class="f-gold"/><rect x="297.5" y="36" width="35" height="26" class="f-now"/><text x="340" y="55" class="t-bold">1.01件</text>
+      <text x="0" y="96">AI</text>
+      <rect x="80" y="80" width="82.5" height="26" class="f-neu2"/><rect x="162.5" y="80" width="32.5" height="26" class="f-gold"/><rect x="195" y="80" width="12.5" height="26" class="f-now"/><text x="215" y="99" class="t-bold">0.53件</text>
+      <rect x="80" y="118" width="12" height="12" class="f-neu2"/><text x="98" y="129" class="t-small">軽傷</text><rect x="140" y="118" width="12" height="12" class="f-gold"/><text x="158" y="129" class="t-small">中傷</text><rect x="200" y="118" width="12" height="12" class="f-now"/><text x="218" y="129" class="t-small">重傷</text>
+    </svg>
+    <figcaption>自動プレイヤーで3本×40季を計測。</figcaption>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>AIも自団体と同じ式にする <small>おすすめ</small></h3>
+      <p class="meta">世界の条件が揃います。AI団体の怪我が増え、AIのスターが長期離脱することも起きるようになります。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>自団体をAIの式に寄せる</h3><p class="meta">自団体の怪我が減ります。</p></div>
+    <div class="opt"><div class="letter">C</div><h3>差を残し、理由を見せる</h3><p class="meta">例: 自団体の試合は攻めている、など。</p></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>怪我の起こりやすさを、AIと自団体で同じ式に揃えてよいですか?</p></div>
+</article>
+
+<!-- K-14 -->
+<article class="card" id="k14">
+  <div class="card-head"><div class="num">K-14</div><div class="ttl">
+    <h2>書いてあるのに出ていないセリフ</h2>
+    <div class="badges"><span class="pill sure">コードで確定</span><span class="pill size">規模 小</span></div>
+  </div></div>
+  <p class="oneline">書いて英訳まで済んでいるのに、どこからも呼ばれていないセリフがあります。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>セリフ</th><th>行数</th><th>出ていない理由</th><th>おすすめ</th></tr></thead>
+      <tbody>
+        <tr><td>タッグの連携セリフ(<code>DOUBLE_TEAM_LINES</code>)</td><td>148</td><td>7月末に選ぶ処理が削除され、呼び出し元が無い</td><td>タッグ観戦に出し場所があれば出す。無ければ消す</td></tr>
+        <tr><td>タッグの勝利セリフ(<code>TAG_MATCH_WIN_LINES</code>)</td><td>98</td><td>8月初めに置き換えられ、呼び出し元が無い</td><td>同上</td></tr>
+        <tr><td>道場の垣間見え GL-01</td><td>144</td><td>毎週作られるが、表示の許可リストに入っていない。しかも抽選枠を奪っている</td><td>道場の休憩中の枠に出す</td></tr>
+        <tr><td>道場の垣間見え GL-08(連敗のストレス)</td><td>21</td><td>同上</td><td>同上</td></tr>
+        <tr><td>GL-03(信頼の揺れ)・GL-09(連勝の自信)</td><td>38+16</td><td>発火の条件が壊れていて一度も出ない</td><td>不具合として直す(裁定不要)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>タッグの2表(246行)は、出し場所を作って出しますか、消しますか? GL-01・GL-08 は道場に出してよいですか?</p></div>
+</article>
+
+<!-- K-15 -->
+<article class="card" id="k15">
+  <div class="card-head"><div class="num">K-15</div><div class="ttl">
+    <h2>時間切れ引き分けを復活させるか</h2>
+    <div class="badges"><span class="pill taste">方向性</span></div>
+  </div></div>
+  <p class="oneline">今は時間切れになると、残りHPの多い方の判定勝ちになります(8/2の裁定)。</p>
+  <ul>
+    <li>時間切れは通常戦の1.5〜2.4%です。新聞の引き分け記事と、観戦の「NO CONTEST」表示は残っています。</li>
+    <li>拮抗した因縁戦・王座戦だけ時間切れ引き分け(王座は防衛)にすると、再戦のきっかけとして使えます。</li>
+  </ul>
+  <div class="opts">
+    <div class="opt"><div class="letter">A</div><h3>因縁戦・王座戦だけ引き分けにする</h3></div>
+    <div class="opt is-rec"><div class="letter">B</div><h3>今は据え置き <small>おすすめ</small></h3><p class="meta">優先度は低いです。「抗争の器」を作るときに一緒に考えます。</p></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>今は据え置きでよいですか?</p></div>
+</article>
+
+<!-- K-16 -->
+<article class="card" id="k16">
+  <div class="card-head"><div class="num">K-16</div><div class="ttl">
+    <h2>団体人気の「一発の加減算」</h2>
+    <div class="badges"><span class="pill sure">コードで確定</span><span class="pill size">規模 小</span></div>
+  </div></div>
+  <p class="oneline">興行で得る団体人気は、上位ほど伸びにくくなる(逓減)のに、対抗戦と秋の大会の結果は逓減なしで一気に加減算されます。</p>
+  <div class="sub">いま起きていること</div>
+  <ul>
+    <li>団体人気70〜85の団体が★4の興行をすると+0.22です。1シーズン(約20興行)全部★4でも約+4.4で、年次減衰は−3です。</li>
+    <li>対抗戦に勝つと+5、負けると−3。秋の4団体戦は優勝+4・準優勝+1・それ以外は−2。どれも逓減がありません。</li>
+    <li>対抗戦1回の勝ちが★4の興行23回分にあたり、シーズンの人気の行方が数週のイベントで決まります。秋の大会は、出場しただけで(準優勝以外)−2です。</li>
+  </ul>
+  <figure class="fig">
+    <svg viewBox="0 0 560 262" role="img" aria-label="団体人気70〜85の団体での増減。興行1回★4は+0.22、★5は+0.44、1シーズン全部★4で+4.4、対抗戦勝ち+5、対抗戦負け−3、秋の大会(優勝・準優勝以外)−2、年次減衰−3。">
+      <text x="0" y="18" class="t-bold">団体人気の増減(人気70〜85の団体)</text>
+      <line x1="330" y1="30" x2="330" y2="236" class="ln"/>
+      <text x="330" y="252" text-anchor="middle" class="t-small t-muted">0</text><text x="480" y="252" text-anchor="middle" class="t-small t-muted">+5</text><text x="240" y="252" text-anchor="middle" class="t-small t-muted">−3</text>
+      <text x="0" y="50" class="t-small">興行1回(★4)</text><rect x="330" y="38" width="6.6" height="18" class="f-gold"/><text x="342" y="52" class="t-small t-bold">+0.22</text>
+      <text x="0" y="78" class="t-small">興行1回(★5)</text><rect x="330" y="66" width="13.2" height="18" class="f-gold"/><text x="349" y="80" class="t-small t-bold">+0.44</text>
+      <text x="0" y="106" class="t-small">1シーズン全部★4(約20回)</text><rect x="330" y="94" width="132" height="18" class="f-gold"/><text x="468" y="108" class="t-small t-bold">+4.4</text>
+      <text x="0" y="140" class="t-small">対抗戦に勝つ(1回)</text><rect x="330" y="128" width="150" height="18" class="f-now"/><text x="486" y="142" class="t-small t-bold t-now">+5</text>
+      <text x="0" y="168" class="t-small">対抗戦に負ける(1回)</text><rect x="240" y="156" width="90" height="18" class="f-now"/><text x="234" y="170" text-anchor="end" class="t-small t-bold t-now">−3</text>
+      <text x="0" y="196" class="t-small">秋の大会(優勝・準優勝以外)</text><rect x="270" y="184" width="60" height="18" class="f-now"/><text x="264" y="198" text-anchor="end" class="t-small t-bold t-now">−2</text>
+      <text x="0" y="224" class="t-small">年次減衰(毎年)</text><rect x="240" y="212" width="90" height="18" class="f-neu"/><text x="234" y="226" text-anchor="end" class="t-small t-bold">−3</text>
+    </svg>
+    <figcaption>金色=逓減あり(興行)、赤=逓減なし(一発の加減算)。</figcaption>
+  </figure>
+  <div class="sub">選択肢</div>
+  <div class="opts">
+    <div class="opt is-rec"><div class="letter">A</div><h3>対抗戦・秋の大会の加減算も、興行と同じ逓減の式に通す <small>おすすめ</small></h3>
+      <p class="meta">秋の大会の「出場しただけで−2」はやめるか、完敗のときだけにします。</p></div>
+    <div class="opt"><div class="letter">B</div><h3>今のまま</h3></div>
+  </div>
+  <div class="ask"><div class="sub">決めてほしい質問</div><p>対抗戦と秋の大会の団体人気の加減算を、興行と同じ逓減の式に通してよいですか?</p></div>
+</article>
+
+<!-- 回答シート -->
+<section class="stack" id="sheet" aria-labelledby="sheet-title">
+  <div class="group-title">
+    <div class="eyebrow">回答シート</div>
+    <h2 id="sheet-title">選んでコピーし、チャットに貼るだけ</h2>
+  </div>
+  <form class="sheet" id="answer-form" autocomplete="off">
+    <p class="why">選んでいない項目は「保留」として出力されます。選んだ内容はこのブラウザにだけ保存されます。</p>
+    <div id="sheet-rows"></div>
+    <label for="answer-note" class="sub">ひとこと(任意)</label>
+    <textarea id="answer-note" placeholder="例: K-3 は会場を上げても特に不満はない"></textarea>
+    <div class="btns">
+      <button type="button" id="fill-rec">おすすめで埋める</button>
+      <button type="button" id="clear-all">全部クリア</button>
+      <button type="button" class="primary" id="copy-out">選んだ内容をコピー</button>
+    </div>
+    <p id="copy-status" role="status" aria-live="polite"></p>
+    <label for="answer-out" class="sub">チャットに貼る文面</label>
+    <textarea id="answer-out" readonly></textarea>
+  </form>
+</section>
+
+<footer class="stack">
+  <hr class="divider">
+  <p class="why">詳しい根拠(コードの行番号・計測の表)は、リポジトリの <code>docs/fun-audit-v0.1.md</code> と <code>docs/fun-audit-v0.1/01〜07</code> にあります。この資料は <code>docs/fun-audit-v0.1/decisions-guide.html</code> に保存しています。</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var ITEMS = [
+    {k:'K-1', q:'興行後の処理を一本化するか', opts:[['A','段階的に一本化'],['B','差分テストだけ'],['C','今のまま']], rec:'A'},
+    {k:'K-2', q:'★の効いていない3項目', opts:[['A','効かせて★を較正し直す'],['B','仕様から消す'],['C','今のまま']], rec:'A'},
+    {k:'K-3', q:'会場と団体人気', opts:[['A','お客の量を人気に反映'],['B','小会場の甘さを縮める'],['C','案内だけ直す']], rec:null},
+    {k:'K-4', q:'引退した選手の再登場', opts:[['A+B','別人扱い+襲名の一言'],['A','別人扱いのみ'],['C','今のまま']], rec:'A+B'},
+    {k:'K-5', q:'「後押し」の能力+5', opts:[['A','撤去して関係への作用に'],['B','今のまま']], rec:'A'},
+    {k:'K-6', q:'大ダメージの基準', opts:[['A','最大HPの12%以上'],['B','数字だけ上げる'],['C','今のまま']], rec:'A'},
+    {k:'K-7', q:'ニアフォールを増やす', opts:[['A','返しをつなぎ直す'],['B','今のまま']], rec:'A'},
+    {k:'K-8', q:'大会の賞金の行き先', opts:[['A','選手個人へ'],['B','世界設定の文言を直す'],['C','今のまま']], rec:'B'},
+    {k:'K-9', q:'AI団体の序列', opts:[['A','まず3点だけ'],['B','さらに踏み込む'],['C','今のまま']], rec:'A'},
+    {k:'K-10', q:'ベビーフェイス×ヒールの衝突', opts:[['A','仕様値に戻す'],['B','戻して作り直す'],['C','今のまま']], rec:'A'},
+    {k:'K-11', q:'他団体の関係性ポップアップ', opts:[['A','自団体だけにする'],['B','全部やめる'],['C','今のまま']], rec:'A'},
+    {k:'K-12', q:'不仲タッグの能力−3', opts:[['A','表示どおり効かせる'],['B','表示を消す']], rec:'A'},
+    {k:'K-13', q:'怪我の起こりやすさ', opts:[['A','AIも同じ式に'],['B','自団体をAIの式に'],['C','差を残して理由を見せる']], rec:'A'},
+    {k:'K-14', q:'出ていないセリフ', opts:[['A','出す(無理なら消す)'],['B','消す'],['C','今のまま']], rec:'A'},
+    {k:'K-15', q:'時間切れ引き分け', opts:[['A','因縁戦・王座戦だけ復活'],['B','今は据え置き']], rec:'B'},
+    {k:'K-16', q:'団体人気の一発の加減算', opts:[['A','逓減の式に通す'],['B','今のまま']], rec:'A'}
+  ];
+  var KEY = 'wm-audit-decisions-v1';
+  var rowsEl = document.getElementById('sheet-rows');
+  var outEl = document.getElementById('answer-out');
+  var noteEl = document.getElementById('answer-note');
+  var statusEl = document.getElementById('copy-status');
+
+  function slug(k){ return k.toLowerCase().replace(/[^a-z0-9]/g,''); }
+
+  ITEMS.forEach(function(it){
+    var row = document.createElement('div');
+    row.className = 'sheet-row';
+    var k = document.createElement('div'); k.className = 'k'; k.textContent = it.k;
+    var q = document.createElement('div'); q.className = 'q'; q.textContent = it.q;
+    var ch = document.createElement('div'); ch.className = 'choices';
+    it.opts.forEach(function(o){
+      var id = 'ans-' + slug(it.k) + '-' + slug(o[0]);
+      var lab = document.createElement('label'); lab.setAttribute('for', id);
+      var inp = document.createElement('input'); inp.type = 'radio'; inp.name = 'ans-' + slug(it.k); inp.id = id; inp.value = o[0];
+      lab.appendChild(inp);
+      lab.appendChild(document.createTextNode(o[0] + ' ' + o[1]));
+      if (it.rec === o[0]) { var m = document.createElement('span'); m.className = 'recmark'; m.textContent = 'おすすめ'; lab.appendChild(m); }
+      ch.appendChild(lab);
+    });
+    if (!it.rec) { var n = document.createElement('span'); n.className = 'recmark'; n.textContent = '体感で選んでください'; ch.appendChild(n); }
+    row.appendChild(k); row.appendChild(q); row.appendChild(ch);
+    rowsEl.appendChild(row);
+  });
+
+  function current(){
+    var res = {};
+    ITEMS.forEach(function(it){
+      var sel = document.querySelector('input[name="ans-' + slug(it.k) + '"]:checked');
+      res[it.k] = sel ? sel.value : null;
+    });
+    return res;
+  }
+  function render(){
+    var res = current();
+    var lines = ['面白さ総点検 裁定'];
+    ITEMS.forEach(function(it){
+      var v = res[it.k];
+      if (!v) { lines.push(it.k + ': 保留'); return; }
+      var label = '';
+      it.opts.forEach(function(o){ if (o[0] === v) label = o[1]; });
+      lines.push(it.k + ': ' + v + '(' + label + ')');
+    });
+    var note = (noteEl.value || '').trim();
+    if (note) { lines.push(''); lines.push('ひとこと: ' + note); }
+    outEl.value = lines.join('\n');
+  }
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify({ answers: current(), note: noteEl.value || '' })); } catch (e) {}
+  }
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      Object.keys(data.answers || {}).forEach(function(k){
+        var v = data.answers[k];
+        if (!v) return;
+        var el = document.getElementById('ans-' + slug(k) + '-' + slug(v));
+        if (el) el.checked = true;
+      });
+      if (typeof data.note === 'string') noteEl.value = data.note;
+    } catch (e) {}
+  }
+  document.getElementById('answer-form').addEventListener('change', function(){ render(); save(); });
+  noteEl.addEventListener('input', function(){ render(); save(); });
+  document.getElementById('fill-rec').addEventListener('click', function(){
+    ITEMS.forEach(function(it){
+      if (!it.rec) return;
+      var el = document.getElementById('ans-' + slug(it.k) + '-' + slug(it.rec));
+      if (el) el.checked = true;
+    });
+    render(); save();
+    statusEl.textContent = 'おすすめで埋めました。K-3 は体感で選んでください。';
+  });
+  document.getElementById('clear-all').addEventListener('click', function(){
+    Array.prototype.forEach.call(document.querySelectorAll('#sheet-rows input'), function(el){ el.checked = false; });
+    noteEl.value = '';
+    render(); save();
+    statusEl.textContent = 'クリアしました。';
+  });
+  document.getElementById('copy-out').addEventListener('click', function(){
+    render();
+    var text = outEl.value;
+    function fallback(){ outEl.focus(); outEl.select(); statusEl.textContent = '文面を選択しました。Ctrl+C(スマホは長押し)でコピーしてください。'; }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ statusEl.textContent = 'コピーしました。チャットに貼ってください。'; }, fallback);
+      } else { fallback(); }
+    } catch (e) { fallback(); }
+  });
+  load();
+  render();
+})();
+</script>
