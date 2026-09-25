@@ -1921,7 +1921,7 @@ dialogue-ledger 16,674 は不触)。**#8(絆/因縁レベルラベル)は消費�
 | プール | 完成文の行き先 | 配線 |
 |---|---|---|
 | キャリア年表(`Engine.milestone.get`) | **焼かれない**(表示のたびに`careerRecord.history`から組み直す) | `get(G, id, dict)` の**dict-opts**だけ(§22-1と同じ族) |
-| 殿堂ハイライト(`Engine.awards.buildCareerHighlights`) | **焼かれる**(`G.allHallOfFame[].careerHighlights[].text`) | 保存は従来どおりdict無し。表示点で**JA再生成→保存値と1バイト照合→一致時だけdict版**(§18-1の語り文と同型) |
+| 殿堂ハイライト(`Engine.awards.buildCareerHighlights`) | **焼かれる**(`G.allHallOfFame[].careerHighlights[].text`) | 保存は従来どおりdict無し。表示点で**JA再生成→保存値と1バイト照合→一致時だけdict版**(§18-1の語り文と同型)。**2026-09-25 変更**: 実績欄の生成を直した(天頂戦・4団体戦・PPV優勝・開眼の追加、「○○王座王座」の解消)ので、照合のままだと修正前の殿堂入り選手が古い保存値へ戻る。エントリの `careerRecord` がある限り**再生成版(dict付き)を正**とし、保存値は素材の無い旧エントリ(と再生成が空になる場合)だけに使う |
 | 成長ログのラベル(`growthLog[].detail`/`.eventTag`) | **焼かれる**が、値が**そのまま辞書キー**になる1語ラベル | 表示点で値を`t()`で1回引く(§17-2の異名と同型) |
 | ドラフト交渉ナレーション(`negState.narration`) | **焼かれる**+選出が消費済み乱数依存で再生成不可 | **追加フィールド**`narrationTpl`/`narrationVars`(§14-3/§16-1と同型) |
 | 季総括の仮文(`Engine.seasonReview.build`) | 焼かれない | 既存の`_line`(=dict)へ通すだけ |
