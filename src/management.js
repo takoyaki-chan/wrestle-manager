@@ -13905,6 +13905,12 @@ const Engine = {
         week: state.week, season: state.season, type: 'invariant_violation', message: msg, timestamp: Date.now(),
       }] };
     }
+    // 呼び名(specs/call-name-spec-v1.0.md): 下の名前で呼ぶ記録を週の入口でも更新する。
+    // 興行など tickWeek の外で絆が85へ届いた方向を、週内の減衰で85を割る前に拾うため(末尾でもう一度更新)。
+    // 絆・乱数には触れない。入力の state は書き換えず、変化があれば新しい state を返す
+    if (Engine.relationships && typeof Engine.relationships.updateGivenNameCalls === 'function') {
+      state = Engine.relationships.updateGivenNameCalls(state);
+    }
     // ★ 成長マイルストーン: 比較の基準点（tickWeek末尾で前後比較に使用）。
     // 前回の検出時の値が使えればそれ(=興行など tickWeek の外で入った伸びも含む)、無ければ冒頭の値
     const _milestoneSnapshot = Engine.growthMilestone.baselineFor(state);
@@ -14684,6 +14690,12 @@ const Engine = {
     if (Engine.relationships && Engine.relationships.flags
         && typeof Engine.relationships.flags.gateModalQueue === 'function') {
       s = Engine.relationships.flags.gateModalQueue(s);
+    }
+
+    // 呼び名(specs/call-name-spec-v1.0.md): 週の関係値の変化が出揃った後で、下の名前で呼ぶ記録を更新する
+    // (絆≥85 で記録、絆<50 で消す)。絆・乱数には触れない
+    if (Engine.relationships && typeof Engine.relationships.updateGivenNameCalls === 'function') {
+      s = Engine.relationships.updateGivenNameCalls(s);
     }
 
     // 浮動小数点サニタイズ: 蓄積する計算誤差を除去（tickWeek統合パイプライン末尾）
@@ -25309,6 +25321,18 @@ Engine.eventSystem = {
         name: vars.name || '', name1: vars.name1 || '', name2: vars.name2 || '',
         orgName: vars.orgName || '', outletName: vars.outletName || '', coach: vars.coach || '',
       };
+      // 呼び名(2026-09-25 / specs/call-name-spec-v1.0.md): 「」の中(コーチの報告・ファンの声)にだけ
+      // 現れる選手名は、話し手が選手との絆を持たないので名字。地の文・見出しの地の部分はフルネームのまま。
+      // 名字(JA)は名前辞書にあるので、EN では dict(=WM_I18N.t)の値変換で英語の名字になる
+      const R = (typeof Engine !== 'undefined') ? Engine.relationships : null;
+      if (R && typeof R.speechOnlyPlaceholders === 'function' && typeof R.callName === 'function') {
+        const speechOnly = R.speechOnlyPlaceholders(String(s));
+        ['name', 'name1', 'name2'].forEach(k => {
+          if (!speechOnly.has(k) || !filled[k]) return;
+          const cn = R.callName(null, null, filled[k]);
+          if (cn && cn.surname) filled[k] = cn.surname;
+        });
+      }
       return _wmFillWithDict(dict, s, filled);
     };
     if (typeof tmpl === 'string') return { text: sub(tmpl), detail: '' };
@@ -26704,6 +26728,30 @@ Engine.validateGameState = function(G) {
     }
   }
 
+  // ── 呼び名の記録(givenNameCalls)の参照整合性(specs/call-name-spec-v1.0.md §3) ──
+  // キーは '話し手id>相手id'(関係値と同じ形・方向あり)、値は true だけ。両者ともマスターデータの選手で、
+  // 自分自身への記録は無い。絆<50 の記録は tickWeek が週次で消すので、ここでは絆の値までは見ない
+  // (季末処理などで週の途中に絆が動いても誤検知しないため)。旧セーブで表が無いのは正常。
+  // 警告文は開発者向けのデバッグログなので英語(src に生の日本語文字列を増やさない — i18n-ratchet)。
+  if (G.givenNameCalls !== undefined) {
+    const gnc = G.givenNameCalls;
+    if (!gnc || typeof gnc !== 'object' || Array.isArray(gnc)) {
+      warn(`givenNameCalls is not an object: ${Array.isArray(gnc) ? 'array' : typeof gnc}`);
+    } else {
+      Object.keys(gnc).forEach(key => {
+        const m = /^(\d+)>(\d+)$/.exec(key);
+        if (!m) { warn(`givenNameCalls key "${key}" is not 'speakerId>targetId'`); return; }
+        const a = Number(m[1]);
+        const b = Number(m[2]);
+        if (a === b) warn(`givenNameCalls "${key}" points to the speaker herself`);
+        if (allCharIds && (!allCharIds.has(a) || !allCharIds.has(b))) {
+          warn(`givenNameCalls "${key}" refers to a fighter missing from ALL_CHARS`);
+        }
+        if (gnc[key] !== true) warn(`givenNameCalls "${key}" value is not true: ${gnc[key]}`);
+      });
+    }
+  }
+
   // ── 社長室(決裁枠)関連 ──
   if (G.decisionPoints !== undefined) {
     if (!isValidNum(G.decisionPoints)) {
@@ -27429,8 +27477,17 @@ Engine.contract = {
     text = text.replace(/\{wins\}/g, String(context.wins || 0));
     text = text.replace(/\{losses\}/g, String(context.losses || 0));
     text = text.replace(/\{n\}/g, String(context.tenureSeasons || 1));
-    text = text.replace(/\{rivalName\}/g, context.rivalName || '');
+    text = text.replace(/\{rivalName\}/g, Engine.contract._rivalLabel(context));
     return text;
+  },
+
+  // 呼び名(2026-09-25 / specs/call-name-spec-v1.0.md): セリフの中でライバルを呼ぶ名前。
+  // 表示側が context.rivalCallName(表示言語の呼び名 = 名字、絆 devoted なら下の名前)を渡したときはそれ、
+  // 渡さない呼び出し(auto-sim・開発ツール)は保存値 rivalName(フルネーム)のまま。保存値は変えない
+  _rivalLabel(ctx) {
+    if (!ctx) return '';
+    if (ctx.rivalCallName != null && ctx.rivalCallName !== '') return String(ctx.rivalCallName);
+    return ctx.rivalName || '';
   },
 
   // §13.5: P-自発的残留セリフ取得
@@ -27481,7 +27538,7 @@ Engine.contract = {
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{rivalry\}/g, '');
     const r = CONTRACT_NEGOTIATION_LINES.rivalry;
     const insert = ctx.rivalName
-      ? Engine.contract._toneFragment(r.has_rival, fighter, dict).replace(/\{rivalName\}/g, ctx.rivalName)
+      ? Engine.contract._toneFragment(r.has_rival, fighter, dict).replace(/\{rivalName\}/g, Engine.contract._rivalLabel(ctx))
       : Engine.contract._toneFragment(r.no_rival, fighter, dict);
     return text.replace(/\{rivalry\}/g, insert);
   },

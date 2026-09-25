@@ -4751,6 +4751,204 @@ Engine.relationships.personalityCompatibility = function(a, b) {
   return pAdj + aAdj;
 };
 
+// ══════════════════════════════════════════════════════════
+//  呼び名 — セリフで相手を呼ぶときの名前(2026-09-25 Keisuke 裁定 / specs/call-name-spec-v1.0.md)
+//  ・セリフの中で他の人物を呼ぶ・名指しするときはフルネームを入れない。基本は名字。
+//  ・話し手→相手の絆(方向あり)が devoted(85以上。getBondBand と同じ閾値)に届いたら下の名前。
+//  ・一度下の名前にしたら、その方向の絆が50未満に冷えるまで名字に戻さない(85前後で往復させない)。
+//    判定 = 絆≥85、または(記録あり かつ 絆≥50)。記録は state.givenNameCalls = { '話し手id>相手id': true }。
+//  ・コーチ→選手は常に名字(コーチは選手との絆を持たない=話し手idを渡さなければ名字)。
+//  ・敬称(さん・先輩・様…)はセリフ側に書いてあるものをそのまま使う。ここは名前の部分だけを返す。
+//  Engine は WM_I18N に触れない(i18n 構造規約1)。返すのは JA の呼び名と、表示側が EN を引くための
+//  フルネーム JA と形(form)。EN の呼び名は表示側(ui-common.js callNameText)が名前辞書から作る。
+// ══════════════════════════════════════════════════════════
+Engine.relationships.CALL_NAME = {
+  givenEnter: 85, // 下の名前に切り替わる絆(= getBondBand の devoted 下限)
+  givenKeep: 50,  // 一度切り替えたら、この値未満に冷えるまで名字に戻さない
+};
+
+// 名前の区切り(半角空白・全角空白 U+3000・中黒 U+30FB)。生の日本語文字列を増やさないよう
+// 文字コードから組み立てる(i18n-ratchet)。
+Engine.relationships._CALL_NAME_SEP_CLASS = '[\\s' + String.fromCharCode(0x3000, 0x30FB) + ']';
+Engine.relationships._CALL_NAME_SEP_RE = new RegExp(Engine.relationships._CALL_NAME_SEP_CLASS + '+');
+Engine.relationships._CALL_NAME_SEP_TAIL_RE = new RegExp(Engine.relationships._CALL_NAME_SEP_CLASS + '$');
+Engine.relationships._CALL_NAME_SEP_EDGE_RE = new RegExp(
+  '^' + Engine.relationships._CALL_NAME_SEP_CLASS + '+|' + Engine.relationships._CALL_NAME_SEP_CLASS + '+$', 'g');
+
+// フルネームと名字から下の名前を導く。下の名前へ切り替えない相手(リングネーム等)は null。
+//   名字が先頭 → 残り(空白入りの「清川 怜」も可)
+//   名字が末尾 → 区切りの前の最初の語(「レオナ・O・シュタインフェルト」→レオナ、「リナ・モーガン」→リナ)。
+//                区切りが無い(「クラッシャー毒島」= リングネーム)なら null = 常に名字
+Engine.relationships._deriveGivenName = function(full, surname) {
+  const R = Engine.relationships;
+  if (typeof full !== 'string' || !full || typeof surname !== 'string' || !surname) return null;
+  if (full === surname) return null;
+  if (full.indexOf(surname) === 0) {
+    const rest = full.slice(surname.length).replace(R._CALL_NAME_SEP_EDGE_RE, '');
+    return rest || null;
+  }
+  if (full.length > surname.length && full.slice(full.length - surname.length) === surname) {
+    const prefix = full.slice(0, full.length - surname.length);
+    if (!R._CALL_NAME_SEP_TAIL_RE.test(prefix)) return null;
+    const first = prefix.split(R._CALL_NAME_SEP_RE).filter(Boolean)[0];
+    return first || null;
+  }
+  return null;
+};
+
+// id → { id, full, surname, given } の索引(ALL_CHARS は固定キャストなので1回だけ作る。件数が変わったら作り直す)
+Engine.relationships._callNameIndexCache = null;
+Engine.relationships._callNameIndex = function() {
+  const R = Engine.relationships;
+  const chars = (typeof ALL_CHARS !== 'undefined' && Array.isArray(ALL_CHARS)) ? ALL_CHARS : [];
+  const cache = R._callNameIndexCache;
+  if (cache && cache.source === chars && cache.size === chars.length) return cache;
+  const byId = new Map();
+  const byName = new Map();
+  chars.forEach(c => {
+    if (!c || c.id == null || !c.name) return;
+    const surname = c.surname || c.name;
+    const entry = { id: c.id, full: c.name, surname, given: R._deriveGivenName(c.name, surname) };
+    byId.set(c.id, entry);
+    byName.set(c.name, entry);
+  });
+  R._callNameIndexCache = { source: chars, size: chars.length, byId, byName };
+  return R._callNameIndexCache;
+};
+
+// 相手の名前の部品。target = 選手id / 選手オブジェクト({id,name,surname?}) / フルネーム文字列 / コーチ。
+// 引退・休眠・FA・他団体でも ALL_CHARS から引ける。ALL_CHARS に無い人物(コーチ・乱入の臨時選手等)は
+// オブジェクトの surname、無ければ名前の最初の語(コーチは「姓 名」の空白区切り)を名字にする。
+Engine.relationships.callNameParts = function(target) {
+  if (target == null) return null;
+  const idx = Engine.relationships._callNameIndex();
+  let obj = null;
+  let hit = null;
+  if (typeof target === 'number') {
+    hit = idx.byId.get(target) || null;
+  } else if (typeof target === 'string') {
+    hit = idx.byName.get(target) || null;
+    if (!hit) obj = { name: target };
+  } else if (typeof target === 'object') {
+    hit = (target.id != null && idx.byId.get(target.id)) || null;
+    if (hit && target.name && target.name !== hit.full) {
+      // id が ALL_CHARS の別人を指す臨時オブジェクト(名前が違う)は、オブジェクト側の名前を正とし、
+      // 別人の関係値を引かないよう id は持たせない(= 常に名字)
+      hit = null;
+      obj = { name: target.name, surname: target.surname, id: null };
+    } else if (!hit) {
+      obj = target;
+    }
+  }
+  if (hit) return { id: hit.id, full: hit.full, surname: hit.surname, given: hit.given };
+  const full = obj && typeof obj.name === 'string' ? obj.name : '';
+  if (!full) return null;
+  const surname = (typeof obj.surname === 'string' && obj.surname)
+    || (full.split(Engine.relationships._CALL_NAME_SEP_RE).filter(Boolean)[0] || full);
+  return {
+    id: obj.id != null ? obj.id : null,
+    full,
+    surname,
+    given: Engine.relationships._deriveGivenName(full, surname),
+  };
+};
+
+// 呼び名の判定(純関数)。speakerId が null(コーチ・地の文の語り手など絆を持たない話し手)なら常に名字。
+// 戻り値: { form: 'surname'|'given', ja: 呼び名(JA), full: フルネーム(JA), surname, given, id } / 相手不明なら null
+Engine.relationships.callName = function(state, speakerId, target) {
+  const parts = Engine.relationships.callNameParts(target);
+  if (!parts) return null;
+  const cfg = Engine.relationships.CALL_NAME;
+  if (typeof speakerId === 'string' && /^\d+$/.test(speakerId)) speakerId = Number(speakerId);
+  let useGiven = false;
+  if (parts.given && speakerId != null && parts.id != null && speakerId !== parts.id) {
+    const key = `${speakerId}>${parts.id}`;
+    const rel = state && state.relationships ? state.relationships[key] : null;
+    const bond = rel && typeof rel.bond === 'number' && isFinite(rel.bond) ? rel.bond : null;
+    const calls = state ? state.givenNameCalls : null;
+    const recorded = !!(calls && typeof calls === 'object' && calls[key] === true);
+    // 関係値が消えた方向(引退で関係値ごと片付けられた相手など)は、絆が冷えたわけではないので記録どおり。
+    // 記録の無い方向で関係値も無ければ名字
+    useGiven = bond == null ? recorded : (bond >= cfg.givenEnter || (recorded && bond >= cfg.givenKeep));
+  }
+  return {
+    form: useGiven ? 'given' : 'surname',
+    ja: useGiven ? parts.given : parts.surname,
+    full: parts.full,
+    surname: parts.surname,
+    given: parts.given,
+    id: parts.id,
+  };
+};
+
+// 地の文の中にかぎ括弧で引用されたセリフ(通知のコーチの報告など)用: テンプレ(JA原文)の中で
+// 「」の内側にだけ現れるプレースホルダ名の集合。外側にも現れるものは含めない(地の文はフルネームのまま)。
+// 言語に依らず JA 原文で判定する(EN の訳文は引用符の形が違うため)
+Engine.relationships.speechOnlyPlaceholders = function(tpl) {
+  const out = new Set();
+  if (typeof tpl !== 'string' || tpl.indexOf('{') < 0) return out;
+  const open = String.fromCharCode(0x300C);
+  const close = String.fromCharCode(0x300D);
+  const outside = new Set();
+  let depth = 0;
+  const re = new RegExp(open + '|' + close + '|\\{([A-Za-z_][A-Za-z0-9_]*)(?::[A-Za-z_][A-Za-z0-9_]*)?\\}', 'g');
+  let m;
+  while ((m = re.exec(tpl))) {
+    if (m[0] === open) depth++;
+    else if (m[0] === close) depth = Math.max(0, depth - 1);
+    else if (depth > 0) out.add(m[1]);
+    else outside.add(m[1]);
+  }
+  outside.forEach(k => out.delete(k));
+  return out;
+};
+
+// 週次(tickWeek)の記録更新。絆≥85 の方向を記録し、絆<50 の方向・下の名前を持たない相手の記録を消す。
+// 関係値ごと消えた方向(引退の片付け等)の記録は残す(絆が冷えたわけではない。callName も記録どおり下の名前)。
+// 変化が無ければ同じ state を返す(旧セーブで表が無ければ、記録が1件できるまで表は作らない)。
+// 入力の state / 表は書き換えない(結果画面の先読み tickWeek と配列を共有していても副作用を出さない)。
+Engine.relationships.updateGivenNameCalls = function(state) {
+  if (!state || !state.relationships || typeof state.relationships !== 'object') return state;
+  const cfg = Engine.relationships.CALL_NAME;
+  const rels = state.relationships;
+  const raw = state.givenNameCalls;
+  const prev = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : null;
+  const idx = Engine.relationships._callNameIndex();
+  const targetHasGiven = key => {
+    const sep = key.indexOf('>');
+    if (sep <= 0) return false;
+    const a = Number(key.slice(0, sep));
+    const b = Number(key.slice(sep + 1));
+    if (!Number.isInteger(a) || !Number.isInteger(b) || a === b) return false;
+    const entry = idx.byId.get(b);
+    return !!(entry && entry.given);
+  };
+  let next = null;
+  if (raw !== undefined && raw !== null && !prev) next = {}; // 壊れた型は空の表に直す
+  if (prev) {
+    Object.keys(prev).forEach(key => {
+      const rel = rels[key];
+      const bond = rel && typeof rel.bond === 'number' && isFinite(rel.bond) ? rel.bond : null;
+      const keep = prev[key] === true && targetHasGiven(key) && (bond == null || bond >= cfg.givenKeep);
+      if (!keep) {
+        if (!next) next = { ...prev };
+        delete next[key];
+      }
+    });
+  }
+  Object.keys(rels).forEach(key => {
+    const rel = rels[key];
+    if (!rel || typeof rel.bond !== 'number' || !(rel.bond >= cfg.givenEnter)) return;
+    const cur = next || prev;
+    if (cur && cur[key] === true) return;
+    if (!targetHasGiven(key)) return;
+    if (!next) next = { ...(prev || {}) };
+    next[key] = true;
+  });
+  if (!next) return state;
+  return { ...state, givenNameCalls: next };
+};
+
 // ── Engine.h2h: ペア別対戦履歴 ──────────────────────────
 Engine.h2h = {
   getKey(id1, id2) {
