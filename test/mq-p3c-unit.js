@@ -175,6 +175,10 @@ function fighter(id, overrides = {}) {
 {
   function buildShowState(venueIdx) {
     const base = Engine.createInitialState(12345, true);
+    // executeShow は通常興行を開ける週でしか動かない(2026-08-03 の週ガード)。初期状態の週は
+    // 興行週とは限らないので、季節の特別興行週を除いた最初の興行週で開く
+    let showWeek = 1;
+    while (showWeek < 48 && (!Engine.util.isShowWeek(showWeek) || Engine.util.isSeasonSpecialEventWeek(showWeek))) showWeek++;
     const roster = [
       fighter(9001, { name: 'MainA', pw: 80, sp: 80, te: 80, st: 80, mn: 80 }),
       fighter(9002, { name: 'MainB', pw: 80, sp: 80, te: 80, st: 80, mn: 80 }),
@@ -183,6 +187,7 @@ function fighter(id, overrides = {}) {
     ];
     return {
       ...base,
+      week: showWeek,
       roster,
       showVenue: venueIdx,
       showCard: [
