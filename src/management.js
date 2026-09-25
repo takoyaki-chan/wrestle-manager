@@ -15204,6 +15204,18 @@ const Engine = {
       return { roster: out, popEvents };
     },
 
+    // 試合に出た選手のプロモ蓄積(promoStack)を0に戻す(K-1 4-B-5 / K1-E01。プロモ改修 v1.0)。
+    // 蓄積は「次の試合の前に煽っておいた分」なので、試合で使い切る。0〜3 の蓄積は興行週の行動
+    // (「バランス」方針は蓄積が3未満ならプロモ、3ならば練習)と集客の加点(SHOW_DRAW_CONFIG.promoStackPerMatch)が読む。
+    // 以前の実プレイはリセットせず、出場選手の蓄積が3で止まって「バランス」の選手が季初の3興行以降は練習ばかりになっていた。
+    // 出場者はシングルが左右、タッグが perFighter の4人(乱入選手も含む。一時的な選手は興行後に外れる)。戻り値: 新しいロスター
+    resetPromoStacks(roster, results) {
+      const participantIds = new Set(results.flatMap(r =>
+        r.matchType === 'tag' ? Object.keys(r.perFighter).map(Number) : [r.left.id, r.right.id]
+      ));
+      return roster.map(c => participantIds.has(c.id) ? { ...c, promoStack: 0 } : c);
+    },
+
     // 派閥抗争ポイント・派閥内ポイントの試合ごとの加点(K-1 4-B-2 / K1-E05。
     // specs/faction-rivalry-points-spec-v0.1.md §2、faction-internal-rank-spec-v0.2.md §3.2/§3.3)。
     // 勝者の派閥に加点する。タッグはチーム代表(fighter1)。引き分けは加点なし。F09(_f09Locked)は ×1.8・週の上限なし。
@@ -15882,10 +15894,8 @@ const Engine = {
     events.push(`📊 ★${showStars} (平均試合評価 ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100}${venueSmallNote ? ' (会場が人気に対して小さく、伸びは控えめ)' : ''} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // プロモ改修 v1.0: 試合出場選手の promoStack をリセット
-    const matchParticipantIds = new Set(results.flatMap(r =>
-      r.matchType === 'tag' ? Object.keys(r.perFighter).map(Number) : [r.left.id, r.right.id]
-    ));
-    roster = roster.map(c => matchParticipantIds.has(c.id) ? { ...c, promoStack: 0 } : c);
+    // K-1 4-B-5(K1-E01): 実プレイ(app.js)と同じ Engine.show.resetPromoStacks を通す
+    roster = Engine.show.resetPromoStacks(roster, results);
 
     // Heat (immutable) — ★ベース
     const oldHeat = Engine.heat.getLevel(s);

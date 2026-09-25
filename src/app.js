@@ -8280,6 +8280,11 @@ const App = {
     // K-3: 会場の器で伸びが控えめになった回は、理由を一言添えた別の型で残す(数値は出さない)
     events.push({ type: venueSmallNote ? 'show_rating_org_pop_update_small_venue' : 'show_rating_org_pop_update', data: { stars: appStars, avgMQ, popDelta: `${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100}`, curOrgPop: Engine.util.dispOrgPop(popResult.orgPop) }, s: s.season, w: s.week });
 
+    // プロモ改修 v1.0: 試合に出た選手のプロモ蓄積を0に戻す — K-1 4-B-5(K1-E01)
+    // エンジンの executeShow と同じ Engine.show.resetPromoStacks を通す。以前の実プレイはリセットせず、
+    // 出場選手の蓄積が3で止まり、「バランス」方針の選手が季初の3興行以降は興行週に練習ばかりしていた
+    roster = Engine.show.resetPromoStacks(roster, results);
+
     // Heat — ★ベース
     const oldHeat = Engine.heat.getLevel(s);
     const newHeatScore = Engine.heat.calcUpdate(s, appStars);

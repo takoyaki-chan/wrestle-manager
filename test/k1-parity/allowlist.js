@@ -172,16 +172,12 @@ module.exports = [
   },
 
   // ════════════════ 全シナリオ共通(毎回出る差) ════════════════
-  {
-    id: 'K1-E01', title: '出場選手のプロモ蓄積(promoStack)リセット',
-    category: 'processing', side: 'engine', impact: '数値', checkpoints: ['A', 'B'],
-    patterns: ['roster[*].promoStack'], sides: { A: ['engOnly'] },
-    mustAppear: true, refs: 'management.js:15048-15052 / app.js なし',
-    note: 'B では週次の行動がプロモ(エンジン)と練習(実プレイ)に分かれ、収入・人気・コンディション・乱数(tickMain)の消費まで変わる(K1-B01〜B05)。',
-  },
+  // K1-E01(出場選手のプロモ蓄積 promoStack のリセットが実プレイに無い)は K-1 第4段 4-B-5 で解消したので外した
+  // (2026-09-26)。両経路が Engine.show.resetPromoStacks を通す。これで B の週次の行動(プロモ/練習)・収入・人気の差と、
+  // それを起点にした共有乱数のずれ(K1-B04)も多くのシナリオで消えた。以後この場所に差が出ると「未登録」で落ちる。
   // K1-E02(試合成長の式。実プレイに年齢倍率・関係性倍率が無く、タッグの相手は強い方)は K-1 第4段 4-B-4 で
   // 解消したので外した(2026-09-26)。両経路が Engine.show.applyMatchGrowth を通す(タッグの相手は2人の平均=裁定)。
-  // tickWeek 後(B)の能力の差は週次の練習/プロモの差(K1-E01)の波及で、K1-B06 に数える。
+  // tickWeek 後(B)に残る能力の差は、実プレイだけの処理(K1-A01 の信頼ボーナスなど)の波及で、K1-B06 に数える。
   {
     id: 'K1-A01', title: 'キャリア最高評価(careerBestMQ)の更新と信頼ボーナス(+1.2)',
     category: 'processing', side: 'app', impact: '数値', checkpoints: ['A', 'B'],
@@ -236,9 +232,9 @@ module.exports = [
 
   // ════════════════ tickWeek を通った波及(B) ════════════════
   {
-    id: 'K1-B01', title: 'お金(週次収支)— 主にプロモ収入の差(K1-E01)と引退/退団者の給与',
+    id: 'K1-B01', title: 'お金(週次収支)— 引退/退団者の給与・乱入・密着取材などの波及(プロモ収入の差 K1-E01 は第4段 4-B-5 で解消)',
     category: 'propagation', side: 'both', impact: '数値', checkpoints: ['B'],
-    patterns: ['funds', 'weeklyFinance.*', 'weeklyFinance.**'], mustAppear: false, refs: 'K1-E01 / K1-E03 / K1-E04 / K1-A09 の波及',
+    patterns: ['funds', 'weeklyFinance.*', 'weeklyFinance.**'], mustAppear: false, refs: 'K1-E03 / K1-E04 / K1-A09 / K1-A14 / K1-A11 の波及',
   },
   {
     id: 'K1-B02', title: 'ロッカールーム士気',
@@ -252,7 +248,7 @@ module.exports = [
     refs: 'what-if 実験: 実プレイの tickWeek 入力で promoStack と careerBestMQ/_trustBonus をエンジン側に揃えると消える。AI側の処理(乱数 0xA101〜3・0xAC01 の引き数)は両経路で同じ',
   },
   {
-    id: 'K1-B04', title: '関係値・因縁帯の週次変動の差(プロモ差 K1-E01 を起点にした共有乱数のずれ+入力の差)',
+    id: 'K1-B04', title: '関係値・因縁帯の週次変動の差(上流の差を起点にした共有乱数のずれ+入力の差。プロモ差 K1-E01 起点の分は 4-B-5 で消えた)',
     category: 'rng', side: 'both', impact: '数値', checkpoints: ['B'],
     patterns: ['relationships.*', 'relationships.*.bond', 'relationships.*.rivalry', 'rivalries.*.lastBand', 'popOvertakeTriggered.*'],
     mustAppear: false,
@@ -269,7 +265,7 @@ module.exports = [
     id: 'K1-B06', title: '自団体選手の週次状態の波及(練習/プロモ/休養・コンディション・人気・信頼・警告デバフ など)',
     category: 'propagation', side: 'both', impact: '数値', checkpoints: ['B'],
     // _milestoneBaseline: 成長の節目の比較基準(2026-09-25 通知・ログの修正で新設)。週末のロスターの写しなので同じ波及を受ける
-    patterns: ['roster[*].*', 'roster[*].*.*', '_milestoneBaseline.**', '_milestoneQueue'], mustAppear: false, refs: 'K1-E01・K1-A01・K1-E02 などの波及',
+    patterns: ['roster[*].*', 'roster[*].*.*', '_milestoneBaseline.**', '_milestoneQueue'], mustAppear: false, refs: 'K1-A01・K1-A02 などの波及(K1-E01・K1-E02 は第4段で解消)',
   },
 
   // ════════════════ 実プレイだけの週送り前処理(C: closeShowResult の後半) ════════════════
