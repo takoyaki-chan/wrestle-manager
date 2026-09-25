@@ -10195,8 +10195,12 @@ function _factionPickReporter(state) {
 // 相手との絆を持つ人。コーチは選手との絆を持たないので null(=常に名字)、古参選手ならその選手。
 // _factionPickReporter は週で決まるので、_factionReporterStrip と同じ人が返る
 function _factionReporterSpeaker(state) {
-  const pick = _factionPickReporter(state);
-  return (pick && pick.kind === 'veteran') ? pick.ref : null;
+  try {
+    const pick = _factionPickReporter(state);
+    return (pick && pick.kind === 'veteran') ? pick.ref : null;
+  } catch (_e) {
+    return null; // 取次が決められないときはコーチ扱い(=名字)。セリフの表示を止めない
+  }
 }
 // P6-5配線修正: lineTranslated=trueのとき、既にt()済みの文(F07のgetF07Line coachReport等、
 // {name}をテンプレへ埋め込む都合で呼び出し元が先に翻訳したもの)として二重t()を避ける。

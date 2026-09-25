@@ -217,7 +217,9 @@ const WM_I18N_STUB = { t(text, params) {
     'Engine', 'document', '_isPopupActive', '_popupQueue', 'getUpperUrl', '_u3bOrgBadgeHtml',
     'portraitImg', 'escHtml', '_mdlAHeader', '_mdlASeasonLabel', '_mdlAReporterStrip',
     '_mdlAOpen', '_mdlAClose', 'setTimeout', 'clearTimeout', 'Audio', 'WM_I18N',
-    `${functionSource(ui, 'showUnifiedTitleChallengeModal')}; return showUnifiedTitleChallengeModal;`
+    // 呼び名(2026-09-25): 取次の文は callNameText / _factionReporterSpeaker を通す(スタブの Engine では名字化せず fail-open)
+    `${functionSource(ui, 'callNameText')}; ${functionSource(ui, '_factionReporterSpeaker')};
+     ${functionSource(ui, 'showUnifiedTitleChallengeModal')}; return showUnifiedTitleChallengeModal;`
   );
   const show = build(Engine, document, () => false, [], () => '', () => '', () => '<img>', String,
     () => '', () => '', () => '', () => true, () => {},
