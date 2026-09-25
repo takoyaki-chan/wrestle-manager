@@ -8233,29 +8233,15 @@ const App = {
     });
     App._pendingRivalryResolutions = rivalryResolutions;
 
-    // MQ popularity (タッグ: 4人に分配)
+    // MQ popularity — K-1 4-B-1(K1-F01): エンジンの executeShow と同じ Engine.show.applyMatchPopularity を通す。
+    // 以前はタッグで左右に同じ選手を入れて applyMQPopularity を呼んでいたため、負けたチームも勝者扱い
+    // (勝ちの人気ボーナス・連敗リセット・直近の結果が「勝ち」)になっていた。
+    // 人気の増減の知らせ(popEvents)は従来どおりここでは使わない(§7 X08)
     const mainEventIdx = 0; // index 0 = main event in showCard order
     results.forEach((r, idx) => {
-      const m = validMatches[idx];
       const isMainEvent = idx === mainEventIdx;
-      if (r.matchType === 'tag') {
-        // タッグ: perFighterの全選手にMQ人気を適用（Engine.executeShow L7709パターン）
-        const allIds = Object.keys(r.perFighter).map(Number);
-        const winIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
-          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
-        allIds.forEach(cid => {
-          const fighter = roster.find(c => c.id === cid);
-          if (!fighter) return;
-          const isWin = winIds.includes(cid);
-          const fakeSingleResult = { mq: r.mq, winner: isWin ? 'left' : (r.winner === 'draw' ? 'draw' : 'right'),
-            left: fighter, right: fighter };
-          const mqPop = Engine.applyMQPopularity(roster, fakeSingleResult, isMainEvent, s.orgPop || 0, s);
-          roster = mqPop.roster;
-        });
-      } else {
-        const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0, s);
-        roster = mqPop.roster;
-      }
+      const mqPop = Engine.show.applyMatchPopularity(roster, validMatches[idx], r, isMainEvent, s.orgPop || 0, s);
+      roster = mqPop.roster;
     });
     // 集客v2: ★算出
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);

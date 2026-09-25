@@ -15164,6 +15164,41 @@ const Engine = {
   },
 
   // ══════════════════════════════════════════════════════════
+  //  show: 通常興行の試合後処理の共通部品(K-1「興行後の処理を一本化する」第3段/第4段 4-B)
+  //  エンジン(Engine.executeShow = auto-sim)と実プレイ(app.js App._finalizeShowImpl)の
+  //  両方がここを呼ぶ。片方にだけ書き写すと二つの世界に分かれる(docs/fun-audit-v0.1/k1-parity-report.md)。
+  //  どれも純関数: 引数の状態・ロスターをその場で書き換えず、新しい値を返す。
+  // ══════════════════════════════════════════════════════════
+  show: {
+    // 試合評価による選手人気・連敗・直近の勝敗(K-1 4-B-1 / K1-F01)。
+    // シングルは Engine.applyMQPopularity そのもの。タッグは同じ式を A1↔B1・A2↔B2 の2組に分けて通す
+    // (メイン低評価の人気減・ヒール適性の加点・連敗・勝利ボーナスもシングルと同じ。2026-09-26 Keisuke 裁定)。
+    // 以前は実プレイが左右に同じ選手を入れて呼んでいたため、タッグの敗者も勝者扱い(勝ちの人気・連敗リセット)だった。
+    // 戻り値: { roster, popEvents }
+    applyMatchPopularity(roster, match, result, isMainEvent, orgPop, state = null) {
+      if (!result) return { roster, popEvents: [] };
+      if (result.matchType !== 'tag') {
+        return Engine.applyMQPopularity(roster, result, isMainEvent, orgPop, state);
+      }
+      if (!match || !match.teamA || !match.teamB) return { roster, popEvents: [] };
+      const winner = result.winner === 'teamA' ? 'left'
+        : result.winner === 'teamB' ? 'right'
+          : result.winner;
+      const popEvents = [];
+      let out = roster;
+      [
+        [match.teamA.fighter1, match.teamB.fighter1],
+        [match.teamA.fighter2, match.teamB.fighter2],
+      ].forEach(([aId, bId]) => {
+        const res = Engine.applyMQPopularity(out, { mq: result.mq, winner, left: { id: aId }, right: { id: bId } }, isMainEvent, orgPop, state);
+        out = res.roster;
+        popEvents.push(...res.popEvents);
+      });
+      return { roster: out, popEvents };
+    },
+  },
+
+  // ══════════════════════════════════════════════════════════
   //  executeShow: Process all show matches (immutable)
   //  Output: { state, results, injuryResults, events } or { error }
   // ══════════════════════════════════════════════════════════
@@ -15578,30 +15613,11 @@ const Engine = {
     const mainEventIdx = 0; // first match (showCard[0]) is main event
     results.forEach((r, idx) => {
       const isMainEvent = idx === mainEventIdx;
-      if (r.matchType === 'tag') {
-        // タッグ試合: 4人それぞれに人気変動
-        const m = validMatches[idx];
-        const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
-        const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
-          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
-        roster = roster.map(c => {
-          if (!allIds.includes(c.id)) return c;
-          const isWinner = winTeamIds.includes(c.id);
-          const isDraw = r.winner === 'draw';
-          let rawGain = r.mq >= 70 ? 3 : r.mq >= 50 ? 2 : r.mq >= 30 ? 1 : 0;
-          if (isWinner) rawGain += 1;
-          if (Traits.has(c, 'ファンサービス')) rawGain += 1;
-          rawGain *= Engine.coach.getPopGainMult(s, c.id);
-          let popDelta = Engine.popularity.applyDiminishing(rawGain, c.popularity);
-          const streakResult = Engine.popularity.checkLosingStreak(c, isWinner || isDraw);
-          popDelta += streakResult.popDelta;
-          return { ...c, popularity: Engine.util.clamp((c.popularity || 0) + popDelta, 1, 100), losingStreak: streakResult.losingStreak, lastMatchResult: isWinner ? 'win' : (isDraw ? 'draw' : 'loss') };
-        });
-      } else {
-        const mqPop = Engine.applyMQPopularity(roster, r, isMainEvent, s.orgPop || 0, s);
-        roster = mqPop.roster;
-        events.push(...mqPop.popEvents);
-      }
+      // K-1 4-B-1(K1-F01): シングル・タッグとも実プレイ(app.js)と同じ Engine.show.applyMatchPopularity を通す。
+      // タッグにもメイン低評価の人気減・ヒール適性の加点が掛かる(2026-09-26 裁定。以前のタッグの式には無かった)
+      const mqPop = Engine.show.applyMatchPopularity(roster, validMatches[idx], r, isMainEvent, s.orgPop || 0, s);
+      roster = mqPop.roster;
+      events.push(...mqPop.popEvents);
     });
     // 集客v2: ★算出
     const avgMQ = Math.round(results.reduce((a, r) => a + r.mq, 0) / results.length);

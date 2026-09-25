@@ -164,14 +164,9 @@ module.exports = [
     note: '報告書 §7 X03(コード読解で確認済み)を 2026-09-26 の fixture 更新で実測した(departure で選手41が中傷)。'
       + '同じシナリオの選手44のブレークスルーの経歴(K1-A02)もこの項目に数えられる(場所が同じため)。',
   },
-  {
-    id: 'K1-F01', title: 'タッグの人気・連敗・勝敗の付け方(実プレイは敗者も勝者扱い)',
-    category: 'formula', side: 'both', impact: '数値', scenarios: ['tag-mixed', 'mq-record', 'tag-lowbond'], checkpoints: ['A', 'B'],
-    // _industryNewsEvents(B): 勝敗の付け方が違うので、週次の新聞が拾う連敗の節目(loseStreakMilestone)が変わる
-    // (第1段で K1-E06 を外して見えるようになった。mq-record で実測)
-    patterns: ['roster[*].popularity', 'roster[*].losingStreak', 'roster[*].lastMatchResult', '_industryNewsEvents'],
-    mustAppear: true, refs: 'management.js:14990-15010 / app.js:8258-8271(left と right に同じ選手を入れて applyMQPopularity を呼ぶため、どちらが勝っても勝者判定になる)',
-  },
+  // K1-F01(タッグの人気・連敗・勝敗の付け方。実プレイは敗者も勝者扱い)は K-1 第4段 4-B-1 で解消したので外した
+  // (2026-09-26)。両経路が Engine.show.applyMatchPopularity を通す。タッグにもメイン低評価の人気減と
+  // ヒール適性の加点が掛かる(裁定)。以後この場所に差が出ると「未登録」で落ちる。
   {
     id: 'K1-A07', title: 'タッグ試合の直近戦績(recentMatches・対角4ペア)',
     category: 'processing', side: 'app', impact: '表示', scenarios: ['tag-mixed', 'mq-record', 'tag-lowbond'], checkpoints: ['A', 'B'],
