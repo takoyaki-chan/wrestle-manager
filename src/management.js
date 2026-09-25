@@ -8138,7 +8138,7 @@ const Engine = {
             }
           }
         } else {
-          lockerRoomMorale = Math.max(0, (lockerRoomMorale || 50) - 2);
+          lockerRoomMorale = Math.max(0, (lockerRoomMorale ?? 50) - 2);
         }
         return {
           ...updatedG,
@@ -13463,7 +13463,7 @@ const Engine = {
         // v1.8: §4 スランプ週次処理（時間経過 momentum + 回復判定）
         if (nc.slump && !nc.injury) {
           const slumpTickRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C2, nc.id));
-          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, slumpTickRng, G.season, G.week, Engine.coach.getSlumpRecoveryMult(G, nc.id) * Engine.coach.getFlavorSlumpRecoveryMult(G, nc.id), G.lockerRoomMorale || 60);
+          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, slumpTickRng, G.season, G.week, Engine.coach.getSlumpRecoveryMult(G, nc.id) * Engine.coach.getFlavorSlumpRecoveryMult(G, nc.id), G.lockerRoomMorale ?? 60);
           nc = slumpResult.fighter;
           if (slumpResult.recovered) {
             pendingSlumpEvents.push({ type: 'slump_end', fighterId: nc.id, duration: slumpResult.duration });
@@ -13484,7 +13484,7 @@ const Engine = {
         // v1.8: §5 モチベ喪失週次処理
         if (nc.motivationLoss && !nc.injury) {
           const motTickRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x5C4, nc.id));
-          const motResult = Engine.growthEvents.tickMotivationLossPassive(nc, motTickRng, G.season, G.week, G.lockerRoomMorale || 60);
+          const motResult = Engine.growthEvents.tickMotivationLossPassive(nc, motTickRng, G.season, G.week, G.lockerRoomMorale ?? 60);
           nc = motResult.fighter;
           if (motResult.selfRetire) {
             pendingMotivationRetirements.push({ fighterId: nc.id });
@@ -13857,7 +13857,7 @@ const Engine = {
       // v2.0 Phase1-7: 逆境チームスピリットバフ
       // 資金が厳しいがチームの士気が保たれている場合、4週に1度ランダム1名のtrustが微増
       let pendingTeamSpirit = null;
-      if (!pendingNotifEvent && G.funds < 300 && (G.lockerRoomMorale || 60) >= 50
+      if (!pendingNotifEvent && G.funds < 300 && (G.lockerRoomMorale ?? 60) >= 50
           && G.week % 4 === 0 && roster.length > 0 && !G.offSeason) {
         const spiritRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x7370));
         const target = roster[Engine.rng.int(spiritRng, 0, roster.length - 1)];
@@ -18712,9 +18712,9 @@ const Engine = {
         // v2.0: オフシーズン trust 自然変動（興行なし期間: 各選手に自然減衰 + メンタル回復のみ適用）
         const offSeasonRoster = s.roster.map(f => {
           if (f.injury) return f;  // 怪我中は変動なし
-          const natural = Engine.trust.calcMonthlyNatural(f.mn || 50, 0, f.trust || 50, s.lockerRoomMorale || 60);
-          const newTrust = Engine.util.clamp((f.trust || 50) + natural, 0, 100);
-          return newTrust !== (f.trust || 50) ? { ...f, trust: newTrust } : f;
+          const natural = Engine.trust.calcMonthlyNatural(f.mn || 50, 0, f.trust ?? 50, s.lockerRoomMorale ?? 60);
+          const newTrust = Engine.util.clamp((f.trust ?? 50) + natural, 0, 100);
+          return newTrust !== (f.trust ?? 50) ? { ...f, trust: newTrust } : f;
         });
         s = { ...s, roster: offSeasonRoster };
 
@@ -24611,7 +24611,7 @@ Engine.shachoshitsu = {
         }
         // Phase 8: trust 効果のみに性格×アーキタイプ倍率を適用
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('encourage', f);
-        f = applyTrust(f, (doc.effect.trust || 0.77) * currentFinalMult);
+        f = applyTrust(f, (doc.effect.trust ?? 0.77) * currentFinalMult);
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
         events.push(`💬 社長が${f.name}に声をかけた`);
       } else if (docId === 'pledge') {
@@ -24686,7 +24686,7 @@ Engine.shachoshitsu = {
         };
         newLastInvitedCoachId = coach.id;
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('trainer', f);
-        f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', 4, currentFinalMult);
+        f = queueTrust(f, doc.effect.trust ?? 5.97, 'trainer', 4, currentFinalMult);
         const typeLabel = (typeof COACHING_TYPE_LABELS !== 'undefined' && COACHING_TYPE_LABELS[coach.coachingType]) || '';
         const focusLabel = focusStat && typeof STAT_LABELS_JP !== 'undefined' ? STAT_LABELS_JP[focusStat] : '';
         events.push(`💪 ${f.name}に${coach.name}コーチ(${typeLabel})を招聘(4週間・${actualCost}万)${focusLabel ? `。重点は${focusLabel}` : ''}`);
@@ -24707,7 +24707,7 @@ Engine.shachoshitsu = {
         // care-rework2 P2-D: trust基礎 5.36→2.0(全書類中最大の信頼書類だった状態を解消)。
         // condition+5 は削除 — メディア対応は休養ではない。人気・団体知名度・嫉妬は不変。
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('media', f);
-        f = applyTrust(f, (doc.effect.trust || 2.0) * currentFinalMult);
+        f = applyTrust(f, (doc.effect.trust ?? 2.0) * currentFinalMult);
         orgPopDelta = doc.effect.orgPopDelta || 0.4;
         // v2.5: メディア露出は選手人気にも直接効く（社長が推す意思決定）
         const mediaRng = Engine.rng.create(
@@ -24821,9 +24821,9 @@ Engine.shachoshitsu = {
         roster = roster.map(f => {
           if (f.injury || f.onLeave) return f;
           const mult = Engine.shachoshitsu.calcUncertainty('party', f);
-          return applyTrust(f, (doc.effect.trust || 1.84) * mult);
+          return applyTrust(f, (doc.effect.trust ?? 1.84) * mult);
         });
-        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 6), 0, 100);
+        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale ?? 6), 0, 100);
         // care-rework2 P2-B: 余韻。翌週から3週にわたって +1 ずつ効く(tickWeek で消化)。
         partyAfterglowWeeks = (doc.effect.afterglowWeeks != null) ? doc.effect.afterglowWeeks : 3;
         changes.push({ label: _wmFillWithDict(dict, 'ロッカーの様子'), emoji: '🏠', text: _wmFillWithDict(dict, '選手同士の会話が増え、社長への空気も柔らかくなった') });
@@ -24839,7 +24839,7 @@ Engine.shachoshitsu = {
         roster = roster.map(f => {
           if (f.injury || f.onLeave) return f;
           const mult = Engine.shachoshitsu.calcUncertainty('camp', f);
-          const queued = queueTrust(f, doc.effect.trust || 1.84, 'camp', gb.weeks, mult);
+          const queued = queueTrust(f, doc.effect.trust ?? 1.84, 'camp', gb.weeks, mult);
           return { ...queued, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
         });
         changes.push({ label: _wmFillWithDict(dict, '合宿中の空気'), emoji: '🏕️', text: _wmFillWithDict(dict, '今後{weeks}週、団体全体に一体感が育っていきそうだ', { weeks: gb.weeks }) });
@@ -28184,7 +28184,7 @@ Engine.contract = {
       const seasons = f.careerSeasons || 0;
       let moraleDelta = ctx.isFounder ? -8 : (seasons >= 4 ? -5 : -3);
       if (s.roster.some(c => c.id !== f.id && Traits.has(c, '人望'))) moraleDelta = Math.ceil(moraleDelta / 2);
-      s = { ...s, lockerRoomMorale: Engine.util.clamp((s.lockerRoomMorale || 50) + moraleDelta, 0, 100) };
+      s = { ...s, lockerRoomMorale: Engine.util.clamp((s.lockerRoomMorale ?? 50) + moraleDelta, 0, 100) };
       const reactionDialogue = Engine.contract.selectDialogue(rng, neg, 'sudden_departure', ctx, dict);
       return {
         state: s,
@@ -28253,7 +28253,7 @@ Engine.contract = {
       } else if (choiceIdx === 1) {
         // B: 交渉する（§14-B.2: ギャップ反映の成功率）
         let successRate = 0.60;
-        successRate += ((f.trust || 50) - 30) * 0.02;
+        successRate += ((f.trust ?? 50) - 30) * 0.02;
         successRate += ((f.mn || 50) - 50) * 0.005;
         // ギャップ補正
         if (gapLevel === 'none') successRate += 0.10;
@@ -28270,7 +28270,7 @@ Engine.contract = {
           trustDelta = -8;
           reactionPhase = 'raise_negotiate_refuse';
           const roll = Engine.rng.float(rng);
-          if (roll < 0.20 && (f.trust || 50) < 20) {
+          if (roll < 0.20 && (f.trust ?? 50) < 20) {
             resultType = 'depart';
           } else if (roll < 0.50) {
             escalated = true;
@@ -28290,7 +28290,7 @@ Engine.contract = {
         // A: 引き留める / B→引き留める
         fundsCost = neg.retentionBonus;
         let retainRate = 0.55;
-        retainRate += ((f.trust || 50) - 15) * 0.015;
+        retainRate += ((f.trust ?? 50) - 15) * 0.015;
         retainRate += (f.careerSeasons || 0) * 0.03;
         if (Traits.has(f, '忠誠心')) retainRate += 0.20;
         if (ctx.isFounder) retainRate += 0.10;
@@ -28321,7 +28321,7 @@ Engine.contract = {
     // trust適用（メンタル係数付き）
     if (trustDelta !== 0) {
       const adjusted = Engine.trust.applyCoeff(trustDelta, f.mn);
-      f.trust = Engine.util.clamp((f.trust || 50) + adjusted, 0, 100);
+      f.trust = Engine.util.clamp((f.trust ?? 50) + adjusted, 0, 100);
     }
 
     // 厳格改定でtrustが40未満まで落ちた場合だけ、40%で移籍志願へ発展する。
@@ -28368,7 +28368,7 @@ Engine.contract = {
 
     // モラール適用
     if (moraleDelta !== 0) {
-      const newMorale = Engine.util.clamp((s.lockerRoomMorale || 50) + moraleDelta, 0, 100);
+      const newMorale = Engine.util.clamp((s.lockerRoomMorale ?? 50) + moraleDelta, 0, 100);
       s = { ...s, lockerRoomMorale: newMorale };
     }
 

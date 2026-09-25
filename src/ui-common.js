@@ -7047,7 +7047,7 @@ function draftNextCandidate() {
         const rounds = ns.round || 0;
         const bonus = DRAFT_SIGNING_BONUS;
         const trustBonus = Math.min(bonus.trustCap, bonus.trustBase + rounds * bonus.trustPerRound);
-        signed.trust = Math.min(100, (signed.trust || 50) + trustBonus);
+        signed.trust = Math.min(100, (signed.trust ?? 50) + trustBonus);
       }
       newRoster.push(signed);
       // draft-value-rebalance: 既存メンバーとのbond付与（チームが新人を歓迎）
@@ -7093,7 +7093,7 @@ function draftNextCandidate() {
         const rounds = ns.round || 0;
         const bonus = DRAFT_SIGNING_BONUS;
         const trustBonus = Math.min(bonus.trustCap, bonus.trustBase + rounds * bonus.trustPerRound);
-        aiFighter.trust = Math.min(100, (aiFighter.trust || 50) + trustBonus);
+        aiFighter.trust = Math.min(100, (aiFighter.trust ?? 50) + trustBonus);
       }
       // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
       { const reg = Engine.mq.registerBignewsHire(G, aiFighter); G = reg.state; aiFighter = reg.fighter; }

@@ -13276,7 +13276,7 @@ const App = {
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
-      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
+      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale ?? 60),
       orgPop: Engine.util.clamp((G.orgPop || 0) + orgPopDelta, 0, 100),
       gameLog: [...(G.gameLog || []), ...displayEvents]
     };
@@ -15009,7 +15009,7 @@ const App = {
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
-      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
+      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale ?? 60),
       decisionPoints: result.decisionPoints != null ? result.decisionPoints : G.decisionPoints,
       _decisionWeekUsed: result._decisionWeekUsed || G._decisionWeekUsed || {},
       _decisionDoneThisWeek: [...(G._decisionDoneThisWeek || []), docId],
@@ -15686,7 +15686,7 @@ const App = {
         const mBoost = 3 + Math.min(2, Math.floor(bwt.player / 10)); // +3〜+5
         G = { ...G,
           _newsWarMilestone: { orgId: 'player', orgName: G.orgName || 'プレイヤー団体', wins: bwt.player },
-          lockerRoomMorale: Math.min(100, (G.lockerRoomMorale || 60) + mBoost),
+          lockerRoomMorale: Math.min(100, (G.lockerRoomMorale ?? 60) + mBoost),
         };
       }
     }

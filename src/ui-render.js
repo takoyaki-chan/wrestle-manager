@@ -1940,7 +1940,7 @@ function _renderRosterDojoHeader() {
 
   // --- 雰囲気テキスト生成 ---
   const atmoRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season || 1, G.week || 1, Date.now() & 0xFFFF));
-  const atmo = Engine.lockerRoom.getAtmosphereText(atmoRng, G.lockerRoomMorale || 60);
+  const atmo = Engine.lockerRoom.getAtmosphereText(atmoRng, G.lockerRoomMorale ?? 60);
 
   let html = '<div class="dojo-header">';
   html += '<img src="../image/dojo-header.webp" class="dojo-header-img" onerror="this.style.display=\'none\'" alt="">';
