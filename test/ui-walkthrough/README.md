@@ -193,3 +193,11 @@ node側で実試合を1本シミュして iframe へ `START_MATCH` を投げ、*
 - EN側の技名パネル・ビッグムーブ演出に日本語が1文字も無い / JA側は日本語のまま
 
 スクリーンショットと `result.json` は `artifacts/p7-5-spectator/` に出ます(Git管理外)。設計背景は `specs/i18n-runtime-spec-v1.0.md` §23。
+
+## 春のタッグリーグ編成画面の不仲の警告チェック(手動・K-12 追加)
+
+```powershell
+node test/ui-walkthrough/spring-entry-discord-check.js
+```
+
+走破は第11週の編成画面を開かない(未編成のまま週送りして自動編成になる)ので、別枠で実UIを踏みます。fixture を第11週・編成期間に加工し、`App.stlOpenEntryModal` → 選手カードのクリック → 保存ボタンの順に本物のボタンで操作して、不仲の2人(逆向きだけ冷えた=低い方9)で下の帯に「⚠ 不仲 9」+「能力-3 / 連携不可 / 団体への信頼が下がる」が Cream の赤で出ること、良好な2人で消えること、おすすめペアのチップ、EN、375px 幅ではみ出さないこと、例外ゼロを見ます。`_stlEntryModalHtml` / `_stlDiscordWarnHtml` / `.stl-discord-warn` を触ったら1本回してください。

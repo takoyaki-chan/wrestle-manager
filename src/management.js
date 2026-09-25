@@ -29822,6 +29822,11 @@ Engine.springTagLeague = {
     const rel = state.relationships && state.relationships[key];
     return (rel && rel.bond != null) ? rel.bond : 50;
   },
+  /** 試合用の選手コピー: 連戦消耗の開始HP + 不仲なら通常興行と同じ能力-3・連携なし(Engine.showTagMatch.penalize) */
+  _matchFighter(fighter, condition, discord) {
+    const base = discord ? Engine.showTagMatch.penalize(fighter) : fighter;
+    return { ...base, _hpOverride: Engine.wear.toHpOverride(condition, Engine.tagMatch.calcFullHp(fighter)) };
+  },
   _eligible(roster) {
     return (roster || []).filter(f => !f.injury && !f.isRental);
   },
@@ -30166,6 +30171,12 @@ Engine.springTagLeague = {
     const teams = reassigned.teams;
     const blocks = reassigned.blocks;
     const teamById = new Map(teams.map(team => [team.teamId, team]));
+    // 不仲タッグ(2人の絆の低い方≤20)は通常興行と同じ罰: 試合中の能力-3・連携なし・試合後の信頼-1(K-12 追加)。
+    // 判定は Engine.showTagMatch.isDiscord に一本化。大会中は関係値が動かないので大会開始時に1回だけ判定し、
+    // replayContext に残す(観戦の再構築を大会後の関係値の変化に左右させない)。乱数は引かない
+    const discordTeamIds = teams
+      .filter(team => Engine.showTagMatch.isDiscord(workingState, team.f1Id, team.f2Id))
+      .map(team => team.teamId);
     const condState = Object.fromEntries(teams.map(team => [team.teamId, Engine.springTagLeague.INITIAL_CONDITION]));
     const tagExpSnapshot = {};
     const popularitySnapshot = {};
@@ -30184,14 +30195,16 @@ Engine.springTagLeague = {
       const fB1 = fighterOf(teamB.orgId, teamB.f1Id), fB2 = fighterOf(teamB.orgId, teamB.f2Id);
       const conditionBefore = { [teamAId]: condState[teamAId], [teamBId]: condState[teamBId] };
       const mRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC7A6, seedTag));
+      const discordA = discordTeamIds.includes(teamAId), discordB = discordTeamIds.includes(teamBId);
+      const matchFighter = Engine.springTagLeague._matchFighter;
       let result = Engine.tagMatch.simulateTagMatch(
         {
-          fighter1: { ...fA1, _hpOverride: Engine.wear.toHpOverride(condState[teamAId], Engine.tagMatch.calcFullHp(fA1)) },
-          fighter2: { ...fA2, _hpOverride: Engine.wear.toHpOverride(condState[teamAId], Engine.tagMatch.calcFullHp(fA2)) },
+          fighter1: matchFighter(fA1, condState[teamAId], discordA),
+          fighter2: matchFighter(fA2, condState[teamAId], discordA),
         },
         {
-          fighter1: { ...fB1, _hpOverride: Engine.wear.toHpOverride(condState[teamBId], Engine.tagMatch.calcFullHp(fB1)) },
-          fighter2: { ...fB2, _hpOverride: Engine.wear.toHpOverride(condState[teamBId], Engine.tagMatch.calcFullHp(fB2)) },
+          fighter1: matchFighter(fB1, condState[teamBId], discordB),
+          fighter2: matchFighter(fB2, condState[teamBId], discordB),
         },
         mRng,
         {
@@ -30337,7 +30350,7 @@ Engine.springTagLeague = {
       },
       championTeamId, runnerUpTeamId,
       champion: championTeam.orgId, runnerUp: runnerUpTeam.orgId,
-      replayContext: { tagExpSnapshot, popularitySnapshot },
+      replayContext: { tagExpSnapshot, popularitySnapshot, discordTeamIds },
     };
   },
 
@@ -30413,15 +30426,20 @@ Engine.springTagLeague = {
     const teamBId = match.teamBId || teamB.teamId || match.orgB;
     const condA = conditionBefore(match.orgA, teamAId);
     const condB = conditionBefore(match.orgB, teamBId);
+    // 不仲の罰は run() が大会開始時に判定して残した discordTeamIds に従う(本番と同じ入力で再構築する)。
+    // 記録が無い大会(K-12 追加より前の完了済みセーブ)は罰なしで確定しているので、罰を掛けない
+    const discordTeamIds = Array.isArray(replayContext.discordTeamIds) ? replayContext.discordTeamIds : [];
+    const discordA = discordTeamIds.includes(teamAId), discordB = discordTeamIds.includes(teamBId);
+    const matchFighter = Engine.springTagLeague._matchFighter;
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC7A6, seedTag));
     let result = Engine.tagMatch.simulateTagMatch(
       {
-        fighter1: { ...fA1, _hpOverride: Engine.wear.toHpOverride(condA, Engine.tagMatch.calcFullHp(fA1)) },
-        fighter2: { ...fA2, _hpOverride: Engine.wear.toHpOverride(condA, Engine.tagMatch.calcFullHp(fA2)) },
+        fighter1: matchFighter(fA1, condA, discordA),
+        fighter2: matchFighter(fA2, condA, discordA),
       },
       {
-        fighter1: { ...fB1, _hpOverride: Engine.wear.toHpOverride(condB, Engine.tagMatch.calcFullHp(fB1)) },
-        fighter2: { ...fB2, _hpOverride: Engine.wear.toHpOverride(condB, Engine.tagMatch.calcFullHp(fB2)) },
+        fighter1: matchFighter(fB1, condB, discordB),
+        fighter2: matchFighter(fB2, condB, discordB),
       },
       rng,
       {
@@ -30491,6 +30509,19 @@ Engine.springTagLeague = {
       for (let i = 0; i < count; i++) tagExp = Engine.tagExp.increment(tagExp, team.f1Id, team.f2Id);
     });
     s = { ...s, tagExp };
+
+    // 不仲タッグの試合後の信頼-1(K-12 追加): 通常興行と同じく1試合ごとに-1。自団体・他団体とも
+    const discordTeamIds = (replayContext && Array.isArray(replayContext.discordTeamIds)) ? replayContext.discordTeamIds : [];
+    teams.filter(team => discordTeamIds.includes(team.teamId)).forEach(team => {
+      const times = matchCounts[team.teamId] || 0;
+      const penalize = roster => Engine.showTagMatch.applyTrustPenalty(roster, [team.f1Id, team.f2Id], times);
+      if (team.orgId === 'player') {
+        s = { ...s, roster: penalize(s.roster) };
+      } else if (s.aiOrgs && s.aiOrgs[team.orgId]) {
+        const od = s.aiOrgs[team.orgId];
+        s = { ...s, aiOrgs: { ...s.aiOrgs, [team.orgId]: { ...od, roster: penalize(od.roster || []) } } };
+      }
+    });
 
     const revenueDistribution = Engine.specialEventFinance.calculate(s, {
       eventId: 'springTagLeague',

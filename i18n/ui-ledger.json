@@ -40463,8 +40463,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "能力-3 / 連携不可 / 相手との関係-1",
-    "en": "Ability -3 / no teamwork / relationship -1",
+    "key": "能力-3 / 連携不可 / 団体への信頼が下がる",
+    "en": "Ability -3 / no teamwork / trust in the promotion drops",
     "files": [
       "ui-common.js"
     ],
