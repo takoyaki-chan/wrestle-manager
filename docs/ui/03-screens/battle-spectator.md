@@ -2,7 +2,7 @@
 
 **ファイル**：`docs/ui/03-screens/battle-spectator.md`
 **最終更新**：2026-09-06
-**実装状況**：完了（Pattern C v4、実機確認待ち）／**多言語対応完了（i18n Stage B P7-5+P7-9＋P7-53）**：技名・実況ナレーション・技説明・攻撃矢印ラベル・ピンカウント演出・決着表記・**最新ログパネル（試合実況ログ `#battleLog`）**がすべて言語別。レイアウトと演出タイミングはJA/ENで同一で、言語別に変えているのは実況ストリップの見出しラベルのみ（CSS `::after` の `content`。JA「実況」／EN `COMMENTARY`、`html[lang="en"]` 分岐）。**技名・技説明の“選択”は日本語のまま行い、英語化は描画の直前だけ**（効果音判定 `battle-sfx.js` と `_movePresentation` の正規表現がJA技名を見ているため）。**最新ログパネルは P7-53（裁定C-6）で言語別化した** — 文面52本は `data.js` の `BATTLE_LOG_TEMPLATES`、Engine は JA 完成文（`result.log`・不変）に加えてフレームへ `logLineTpls`/`logLineVars` を併記し、`_logLineHtml` が `WM_I18N.t` で組み直す（§14-3 追加フィールド方式。旧セーブのフレームは JA へ fail-open）。**ログ行のCSSクラスとネタバレ保留は完成文の部分一致をやめ、`logLineClasses`/`logLineSpoilers` で言語非依存**に判定する。仕様の正は同spec §23／§26／**§51**
+**実装状況**：完了（Pattern C v4、実機確認待ち）／**多言語対応完了（i18n Stage B P7-5+P7-9＋P7-53）**：技名・実況ナレーション・技説明・攻撃矢印ラベル・ピンカウント演出・決着表記・**最新ログパネル（試合実況ログ `#battleLog`）**がすべて言語別。レイアウトと演出タイミングはJA/ENで同一で、言語別に変えているのは実況ストリップの見出しラベルのみ（CSS `::after` の `content`。JA「実況」／EN `COMMENTARY`、`html[lang="en"]` 分岐）。**技名・技説明の“選択”は日本語のまま行い、英語化は描画の直前だけ**（効果音判定 `battle-sfx.js` と `_movePresentation` の正規表現がJA技名を見ているため）。**最新ログパネルは P7-53（裁定C-6）で言語別化した** — 文面52本は `data.js` の `BATTLE_LOG_TEMPLATES`、Engine は JA 完成文（`result.log`・不変）に加えてフレームへ `logLineTpls`/`logLineVars` を併記し、`_logLineHtml` が `WM_I18N.t` で組み直す（§14-3 追加フィールド方式。旧セーブのフレームは JA へ fail-open）。**ログ行のCSSクラスとネタバレ保留は完成文の部分一致をやめ、`logLineClasses`/`logLineSpoilers` で言語非依存**に判定する。仕様の正は同spec §23／§26／**§51**。**K-7（2026-09-25）**: 丸め込みを返したフレーム（`rollup:'kickout2'`）が実際に来るようになった（丸め込み演出が「返したーーっ！」で締まる既存分岐。実況は「丸め込み！ だが○○がカウント2で返した！」）。ピン演出の締め（3カウント／タップ）は「そのフレームの押さえ込みで決着したか」（`finishPhase !== 'Timeout'`）で決め、時間切れで終わった最後のターンの返しを3カウントとして見せない
 
 ---
 
