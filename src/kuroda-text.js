@@ -862,8 +862,11 @@ const KURODA_SHOW_RATING = {
 //  8. 次回展望テンプレ（KURODA_PREVIEW）
 // ──────────────────────────────────────────────────────────
 
+// 消費点: 新聞1面の「次回展望」欄(ui-render.js _npV3PreviewColumn。2026-09-26 に配線を戻した)。
+// generic は使っていない(中身の無い号は欄ごと出さないため)。
 const KURODA_PREVIEW = {
 
+  // 先頭の1本は「一番見たがっている」= ファン期待の最上位の組専用。2番手の組には残りから選ぶ
   fanExpect: [
     d => `ファンが一番見たがっているのは${d.leftName}と${d.rightName}の対戦だ。組まない理由がないだろう`,
     d => `${d.leftName} vs ${d.rightName}——この対戦への期待値は相当なものだ。応えてほしい`,

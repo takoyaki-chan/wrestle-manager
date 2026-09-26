@@ -21,7 +21,7 @@
 
 | 面 | 中身 | 出る条件 |
 |---|---|---|
-| 1面 興行 | トップ / 肩 / MVP小窓 / 準トップ / 小記事+短信 / 黒田コラム(最下段固定) / 目次 | 常時 |
+| 1面 興行 | トップ / 肩 / MVP小窓 / 準トップ / 小記事+短信 / 次回展望(興行の記事が載る号だけ。§3-7) / 黒田コラム(最下段固定) / 目次 | 常時 |
 | 2面 団体比較 | 4軸比較・エース対決・主力対決・黒田の論説 | **節目のみ**（§4） |
 | 3面 因縁列伝 | 9象限分類 + h2h + 黒田叙述 | 語れる因縁がある週のみ |
 | 4面 MVPレース | 順位・点差・narrative | 一面の小窓「詳細 ▶」から開いたときのみ |
@@ -250,13 +250,33 @@ promising以下しかいなければ1名だけ。raw/material しかいない年
 - 派閥の消滅で終わった記録(CONSOLATION・先取100の時点で片方が消えていた POINTS)と、自然沈静化(CALM)は記事を出さない
   (前者はログ1行、後者は何も出さない。faction-rivalry-points-spec §5.6)。40週の和解(F06_RECONCILE)は画面側の `factionReconcile`
 
-### 3-7. 次回展望の因縁ペア（`preview.rivalry`、2026-09-26 修正）
+### 3-7. 次回展望（1面の欄 + 因縁ペア `preview.rivalry`、2026-09-26）
+
+#### 欄（2026-09-26 Keisuke 裁定 案B「黒田コラムの上に、別の欄として3行」）
+
+記者・黒田が次の興行について一言ずつ書く欄。2026-04-26 の新聞 v3.1 で1面から外れていたものを戻した。
+描画は `_npV3PreviewColumn`(`src/ui-render.js`)、`_npFrontV3` で**黒田コラムの直上**(小記事・短信の下)に置く。
+
+| 項目 | 決まり |
+|---|---|
+| 出る号 | **自団体の興行記事が載る号だけ**(`wp.playerShowData` がある=興行週に今週生成した結果。§3-5 と同じ条件)。非興行週の号・新年号には出さない。材料の `buildPreview` は毎号作られているが、文面が興行を終えた記者の「次の興行」への見通しで、非興行週にも出すと同じ組を2号続けて書くことになるため |
+| 材料 | 号に焼かれた `wp.preview`(`Engine.newspaper.buildPreview`)。無ければ詳報側の `playerShowData.preview`(`buildShowNewspaperData`)。過去号でもその号の材料で書く(MVP小窓と違い「いまの状態」を過去号へ貼らない) |
+| 行 | 上から **ファン期待**(`fanExpect` の1組)→ **因縁**(`rivalry`)→ **王座戦線**(`title`)。材料の無い行は出さない(1〜3行) |
+| 重複 | 同じ組を2行で書かない。因縁・王座の行が組を先に取り、ファン期待は `fanExpect` の上から、まだ出ていない組を採る。**2番手の組には `KURODA_PREVIEW.fanExpect` の先頭(「一番見たがっている」)を使わない**(1番手ではないので嘘になる)。因縁と王座が同じ組のときは両方残す(因縁の相手が次の挑戦者、という筋として読める) |
+| 空のとき | 書ける行が無ければ**欄ごと出さない**。`KURODA_PREVIEW.generic`(「注目カードはまだ見えていない」型)は使わない — 中身が無いことの説明で欄を埋めない(§0)。空になるのは稀(ファン期待は人気上位の組を候補にするので、ロスター2人未満・全員負傷の号か、人気上位の組がどれもマンネリで外れ、かつ因縁も王者もいない号) |
+| 文面 | `KURODA_PREVIEW`(`src/kuroda-text.js`)の fanExpect 5本 / rivalry 4本 / titleOutlook 4本。`kurodaText(fn, d, WM_I18N.t)` で訳出し、名前は `WM_I18N.pn` を通す。JA は原文に文末の句点が無いので行末に「。」を足す(EN の訳文はピリオドで終わる) |
+| 文選び | 表示専用(CLAUDE.md 原則4の例外)。号ごとに固定のシード `Engine.rng.derive(季, 週, 0xF0CA/0xF0CB/0xF0CC)`(行ごとに別の塩)。言語を切り替えても・開き直しても同じ文の訳が出る |
+| 見た目 | 見出し「次回展望」(EN「Looking Ahead」)+ 箇条の行。MVP小窓と同じ小見出しの作り(10px・900・字間3px・紙面の赤)。地は金の薄い地(`--cream-gold` 9%)+ 同系の細枠で、黒田コラム(茶の地+赤の二重罫)と別の欄に見せる。色はトークンだけ(`--cream-red` / `--cream-gold` / `--cream-text-main`)。本文 11px。幅を固定しないのでスマホ幅でも1列のまま折り返す |
+
+検査: `test/newspaper-front-v3-test.js` の I1〜I10(位置・行の順・非興行週は出さない・空なら出さない・重複と「一番」・シード固定・pn とエスケープ・色トークン)。
+実UI: `npm run test:ui:ignite -- --scenario newspaper-lang-switch [--lang en]` が最新号とバックナンバー1で欄の有無・見出し・EN 本文の日本語残りを見る。
+
+#### 因縁ペア（`preview.rivalry`、2026-09-26 修正）
 
 `Engine.newspaper.pickPreviewRivalry`(週刊新聞の `buildPreview` と興行結果の新聞データ `buildShowNewspaperData` の両方)。
 自団体の2人の組で、決着していない因縁の段(`Engine.title` の band.tier)が最も高い組、同じ段は因縁の記録の対戦回数が多い組。
 以前は因縁の記録のキー(`getRivalryKey` の「小さいID-大きいID」)を `'>'` で割って文字列のまま選手IDと比べ、段は記録に無い
-`riv.tier` を読んでいたため**常に空**だった。**紙面には次回展望の欄が無い**(2026-04-26 の新聞 v3.1 で1面から外した。
-黒田の `KURODA_PREVIEW` も未配線)ので、データとして揃っただけで見た目は変わらない。
+`riv.tier` を読んでいたため**常に空**だった。修正した同日に上の欄を戻したので、紙面の因縁の行として出る。
 
 ---
 
@@ -328,7 +348,7 @@ promising以下しかいなければ1名だけ。raw/material しかいない年
 | 週次スキャン | `Engine.newspaper.scanRosterNews`（tickWeek 内、新聞生成の直前） |
 | 連勝の団体記録 | `Engine.streak`（refresh は**新聞生成の後**。先に更新すると自分自身と比べてしまう） |
 | 業界人気トップN | `Engine.popularity.getIndustryTopIds` |
-| 描画 | `src/ui-render.js` `_npFrontV3` / `_npRenderPage2..4` / `.np-*`（`src/index.html`） |
+| 描画 | `src/ui-render.js` `_npFrontV3` / `_npRenderPage2..4` / `.np-*`（`src/index.html`）。次回展望は `_npV3PreviewColumn` / `.np-v3-preview*` |
 | 記事テンプレ | `src/data.js` `NEWS_HEADLINE_TEMPLATES` |
 | 黒田の在庫 | `src/kuroda-text.js` |
 
