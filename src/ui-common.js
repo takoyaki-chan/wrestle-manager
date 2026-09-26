@@ -9876,7 +9876,7 @@ function showDecisionPairModal(docId, state) {
 // 決裁実行の結果トースト(Phase 4: シンプルな1行)
 function showDecisionResultToast(displayData) {
   if (!displayData) return;
-  const name = displayData.fighter?.name || WM_I18N.t('団体全員');
+  const name = displayData.fighter?.name ? WM_I18N.pn(displayData.fighter.name) : WM_I18N.t('団体全員');
   const icon = displayData.icon || '';
   const label = displayData.label || WM_I18N.t('決裁');
   let msg = `${icon} ${label} → ${name}`;
@@ -9934,7 +9934,8 @@ function showDecisionResultModal(displayData) {
       rosterHtml += `<div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:8px">${WM_I18N.t('参加者 {n}名', { n: fighters.length })}</div>`;
       rosterHtml += `<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">`;
       others.forEach(f => {
-        const lastName = (f.name || '').split(/\s/).pop();
+        // EN は姓のみ辞書(pnSurname)へ。空白分割のままだと生のJA名が出ていた。ja/pseudo は従来どおり
+        const lastName = (WM_I18N.lang === 'en') ? WM_I18N.pnSurname(f.name || '') : (f.name || '').split(/\s/).pop();
         const faceUrl = (typeof getPortraitUrl === 'function') ? getPortraitUrl(f.id) : '';
         const bg = faceUrl ? `background-image:url('${faceUrl}');background-size:cover;background-position:center` : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
         rosterHtml += `<div style="text-align:center">

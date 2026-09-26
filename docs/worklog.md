@@ -1,5 +1,30 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 声かけの結果モーダルのマーカーの食い違い+決裁の結果モーダルの英語の未訳(Claude/Opus 5.5・worktree)
+
+1つ下の節(セリフ204本の流し込み)で見つけた2件。数値は変えていない(表示だけ)。
+
+### 1. 信頼20未満の声かけでトーンのマーカーを出さない
+- 事実: 反応の鍵 `encourage_last_warning`(地の文「話は最後まで聞いてくれた。けれど、表情は硬いままだ」)のときも、性格×口調の倍率(`calcUncertainty` → `classifyTone`)で「🌟 深く刺さった」が出ていた。全127人のうち43人が high・23人が low(感情的・内気・真面目・寡黙の子が high、強気が low)。帯の中の伸びは帯の倍率 ×0.25 で決まり、high の子でも伸びは小さい
+- 直し: `Engine.shachoshitsu.execute` の声かけの枝で、信頼20未満なら `suppressTone = true`(ボーナスの侮辱帯と同じ仕組み)→ `reactionTone: null`。**low(💤 あまり響かなかった)も出さない**: 「この子には響かなかった」は、別の子なら響いたかのような対比を作るが、この帯では誰にも響かない。地の文とも重なる。20〜25 の坂の中・25以上は今までどおり。`finalMult` は今までどおり返す
+- 触った: `src/management.js`(声かけの枝・トーン返却のコメント)
+
+### 2. 決裁の結果モーダル(`showDecisionResultModal`)の英語
+- 洗い出し: この画面の日本語は (a) 取次の帯「決裁の結果をお伝えします」(`_mdlAReporterStrip` へ生の日本語を渡していて辞書に無い=未訳)、(b) 慰労会・合宿の参加者の顔の下の名前(空白分割で生の JA 名)、(c) モーダルが開けないときのトースト(`showDecisionResultToast`)の選手名。それ以外(見出し・マーカー・変化の行・費用・ボタン・Engine 側の変化の文 68本)は既に英訳あり
+- 直し: (a) `i18n/ui-ledger.json` に1行を手で足した(抽出器の走査外なので `kept:true`+`note`。先例「ご判断の結果をお伝えします」と同じ形)→ `node test/i18n-build-dict.js` で `src/lang-en.js` を再生成(4778キー全訳)。英訳「Here's the outcome of what you approved.」。(b) EN は `WM_I18N.pnSurname`(チップ向けの姓のみ辞書)、ja/pseudo は従来どおり。(c) `WM_I18N.pn`
+- 触った: `src/ui-common.js`・`i18n/ui-ledger.json`・`src/lang-en.js`
+
+### 検証
+- 回帰 `test/care-last-warning-test.js` に1節(表から high/low の組を探し、信頼8/15/19.9 でマーカー null・伸びは帯の倍率のまま・finalMult 不変、20/22.5/35 は今までのマーカー)。ALL PASS
+- `npm test` 312/312・`node test/i18n-ratchet.js` 増加なし・`node test/ja-golden.js` 一致・`node test/i18n-ledger-consistency-test.js` ok・auto-sim 20季 seed42 --care ALL CLEAR
+- 実UI `node test/ui-walkthrough/care-last-warning-lines-check.js`(手動): 取次の帯を検査から外していたのをやめ、帯を含めて EN に日本語が残らないこと・帯が英訳であること・マーカーが出ないことを足した。fixture の4人はいずれも帯の外なら high の子(=直す前は4人とも「深く刺さった」が出ていた)。ALL CHECKS PASS
+- 一回限りの確認(scratchpad): 声かけ・ボーナス・メディア・休暇・招聘・慰労会・合宿・特別治療・起用の約束の9つの結果モーダルを EN で開き、日本語0・例外0
+
+**残(直していない・範囲外)**
+- 社長室の決裁の**手前**のモーダルの取次の帯も英語で日本語のまま: 「対象となる選手を選んでください」「支給額を選んでください」「処置を選んでください」「休暇の週数を選んでください」「招聘するコーチを選んでください」「団体全体に対して発令します。内容をご確認ください」「関係修復を試みるペアを選んでください」「本人が直接お話ししたいそうです」、ほかに「試合で決着をつけさせることにしました。社長の立ち位置を決めてください」「決着がつきました」「どの選手を送り出しますか？」「試合、終わりました」(いずれも `_mdlAReporterStrip` に生の日本語。同じ手当てで直る)
+- 信頼20〜25 の坂の中(伸びは ×0.25〜×1)では今までどおりマーカーが出る。地の文は通常の声かけの文なので文との食い違いは無い
+- 取次の帯の人(古参選手)が結果モーダルの本人と同じ子になることがある(fixture で佐久間が両方に出た)。既存の `_factionPickReporter` の挙動
+
 ## 2026-09-26 退団寸前の引き留めのセリフ204本の流し込み+派閥が消えたときのログ1行(Claude/Opus 5.5・worktree)
 
 Keisuke 承認の2件。数値は変えていない(表示とログだけ)。
