@@ -8732,25 +8732,8 @@ const App = {
 
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek };
 
-    // v0.95: Season stats
-    const stats = { ...G.seasonStats };
-    stats.showCount++;
-    results.forEach((r, rIdx) => {
-      const m = validMatches[rIdx];
-      if (r.matchType === 'tag') {
-        const tA1 = roster.find(c => c.id === m.teamA.fighter1);
-        const tA2 = roster.find(c => c.id === m.teamA.fighter2);
-        const tB1 = roster.find(c => c.id === m.teamB.fighter1);
-        const tB2 = roster.find(c => c.id === m.teamB.fighter2);
-        if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${tA1?.name||'?'} & ${tA2?.name||'?'} vs ${tB1?.name||'?'} & ${tB2?.name||'?'}`; }
-        if (r.winner === 'teamA' || r.winner === 'teamB') stats.wins++;
-        if (r.winner === 'draw') stats.draws++;
-      } else {
-        if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${r.left.name} vs ${r.right.name}`; }
-        if (r.winner === 'left' || r.winner === 'right') stats.wins++;
-        if (r.winner === 'draw') stats.draws++;
-      }
-    });
+    // v0.95: Season stats — K-1 第2段: 集計は Engine.show.accumulateSeasonStats(K1-A03)
+    const stats = Engine.show.accumulateSeasonStats(G.seasonStats, validMatches, results, roster);
 
     // v1.8: §2 ブレークスルー判定 & careerBestMQ 更新（試合後）
     const pendingGrowthEvents = [];

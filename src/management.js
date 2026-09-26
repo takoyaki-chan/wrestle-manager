@@ -15953,6 +15953,32 @@ const Engine = {
       return out;
     },
 
+    // 季節の統計(seasonStats)に通常興行1回分を足す(K-1 第2段 / K1-A03。以前は実プレイの _finalizeShowImpl だけにあった)。
+    // 興行数+1、決着のついた試合数(wins)・引き分け(draws)、季の最高評価(bestMQ)とその試合の顔合わせ(bestMQMatch。
+    // タッグは「A & B vs C & D」)。表彰のベストマッチ賞(Engine.awards.selectBestMatch)・季の振り返り・序章の節目が読む。
+    // roster はタッグの名前を引くためのもの。戻り値: 新しい統計
+    accumulateSeasonStats(seasonStats, validMatches, results, roster) {
+      const stats = { ...seasonStats };
+      stats.showCount++;
+      results.forEach((r, rIdx) => {
+        const m = validMatches[rIdx];
+        if (r.matchType === 'tag') {
+          const tA1 = roster.find(c => c.id === m.teamA.fighter1);
+          const tA2 = roster.find(c => c.id === m.teamA.fighter2);
+          const tB1 = roster.find(c => c.id === m.teamB.fighter1);
+          const tB2 = roster.find(c => c.id === m.teamB.fighter2);
+          if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${tA1?.name||'?'} & ${tA2?.name||'?'} vs ${tB1?.name||'?'} & ${tB2?.name||'?'}`; }
+          if (r.winner === 'teamA' || r.winner === 'teamB') stats.wins++;
+          if (r.winner === 'draw') stats.draws++;
+        } else {
+          if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${r.left.name} vs ${r.right.name}`; }
+          if (r.winner === 'left' || r.winner === 'right') stats.wins++;
+          if (r.winner === 'draw') stats.draws++;
+        }
+      });
+      return stats;
+    },
+
     // 因縁の決着エントリ(K-1 第2段 / K1-E08)。決着が成立した組の rivalries[key] を作り直す。
     // 以前はエンジンが lastShowNumber(何番目の興行か)だけ、実プレイが bitterResolutionWinnerId(宿怨の決着の勝者。
     // 試合前の演出 _bitterPrematchSide が読む)だけを書いていた。両方の欄を持たせる。
@@ -16615,6 +16641,11 @@ const Engine = {
     // K-1 4-B-4(K1-E02): 実プレイ(app.js)と同じ Engine.show.applyMatchGrowth を通す(年齢倍率・関係性倍率・
     // タッグの相手は2人の平均)
     roster = Engine.show.applyMatchGrowth(s, roster, validMatches, results);
+
+    // 季節の統計(興行数・決着数・季の最高評価) — K-1 第2段(K1-A03): 実プレイ(app.js)と同じ
+    // Engine.show.accumulateSeasonStats を通す。以前のエンジンは数えず、auto-sim の seasonStats は0のままだった。
+    // 季の最高評価は年末のベストマッチ賞(Engine.awards.selectBestMatch)の自団体の候補になる(実プレイと同じ)
+    if (s.seasonStats) s = { ...s, seasonStats: Engine.show.accumulateSeasonStats(s.seasonStats, validMatches, results, roster) };
 
     // §2.4 TODO: 調子連動（試合後の調子変動）— 調子システム実装時に有効化
 

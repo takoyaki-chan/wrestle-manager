@@ -46,6 +46,9 @@ module.exports = [
       'relationships.*', 'relationships.*.*', 'relationshipCounters.*', 'roster[*].*', 'roster[*].*.*', '_modalQueue',
       // 2026-09-26 追加(fixture の更新で乱入者が王座を奪う結果になった): 王座・興行評価・熱
       'titles.world.*', 'lastShowRating.*', 'heatScore',
+      // K-1 第2段: 季節の統計(K1-A03)を両経路が同じ関数で数えるようになり、乱入で別物になった試合結果が
+      // 季の最高評価にそのまま写る
+      'seasonStats.*',
     ],
     mustAppear: true, refs: 'app.js:7004-7047(判定・差し替え), 7845-7890(結果処理) / エンジン側なし',
     note: '乱入は App.executeShow の中でだけ判定される。王座戦の対戦相手そのものが変わるので、この興行の結果は全面的に別物になる。',
@@ -180,12 +183,9 @@ module.exports = [
     // (dome はブレークスルーの経歴も)。元の強さ(mustAppear: true)に戻した。A02 を一本化したら項目ごと外すこと
     mustAppear: true, refs: 'app.js:8829-8941 / エンジン側なし(乱数ストリーム 0xB818/0x5C6/0x5C7/0x5C8 は実プレイだけが引く)',
   },
-  {
-    id: 'K1-A03', title: '季節統計(seasonStats: 興行数・勝敗・最高評価)',
-    category: 'processing', side: 'app', impact: '表示', checkpoints: ['A', 'B'],
-    patterns: ['seasonStats.*'], sides: { A: ['appOnly'] },
-    mustAppear: true, refs: 'app.js:8809-8827 / エンジン側なし(序章ハイライトや年間表彰が読む)',
-  },
+  // K1-A03(季節統計 seasonStats: 興行数・勝敗・最高評価)は K-1 第2段で解消したので外した(2026-09-26)。
+  // 両経路が Engine.show.accumulateSeasonStats を通す。季の収支合計(seasonStats.total*・peak*)は closeShowResult の
+  // 後半にあり、K1-C05 に数える(第5段で tickWeek へ)。
   {
     id: 'K1-A04', title: '興行結果の新聞データ(currentNewspaper)→ 週刊新聞の興行記事',
     category: 'processing', side: 'app', impact: '表示', checkpoints: ['A', 'B'],

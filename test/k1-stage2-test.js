@@ -9,6 +9,8 @@
 //       宿怨の決着の勝者 bitterResolutionWinnerId の両方を持つ
 //    2. K1-A06 対戦成績: Engine.show.recordShowH2h(印は Engine.show.buildMatchMeta)。シングルの履歴に
 //       元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦の印を刻み、元同僚の初対面は業界ニュースに積む
+//    3. K1-T01 奪還挑戦の予約の欄: Engine.saveDoctor.repairProgressionState が予約の無い状態に null を作らない
+//    4. K1-A03 季節の統計: Engine.show.accumulateSeasonStats(興行数・決着数・引き分け・季の最高評価)
 //
 //  両経路の一致そのものは npm run test:k1:parity(実ブラウザ)が見る。ここは関数の中身と、
 //  app.js / management.js が共通の関数を呼んでいること(文面)を確かめる。
@@ -174,6 +176,39 @@ section('T01: 進行の修復は、奪還挑戦の予約が無い状態に null 
   const stale = Engine.saveDoctor.repairProgressionState({ ...base, _pendingReclaim: { titleType: 'world', challengerId: 99 } });
   assert.strictEqual(stale.state._pendingReclaim, null, '居ない挑戦者の予約は null にする(従来どおり)');
   assert.ok(stale.changes.includes('pendingReclaim_stale_ref_removed'));
+});
+
+// ── 4. K1-A03 季節の統計 ──
+section('A03: 季節の統計に通常興行1回分を足す(興行数・決着数・引き分け・季の最高評価とその顔合わせ)', () => {
+  assert.ok(typeof Engine.show.accumulateSeasonStats === 'function', 'Engine.show.accumulateSeasonStats が無い');
+  const before = { wins: 3, losses: 0, draws: 1, showCount: 2, bestMQ: 60, bestMQMatch: '前の試合', totalRevenue: 100 };
+  const roster = [{ id: 1, name: 'A' }, { id: 2, name: 'B' }, { id: 3, name: 'C' }, { id: 4, name: 'D' }];
+  const validMatches = [
+    { left: 1, right: 2 },
+    { matchType: 'tag', teamA: { fighter1: 1, fighter2: 2 }, teamB: { fighter1: 3, fighter2: 4 } },
+    { left: 3, right: 4 },
+  ];
+  const results = [
+    { winner: 'left', mq: 55, left: { name: 'A' }, right: { name: 'B' } },
+    { matchType: 'tag', winner: 'teamB', mq: 72 },
+    { winner: 'draw', mq: 40, left: { name: 'C' }, right: { name: 'D' } },
+  ];
+  const out = Engine.show.accumulateSeasonStats(before, validMatches, results, roster);
+  assert.strictEqual(out.showCount, 3);
+  assert.strictEqual(out.wins, 5, '決着のついた試合(シングル1+タッグ1)');
+  assert.strictEqual(out.draws, 2);
+  assert.strictEqual(out.bestMQ, 72);
+  assert.strictEqual(out.bestMQMatch, 'A & B vs C & D', 'タッグの顔合わせ');
+  assert.strictEqual(out.totalRevenue, 100, '収支の欄には触れない(K1-C05 は closeShowResult)');
+  assert.strictEqual(before.showCount, 2, '入力を書き換えた');
+});
+
+section('A03: 両経路が Engine.show.accumulateSeasonStats を呼ぶ', () => {
+  const fin = finalizeBody();
+  const exe = executeShowBody();
+  assert.ok(fin.includes('const stats = Engine.show.accumulateSeasonStats(G.seasonStats, validMatches, results, roster);'), 'app.js が共通の関数を呼んでいない');
+  assert.ok(exe.includes('seasonStats: Engine.show.accumulateSeasonStats(s.seasonStats, validMatches, results, roster)'), 'management.js が共通の関数を呼んでいない');
+  assert.ok(!/stats\.showCount\+\+/.test(fin), 'app.js に自前の集計が残っている');
 });
 
 console.log(failed === 0 ? 'ALL PASS' : `${failed} FAILED`);
