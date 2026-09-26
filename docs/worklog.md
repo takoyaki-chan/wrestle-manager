@@ -1,5 +1,74 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 K-4 S1〜S3 — 休眠プールの入口・人生番号の土台・転生の関所(Claude/Opus 5.5・worktree)
+
+裁定 K-4「引退した選手の再デビューは同姓同名の別人(襲名しない)」の設計書 `docs/fun-audit-v0.1/k4-separate-lives-design.md` §8 のうち S1〜S3。確認8つは全て「はい」(2026-09-26)。画面には何も足していない(人生番号は内部の識別子。「二代目」等の呼び方もしない)。
+
+### S1 休眠プールの入口(d1d928df)— デビュー済みの選手を休眠プールに入れない
+- **R1/R2** 手放す経路を `Engine.util.releaseToMarket(state, fighter, fromOrgId)` に一本化。デビュー済み(`Engine.life.hasDebuted` = prospect で debutSeason が無い子以外)は **FA上限に関係なく FA** へ入れ、`faSince`(FA入りの季)と `faFromOrgId`(手放した団体)を刻む。見込み選手だけ従来どおり上限超過で休眠プール。置き換えた経路: AI週次イベント退団 / AI契約退団 / AI世代交代 / AIの戦力外(シーズン中FA獲得時・以前は無条件で休眠プール)/ 引き取り時の押し出し(同)/ レンタル帰還 / 自団体の突然の退団 / 自団体の契約退団(エンジン)/ 放出・解雇・イベント退団(app.js 3経路)
+- **R3「フリーのまま引退」** `Engine.util.retireUnsignedFreeAgents`(オフ第1週・FA加齢の直後): デビュー済みで `faSince < 今季`(丸1季拾われなかった)なら年齢に関係なく引退。retire(reason `'freeAgent'`)・retiredIds/retiredSeasons・殿堂判定(最後に所属した団体の欄。自団体OGは player の欄と hallOfFame)・新聞(AI団体の前所属なら `aiOrgs[前所属]._newsRetirements` に積んでAI引退と同じ格付け記事、自団体OGは業界ニュース `retirementDeclare`)。`faSince` の無い旧データは今季を刻んで今回は残す。旧「FA 22歳超→引退枠(記録なし)」を置き換え
+- **R4** FA月次入れ替えで休眠プールへ戻すのは見込み選手だけ / **R5** FA加齢の若返り(22歳超→休眠プール)も見込み選手だけ / **R6** 休眠プールの21歳超は引退枠を経ずその場で17〜19歳へ(乱数は専用ストリーム 0xFA04)
+- `Engine.life.lastOrgId`: faFromOrgId → 所属歴の 'fa' 以外の最後 → 今の orgId。**AI団体のドラフト獲得者は所属歴に団体の項目が無い**(makeAIFighter の 'fa' のまま団体へ入る。既存の欠け)ので faFromOrgId で補った
+- **auto-sim の流札の扱いを修正**: 流札を FA に置くとき `normFighter` が active 化していたため「デビュー済みFA」扱いになり、1季後にフリーのまま引退していた。見込み選手のまま置く(実プレイでは流札は休眠プールへ戻る)。設計書 §1-2 の計測(フリーのまま引退 年3.4人・中央値19歳)はこの影響を含んでいた可能性が高い
+- specs/scout-system-spec-v1.0.md §9.2〜§9.5 を改訂
+
+### S2 人生番号の土台(5fde2e42)
+- `state.lifeSerial = {id: n}`(無ければ 1)/ `fighter.lifeNo` / `fighter.debutSeason`。`Engine.life.current / of / stamp / beginNewLife`
+- 印付け `stamp`(何度呼んでも同じ・変化が無ければ同じ state)の置き場所: tickWeek の入口(呼び名の更新の直前)・advanceWeek の入口・repairOnLoad の末尾・createInitialState。debutSeason は団体ロスターだけ(オフ中の獲得は翌季)。**旧セーブ(lifeSerial 無し)の最初の印付けでは debutSeason を在籍季数から推定**(max(1, 季−careerSeasons)、季末処理後は+1)— 今季で埋めると S7 の移行前に誤った値が残るため(repairOnLoad は入口で旧セーブかを判定し、`life_serial_initialized` を修復ログに1回出す)
+- 3つの転生経路を関所 `beginNewLife` に接続: 季末の補充(advanceWeek)・ロード時修復(repairOnLoad の addDormantEntries)・CLI(tools/save-doctor.js の addDormantEntries と未追跡IDの回収。先に印付け)
+- 在籍履歴の季: makeAIFighter の最初の orgTimeline 項目を作られた季に(呼び出し側6か所が opts.season/week を渡す)
+- 不変条件 I-1(validateGameState): 現役・FA・スカウト候補の lifeNo が今の人生と一致
+
+### S3 転生の関所(e42c9053)
+- `Engine.life.LIVE_RECORD_STORES`(一覧表)と `closeLiveRecords`: 設計書 §3-A の19の保存先 + 実装時に見つけた2つ(`_glimpseAFired` = Glimpse A の閾値の発火済み印は時間で消えない / `_glimpseACooldowns`)。関係フラグは当事者なら項目ごと、「裏切られた側」の一人ならそのIDだけ外す(空になれば項目ごと)。休眠プールの項目の grudge も落とす
+- 意味のある関係(対戦1回以上・競争意識20以上・絆が50から±10以上・因縁の段位あり)だけ `relationshipHistory.retiredRivalries` に1組1件で退避(reason `'lifeEnd'`・`lives: {id: 番号}`・関係値は小数1桁・中身のある因縁の欄・h2h の要約 = 試合数・勝敗・最高評価・最初と最後の季・`bySeason`・王座戦/PPV。全履歴は持たない)
+- 年代記の2か所(エースの宿敵・同世代の宿敵)が退避した `bySeason` も章の窓で数える(`Engine.chronicle._archivedPairCountsInWindow`)
+- 報道済みの所属の印(newsSeen.org)も消すので、新しい人生の入団が前の人生の所属からの「移籍」記事にならない
+
+### 経路差分テストの許容リスト(aee39eb6)
+- fixture(seed 42・S2W14)はエンジンで進めて作るため、S1 で世界の進み方が変わり既知の乖離の現れ方が入れ替わった(変更前 PASS → S1 以降 未登録5・消えた1)。K1-A09 の B の波及に4パターン、K1-A04 に `_industryNewsEvents` を追加、K1-A02 は fixture の週に該当者がいなくなったので mustAppear を外した(処理そのものは実プレイだけに残っている)。**登録33・未登録0・消えた0 で PASS**
+
+### 計測(`node test/k4-lives-probe.js 40 42`・S11以降。現状 = 28b92b9f)
+
+| 項目 | 現状 | S1 | S3(最終) |
+|---|---|---|---|
+| 休眠プール(第1週)中央値/最小 | 8 / 5 | 29 / 18 | 29 / 20 |
+| ドラフト前の17-18歳 | 6 / 4 | 14 / 8 | 14 / 10 |
+| スカウト候補 | 6 / 4 | 7 / 6 | 7 / 6 |
+| FA(第1週) | 6 / 4 | 11 / 8 | 12 / 5 |
+| AIロスター合計(中央値/最小/10%点) | 34 / 31 / 31 | 39 / 36 / 36 | 39 / 34 / 35 |
+| AI S/A/B 中央値(最小) | 16/11/9(13/9/4) | 16/13/10(14/11/6) | 16/13/10(16/11/6) |
+| 自団体ロスター | 8 / 6 | 8 / 6 | 8 / 6 |
+| 転生(前世デビュー済み) | 215 | 241 | 242 |
+| うち引退枠を経ない(間隔0〜1季) | 83(82) | 0(0) | 0(0) |
+| デビュー済み→休眠プール直行 | 96 | 0 | 0 |
+| 転生の初見時点で §3-A の保存先に参照 | 215 | 241 | 5(※) |
+| 関所の直後に参照が残った | — | — | 0 / 292回 |
+| フリーのまま引退 | — | 87人(2.17/季) | 84人(2.10/季)・中央値20歳・22歳以下75 |
+| うち殿堂判定/殿堂入り/記事を積んだ/紙面に出た | — | 87/0/87/72 | 84/0/84/71 |
+
+- 供給7項目はすべて現状以上で合格基準(中央値 −1以内・最小値の低下1以内)を満たす。**むしろ増えた**(R6 で休眠プールの子が引退枠で5季休まなくなり、AI団体 A/B が厚くなった)。設計書の推奨構成(AI 35/33)より多いのは、休み15季(S5)が未実装なのと、上の流札の修正のため
+- ※ 5件はすべて団体ロスターで初見(ドラフトの安全網などで休眠プールから直接入団)= 関所の後に新しい人生で書かれた記録
+- ロード時修復の変種(`--load-repair`・各季第5週): 40回で戻ったID 129、関所を通った 129(全件)
+- retiredRivalries の lifeEnd は S41 で 2,762件・JSON 931KB・圧縮後 120KB(状態全体の圧縮後 560KB の約2割)
+
+### 検証
+- 回帰テスト3本(新規): `k4-dormant-entry-test`(14項目)・`k4-life-serial-test`(12項目)・`k4-rebirth-clean-test`(5項目)。それぞれ直前のコミットの src(`WM_TEST_SRC_DIR` で差し替え)で落ちることを確認(S2 の CLI 項目は現行の tools を起動するので対象外)
+- 既存テストの更新: ai-contract-dormant-routing(デビュー済みはFA・見込み選手は休眠プールの2本に)・departed-star-claim(押し出しはFA)
+- `npm test` S1 299/299・S2 300/300・S3 301/301・main 取り込み後 301/301 / `node test/auto-sim.js 40 42` S1・S3 とも ALL CLEAR / S2 はフック相当(5シード×20季)ALL CLEAR / `npm run test:k1:parity` PASS / `node test/save-regression.js` ALL CLEAR(Phase 1)+ CLI `--repair --dry-run` 6本・repairOnLoad→tickWeek 6本(k4-life-serial-test 内)で落ちない / `npm run test:ui:walkthrough` PASS(Issues 0・main 取り込み後)
+
+### S4 以降への引き継ぎ
+- **S4(恒久記録)**: 書き手は `Engine.life.of(state, fighterOrId)` で番号を得る(印付け前の見込み選手でも lifeSerial から正しく引ける)。`retiredLives` はまだ書いていない(書き手3か所 = 自団体の finalizeRetireeBuffer/applyHallOfFame・AI の processSeasonEnd・**S1 の retireUnsignedFreeAgents**)。retiredRivalries の lifeEnd 項目は `lives` を持つので、相関図の hasPast(ui-render `_relmapBuildLinks`)は S6 で `lives` と表示中の2人の今の人生の一致を見る(今は転生した子と前の人生の相手の間に「過去の線」が出うる。以前は生きた関係値がそのまま残って今の線として出ていた)
+- **S5(休み15季)**: `returnCooldown` は3経路(advanceWeek の補充・repairOnLoad の `_eligibleRetired`・CLI の cooldownEligible/emergencyEligible)に。関所はもう通っているので判定を足すだけ
+- **S7(移行)**: S2 の印付けは旧セーブの全員に `lifeNo = lifeSerial[id] ?? 1`(= 1)を付け、debutSeason は推定で埋める。**移行は既存の lifeNo を正としないこと**(M2/M3 の人生の数え直しで上書きする)。移行前に起きた転生で lifeSerial が 2 になっている ID があり得るので、`lifeSerial = max(既存, k+1)` のように合わせる。CLI の一本化(save-doctor → repairOnLoad)も S7
+- 休眠プールの判定 `hasDebuted` は careerStage を見る。FA から借りた見込み選手(レンタル)は自団体ロスターにいる間に debutSeason が付くので、帰還後はデビュー済み扱い(FA上限なし)になる
+- 未修正で見つけたもの: AI団体のドラフト獲得者の所属歴に団体の項目が無い(makeAIFighter の 'fa' のまま団体へ入る。年代記・殿堂の在籍年に影響しうる。S4 の在籍年の作業で一緒に見るとよい)/ 修復ログ(save_repair_applied)は内部の語(`life_serial_initialized` 等)をそのまま出す既存の作り
+
+### 触ったファイル
+- src/management.js(Engine.util.releaseToMarket・marketDestination・retireUnsignedFreeAgents / Engine.life 新設 / 手放す経路8か所 / オフ第1週の FA 加齢・R3・休眠プールの年次処理 / FA月次入れ替え / tickWeek・advanceWeek・repairOnLoad・createInitialState の印付け / 転生の経路 A1・A2 / makeAIFighter の在籍履歴 / validateGameState I-1 / 年代記の読み手2か所)/ src/app.js(手放す3経路・FA即時補充の季)/ src/draft-negotiation.js(安全網の季)/ tools/save-doctor.js(A3・印付け)
+- test/k4-dormant-entry-test.js・k4-life-serial-test.js・k4-rebirth-clean-test.js・k4-lives-probe.js・helpers/k4-live-stores.js(新規)/ test/auto-sim.js(差し込み口・流札)/ test/ai-contract-dormant-routing-test.js / test/departed-star-claim-test.js / test/k1-parity/allowlist.js
+- specs/scout-system-spec-v1.0.md §9 / docs/実機確認バックログ.md / docs/game-system-roadmap.md
+
 ## 2026-09-26 K-1 第4段 4-B 後半 — プロモ蓄積のリセット・怪我による引退・突然の退団を実プレイにも(Claude/Opus 5.5・worktree)
 
 裁定 K-1 第4段 4-B の後半3件(Keisuke 承認済み・2026-09-25 第3回の確認)。前半と同じく `Engine.executeShow` の該当部分を `Engine.show.*` の純関数に切り出し、切り出しだけの段階で auto-sim の指紋が不変であることを確かめてから、実プレイ(`App._finalizeShowImpl`)を呼び替えた。**エンジン経路(auto-sim)の数値は3件とも不変**(10季 seed42 ac048164 / 40季 seed42 bdb5ffd4 / 40季 seed7919 d9dbafed。作業前と同じ)。
