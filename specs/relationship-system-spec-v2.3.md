@@ -57,6 +57,7 @@
 - 文言テンプレート: `{nameA}` `{nameB}` 置換、初版5本(`src/data.js` `GLIMPSE_B_LINES['GL-12']._narration`)
 - スナップショット種別: `GL-12`、tone `narration`、ラベル「第三者の証言」
 - 数値影響なし、純演出枠
+- 表示: 道場バナー「休憩中の選手」の枠に、**吹き出しではなく地の文**として出す(2026-09-26。塗り・顔・鉤括弧なし、コーチ不在時の雰囲気の文と同じ斜体の文字。`specs/glimpse-cascade-spec-v1.0.md` §0.1)
 
 **実装**: `src/relationships.js` `Engine.glimpse.checkBLayer` 内、ロスター走査の外で同興行参加者から判定。`state.lastShowResults` から参加 ID を集計する。
 
