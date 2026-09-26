@@ -613,9 +613,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .train-tendency{font-size:13px;color:var(--text-sub);margin-top:8px;padding-top:8px;border-top:1px solid rgba(200,190,170,0.05)}
 /* §3 Dojo Header + Atmosphere */
 .dojo-header{margin-bottom:14px;position:relative;overflow:hidden;border-radius:8px}
-/* min-height(2026-09-26): 画像は 6:1 なので幅が狭いと背が低くなり、コーチ(吹き出し+顔+名前 約120px)や
+/* min-height(2026-09-26): 画像は 6:1 なので幅が狭いと背が低くなり、コーチ(4行の吹き出し+顔+名前 約140px)や
    休憩中の選手(4行の吹き出し+顔 約108px)の上端が切れていた。object-fit:cover で左右を切って高さを保つ */
-.dojo-header-img{width:100%;max-height:200px;min-height:136px;object-fit:cover;display:block}
+.dojo-header-img{width:100%;max-height:200px;min-height:156px;object-fit:cover;display:block}
 .dojo-header-overlay{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(transparent 0%,rgba(0,0,0,0.7) 100%);pointer-events:none}
 .dojo-scene-coach{position:absolute;bottom:8px;left:10px;display:flex;flex-direction:column;align-items:center;max-width:70%;z-index:2}
 .dojo-scene-coach-avatar{width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.6);overflow:hidden;flex-shrink:0;background:rgba(0,0,0,0.3)}
@@ -624,24 +624,43 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
    例外なし」。コーチ名は吹き出しの外(上)へ(旧 .dojo-scene-bubble .coach-name は削除)。
    コーチ不在時の雰囲気テキストは話者のいない地の文なので白塗り・鉤括弧にしない(.dojo-scene-atmosphere)。*/
 .dojo-scene-coach-name{margin-top:3px;font-size:10px;color:var(--gold);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,0.7)}
-.dojo-scene-bubble-slot{height:40px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:6px}
+/* 予約枠は2行ぶん(40px)を下限に、3〜4行の報告では上へ伸びる(群は下端揃えなので顔と名前の位置は動かない) */
+.dojo-scene-bubble-slot{min-height:40px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:6px}
 /* サイズは右下「休憩中の選手」(.dojo-rest-bubble 11px)と同格に揃える(2026-08-13 Keisuke指摘:
-   コーチ側だけ13pxで大きく浮いていた) */
+   コーチ側だけ13pxで大きく浮いていた)。
+   2026-09-26 Keisuke裁定「広げる」: 190px・2行では報告の一言(将来の消耗を匂わせる長い報告など)が「…」で
+   切れていたため、幅210px・最大4行に広げた(mockup-baseline §3 の例外)。コーチの吹き出しに出る全行
+   (COACH_VOICE_REPORT_LINES・HEAT_STATE_COACH_LINES・報告の無い週の ATMOSPHERE_TEXTS。{name} はいちばん幅の広い
+   名字)が4行に収まる最小は JA 約192px・EN 約166px(Meiryo・Arial 等の代替フォントでも同じ)。ほぼ全行は3行以内で、
+   4行になるのは長い名字の入った最長の報告だけ */
 .dojo-scene-bubble{position:relative;background:var(--office-panel-cream-card);color:var(--cream-text-main);
   border-radius:var(--radius-lg);padding:var(--space-xs) var(--space-sm);font-size:11px;line-height:1.35;
-  max-width:190px;box-shadow:0 3px 10px rgba(0,0,0,0.35)}
+  max-width:210px;box-shadow:0 3px 10px rgba(0,0,0,0.35)}
 .dojo-scene-bubble::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--office-panel-cream-card);border-bottom:0}
-.dojo-scene-atmosphere{color:rgba(255,255,255,0.82);font-size:13px;font-style:italic;
+.dojo-scene-atmosphere,.dojo-rest-narration{color:rgba(255,255,255,0.82);font-size:13px;font-style:italic;
   text-shadow:0 1px 3px rgba(0,0,0,0.7);padding:var(--space-xs) 2px}
+/* コーチの吹き出しと同じ幅に収める(2026-09-26)。英語の長い一文が1行で約330px に伸び、コーチ不在で熱量の本人が
+   練習の列に割り込んだ週に、列の顔へ掛かっていた */
+.dojo-scene-atmosphere{max-width:210px}
 .dojo-scene-fighters{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;z-index:2}
 .dojo-scene-fighter-wrap{position:relative;cursor:pointer;flex-shrink:0}
 .dojo-scene-fighter-wrap:hover .dojo-scene-fighter{border-color:var(--gold);transform:scale(1.08)}
 /* P7-40: 熱量の本人セリフ吹き出し。.dojo-rest-bubble と同じ見た目(クリーム地・黒文字・尻尾中央)を
-   踏襲し、余白だけ列の縦積みに合わせて調整。1週に1人だけ、画像の「上」に出す。 */
+   踏襲し、余白だけ列の縦積みに合わせて調整。1週に1人だけ、画像の「上」に出す。
+   2026-09-26 Keisuke裁定「広げる」: 150px・2行では HEAT_STATE_SELF_LINES の半分近くが「…」で切れていたため、
+   幅160px・最大3行に広げた(mockup-baseline §3 の例外)。全75本が3行に収まる最小は JA 約137px・EN 約151px
+   (Meiryo。Noto Sans JP では EN 約141px)。横に広げず行数で受けるのは、練習の列(顔40px×最大4人)の幅を
+   ほとんど変えずに済み、コーチの群・休憩中の群とぶつからないため */
 .dojo-scene-fighter-wrap.has-heat-bubble{display:flex;flex-direction:column;align-items:center}
+/* 隣の選手の掛け声(.dojo-scene-shout、顔の中心に置く・最大幅約75px)が熱量の吹き出しの端に掛からないよう、
+   吹き出しと隣の顔の間を14px空ける(列の端の側は空けない)。2026-09-26 の検査で、どの幅でも掛け声が
+   吹き出しに重なっていたのを見つけて直した */
+.dojo-scene-fighter-wrap.has-heat-bubble{margin-left:14px;margin-right:14px}
+.dojo-scene-fighter-wrap.has-heat-bubble:first-child{margin-left:0}
+.dojo-scene-fighter-wrap.has-heat-bubble:last-child{margin-right:0}
 .dojo-heat-bubble{position:relative;background:var(--office-panel-cream-card);color:var(--cream-text-main);
   border-radius:var(--radius-lg);padding:var(--space-xs) var(--space-sm);font-size:11px;line-height:1.35;
-  max-width:150px;text-align:center;margin-bottom:6px;box-shadow:0 3px 8px rgba(0,0,0,0.3)}
+  max-width:160px;text-align:center;margin-bottom:6px;box-shadow:0 3px 8px rgba(0,0,0,0.3)}
 .dojo-heat-bubble::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
   border:6px solid transparent;border-top-color:var(--office-panel-cream-card);border-bottom:0}
 /* care-rework2 P1-2: 立ち姿に添える低調サイン。額縁を足さず、隅に小さく置くだけ */
@@ -677,16 +696,27 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
    吹き出し本体に overflow:hidden を付けると尻尾(::after・bottom:-6px)まで切れて見えなくなるため
    (2026-09-26 休憩中の4行化の検証で、3つとも尻尾が消えていたのを見つけて直した) */
 .dojo-bubble-text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
-.dojo-rest-bubble .dojo-bubble-text{-webkit-line-clamp:4}
-/* 狭い画面(バナー幅が約740px未満)では、コーチ・練習中の列・休憩中の選手を横に並べきれず重なる
-   (いちばん混む週: コーチ190+列約300+休憩中200+余白で約720px)。スマホでは高さ約60pxしかなく全部が
-   上で切れていた。画像を背景に敷き、3つの群を流し込みで並べる(入りきらなければ折り返して下へ)。
-   どの組み合わせでも群どうしが重ならず、上端も切れない。吹き出しは各群の画像の上のまま */
-@media(max-width:760px){
+.dojo-scene-bubble .dojo-bubble-text,.dojo-rest-bubble .dojo-bubble-text{-webkit-line-clamp:4}
+.dojo-heat-bubble .dojo-bubble-text{-webkit-line-clamp:3}
+/* 休憩中の枠の地の文(2026-09-26)。GL-12「第三者の証言」のような話者のいない文は吹き出しにしない
+   (mockup-baseline §3「セリフ=白い塗りつぶし/地の文=白でない見せ方」)。コーチ不在時の雰囲気の文
+   (.dojo-scene-atmosphere)と同じ見せ方で、顔も鉤括弧も付けず、休憩中の吹き出しと同じ周期で浮かんで消える */
+.dojo-rest-narration{max-width:200px;text-align:right;
+  animation:dojoRestFade var(--rest-cycle,22s) ease-in-out infinite;animation-delay:var(--rest-delay,0s)}
+/* 狭い画面(バナー幅が約790px未満)では、コーチ・練習中の列・休憩中の選手を横に並べきれず重なる
+   (いちばん混む週: コーチ210+列約320+休憩中200+余白。練習の列はバナーの中央なので、左右それぞれ
+   「端10+吹き出し200〜210+余白」と「列の半分約160+端の顔の掛け声のはみ出し約18」がバナーの半分に
+   収まる必要がある)。スマホでは高さ約60pxしかなく全部が上で切れていた。画像を背景に敷き、3つの群を
+   流し込みで並べる(入りきらなければ折り返して下へ)。どの組み合わせでも群どうしが重ならず、上端も
+   切れない。吹き出しは各群の画像の上のまま。
+   2026-09-26 コーチの吹き出しを210pxに広げたのに合わせて、切り替えを760px→820pxに上げた */
+@media(max-width:820px){
   .dojo-header{display:flex;flex-wrap:wrap;align-items:flex-end;align-content:flex-end;gap:8px;min-height:150px;padding:8px 10px}
   .dojo-header-img{position:absolute;top:0;left:0;width:100%;height:100%;max-height:none;min-height:0}
   .dojo-scene-coach,.dojo-scene-fighters,.dojo-rest-fighters{position:relative;top:auto;right:auto;bottom:auto;left:auto}
-  .dojo-scene-fighters{transform:none;margin:0 auto;padding-top:18px}
+  /* 左右の20pxは列の端の顔の掛け声(顔からはみ出す約18px)の分。群の箱に入れておけば隣の群と重ならない。
+     スマホ幅で「熱量の吹き出し+顔3人」が1行に入らないときは、列を折り返す(2行目の顔の掛け声の分だけ行を空ける) */
+  .dojo-scene-fighters{transform:none;margin:0 auto;padding:18px 20px 0;flex-wrap:wrap;justify-content:center;row-gap:22px}
   .dojo-rest-fighters{margin-left:auto}
 }
 .dojo-rest-avatar{width:34px;height:34px;border-radius:50%;overflow:hidden;opacity:0.72;

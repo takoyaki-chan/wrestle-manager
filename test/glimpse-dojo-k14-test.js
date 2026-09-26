@@ -190,7 +190,8 @@ section('道場の許可リスト: GL-01〜GL-12 を出し、hotstreak_end は�
   }
   assert.ok(!ctx.__eligible({ layer: 'B', type: 'hotstreak_end' }), 'hotstreak_end は出さない');
   ['bond', 'rivalry', 'trust'].forEach(axis => assert.ok(ctx.__eligible({ layer: 'A', axis }), `A層 ${axis} が出せない`));
-  const bubbleLine = ui.split('\n').find(l => l.includes('dojo-rest-bubble'));
+  // 休憩中の枠の文は restText に1回だけ作り、吹き出しと地の文(GL-12・2026-09-26)の両方が使う
+  const bubbleLine = ui.split('\n').find(l => l.includes('const restText ='));
   assert.ok(bubbleLine && bubbleLine.includes('WM_I18N.t(g.dialogue)') && bubbleLine.includes('WM_I18N.t(g.label)'),
     '休憩中の吹き出しがセリフ/ラベルを WM_I18N.t() に通していない');
 });
