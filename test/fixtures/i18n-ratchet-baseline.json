@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-26T02:07:58.273Z",
+  "generatedAt": "2026-09-26T06:50:33.164Z",
   "files": {
     "data.js": {
-      "jaCount": 17532,
-      "jaChars": 312798
+      "jaCount": 17542,
+      "jaChars": 313342
     },
     "kuroda-text.js": {
       "jaCount": 900,
@@ -18,20 +18,20 @@
       "jaChars": 14589
     },
     "management.js": {
-      "jaCount": 1351,
-      "jaChars": 10039
+      "jaCount": 1370,
+      "jaChars": 10166
     },
     "coach-lines.js": {
       "jaCount": 483,
       "jaChars": 9816
     },
     "ui-common.js": {
-      "jaCount": 1331,
-      "jaChars": 9313
+      "jaCount": 1332,
+      "jaChars": 9325
     },
     "ui-render.js": {
-      "jaCount": 978,
-      "jaChars": 8532
+      "jaCount": 979,
+      "jaChars": 8562
     },
     "tag-battle-lines.js": {
       "jaCount": 839,
@@ -42,12 +42,12 @@
       "jaChars": 8241
     },
     "app.js": {
-      "jaCount": 528,
-      "jaChars": 6462
+      "jaCount": 523,
+      "jaChars": 6439
     },
     "data-faction-dialogue.js": {
       "jaCount": 374,
-      "jaChars": 5249
+      "jaChars": 5831
     },
     "battle-lines.js": {
       "jaCount": 594,
@@ -86,8 +86,8 @@
       "jaChars": 617
     },
     "relationships.js": {
-      "jaCount": 46,
-      "jaChars": 397
+      "jaCount": 47,
+      "jaChars": 407
     },
     "match-engine.js": {
       "jaCount": 44,
