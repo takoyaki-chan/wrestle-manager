@@ -16062,6 +16062,399 @@ const Engine = {
       });
       return { ...s, h2h };
     },
+
+    // 興行結果の新聞データ(currentNewspaper)の見出し・本文のテンプレ(K-1 第2段 / K1-A04)。
+    // テンプレの表そのものは app.js の App._NEWSPAPER_HEADLINES / App._NEWSPAPER_ARTICLES に置いたまま
+    // (i18n の抽出 test/i18n-extract-templates.js・セリフ台帳 tools/extract-dialogue.js が app.js のその場所を読む)、
+    // 画面の読み込み時に app.js がここへ登録する。登録が無い環境(auto-sim などの Node の検査)では見出し・本文を
+    // 空にし、新聞は既定の見出しとサブ見出しで組む(Engine.newspaper.generate の既存の後退)
+    _newspaperTextPools: null,
+    registerNewspaperTextPools(headlines, articles) {
+      Engine.show._newspaperTextPools = (headlines && articles) ? { headlines, articles } : null;
+    },
+
+    // 見出し・サブ見出し・本文を選ぶ(以前の App._generateNewspaperTexts)。rng はこの号の文選び専用の系列。
+    // dict は i18n の辞書参照関数(WM_I18N.t。省略時は日本語のまま)
+    generateShowNewspaperTexts(d, rng, dict) {
+      // カテゴリ優先度で選択
+      let cat;
+      if (d.isDraw) cat = 'draw';
+      else if (d.isSuperMQ && !d.isDominant) cat = 'superMQ';
+      else if (d.isTitleMatch) cat = d.isTitleDefense ? 'titleDefend' : 'titleWin';
+      else if (d.isUpset) cat = 'upset';
+      else if (d.hasRivalry) cat = 'rivalry';
+      else if (d.isDominant) cat = 'dominant';
+      else if (d.isCloseMatch && d.isHighMQ) cat = 'closeMQ';
+      else if (d.isLowMQ) cat = 'normal';
+      else cat = 'normal';
+
+      // タイトルマッチ確定（superMQ/upset は歴史的名勝負/番狂わせ表現を優先）
+      if (d.isTitleMatch && !d.isDraw) {
+        if (cat !== 'superMQ' && cat !== 'upset') {
+          cat = d.isTitleDefense ? 'titleDefend' : 'titleWin';
+        }
+      }
+
+      // サブヘッドライン：常にカードと数値情報(NEWSPAPER_SUB_TEMPLATES)
+      let subKey;
+      if (d.isDraw) subKey = 'draw';
+      else if (d.otherHighMQ.length > 0) subKey = 'otherHighMQ';
+      else subKey = 'default';
+      const subheadlineTpl = NEWSPAPER_SUB_TEMPLATES[subKey];
+      const subheadlineVars = {
+        showName: d.showName,
+        venue: d.venue.name,
+        attendance: d.attendance.toLocaleString(),
+        turns: d.turns,
+        totalMatches: d.totalMatches,
+        avgMQ: d.avgMQ,
+        mq: d.mq,
+      };
+      const subheadline = fillTemplateVars(dict ? dict(subheadlineTpl) : subheadlineTpl, subheadlineVars);
+      const subheadlineDerive = d.showNameDerive ? [d.showNameDerive] : null;
+
+      const pools = Engine.show._newspaperTextPools;
+      if (!pools) {
+        return {
+          headline: null, subheadline, article: null,
+          headlineTpl: null, headlineVars: null, subheadlineTpl, subheadlineVars, articleTpl: null, articleVars: null,
+          headlineDerive: null, articleDerive: null, subheadlineDerive,
+        };
+      }
+      const pick = (arr) => Engine.rng.pick(rng, arr);
+      const HL = pools.headlines;
+      const AR = pools.articles;
+      // i18n P7-58: 完成文の隣に {tpl, vars}(WM_I18N.t へ渡せるJA原文+差し込み値)も作る(kurodaTextParts。
+      // src/kuroda-text.js)。表示側は headlineTpl/headlineVars から表示時点の言語で組み直す
+      const parts = (entry) => (typeof kurodaTextParts === 'function')
+        ? kurodaTextParts(entry, d, dict || undefined)
+        : { text: (typeof entry === 'function' ? entry(d) : entry) || '', tpl: null, vars: null };
+      const headlinePick = pick(HL[cat] || HL.normal);
+      const { text: headline, tpl: headlineTpl, vars: headlineVars } = parts(headlinePick);
+
+      // 記事本文
+      let articleCat = cat;
+      if (d.isGoodRival && !d.isDraw && cat !== 'superMQ') articleCat = 'goodRival';
+      const articlePool = AR[articleCat] || AR.normal;
+      let articlePick = pick(articlePool);
+      // 低MQ追記
+      if (d.isLowMQ && cat !== 'draw') {
+        articlePick = pick(AR.lowMQ);
+      }
+      const { text: article, tpl: articleTpl, vars: articleVars } = parts(articlePick);
+
+      // i18n P7-58: finishLabel/rivalLabel は d へ渡す前に訳した「成形済み値」なので、テンプレが実際に
+      // これらのキーを使ったときだけ、元になった生キー(finType/finMove・rivalLabelJa)からの再計算指示を添える
+      // (ui-render.js _npMaterializeVars の 'formatFinish'/'dictLabel' が読む)
+      const _buildDerive = (vars) => {
+        if (!vars) return null;
+        const derive = [];
+        if ('finishLabel' in vars) {
+          derive.push({ key: 'finishLabel', kind: 'formatFinish', finType: d.finType || null, finMove: d.finMove || null, fallback: vars.finishLabel });
+        }
+        if ('rivalLabel' in vars && d.rivalLabelJa) {
+          derive.push({ key: 'rivalLabel', kind: 'dictLabel', raw: d.rivalLabelJa });
+        }
+        if ('showName' in vars && d.showNameDerive) derive.push(d.showNameDerive);
+        return derive.length ? derive : null;
+      };
+
+      return {
+        headline, subheadline, article,
+        headlineTpl, headlineVars, subheadlineTpl, subheadlineVars, articleTpl, articleVars,
+        headlineDerive: _buildDerive(headlineVars), articleDerive: _buildDerive(articleVars), subheadlineDerive,
+      };
+    },
+
+    // 興行結果の新聞データ(currentNewspaper。K-1 第2段 / K1-A04。以前は実プレイの App._buildShowResultNewspaperData
+    // だけにあり、エンジンの週刊新聞には自団体の興行記事が載らなかった)。state は興行の処理を終えた状態
+    // (lastShowResults・lastShowAttendance・lastShowRating がこの興行のもの)。
+    // opts.titleOutcomes: 王座戦の結果([{ outcome: 'defense'|'change', champId?, newChampId? }]。防衛か奪取かの見出し)
+    // opts.injuryResults: この興行の怪我(引退を除いて紙面に載せる) / opts.dict: i18n の辞書参照関数(省略時は日本語)。
+    // 見出し・本文の文選びは専用の乱数系列(季・週・0x9E75)。数値には効かない。戻り値: 新聞データ(試合が無ければ null)
+    buildShowNewspaperData(state, opts = {}) {
+      const G = state;
+      const dict = (typeof opts.dict === 'function') ? opts.dict : null;
+      const T = (tpl, params) => _wmFillWithDict(dict, tpl, params);
+      const fmtFinish = (finType, finMove) => Engine.formatFinish(finType, finMove, undefined, dict || undefined);
+      const results = G.lastShowResults || [];
+      if (!results.length) return null;
+      const rawMain = results[0];
+      if (!rawMain) return null;
+      const totalMatches = results.length;
+
+      const buildTagNewsMatch = (r, originalIndex) => {
+        const tA = r.teamA || {};
+        const tB = r.teamB || {};
+        const aMembers = [
+          { id: tA.f1Id || 0, name: tA.f1Name || '?' },
+          { id: tA.f2Id || 0, name: tA.f2Name || '?' },
+        ];
+        const bMembers = [
+          { id: tB.f1Id || 0, name: tB.f1Name || '?' },
+          { id: tB.f2Id || 0, name: tB.f2Name || '?' },
+        ];
+        const aLabel = aMembers.map(f => f.name).join(' & ');
+        const bLabel = bMembers.map(f => f.name).join(' & ');
+        const isMatchDraw = r.winner === 'draw';
+        const winSide = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
+        const winnerName = isMatchDraw ? null : (winSide === 'left' ? aLabel : bLabel);
+        const loserName  = isMatchDraw ? null : (winSide === 'left' ? bLabel : aLabel);
+        return {
+          left: { id: tA.f1Id || 0, name: aLabel, ovr: 0, members: aMembers },
+          right: { id: tB.f1Id || 0, name: bLabel, ovr: 0, members: bMembers },
+          teamA: { label: aLabel, members: aMembers },
+          teamB: { label: bLabel, members: bMembers },
+          winner: winSide,
+          winnerName,
+          loserName,
+          mq: r.mq || 0,
+          turns: r.turns || 0,
+          // i18n Stage B P4-5: finishLabel は dict を通す(specs/i18n-runtime-spec-v1.0.md §6)。
+          // 生キー finType/finMove も併記し、表示時に組み直せるようにする(ui-render.js _npResolvePlayerShowData)
+          finishLabel: fmtFinish(r.finType, r.finMove),
+          finType: r.finType || null, finMove: r.finMove || null,
+          isDraw: isMatchDraw,
+          isUpset: false,
+          isDominant: !isMatchDraw && (r.turns || 99) <= 6,
+          isTitleMatch: false,
+          isTag: true,
+          matchNumber: originalIndex === 0 ? totalMatches : Math.max(1, totalMatches - originalIndex),
+          matchLabel: originalIndex === 0 ? T('メインイベント') : T('第{n}試合', { n: Math.max(1, totalMatches - originalIndex) }),
+        };
+      };
+
+      // タッグメインの場合: チーム代表名でleft/right/winner/loserを合成
+      const isTagMain = rawMain.matchType === 'tag';
+      let main;
+      if (isTagMain) {
+        const tagMain = buildTagNewsMatch(rawMain, 0);
+        main = {
+          ...rawMain,
+          left: tagMain.left,
+          right: tagMain.right,
+          teamA: tagMain.teamA,
+          teamB: tagMain.teamB,
+          winner: tagMain.winner,
+          isTag: true,
+          matchNumber: tagMain.matchNumber,
+          matchLabel: tagMain.matchLabel,
+          isTitleMatch: false, // タッグはタイトル戦ではない
+        };
+      } else {
+        if (!rawMain.left || !rawMain.right) return null;
+        main = rawMain;
+      }
+      const venue = VENUES[G.showVenue] || { name: 'Arena' };
+      const isDraw = main.winner === 'draw';
+      const winner = isDraw ? null : (main.winner === 'left' ? main.left : main.right);
+      const loser = isDraw ? null : (main.winner === 'left' ? main.right : main.left);
+      const avgMQ = Math.round(results.reduce((sum, r) => sum + (r.mq || 0), 0) / results.length);
+      const attendance = G.lastShowAttendance || 0;
+      const showName = Engine.util.isPPV(G.week) ? 'PPV GRAND FINAL'
+        : (Engine.util.isSpecialShow(G.week) ? T('特別興行') : T('第{n}回 定期興行', { n: G.totalShows }));
+      // 興行名は生成時点の言語で焼いた成形済み値なので、表示時に組み直す指示を添える(ui-render.js _npMaterializeVars の 'tpl')
+      const showNameDerive = Engine.util.isPPV(G.week) ? null
+        : (Engine.util.isSpecialShow(G.week)
+          ? { key: 'showName', kind: 'tpl', tpl: '特別興行', vars: null }
+          : { key: 'showName', kind: 'tpl', tpl: '第{n}回 定期興行', vars: { n: G.totalShows } });
+      const finishLabel = fmtFinish(main.finType, main.finMove);
+      const turns = main.turns || 0;
+      const mq = main.mq || avgMQ;
+      const hpL = main.hpLeft || { final: 0, max: 100 };
+      const hpR = main.hpRight || { final: 0, max: 100 };
+
+      // 試合状況フラグ
+      const loserHpPct = isDraw ? 50 : (main.winner === 'left'
+        ? Math.round((hpR.final / Math.max(1, hpR.max)) * 100)
+        : Math.round((hpL.final / Math.max(1, hpL.max)) * 100));
+      const winnerHpPct = isDraw ? 50 : (main.winner === 'left'
+        ? Math.round((hpL.final / Math.max(1, hpL.max)) * 100)
+        : Math.round((hpR.final / Math.max(1, hpR.max)) * 100));
+      const isCloseMatch = !isDraw && loserHpPct >= 15;
+      const isDominant = !isDraw && turns <= 6;
+      const isLongBattle = turns >= 18;
+      const isHighMQ = mq >= 80;
+      const isSuperMQ = mq >= 90;
+      const isLowMQ = mq < 40;
+      const isPPVShow = Engine.util.isPPV(G.week);
+      const isSpecial = Engine.util.isSpecialShow(G.week);
+
+      // 因縁・関係データ（タッグはチーム単位のため個人因縁は適用しない）
+      const rivalLvl = isTagMain ? null : Engine.title.getRivalryLevel(G, main.left.id, main.right.id);
+      const hasRivalry = !!rivalLvl && !rivalLvl.isGoodRival;
+      const isGoodRival = !!rivalLvl && rivalLvl.isGoodRival;
+      // i18n P7-43: 因縁ラベル(因縁/宿敵/宿命)は成形済みの1語ラベルなので、差し込む前に辞書を引く
+      const rivalLabel = rivalLvl ? _wmDictLabel(dict, rivalLvl.label) : null;
+      let bondAvg = 50;
+      if (!isTagMain && G.relationships) {
+        const kAB = `${main.left.id}>${main.right.id}`;
+        const kBA = `${main.right.id}>${main.left.id}`;
+        // 絆0は正当な値(冷え切った仲)。欠損・数値でないときだけ50
+        const _bondOf = rel => (rel && Number.isFinite(rel.bond)) ? rel.bond : 50;
+        const bA = _bondOf(G.relationships[kAB]);
+        const bB = _bondOf(G.relationships[kBA]);
+        bondAvg = Math.round((((bA + bB) / 2) + Number.EPSILON) * 10) / 10;
+      }
+      const isHighBond = bondAvg >= 70;
+
+      // OVR差（タッグは合成代表のOVRが0のためupset判定をスキップ）
+      const ovrL = isTagMain ? 0 : Engine.util.ov(main.left);
+      const ovrR = isTagMain ? 0 : Engine.util.ov(main.right);
+      const ovrGap = Math.abs(ovrL - ovrR);
+      const isUpset = !isTagMain && !isDraw && winner && (
+        (winner.id === main.left.id && ovrL < ovrR - 8) ||
+        (winner.id === main.right.id && ovrR < ovrL - 8)
+      );
+
+      // 他の試合のハイライト
+      const otherHighMQ = results.slice(1).filter(r => (r.mq || 0) >= 75);
+      // タイトルマッチの場合、防衛/奪取を判定
+      let isTitleDefense = false;
+      if (main.isTitleMatch && !isDraw && winner) {
+        const outcomes = opts.titleOutcomes || [];
+        const winnerId = winner.id;
+        const mainOutcome = outcomes.find(o =>
+          (o.outcome === 'defense' && o.champId === winnerId) ||
+          (o.outcome === 'change' && o.newChampId === winnerId)
+        );
+        isTitleDefense = mainOutcome?.outcome === 'defense';
+      }
+
+      // ─── テキスト生成(文選びは専用の乱数系列) ───
+      const textRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0x9E75));
+      const np = Engine.show.generateShowNewspaperTexts({
+        isDraw, winner, loser, left: main.left, right: main.right,
+        isTitleMatch: !!main.isTitleMatch, isTitleDefense, finishLabel, turns, mq,
+        loserHpPct, winnerHpPct, isCloseMatch, isDominant, isLongBattle,
+        isHighMQ, isSuperMQ, isLowMQ, isPPVShow, isSpecial,
+        hasRivalry, isGoodRival, rivalLabel, isHighBond,
+        ovrGap, isUpset, venue, attendance, showName, avgMQ,
+        otherHighMQ, totalMatches, orgName: G.orgName,
+        finType: main.finType, finMove: main.finMove,
+        rivalLabelJa: rivalLvl ? rivalLvl.label : null,
+        showNameDerive,
+      }, textRng, dict);
+
+      // ── allMatches: メイン以外の全試合ダイジェスト ──
+      const allMatches = results.slice(1).map((r, relIdx) => {
+        if (!r) return null;
+        const originalIndex = relIdx + 1;
+        if (r.matchType === 'tag') return buildTagNewsMatch(r, originalIndex);
+        if (!r.left || !r.right) return null;
+        const isMatchDraw = r.winner === 'draw';
+        const matchWinner = isMatchDraw ? null : (r.winner === 'left' ? r.left : r.right);
+        const matchLoser = isMatchDraw ? null : (r.winner === 'left' ? r.right : r.left);
+        const mOvrL = Engine.util.ov(r.left);
+        const mOvrR = Engine.util.ov(r.right);
+        return {
+          left: { id: r.left.id, name: r.left.name, ovr: mOvrL },
+          right: { id: r.right.id, name: r.right.name, ovr: mOvrR },
+          winner: r.winner,
+          winnerName: matchWinner?.name || null,
+          loserName: matchLoser?.name || null,
+          mq: r.mq || 0,
+          turns: r.turns || 0,
+          finishLabel: fmtFinish(r.finType, r.finMove),
+          finType: r.finType || null, finMove: r.finMove || null,
+          isDraw: isMatchDraw,
+          isUpset: !isMatchDraw && matchWinner && (
+            (matchWinner.id === r.left.id && mOvrL < mOvrR - 8) ||
+            (matchWinner.id === r.right.id && mOvrR < mOvrL - 8)
+          ),
+          isDominant: !isMatchDraw && (r.turns || 99) <= 6,
+          isTitleMatch: !!r.isTitleMatch,
+          isTag: false,
+          matchNumber: Math.max(1, totalMatches - originalIndex),
+          matchLabel: T('第{n}試合', { n: Math.max(1, totalMatches - originalIndex) }),
+        };
+      }).filter(Boolean);
+
+      // 集客v2: ★評価(K-2: 興行の処理で決まった★をそのまま使う。保存が無い旧セーブ等だけ再計算)
+      const npValidMatches = (G.showCard || []).filter(m => m.left > 0 && m.right > 0);
+      const npFanExpects = Engine.fanExpect.generate(G);
+      const npRatingCtx = {
+        hasTitleMatch: npValidMatches.some(m => m.isTitle),
+        titleGreatMQ: npValidMatches.some(m => m.isTitle) ? results.find((r, i) => npValidMatches[i]?.isTitle)?.mq || 0 : 0,
+        rivalryResolved: results.some(r => r.rivalryResolved),
+        rivalryCards: npValidMatches.filter(m => {
+          if (!G.relationships) return false;
+          const rAB = G.relationships[`${m.left}>${m.right}`]?.rivalry || 0;
+          const rBA = G.relationships[`${m.right}>${m.left}`]?.rivalry || 0;
+          return Math.max(rAB, rBA) >= 30;
+        }).length,
+        fanExpectMatches: npFanExpects ? Engine.fanExpect.countMatched(npValidMatches, npFanExpects) : 0,
+      };
+      const npRating = Engine.attendanceV2.getStoredShowRating(G)
+        || Engine.attendanceV2.calcShowRating(results, attendance, VENUES[G.showVenue].cap, G.showVenue, npRatingCtx);
+      const showRating = { stars: npRating.stars, totalScore: npRating.totalScore, mqScore: npRating.mqScore, occScore: npRating.occScore, bonusScore: npRating.bonusScore, actual: avgMQ };
+
+      // ── preview: 次回展望データ ──
+      const preview = { fanExpect: [], rivalry: null, title: null };
+      const pvFanExpects = Engine.fanExpect.generate(G);
+      if (pvFanExpects && pvFanExpects.length > 0) {
+        pvFanExpects.slice(0, 2).forEach(fe => {
+          const feLeft = G.roster.find(f => f.id === fe.leftId) || ALL_CHARS.find(c => c.id === fe.leftId);
+          const feRight = G.roster.find(f => f.id === fe.rightId) || ALL_CHARS.find(c => c.id === fe.rightId);
+          if (feLeft && feRight) {
+            preview.fanExpect.push({ leftId: feLeft.id, leftName: feLeft.name, rightId: feRight.id, rightName: feRight.name });
+          }
+        });
+      }
+      // 因縁ペア（tierが最大のもの）
+      if (G.rivalries) {
+        let maxTier = 0, hotPair = null;
+        Object.entries(G.rivalries).forEach(([key, riv]) => {
+          const tier = riv.tier || 0;
+          const matches = riv.matches || 0;
+          if (tier > maxTier || (tier === maxTier && matches > (hotPair?._matches || 0))) {
+            maxTier = tier;
+            const ids = key.split('>');
+            const rLeft = G.roster.find(f => f.id === ids[0]);
+            const rRight = G.roster.find(f => f.id === ids[1]);
+            if (rLeft && rRight) hotPair = { leftName: rLeft.name, rightName: rRight.name, _matches: matches };
+          }
+        });
+        if (hotPair && maxTier >= 1) {
+          preview.rivalry = { leftName: hotPair.leftName, rightName: hotPair.rightName };
+        }
+      }
+      // タイトル戦展望
+      const champId = G.titles?.world?.championId;
+      if (champId) {
+        const champ = G.roster.find(f => f.id === champId);
+        const challenger = [...G.roster]
+          .filter(f => f.id !== champId)
+          .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
+        if (champ && challenger) {
+          preview.title = { championName: champ.name, challengerName: challenger.name };
+        }
+      }
+
+      return {
+        showName, venueName: venue.name, venueIdx: G.showVenue, attendance, avgMQ,
+        headline: np.headline, subheadline: np.subheadline, article: np.article,
+        // i18n P7-58: 完成文の隣に「表示時再生成」用のテンプレ+差し込み値を併記する(specs §14-3)。
+        // Engine.newspaper.generate が playerShowTitle/Normal 記事の headlineTpl/bodyTpl へそのまま引き継ぐ
+        headlineTpl: np.headlineTpl, headlineVars: np.headlineVars, headlineDerive: np.headlineDerive,
+        subheadlineTpl: np.subheadlineTpl, subheadlineVars: np.subheadlineVars, subheadlineDerive: np.subheadlineDerive,
+        articleTpl: np.articleTpl, articleVars: np.articleVars, articleDerive: np.articleDerive,
+        winner, loser, left: main.left, right: main.right, isDraw, finishLabel,
+        // i18n P7-58: finType/finMove は finishLabel の元になった生キー(表示側が formatFinish を呼び直す)
+        finType: main.finType || null, finMove: main.finMove || null,
+        turns, mq, hpLeft: hpL, hpRight: hpR, isTitleMatch: !!main.isTitleMatch,
+        isTag: !!main.isTag, teamA: main.teamA || null, teamB: main.teamB || null,
+        // i18n P7-58: シングルのメインは matchLabel を null のまま渡し、表示時の「メインイベント」に委ねる
+        matchNumber: main.matchNumber || totalMatches, matchLabel: main.matchLabel || null,
+        injuries: (opts.injuryResults || []).filter(ir => ir && ir.injury && !ir.retireType).map(ir => ({
+          name: ir.name,
+          type: ir.injury.type,
+          weeksLeft: ir.injury.weeksLeft,
+        })),
+        allMatches, showRating, preview,
+        generatedWeek: G.week, generatedSeason: G.season,
+      };
+    },
   },
 
   // ══════════════════════════════════════════════════════════
@@ -16166,6 +16559,9 @@ const Engine = {
     }).filter(Boolean);
 
     // Title outcomes
+    // K-1 第2段(K1-A04): 王座戦の結果(防衛か奪取か)を控える。興行結果の新聞の見出し(buildShowNewspaperData)が読む。
+    // 実プレイ(app.js)の titleMatchOutcomes と同じ形
+    const titleMatchOutcomes = [];
     validMatches.forEach((m, i) => {
       if (!m.isTitle || m._unifiedTitleMatch || !rawResults[i]) return;
       const r = rawResults[i];
@@ -16175,13 +16571,16 @@ const Engine = {
       const challengerName = challengerId != null ? (roster.find(f => f.id === challengerId)?.name) : undefined;
       if (r.winner === 'draw') {
         if (champId) { const def = Engine.title.recordDefense(tempState, { challengerName, challengerId }); titles = def.titles; roster = def.roster; events.push(def.msg); }
+        titleMatchOutcomes.push({ outcome: 'defense', champId, challengerId });
       } else {
         const winnerId = r.winner === 'left' ? m.left : m.right;
         if (!champId || winnerId !== champId) {
           const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
           if (crown.newsEvent) s = Engine.industryNews.push(s, crown.newsEvent);
+          titleMatchOutcomes.push({ outcome: 'change', newChampId: winnerId, prevChampId: champId, challengerId });
         } else {
           const def = Engine.title.recordDefense(tempState, { challengerName, challengerId }); titles = def.titles; roster = def.roster; events.push(def.msg);
+          titleMatchOutcomes.push({ outcome: 'defense', champId, challengerId });
         }
       }
     });
@@ -16769,6 +17168,14 @@ const Engine = {
     // v1.3-3: Build pending injury retirement presentation data
     // K-1 4-B-6(K1-E03): 実プレイと同じ Engine.show.buildInjuryRetirementPresentations(引退セリフは興行前の状態で選ぶ)
     s = Engine.show.buildInjuryRetirementPresentations(s, state, injuryResults);
+
+    // K-1 第2段(K1-A04): 興行結果の新聞データ。実プレイ(app.js)と同じ Engine.show.buildShowNewspaperData で組む。
+    // 同じ週の tickWeek が週刊新聞に自団体の興行記事として載せる(Engine.newspaper.generate の playerShow*)。
+    // 見出し・本文のテンプレは画面の読み込み時に登録される(登録の無い Node の検査では既定の見出しとサブ見出し)
+    {
+      const paperData = Engine.show.buildShowNewspaperData(s, { titleOutcomes: titleMatchOutcomes, injuryResults });
+      if (paperData) s = { ...s, currentNewspaper: { ...paperData, generatedWeek: s.week, generatedSeason: s.season } };
+    }
 
     // MQ再設計P3c: fp/venueHeatは興行1本につき1値。観測・計測用にトップレベルにも残す。
     return { state: s, results, injuryResults, events, showRivalryResolutions, fp, venueHeat: venueHeatResult.total, pressureFactor: venueHeatResult.pressureFactor };
@@ -34775,11 +35182,14 @@ Engine.newspaper = {
         type: isTitleShow ? 'playerShowTitle' : 'playerShowNormal',
         priority: isTitleShow ? P.playerShowTitle : P.playerShowNormal,
         headline: cn.headline || L(NFB.playerShowHeadline),
-        headlineTpl: cn.headline ? cn.headlineTpl : null, headlineVars: cn.headlineVars || null,
+        // K-1 第2段(K1-A04): 見出しのテンプレが無い環境(auto-sim などの Node の検査)のエンジンが組んだ新聞データは
+        // 見出し・本文が空で、既定の見出しとサブ見出しで載る。どちらも表示時の言語で組み直せるよう Tpl と
+        // 成形済みの興行名の組み直し指示(subheadlineDerive)を渡す(実プレイの新聞データは見出し・本文を持つので従来どおり)
+        headlineTpl: cn.headline ? cn.headlineTpl : (NFB.playerShowHeadline || null), headlineVars: cn.headlineVars || null,
         headlineDerive: cn.headline ? cn.headlineDerive : null,
         body: cn.article || cn.subheadline || '',
         bodyTpl: cn.article ? cn.articleTpl : cn.subheadlineTpl, bodyVars: cn.article ? cn.articleVars : cn.subheadlineVars,
-        bodyDerive: cn.article ? cn.articleDerive : null,
+        bodyDerive: cn.article ? cn.articleDerive : (cn.subheadlineDerive || null),
         characterId: cn.winner?.id || cn.left?.id || null,
         situation: stamp, situationSuffixJa: stampSuffixJa,
       });

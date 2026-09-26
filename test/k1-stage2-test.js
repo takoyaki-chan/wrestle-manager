@@ -11,6 +11,8 @@
 //       元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦の印を刻み、元同僚の初対面は業界ニュースに積む
 //    3. K1-T01 奪還挑戦の予約の欄: Engine.saveDoctor.repairProgressionState が予約の無い状態に null を作らない
 //    4. K1-A03 季節の統計: Engine.show.accumulateSeasonStats(興行数・決着数・引き分け・季の最高評価)
+//    5. K1-A04 興行結果の新聞データ: Engine.show.buildShowNewspaperData(見出し・本文は専用の乱数系列で選ぶ。
+//       テンプレの表は app.js に置いたまま Engine.show.registerNewspaperTextPools で登録)
 //
 //  両経路の一致そのものは npm run test:k1:parity(実ブラウザ)が見る。ここは関数の中身と、
 //  app.js / management.js が共通の関数を呼んでいること(文面)を確かめる。
@@ -209,6 +211,142 @@ section('A03: 両経路が Engine.show.accumulateSeasonStats を呼ぶ', () => {
   assert.ok(fin.includes('const stats = Engine.show.accumulateSeasonStats(G.seasonStats, validMatches, results, roster);'), 'app.js が共通の関数を呼んでいない');
   assert.ok(exe.includes('seasonStats: Engine.show.accumulateSeasonStats(s.seasonStats, validMatches, results, roster)'), 'management.js が共通の関数を呼んでいない');
   assert.ok(!/stats\.showCount\+\+/.test(fin), 'app.js に自前の集計が残っている');
+});
+
+// ── 5. K1-A04 興行結果の新聞データ ──
+function paperState(extra = {}) {
+  const f = (id, name, ovr) => ({ id, name, pw: ovr, sp: ovr, te: ovr, st: ovr, mn: ovr, popularity: 40 });
+  const A = f(1, '選手A', 60), B = f(2, '選手B', 58), C = f(3, '選手C', 50), D = f(4, '選手D', 49);
+  return {
+    rngSeed: 4242, season: 2, week: 14, totalShows: 25, showVenue: 2, orgName: 'テスト団体',
+    roster: [A, B, C, D], rivalries: {}, relationships: {}, titles: { world: { championId: null } }, matchupLog: [],
+    showCard: [{ left: 1, right: 2 }, { left: 3, right: 4 }],
+    lastShowAttendance: 1234,
+    lastShowResults: [
+      { left: A, right: B, winner: 'left', mq: 66, turns: 12, finType: 'ピン', finMove: 'ラリアット', hpLeft: { final: 40, max: 100 }, hpRight: { final: 20, max: 100 } },
+      { left: C, right: D, winner: 'right', mq: 45, turns: 8, finType: 'ピン', finMove: 'ドロップキック', hpLeft: { final: 10, max: 100 }, hpRight: { final: 30, max: 100 } },
+    ],
+    ...extra,
+  };
+}
+
+section('A04: 新聞データを組む(テンプレ未登録の環境では見出し・本文は空、サブ見出しは組む)', () => {
+  assert.ok(typeof Engine.show.buildShowNewspaperData === 'function', 'Engine.show.buildShowNewspaperData が無い');
+  const saved = Engine.show._newspaperTextPools;
+  Engine.show.registerNewspaperTextPools(null, null);
+  try {
+    const state = paperState();
+    const before = JSON.stringify(state);
+    const d = Engine.show.buildShowNewspaperData(state, { injuryResults: [
+      { name: '選手C', injury: { type: '軽傷', weeksLeft: 2 } },
+      { name: '選手D', injury: { type: '重傷', weeksLeft: 9 }, retireType: 'wear' },
+    ] });
+    assert.strictEqual(JSON.stringify(state), before, '入力の状態を書き換えた');
+    assert.strictEqual(d.showName, '第25回 定期興行');
+    assert.strictEqual(d.attendance, 1234);
+    assert.strictEqual(d.headline, null);
+    assert.strictEqual(d.article, null);
+    assert.ok(typeof d.subheadline === 'string' && d.subheadline.length > 0, 'サブ見出しが無い');
+    assert.strictEqual(d.winner.id, 1);
+    assert.strictEqual(d.allMatches.length, 1);
+    assert.strictEqual(d.allMatches[0].winnerName, '選手D');
+    // 表示時の言語で組み直すための材料(決着文の生キー・成形済みの興行名の組み直し指示)
+    assert.strictEqual(d.allMatches[0].finType, 'ピン');
+    assert.strictEqual(d.allMatches[0].finMove, 'ドロップキック');
+    assert.deepStrictEqual(d.subheadlineDerive, [{ key: 'showName', kind: 'tpl', tpl: '第{n}回 定期興行', vars: { n: 25 } }]);
+    assert.deepStrictEqual(d.injuries, [{ name: '選手C', type: '軽傷', weeksLeft: 2 }], '引退した怪我は紙面に載せない');
+    assert.strictEqual(d.generatedWeek, 14);
+    assert.strictEqual(d.generatedSeason, 2);
+    assert.strictEqual(Engine.show.buildShowNewspaperData({ ...state, lastShowResults: [] }), null, '試合が無ければ null');
+  } finally {
+    Engine.show._newspaperTextPools = saved;
+  }
+});
+
+section('A04: 見出し・本文の文選びは専用の乱数系列(Math.random を使わない・同じ興行は同じ見出し)と防衛/奪取の見出し', () => {
+  const saved = Engine.show._newspaperTextPools;
+  const origRandom = Math.random;
+  const HL = {
+    normal: [d => `N1 ${d.winner.name}`, d => `N2 ${d.winner.name}`, d => `N3 ${d.winner.name}`],
+    titleWin: [d => `奪取 ${d.winner.name}`], titleDefend: [d => `防衛 ${d.winner.name}`],
+  };
+  const AR = { normal: [d => `本文 ${d.loser.name}`], lowMQ: [d => `低調 ${d.loser.name}`] };
+  Engine.show.registerNewspaperTextPools(HL, AR);
+  Math.random = () => { throw new Error('Math.random を使った'); };
+  try {
+    const d1 = Engine.show.buildShowNewspaperData(paperState());
+    const d2 = Engine.show.buildShowNewspaperData(paperState());
+    assert.ok(/^N[123] 選手A$/.test(d1.headline), `見出し: ${d1.headline}`);
+    assert.strictEqual(d1.headline, d2.headline, '同じ興行で見出しが変わった');
+    assert.strictEqual(d1.article, '本文 選手B');
+    // 週が変われば系列が変わる(3本のうちどれかが選ばれる。値そのものは系列しだい)
+    const weeks = new Set([2, 4, 6, 8, 10, 14, 16, 18].map(w => Engine.show.buildShowNewspaperData(paperState({ week: w })).headline));
+    assert.ok(weeks.size >= 2, `週ごとに見出しが散らない: ${[...weeks]}`);
+    // 王座戦: 防衛か奪取かは titleOutcomes で決まる
+    const titleState = paperState();
+    titleState.lastShowResults = [{ ...titleState.lastShowResults[0], isTitleMatch: true }, titleState.lastShowResults[1]];
+    const defend = Engine.show.buildShowNewspaperData(titleState, { titleOutcomes: [{ outcome: 'defense', champId: 1 }] });
+    const change = Engine.show.buildShowNewspaperData(titleState, { titleOutcomes: [{ outcome: 'change', newChampId: 1 }] });
+    assert.strictEqual(defend.headline, '防衛 選手A');
+    assert.strictEqual(change.headline, '奪取 選手A');
+  } finally {
+    Math.random = origRandom;
+    Engine.show._newspaperTextPools = saved;
+  }
+});
+
+section('A04: 組んだ新聞データは同じ週の号に自団体の興行記事として載る', () => {
+  const state = paperState();
+  const paper = Engine.show.buildShowNewspaperData(state);
+  const s = { ...state, currentNewspaper: paper };
+  assert.ok(Engine.newspaper._isFreshPlayerShow(s), '今週の興行の新聞データとして扱われない');
+  const np = Engine.newspaper.generate(s, Engine.rng.create(1));
+  const stories = [np.topStory, ...(np.subStories || [])].filter(Boolean);
+  const story = stories.find(st => st.type === 'playerShowNormal');
+  assert.ok(story, `自団体の興行記事が載らない: ${stories.map(st => st.type)}`);
+  // テンプレ未登録の環境(このテスト)は既定の見出し+サブ見出し。どちらも表示時に組み直せる Tpl を持つ
+  if (!Engine.show._newspaperTextPools) {
+    assert.strictEqual(story.headlineTpl, NEWS_FALLBACK_TEMPLATES.playerShowHeadline, '既定の見出しに Tpl が無い');
+    assert.strictEqual(story.bodyTpl, paper.subheadlineTpl);
+    assert.deepStrictEqual(story.bodyDerive, paper.subheadlineDerive, '興行名の組み直し指示が本文に渡らない');
+  }
+});
+
+section('A04: 表示側は興行名(tpl)とダイジェストの決着文を表示時の言語で組み直す(ui-render.js)', () => {
+  const ui = readSource('src', 'ui-render.js');
+  const extract = (signature) => {
+    const start = ui.indexOf(signature);
+    assert.ok(start >= 0, `${signature} が見つからない`);
+    let depth = 0;
+    for (let i = ui.indexOf('{', start); i < ui.length; i++) {
+      if (ui[i] === '{') depth++;
+      else if (ui[i] === '}') { depth--; if (depth === 0) return ui.slice(start, i + 1); }
+    }
+    throw new Error('関数の終わりが見つからない');
+  };
+  const fake = new Function('WM_I18N', 'Engine', `${extract('function _npMaterializeVars(')}\n${extract('function _npResolvePlayerShowData(')}\nreturn { _npMaterializeVars, _npResolvePlayerShowData };`)(
+    { t: (tpl, vars) => `EN[${tpl}]${vars ? JSON.stringify(vars) : ''}` },
+    { formatFinish: (ft, fm) => `EN-finish(${ft}/${fm})` });
+  const vars = fake._npMaterializeVars({ showName: '第25回 定期興行', venue: 'x' },
+    { derive: [{ key: 'showName', kind: 'tpl', tpl: '第{n}回 定期興行', vars: { n: 25 } }] });
+  assert.strictEqual(vars.showName, 'EN[第{n}回 定期興行]{"n":25}');
+  assert.strictEqual(vars.venue, 'x');
+  const psd = { allMatches: [{ finishLabel: 'JA', finType: 'ピン', finMove: 'ラリアット' }, { finishLabel: '旧データ' }] };
+  const out = fake._npResolvePlayerShowData(psd);
+  assert.strictEqual(out.allMatches[0].finishLabel, 'EN-finish(ピン/ラリアット)');
+  assert.strictEqual(out.allMatches[1].finishLabel, '旧データ', '生キーの無い旧データは保存値のまま');
+  assert.strictEqual(psd.allMatches[0].finishLabel, 'JA', '入力を書き換えた');
+});
+
+section('A04: 両経路が Engine.show.buildShowNewspaperData を呼ぶ(App の旧関数は無い・テンプレは app.js が登録)', () => {
+  const fin = finalizeBody();
+  const exe = executeShowBody();
+  const app = readSource('src', 'app.js');
+  assert.ok(fin.includes('Engine.show.buildShowNewspaperData(G, { titleOutcomes: titleMatchOutcomes, injuryResults, dict: WM_I18N.t })'), 'app.js が共通の関数を呼んでいない');
+  assert.ok(exe.includes('Engine.show.buildShowNewspaperData(s, { titleOutcomes: titleMatchOutcomes, injuryResults })'), 'management.js が共通の関数を呼んでいない');
+  assert.ok(!app.includes('_buildShowResultNewspaperData()') && !app.includes('_generateNewspaperTexts(d)'), 'App の旧関数が残っている');
+  assert.ok(app.includes('Engine.show.registerNewspaperTextPools(App._NEWSPAPER_HEADLINES, App._NEWSPAPER_ARTICLES);'), 'テンプレの登録が無い');
+  assert.ok(app.includes('  _NEWSPAPER_HEADLINES: {') && app.includes('  _NEWSPAPER_ARTICLES: {'), 'テンプレの表は app.js に置いたまま(i18n の抽出が読む)');
 });
 
 console.log(failed === 0 ? 'ALL PASS' : `${failed} FAILED`);
