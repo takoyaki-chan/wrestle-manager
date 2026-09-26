@@ -157,6 +157,10 @@ class WalkthroughDetectors {
     // P6-5: D3_TEXTの内部トークン検査を言語別にするための既定'ja'(未指定時は従来どおり
     // フル検査=ja digest不変)。run.js から --lang をそのまま渡す
     this.lang = options.lang || 'ja';
+    // シナリオが宣言した「既知の不具合の [WM] 警告」(正規表現の配列)。一致したものは D1 にせず
+    // knownConsoleHits に数えてレポートに出す(見つけた不具合を報告済みのまま、後ろの経路の検査を続けるため)
+    this.allowConsole = Array.isArray(options.allowConsole) ? options.allowConsole : [];
+    this.knownConsoleHits = [];
     this.issues = [];
     this.consoleEntries = [];
     this.lastProgressAt = Date.now();
@@ -215,6 +219,10 @@ class WalkthroughDetectors {
       //  状態は何も変わっておらず、走破ハーネス自身の連打が発生源。実セーブ棚の初回実走で
       //  3本がこれだけで失敗したため区別を導入)
       const isBenignRejection = entry.text.includes('ignored background navigation');
+      if (this.allowConsole.some(pattern => pattern.test(entry.text))) {
+        this.knownConsoleHits.push(entry.text);
+        return;
+      }
       if (entry.type === 'error'
           || (entry.type === 'warning' && !isBenignRejection
               && (entry.text.includes('[WM Debug]') || entry.text.includes('[WM]')))) {

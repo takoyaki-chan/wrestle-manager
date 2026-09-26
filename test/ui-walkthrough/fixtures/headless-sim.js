@@ -420,6 +420,10 @@ function toSaveState(G, note) {
   delete saveState._juniorTournamentSelection;
   delete saveState._pendingAutumnWarReplay;
   saveState.pendingAwards = false;
+  // シーズン開始時の団体人気の減衰トースト(advanceFromWeekSummary が季の第1週に1回だけ消費する)。
+  // headless では消費されず季の途中の fixture にも残り、読み込み直後の週送りで6秒のトーストが出て
+  // 決断画面のボタンに被さっていた(2026-09-26 点火 b3-challenge で D2)
+  delete saveState._pendingSeasonStartNotif;
   // 現行版で生成したセーブであることを明示する(無いとロード時に旧版セーブ扱いされ、
   // 53週カレンダー換算やキャップ再計算がfixtureの値を作り直してしまう)
   saveState._migrated_calendarWeek52_v1 = true;

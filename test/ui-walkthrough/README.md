@@ -145,6 +145,39 @@ npm run test:ui:ignite -- --scenario opening-flow --lang en
 
 **`faction-ignite --lang en`は2026-09-06 P7-51で修正済み(既知FAILを解消)**: 原因はゲーム本体ではなく走破ドライバ側——`scenarios.js`の`_makeFactionIgniteBoost`が編成画面の「開く」ボタン(`_spOpenPicker`)の表示テキストとfixtureの生JA選手名を`String.includes()`で比較しており、EN言語では選手名が`WM_I18N.pn()`でローカライズされるため一致せず、リーダー対決の編成が完了したと判定できずに`_spOpenPicker`をクリックし続けるだけで120手上限までループしていた。修正は表示名比較をやめ、`_spFighterInfo`(`src/ui-render.js`)が付与する`data-sp-fighter-id`属性(選手ID)で判定する方式に変更(`driver.js`の候補メタデータへ`spFighterId`として抽出を追加)。属性名は既存の`data-fighter-id`(actionScore側でスコア8250の汎用「この選手を選ぶ」ピッカー規約)とは意図的に別名にしてあり、一般走破(`test:ui:walkthrough`)のスコアリングには波及しない(JA基準367手/`7b3faff2792abc0f`は1バイトも変えず再現)。`test/ui-walkthrough/scenarios.js`内の同型パターン(表示テキストと生JA名の比較)を全走査したところ該当は`faction-ignite`のみで、`away-challenge`/`incoming-challenge`の既知FAILとは別原因(そちらは上記の通りP7-50調査中)。`chronicle`(JA)は本タスク着手時点で既にFAIL(「確定章が2本(3本以上を期待)」)だったが、`git stash`で本タスクの差分を外した状態でも同一結果で再現する**マージ由来の既存不具合**(このタスクの回帰ではない・未修正のまま)。副次的発見として、EN走破が初めてF02開戦セレモニーへ到達したことで`_mdlAReporterStrip(state, opts.reporterText || …)`(`src/ui-common.js`)が`lineTranslated`引数を渡しておらず、既に`WM_I18N.t()`済みの`opts.reporterText`(`src/app.js`)を二重翻訳して`i18n-miss`を1件出すことが判明した(表示自体はEN文のまま出るため実害は軽微)。本タスクのスコア外のため未修正・記録のみ。
 
+### 受けた挑戦状・派閥の予約の清算(2026-09-26・K-1 第3段の確認)
+
+K-1 第3段(興行後の処理を `Engine.show.finalize` に一本化)の後で、差分テストが見ていない「実プレイだけの清算」を実UIで通すために、失敗していた2本を直し、6本を足した。
+
+```powershell
+npm run test:ui:ignite -- --scenario incoming-challenge         # 果たし状 → 3試合シリーズ(全試合スキップ)
+npm run test:ui:ignite -- --scenario incoming-challenge-watch   # 同・3試合を観戦(iframe を最後まで)
+npm run test:ui:ignite -- --scenario away-challenge             # 直訴 → 同行2名 → 遠征 → 2拍
+npm run test:ui:ignite -- --scenario b3-challenge               # 挑戦状(B3) → 次の通常興行のメイン → スキップ
+npm run test:ui:ignite -- --scenario b3-challenge-watch         # 同・メインを観戦(ほかは1試合ずつスキップ)
+npm run test:ui:ignite -- --scenario faction-f07-main           # F07 メインカード相談 → 推す → 清算の信頼・残り興行数
+npm run test:ui:ignite -- --scenario faction-common1            # Common-1 → 2人をカードに組む → 清算の信頼・因縁・結果の画面
+npm run test:ui:ignite -- --scenario faction-f08                # F08 → 直接対決をメインに → 試合後の画面
+npm run test:ui:ignite -- --scenario faction-ignite             # 派閥開戦(停止週を探すようにした)
+```
+
+- **失敗していた原因(どちらもテストの側)**
+  - `incoming-challenge`(と、同じ作りの `away-challenge`): fixture を S2W6 の頭に置いた果たし状・直訴の他団体の選手(seed42 では根岸)が、画面に出る前の W6 の他団体の試合で怪我をし、受けた後の W8 の興行で予約が「出場メンバーが揃わない」で解除(遠征は黙って取り消し)されて2拍の結果が不発だった。停止週を「S2 の非興行週で翌週が通常興行」に変え、その週の週送り(`tickWeek`→`advanceWeek`)を fixture 生成時に試走して、翌週の頭に画面に出て6人とも翌週の興行に出られる組だけを使う(`_challengeFixture` / `_pickChallenge`)。seed42 では S2W7
+  - `faction-ignite`: 「S2W6 固定+シード固定」で、seed7 は S2 を通して派閥が1つしかできなくなっていた(P7-59 で 42→7 に替えた後、軌道が入れ替わった)。停止週を「S2〜S4 の W6〜W30 の通常興行週で、リーダー健在の派閥が2つそろう最初の週」に探すようにし、シードは42に戻した(`_isFactionIgniteStopWeek`)
+- **足した仕組み**(宣言しないシナリオ・walk の挙動と digest は変わらない)
+  - `makeUntil(fixture)`: 停止週が探索で決まるので、終了条件を「開始週の n 週後の頭」で書く(`_untilWeeksAfterFixture`)
+  - `fixture.engineerSave(save)`: `toSaveState` が落とす一時キー(`_pendingFactionEvent` / `_pendingLargeEvent`)をセーブに置き直す。派閥イベントは持ち越し中なら週送りでもそのまま画面に出る(tickWeek の「`_pendingFactionEvent` があれば何もしない」)。payload はエンジンの判定関数(`checkF07Conditions` 等)が作ったもの。B3 は `generateLargeEvent` を B3 が出るまで乱数を替えて呼び、processManage と同じ組み立てで文面を付ける
+  - `stepProbe`: 手ごとに G を読む(読取り専用)。`totalShows` が同じ週のうちに増えた手の前後を「清算の前後」として、`finalAssert` が信頼・帳簿の「派閥」(感度つきで式どおりか)・予約の消化・対戦成績を検算する
+  - `hold`: 観戦 iframe の再生を待つ。「🎬 試合を観る」を押した直後は偽の時計を進める前に iframe の読み込みを実時間で待ち(先に進めると親の「800ms 後に再送」の保険が読み込み前に発火して STANDBY のまま止まる)、待ちの間は iframe の中の `#eBtn.visible` → `#finishBtn.show` → `#nBtn` を押して進める(`WATCH_HOLD`)
+  - `knownConsole`: 報告済みの既知の不具合の警告は D1 にせず、`Known console (not failed, reported bug): …` として件数を必ず出す(後ろの経路の検査を続けるため)
+  - 候補に `.mdl-a-candidate-card[data-fighter-id]`(挑戦状の代表選手カード。onclick なし)を足した。`toSaveState` で `_pendingSeasonStartNotif`(季の第1週だけの減衰トースト。headless では消費されず残り、決断画面のボタンに被さっていた)を落とす
+- **見つけた製品の不具合**
+  - **直した**: F08 の試合後の画面(`showFactionF08AftermathModal`)が、興行中ずっと active な `showResultOverlay`(試合一覧の殻)を「開いている別の画面」と見なして待ち行列に積まれ、殻は試合後の画面の続きで結果を描くのを待つので、**F08 の直接対決(F02③の決着が立たない向き)を組んだ興行が結果の手前で止まっていた**(K-1 第3段の前から)。F09・直訴の結果と同じく `ignoreShowResultOverlay` にした。F08 の試合前・派閥内序列戦の試合前・試合後の画面も同じ形だったので合わせた(`test/faction-f09-show-flow-guard-test.js` に4つ追加)
+  - **未修正・報告のみ(数値が変わる)**: 挑戦状の挑戦者(ゲスト)が試合で怪我をすると、所属団体へ戻すときに体調が NaN になる(ゲストは挑戦状が届いた時点の写しから作られて体調を持たず、`App._finalizeHookGuests` の `{ ...f, ...updatedGuest }` が本物の選手の体調・今季の伸び・自己最高評価を上書きし、一時印 `isB3ChallengeGuest` も残る)。`b3-challenge*` は `knownConsole` で既知扱い
+  - **未修正・報告のみ(画面の出し方の判断が要る)**: 観戦・1試合ずつスキップの経路の試合後のフレーバーのポップアップが、同じく殻の後ろに積まれて興行中に出ず、`_runPostMatchFlavorForMatch` の保険のタイマー(N×2.2秒+1.5秒)が毎回発火する(`[WM]` 警告=フライトレコーダーの ⚠)。積まれたポップアップは週送りの全消去で捨てられる。`*-watch` は `knownConsole` で既知扱い
+  - **未修正・報告のみ(数値が変わる)**: F08 の直接対決の清算の「両リーダーの因縁 +30〜40」が、関係値のキーを `a|b` で引いていて(本物は `a>b`)一度も効いていない(`app.js _finalizeHookFactionBookings`)
+- **確かめたこと**: F07 はメインに派閥の選手がいる週で派閥全員の信頼が `+1×感度` ちょうど・残り興行数 6→5。Common-1 は勝者 +4×感度・敗者 −2×感度と帳簿「派閥」+2・2人の因縁が下がり結果の画面が出る。F08 は方針が消え、試合後の画面が出て、敗れた派閥の末端(3人の派閥なので無し)以外の信頼は動かない。B3 はメインに固定され、対戦成績がちょうど1試合分増え、ゲストが自団体のロスターに残らない
+
 検出器だけを既知バグ入りサンドボックスで確認するには次を実行します。
 
 ```powershell

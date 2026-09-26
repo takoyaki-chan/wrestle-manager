@@ -19,11 +19,18 @@ function functionSource(name) {
   throw new Error(`${name} end not found`);
 }
 
+// 興行の最中(showResultOverlay の殻が active のまま)に出す派閥の画面は、殻を「開いている別の画面」と
+// 見なさない。F09 は 6cbf231e、F08 の試合前・試合後と派閥内序列戦の試合前・試合後は 2026-09-26
+// (点火 faction-f08 で、F08 の試合後の画面が殻の後ろに積まれたまま興行が止まるのを発見)
 const functionNames = [
   'showFactionF09OpeningModal',
   'showFactionF09MatchPreModal',
   'showFactionF09MatchPostModal',
   'showFactionF09EndingModal',
+  'showFactionF08PreMatchModal',
+  'showFactionF08AftermathModal',
+  'showInternalChallengePreModal',
+  'showInternalChallengePostModal',
 ];
 
 for (const name of functionNames) {

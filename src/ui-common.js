@@ -11622,8 +11622,12 @@ function showFactionF08Modal(payload, state, onChoice) {
 // 試合フォーカス直前、_f08Locked スロットに対して発火
 // data: Engine.factions.getF08PreMatchData の戻り値
 // ─────────────────────────────────────────────────────────────────────────────
+// 興行の最中に出す派閥の画面(F08 の試合前・試合後、派閥内序列戦の試合前・試合後)は、F09(6cbf231e)・
+// 直訴の結果と同じく showResultOverlay(試合一覧・結果の殻。興行中はずっと active)を「開いている別の画面」と
+// 見なさない。見なすと待ち行列に積まれたまま殻が閉じるのを待ち、殻は試合後の画面の onContinue で結果を
+// 描くのを待つので、F08 の試合後の画面で興行が止まっていた(2026-09-26 点火 faction-f08 で発見)
 function showFactionF08PreMatchModal(data, state, onContinue) {
-  if (_isPopupActive()) { _popupQueue.push(() => showFactionF08PreMatchModal(data, state, onContinue)); return; }
+  if (_isPopupActive({ ignoreShowResultOverlay: true })) { _popupQueue.push(() => showFactionF08PreMatchModal(data, state, onContinue)); return; }
   if (!data) { if (onContinue) onContinue(); return; }
 
   const aPortraitUrl = _factionUpperUrl(data.factionA.leaderId);
@@ -11704,7 +11708,7 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
 // data: Engine.factions.getF08AftermathData の戻り値
 // ─────────────────────────────────────────────────────────────────────────────
 function showFactionF08AftermathModal(data, state, onContinue) {
-  if (_isPopupActive()) { _popupQueue.push(() => showFactionF08AftermathModal(data, state, onContinue)); return; }
+  if (_isPopupActive({ ignoreShowResultOverlay: true })) { _popupQueue.push(() => showFactionF08AftermathModal(data, state, onContinue)); return; }
   if (!data) { if (onContinue) onContinue(); return; }
 
   const wPortraitUrl = _factionUpperUrl(data.winner.id);
@@ -11777,7 +11781,7 @@ if (typeof window !== 'undefined') {
 // data: Engine.factions.getInternalChallengePreData の戻り値
 // ─────────────────────────────────────────────────────────────────────────────
 function showInternalChallengePreModal(data, state, onContinue) {
-  if (_isPopupActive()) { _popupQueue.push(() => showInternalChallengePreModal(data, state, onContinue)); return; }
+  if (_isPopupActive({ ignoreShowResultOverlay: true })) { _popupQueue.push(() => showInternalChallengePreModal(data, state, onContinue)); return; }
   if (!data) { if (onContinue) onContinue(); return; }
 
   const cPortraitUrl = _factionUpperUrl(data.challenger.id);
@@ -11853,7 +11857,7 @@ function showInternalChallengePreModal(data, state, onContinue) {
 // data: Engine.factions.getInternalChallengePostData の戻り値
 // ─────────────────────────────────────────────────────────────────────────────
 function showInternalChallengePostModal(data, state, onContinue) {
-  if (_isPopupActive()) { _popupQueue.push(() => showInternalChallengePostModal(data, state, onContinue)); return; }
+  if (_isPopupActive({ ignoreShowResultOverlay: true })) { _popupQueue.push(() => showInternalChallengePostModal(data, state, onContinue)); return; }
   if (!data) { if (onContinue) onContinue(); return; }
 
   const wPortraitUrl = _factionUpperUrl(data.winner.id);

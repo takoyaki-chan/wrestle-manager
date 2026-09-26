@@ -2,7 +2,10 @@
 
 const { stableHash, writeFailureArtifacts } = require('./detectors');
 
-const CLICKABLE_SELECTOR = 'button, [role="button"], [onclick], [data-choice], [data-mdl-choice], [data-war-choice], .large-evt-fighter-pick, .travel-overlay.active';
+// .mdl-a-candidate-card[data-fighter-id]: 挑戦状(B3)の代表選手カード(onclick なし・リスナーで拾う)。
+// 2026-09-26 点火 b3-challenge で初めて踏んだ(B3 は自然走破ではまず立たない)。
+// 対抗戦のエントリー候補は同じクラスでも onclick 付きなので従来どおり [onclick] で拾われる
+const CLICKABLE_SELECTOR = 'button, [role="button"], [onclick], [data-choice], [data-mdl-choice], [data-war-choice], .large-evt-fighter-pick, .mdl-a-candidate-card[data-fighter-id], .travel-overlay.active';
 // P6-2b: 削除/ロードは元々JA語彙(削除・ロード・セーブ)+一部EN語彙(NEW GAME・LOAD GAME・SAVE、
 // 表記ゆれの実測に合わせた既存の保険)混在だった。Delete/Loadを追加してEN単独文言(削除→"Delete"・
 // ロード→"Load"、i18n/ui-ledger.json実測)でもガードが効くようにする(セーブ画面のロード/削除/
@@ -354,7 +357,7 @@ async function waitForTimedUi(page, milliseconds) {
   throw lastError;
 }
 
-async function clickCandidate(candidate, page) {
+async function clickCandidate(candidate, page, beforeSettle = null) {
   await candidate.locator.scrollIntoViewIfNeeded().catch(() => {});
   // カード編成ピッカーは名前/行が選択、顔だけが詳細。中央クリックは名前側へ入る。
   // 2026-08-31 実セーブ棚の偽陽性2件への対処:
@@ -366,19 +369,21 @@ async function clickCandidate(candidate, page) {
   //    起き、Playwrightの安定性検査が永遠に通らず偽D2になる(aw-btn-nextで実測)。
   //    退避先は固定なのでシード決定論は崩れない
   await page.mouse.move(0, 0).catch(() => {});
+  // beforeSettle: 偽の時計を進める前に実時間で待つもの(観戦 iframe の読み込み。hold.frameReady)
+  if (beforeSettle) await beforeSettle(candidate);
   await settleClock(page);
 }
 
-async function clickWithOverlayRecovery(page, selected, snapshot, random, boost) {
+async function clickWithOverlayRecovery(page, selected, snapshot, random, boost, beforeSettle = null) {
   try {
-    await clickCandidate(selected, page);
+    await clickCandidate(selected, page, beforeSettle);
     return { candidate: selected, recovered: false };
   } catch (error) {
     await settleClock(page, 3000);
     const current = await listCandidates(page);
     const replacement = chooseCandidate(current, snapshot, random, boost);
     if (!replacement) throw error;
-    await clickCandidate(replacement, page);
+    await clickCandidate(replacement, page, beforeSettle);
     return { candidate: replacement, recovered: true };
   }
 }
@@ -500,10 +505,52 @@ async function runWalk(options) {
     reproductionCommand,
     seasons = 1,
     seed = 42,
+    stepProbe = null,
+    hold = null,
     until = null,
   } = options;
+  // hold(ignite): { when(snapshot), ms, maxSteps }。when が真の間はクリックせず時計だけ進める
+  // (観戦 iframe の再生を最後まで待つ用。ボタンの無い「待ち」を候補ゼロの D2 と区別する)。
+  // 手としては数えず操作ログにも積まないので、宣言しないシナリオの digest は変わらない
+  let holdSteps = 0;
+  // hold.frameReady: { iframeSelector, onclick } — onclick に合う手(観戦の「試合を観る」)を押した直後、偽の時計を
+  // 進める前に、その iframe が新しい src を読み終えるまで実時間で待つ。先に時計を進めると、親の「800ms 後に
+  // もう一度送る」保険のタイマーが iframe の読み込みより先に発火して試合データ(START_MATCH)が読み込み前の
+  // 文書へ送られ、観戦 iframe が STANDBY のまま止まる(送信済みの印が立つので読み込み後の再送もない)
+  const waitFrameReady = async candidate => {
+    const ready = hold && hold.frameReady;
+    if (!ready || !ready.iframeSelector) return;
+    if (ready.onclick && !ready.onclick.test(candidate.onclick || '')) return;
+    const selector = ready.iframeSelector;
+    // ページ側の待ち(waitForFunction)は偽の時計の下で回らないことがあるので、Node 側で実時間の間隔で読む
+    const deadline = Date.now() + 10000;
+    while (Date.now() < deadline) {
+      const loaded = await page.evaluate(sel => {
+        const el = document.querySelector(sel);
+        if (!el) return true;
+        try {
+          const doc = el.contentDocument;
+          const src = el.getAttribute('src') || '';
+          return !!doc && doc.readyState === 'complete' && (!src || doc.location.href.endsWith(src));
+        } catch (_error) {
+          return true;
+        }
+      }, selector).catch(() => true);
+      if (loaded) break;
+      await page.waitForTimeout(100);
+    }
+    await page.waitForTimeout(100);
+  };
   const random = createSeededPrng(seed);
   const actionLog = [];
+  // stepProbe(ignite): 手ごとに1回 G を読む式(読取り専用)。走破の選択・digestには影響しない。
+  // 結果は result.stepProbes に { step, action, value } で積む(step 0 = 最初の手の前)
+  const stepProbes = [];
+  const readStepProbe = async (step, action) => {
+    if (!stepProbe) return;
+    const value = await page.evaluate(stepProbe).catch(error => ({ probeError: String(error.message || error).split('\n')[0] }));
+    stepProbes.push({ step, action, value });
+  };
   const specialScreens = new Set();
   // ナビ巡回の時刻表: 開幕直後の初回+コンテンツが溜まったweek10以降の2回(ゲーム状態
   // キーなので決定論)。途中週開始のセーブでは満期分をまとめて1巡に畳む
@@ -527,6 +574,7 @@ async function runWalk(options) {
       initialState = before.state;
       previousProgressKey = progressKey(before);
       detectors.noteProgress(before);
+      await readStepProbe(0, null);
     }
     const goalReached = until
       ? until(before)
@@ -546,6 +594,7 @@ async function runWalk(options) {
         navTourSkipped: navTourPlan.map(entry => entry.key),
         recoveries,
         specialScreens: [...specialScreens].sort(),
+        stepProbes,
       };
     }
 
@@ -565,8 +614,67 @@ async function runWalk(options) {
         state: before,
         step,
       });
-      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
+      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort(), stepProbes };
     }
+
+    if (hold && hold.when(before)) {
+      holdSteps += 1;
+      if (holdSteps > (hold.maxSteps || 120)) {
+        const issue = detectors.record('D2_FREEZE', `hold did not release after ${holdSteps - 1} waits`, { snapshot: before });
+        const directory = await writeFailureArtifacts({
+          actionLog,
+          artifactRoot,
+          consoleEntries: detectors.consoleEntries,
+          issue,
+          page,
+          reproductionCommand: `${reproductionCommand} --max-steps ${step}`,
+          state: before,
+          step,
+        });
+        return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort(), stepProbes };
+      }
+      // frameClick: { url, selectors } — 待ちの間に iframe の中のボタンを押して進める(観戦 iframe は
+      // 「次の攻防」で1コマずつ進み、勝敗の演出の後の「試合終了」で MATCH_RESULT が親へ届く)。押したら手として記録する
+      if (hold.frameClick) {
+        const frame = page.frames().find(f => hold.frameClick.url.test(f.url()));
+        // selectors は優先順(先に見つかって見えている・押せるものを1つ押す)
+        let target = null;
+        let targetSelector = null;
+        for (const selector of (frame ? hold.frameClick.selectors : [])) {
+          const candidate = frame.locator(selector).first();
+          if (await candidate.isVisible().catch(() => false) && await candidate.isEnabled().catch(() => false)) {
+            target = candidate;
+            targetSelector = selector;
+            break;
+          }
+        }
+        if (target) {
+          // 観戦の画面は偽の時計の下で CSS の動きが止まらず、Playwright の click は「静止待ち」で詰まるので、
+          // 要素の click() を直接呼ぶ(onclick もリスナーも同じく発火する)
+          const clicked = await target.evaluate(el => { el.click(); return true; }).catch(() => false);
+          if (clicked) {
+            process.stdout.write(`  action ${step}: frame:${targetSelector}\n`);
+            // 観戦の後の試合後のポップアップには「N×2.2秒+1.5秒で閉じ切らなければ先へ進む」保険のタイマー
+            // (app.js _runPostMatchFlavorForMatch)があり、ふつうの手の間隔(押した後2.2秒+次の手の前2.2秒)だと
+            // 1枚でも閉じる前に発火する。iframe の手の後は短く進め、次の手(ポップアップを閉じる)を早めに押す
+            await settleClock(page, 300);
+            const after = await detectors.snapshot(page);
+            // iframe の中の1コマも進行として数える(D5 の大域停止は週の変化だけを見るため、長い観戦で誤検出する)
+            detectors.lastProgressAt = Date.now();
+            detectors.noteProgress(after);
+            if (observe) observe(after);
+            actionLog.push({ action: `frame:${targetSelector}`, after: after.state, before: before.state, seed, step });
+            await readStepProbe(step, `frame:${targetSelector}`);
+            holdSteps = 0;
+            continue;
+          }
+        }
+      }
+      await settleClock(page, hold.ms || 10000);
+      step -= 1; // 待ちは手に数えない(maxSteps は実際のクリックの上限のまま)
+      continue;
+    }
+    holdSteps = 0; // 待ちの上限は1回の待ちごと(観戦を3試合続けても積み上がらない)
 
     // ナビ巡回(②): 進行を一切妨げないクリーン状態のときだけ発車する。
     // 条件はゲーム状態キーのみ(壁時計不使用)なので同シードなら同じ手番で発火する。
@@ -625,7 +733,7 @@ async function runWalk(options) {
         state: before,
         step,
       });
-      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
+      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort(), stepProbes };
     }
 
     let label = actionLabel(selected);
@@ -633,7 +741,7 @@ async function runWalk(options) {
     const mutationWatch = await detectors.beginMutationWatch(page);
     let clickResult;
     try {
-      clickResult = await clickWithOverlayRecovery(page, selected, before, random, boost);
+      clickResult = await clickWithOverlayRecovery(page, selected, before, random, boost, hold && hold.frameReady ? waitFrameReady : null);
     } catch (error) {
       // クリックが恒久的に遮られる(全面オーバーレイ越しの陳腐化ボタン等)。
       // クラッシュではなくFREEZEとしてアーティファクトを残して着地する
@@ -655,7 +763,7 @@ async function runWalk(options) {
         state: before,
         step,
       });
-      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
+      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort(), stepProbes };
     }
     const clicked = clickResult.candidate;
     if (clickResult.recovered) {
@@ -670,6 +778,7 @@ async function runWalk(options) {
     }), mutationWatch);
     const after = progress.after;
     if (observe && after) observe(after);
+    await readStepProbe(step, label);
     // ③2026-08-31監査対応: 押しても何も起きず兄弟ボタンで前進した=死にボタンの容疑。
     // 回復自体は走破を止めないが、容疑者と回復役をレポートに残す(黙って揉み消さない)
     let recoveredBy = null;
@@ -716,7 +825,7 @@ async function runWalk(options) {
         state: after,
         step,
       });
-      return { actionLog, completed: false, finalState: after.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
+      return { actionLog, completed: false, finalState: after.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort(), stepProbes };
     }
   }
 
@@ -732,7 +841,7 @@ async function runWalk(options) {
     state: finalSnapshot,
     step: maxSteps,
   });
-  return { actionLog, completed: false, finalState: finalSnapshot.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
+  return { actionLog, completed: false, finalState: finalSnapshot.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort(), stepProbes };
 }
 
 module.exports = { createSeededPrng, listCandidates, runScreenTour, runWalk, settleClock };
