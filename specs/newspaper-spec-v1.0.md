@@ -233,6 +233,31 @@ promising以下しかいなければ1名だけ。raw/material しかいない年
 今週の日付で再掲されていた。生成週を持たない旧データは「興行週である」ことだけで判定する。
 非興行週の号が空になることはある(埋め方は別途)。
 
+### 3-6. 派閥抗争の決着（`factionRivalryDecided` 122、2026-09-26 第5回 問11）
+
+裁定「派閥の抗争の決着は、新聞とログに1行で見せる」(モーダルは出さない)。抗争ポイントの先取100
+(faction-rivalry-points-spec §4.1/§5)で両派閥が存命のまま決着した週に、tickWeek が
+`Engine.factions.buildRivalryResolutionNotice` で業界ニュースを1本積む(実プレイと auto-sim が同じ経路)。
+ほかの派閥の記事(`factionReconcile` ほか)と同じ業界ニュースの枠で、置き場所の特別扱いはしない。
+基礎点は F02 の決着(`factionResolution`)と同じ 122。写真は勝った派閥のリーダー(`characterId`)。
+
+- 本文に**勝ったリーダーの一言**を「」つきで引く(`{quote}`)。一言は `FACTION_RIVALRY_VICTORY_LINES`
+  (`src/data-faction-dialogue.js`。口調×性格・F06_FORCE と同じ粒度の19本・欠けた性格は同じ口調の normal)から、
+  専用の乱数系列(季・週・0xFA2A)で積む時点に選ぶ。キューには原文(`quoteLine`=辞書のキー)で積み、
+  載る瞬間に `_wmResolvePreformattedIndustryData` が「」ごと言語別に組む(PPV の `_quoted` と同じ作り)
+- 見出し・本文は2通り。事実だけを書き、数値(ポイント)・内部名は出さない
+- 記事は両リーダーが所属していて一言が引けたときだけ。欠けていればログの1行だけ
+- 派閥の消滅で終わった記録(CONSOLATION・先取100の時点で片方が消えていた POINTS)と、自然沈静化(CALM)は記事を出さない
+  (前者はログ1行、後者は何も出さない。faction-rivalry-points-spec §5.6)。40週の和解(F06_RECONCILE)は画面側の `factionReconcile`
+
+### 3-7. 次回展望の因縁ペア（`preview.rivalry`、2026-09-26 修正）
+
+`Engine.newspaper.pickPreviewRivalry`(週刊新聞の `buildPreview` と興行結果の新聞データ `buildShowNewspaperData` の両方)。
+自団体の2人の組で、決着していない因縁の段(`Engine.title` の band.tier)が最も高い組、同じ段は因縁の記録の対戦回数が多い組。
+以前は因縁の記録のキー(`getRivalryKey` の「小さいID-大きいID」)を `'>'` で割って文字列のまま選手IDと比べ、段は記録に無い
+`riv.tier` を読んでいたため**常に空**だった。**紙面には次回展望の欄が無い**(2026-04-26 の新聞 v3.1 で1面から外した。
+黒田の `KURODA_PREVIEW` も未配線)ので、データとして揃っただけで見た目は変わらない。
+
 ---
 
 ## 4. 特集の発火条件
