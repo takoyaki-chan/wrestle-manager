@@ -1693,15 +1693,15 @@ Engine.factions = {
       return { eventId: 'F08', payload: f08 };
     }
 
-    // 3) F04（寝返り、確率 30%）
+    // 3) F04（寝返り、確率 30%。抜けられる側が先取100の敗者なら 12週間 ×1.5 — 抗争ポイント §5.2）
     const f04 = this.checkF04Conditions(state);
-    if (f04.eligible && Engine.rng.float(rng) < cfg.eventProbability.F04) {
+    if (f04.eligible && Engine.rng.float(rng) < Math.min(1, cfg.eventProbability.F04 * this._defectionProbMult(state, f04.fromFactionId))) {
       return { eventId: 'F04', payload: f04 };
     }
 
-    // 4) F05（派閥内亀裂、確率 40%）
+    // 4) F05（派閥内亀裂、確率 40%。先取100の敗者なら 12週間 ×1.5 — 抗争ポイント §5.2）
     const f05 = this.checkF05Conditions(state);
-    if (f05.eligible && Engine.rng.float(rng) < cfg.eventProbability.F05) {
+    if (f05.eligible && Engine.rng.float(rng) < Math.min(1, cfg.eventProbability.F05 * this._defectionProbMult(state, f05.factionId))) {
       return { eventId: 'F05', payload: f05 };
     }
 
@@ -2205,9 +2205,11 @@ Engine.factions = {
       },
     };
   },
-  // state を直接書き換える関数群(checkRivalryResolution / applyRivalryVictory / applyF09SweepBonus)用。
+  // state を直接書き換える関数(applyF09SweepBonus)用。
   // 2026-09-18: これらが純関数版 _markCooldown の戻り値を捨てていたため、F09/F08 のクールダウンが
-  // 一度も記録されず、対抗戦の翌週に同じ2派閥で対抗戦が再発火していた(Keisuke実機報告)
+  // 一度も記録されず、対抗戦の翌週に同じ2派閥で対抗戦が再発火していた(Keisuke実機報告)。
+  // 2026-09-26: checkRivalryResolution / applyRivalryVictory は返却値で更新する純関数に改めた(同じ型で
+  // 勢い・信頼・絆・対立度も捨てていた)ので、こちらを使うのは applyF09SweepBonus だけ
   _markCooldownInPlace(state, key) {
     state.factionEventCooldowns = {
       ...(state.factionEventCooldowns || {}),
@@ -4753,6 +4755,9 @@ Engine.factions = {
   },
 
   // ── §6.1 派閥抗争マッチ判定 ──────────────────────────────
+  // 両方向の対立度の平均 40 以上の2派閥の顔役(リーダー・幹部)どうし。
+  // 抗争ポイント §5.1: 先取100で決着した勝者の顔役は、12週間は対立度が下がっても他派閥の顔役との試合が
+  // 派閥抗争マッチのまま(決着の時点の集客を持ち越す。_victoryAppealCarry)
   isFactionFeudMatch(state, fighterIdA, fighterIdB) {
     const fA = this.getFactionByFighterId(state, fighterIdA);
     const fB = this.getFactionByFighterId(state, fighterIdB);
@@ -4763,7 +4768,19 @@ Engine.factions = {
     const hAB = (state.factionHostility || {})[this._hostKey(fA.id, fB.id)] || 0;
     const hBA = (state.factionHostility || {})[this._hostKey(fB.id, fA.id)] || 0;
     const avg = (hAB + hBA) / 2;
-    return avg >= 40;
+    return avg >= 40 || this._victoryAppealCarry(state, fA, fB) > 0;
+  },
+
+  // 対立度の平均で決まる派閥抗争 appeal の段(§6.2。40未満は 0)
+  _feudAppealByHostility(state, factionAId, factionBId) {
+    const cfg = FACTION_CONFIG;
+    const hAB = (state.factionHostility || {})[this._hostKey(factionAId, factionBId)] || 0;
+    const hBA = (state.factionHostility || {})[this._hostKey(factionBId, factionAId)] || 0;
+    const avg = (hAB + hBA) / 2;
+    if (avg >= 80) return cfg.factionAppealHigh;
+    if (avg >= 60) return cfg.factionAppealMid;
+    if (avg >= 40) return cfg.factionAppealLow;
+    return 0;
   },
 
   // ── §6.2 派閥抗争集客加算 ───────────────────────────────
@@ -4772,14 +4789,9 @@ Engine.factions = {
     const fA = this.getFactionByFighterId(state, fighterIdA);
     const fB = this.getFactionByFighterId(state, fighterIdB);
     if (!fA || !fB || fA.id === fB.id) return 0;
-    const hAB = (state.factionHostility || {})[this._hostKey(fA.id, fB.id)] || 0;
-    const hBA = (state.factionHostility || {})[this._hostKey(fB.id, fA.id)] || 0;
-    const avg = (hAB + hBA) / 2;
 
-    let base = 0;
-    if (avg >= 80) base = cfg.factionAppealHigh;
-    else if (avg >= 60) base = cfg.factionAppealMid;
-    else if (avg >= 40) base = cfg.factionAppealLow;
+    // 抗争ポイント §5.1: 決着の勝者が持ち越している額と、今の対立度の段の高い方(足し合わせない)
+    let base = Math.max(this._feudAppealByHostility(state, fA.id, fB.id), this._victoryAppealCarry(state, fA, fB));
 
     if (options.f08) {
       const [lo, hi] = cfg.f08AppealBase;
@@ -5498,22 +5510,41 @@ Engine.factions = {
     return { idx: 3 };                  // filler
   },
 
-  // §4 決着判定（毎週・finalizeShow直後にも）
-  // 戻り値: 決着が発生した場合 { resolved: true, reason, winnerFactionId, loserFactionId, forceClose }、
-  //   決着は無いが40週の2択(F06_FORCE)を出すべき記録がある場合 { resolved: false, reason: 'FORCE_CLOSE_PENDING', forceClose }、
-  //   どちらも無ければ null。
+  // §4 決着判定（毎週。tickWeek の派閥パイプライン）。純関数(入力の state を書き換えない)。
+  // 戻り値は常に { state, resolved, reason, winnerFactionId, loserFactionId, forceClose }。呼び出し側は state を受け取る
+  //   (決着の効果・記録の削除・自然沈静化の週数の数え上げは、すべて返した state にだけ入る)。
+  //   決着が発生した場合 resolved: true と reason('POINTS'|'CONSOLATION'|'CALM')、
+  //   決着は無いが40週の2択(F06_FORCE)を出すべき記録がある場合 resolved: false, reason: 'FORCE_CLOSE_PENDING'、
+  //   どちらも無ければ resolved: false, reason: null。
   // forceClose: { pairKey, factionAId, factionBId } | null — 呼び出し側(tickWeek)が buildF06ForcePayload で
   //   F06_FORCE の派閥イベントに組み立てて _pendingFactionEvent に積む(§4.3。2026-09-26 裁定4)。
   // 2026-09-26 修正: 以前は40週に達した記録で印(_pendingForceCloseRivalry)を立てて return していたため、
   //   印を拾う処理が無いまま毎週そこで止まり、同じ週の後ろの記録の決着(自然沈静化など)が一度も判定されなかった。
   //   40週の記録は1件だけ2択に回し、判定はほかの記録へ続ける
+  // 2026-09-26 修正(裁定「派閥の決着の効果は仕様どおり効かせる」): 以前は state を直接書き換える形で、
+  //   applyRivalryVictory(先取100)と applyHostilityChange(派閥消滅の残存側 -40)の戻り値を捨てていた。
+  //   そのため決着の勢い・信頼・絆・対立度が一度も入らず、入力の G の記録まで書き換えていた。返却値で更新する形に改めた
   checkRivalryResolution(state, rng) {
-    if (!state || !state.factionRivalryPoints) return null;
+    const out = (s, fields) => ({
+      state: s, resolved: false, reason: null, winnerFactionId: null, loserFactionId: null, forceClose: null, ...fields,
+    });
+    if (!state || !state.factionRivalryPoints) return out(state, {});
     const cfg = FACTION_CONFIG;
-    const keys = Object.keys(state.factionRivalryPoints);
+    const src = state.factionRivalryPoints;
+    // 記録の表は書き換えるときにだけ写す(何も起きない週は同じ state を返す)
+    let rp = src;
+    const setEntry = (key, entry) => {
+      if (rp === src) rp = { ...src };
+      if (entry) rp[key] = entry;
+      else delete rp[key];
+    };
+    const withRp = () => (rp === src ? state : { ...state, factionRivalryPoints: rp });
+    const appendTimeline = (s, ev) => (Array.isArray(s.factionTimeline)
+      ? { ...s, factionTimeline: [...s.factionTimeline, ev] }
+      : s);
     let forceClose = null;
-    for (const key of keys) {
-      const e = state.factionRivalryPoints[key];
+    for (const key of Object.keys(src)) {
+      const e = src[key];
       if (!e) continue;
       const fA = (state.factions || []).find(f => f.id === e.factionAId);
       const fB = (state.factions || []).find(f => f.id === e.factionBId);
@@ -5522,32 +5553,33 @@ Engine.factions = {
       if (e.pointsA >= cfg.pointsResolutionThreshold || e.pointsB >= cfg.pointsResolutionThreshold) {
         const winId = e.pointsA >= e.pointsB ? e.factionAId : e.factionBId;
         const losId = winId === e.factionAId ? e.factionBId : e.factionAId;
-        // 勝者敗者派閥が両方存命のときのみフル適用
+        let s;
+        // 勝者敗者派閥が両方存命のときのみフル適用(記録の削除は applyRivalryVictory が行う)
         if (fA && fB) {
-          this.applyRivalryVictory(state, winId, losId, 'POINTS', rng);
+          s = this.applyRivalryVictory(withRp(), winId, losId, 'POINTS', rng);
         } else {
-          delete state.factionRivalryPoints[key];
+          setEntry(key, null);
+          s = withRp();
         }
-        return { resolved: true, reason: 'POINTS', winnerFactionId: winId, loserFactionId: losId, forceClose };
+        return out(s, { resolved: true, reason: 'POINTS', winnerFactionId: winId, loserFactionId: losId, forceClose });
       }
 
-      // §4.2 派閥消滅
+      // §4.2 派閥消滅(§5.4 CONSOLATION: 勝者なし・残った派閥の消滅相手への hostility -40 のみ)
       if (!fA || !fB) {
         const survivorId = fA ? fA.id : (fB ? fB.id : null);
         const goneId = fA ? e.factionBId : e.factionAId;
+        setEntry(key, null);
+        let s = withRp();
         if (survivorId != null) {
-          this.applyHostilityChange(state, survivorId, goneId, cfg.victoryHostilityDecay);
-        }
-        if (Array.isArray(state.factionTimeline) && survivorId != null) {
-          state.factionTimeline = [...state.factionTimeline, {
+          s = this.applyHostilityChange(s, survivorId, goneId, cfg.victoryHostilityDecay);
+          s = appendTimeline(s, {
             type: 'RIVALRY_CLOSED',
             season: state.season, week: state.week,
             survivorFactionId: survivorId, goneFactionId: goneId,
             reason: 'CONSOLATION',
-          }];
+          });
         }
-        delete state.factionRivalryPoints[key];
-        return { resolved: true, reason: 'CONSOLATION', winnerFactionId: null, loserFactionId: null, forceClose };
+        return out(s, { resolved: true, reason: 'CONSOLATION', forceClose });
       }
 
       // §4.3 40週経過(B「続けさせる」を選んだ記録は、その時点から +20週 の forceCloseDeferredUntil まで待つ)
@@ -5558,29 +5590,28 @@ Engine.factions = {
         continue;
       }
 
-      // §4.4 自然沈静化
+      // §4.4 自然沈静化(§5.4 CALM: 勝者敗者の効果なし・対立度は据置)
       const hostAB = (state.factionHostility || {})[this._hostKey(e.factionAId, e.factionBId)] || 0;
       const hostBA = (state.factionHostility || {})[this._hostKey(e.factionBId, e.factionAId)] || 0;
       if (hostAB < cfg.pointsNaturalCalmHostilityMax && hostBA < cfg.pointsNaturalCalmHostilityMax) {
-        e.naturalCalmStreak = (e.naturalCalmStreak || 0) + 1;
-        if (e.naturalCalmStreak >= cfg.pointsNaturalCalmWeeks) {
-          if (Array.isArray(state.factionTimeline)) {
-            state.factionTimeline = [...state.factionTimeline, {
-              type: 'RIVALRY_CLOSED',
-              season: state.season, week: state.week,
-              factionAId: e.factionAId, factionBId: e.factionBId,
-              reason: 'CALM',
-            }];
-          }
-          delete state.factionRivalryPoints[key];
-          return { resolved: true, reason: 'CALM', winnerFactionId: null, loserFactionId: null, forceClose };
+        const streak = (e.naturalCalmStreak || 0) + 1;
+        if (streak >= cfg.pointsNaturalCalmWeeks) {
+          setEntry(key, null);
+          const s = appendTimeline(withRp(), {
+            type: 'RIVALRY_CLOSED',
+            season: state.season, week: state.week,
+            factionAId: e.factionAId, factionBId: e.factionBId,
+            reason: 'CALM',
+          });
+          return out(s, { resolved: true, reason: 'CALM', forceClose });
         }
-      } else {
-        e.naturalCalmStreak = 0;
+        setEntry(key, { ...e, naturalCalmStreak: streak });
+      } else if (e.naturalCalmStreak !== 0) {
+        setEntry(key, { ...e, naturalCalmStreak: 0 });
       }
     }
-    if (forceClose) return { resolved: false, reason: 'FORCE_CLOSE_PENDING', forceClose };
-    return null;
+    if (forceClose) return out(withRp(), { reason: 'FORCE_CLOSE_PENDING', forceClose });
+    return out(withRp(), {});
   },
 
   // §4.3 強制和解の判定週(絶対週)。記録の開始から40週。B「続けさせる」の後は選んだ週から +20週
@@ -5702,56 +5733,136 @@ Engine.factions = {
     };
   },
 
-  // §5 勝者敗者効果適用
+  // §5 勝者敗者効果適用(spec faction-rivalry-points §5)。純関数(入力の state を書き換えず、新しい state を返す)。
+  // 2026-09-26 Keisuke 裁定「派閥の決着の効果は仕様どおり効かせる」: 以前は state を直接書き換える形で書かれていたのに、
+  //   勢い・信頼・絆・対立度のヘルパー(いずれも新しい state を返す純関数)の戻り値を捨てていたため、先取100の勝者・敗者の
+  //   勢い・信頼・絆と両方向の対立度 -40 が一度も入っていなかった(09-18 に直したクールダウンの取りこぼしと同じ型)。
+  //   勝者の集客(§5.1)と敗者の寝返り・亀裂の確率(§5.2)は書くだけで読む処理が無かった
+  //   → isFactionFeudMatch / calcFactionFeudAppeal と pickWeeklyEvent が _activeVictoryEffect で読む
   applyRivalryVictory(state, winnerFactionId, loserFactionId, reason, rng) {
     const cfg = FACTION_CONFIG;
     const winF = (state.factions || []).find(f => f.id === winnerFactionId);
     const losF = (state.factions || []).find(f => f.id === loserFactionId);
     if (!winF || !losF) return state;
+    let s = state;
 
     if (reason === 'POINTS') {
-      // 勝者
-      this.applyMomentumChange(state, winF.id, cfg.victoryWinnerMomentum);
-      this._applyTrustToMembers(state, winF.memberIds, cfg.victoryWinnerTrust);
-      const others = winF.memberIds.filter(id => id !== winF.leaderId);
-      for (const mid of others) this._applyBondDirected(state, mid, winF.leaderId, cfg.victoryBondGainToLeader);
-      state._factionAppealBoost = state._factionAppealBoost || {};
-      state._factionAppealBoost[winF.id] = {
-        startSeason: state.season, startWeek: state.week,
-        weeks: cfg.victoryAppealBoostWeeks,
+      const nowAbs = this._absWeek(state);
+      // 勝者(§5.1): 勢い +40・全メンバーの信頼 +5・メンバー→リーダーの絆 +5
+      s = this.applyMomentumChange(s, winF.id, cfg.victoryWinnerMomentum);
+      s = this._applyTrustToMembers(s, winF.memberIds, cfg.victoryWinnerTrust);
+      for (const mid of winF.memberIds) {
+        if (mid === winF.leaderId) continue;
+        s = this._applyBondDirected(s, mid, winF.leaderId, cfg.victoryBondGainToLeader);
+      }
+      // 派閥抗争 appeal を 12週間持ち越す。額は決着の時点(対立度 -40 の前)の派閥抗争 appeal の段で、下限は最初の段
+      // (factionAppealLow)。抗争ポイントは対立度に関係なく派閥どうしの試合で貯まるので、対立度 40 未満のまま
+      // 先取100に届く忠誠型どうしの決着もある(headless 計測で3件中2件)。その勝者にも決着の話題性を持たせる
+      s = {
+        ...s,
+        _factionAppealBoost: {
+          ...(s._factionAppealBoost || {}),
+          [winF.id]: {
+            startSeason: state.season, startWeek: state.week,
+            weeks: cfg.victoryAppealBoostWeeks,
+            untilAbs: nowAbs + cfg.victoryAppealBoostWeeks,
+            appeal: Math.max(cfg.factionAppealLow, this._feudAppealByHostility(state, winF.id, losF.id)),
+            opponentFactionId: losF.id,
+            ...this._factionStamp(winF),
+          },
+        },
       };
-      // 敗者
-      this.applyMomentumChange(state, losF.id, cfg.victoryLoserMomentum);
-      this._applyTrustToMembers(state, [losF.leaderId], cfg.victoryLoserLeaderTrust);
-      const losMembers = losF.memberIds.filter(id => id !== losF.leaderId);
-      this._applyTrustToMembers(state, losMembers, cfg.victoryLoserMemberTrust);
-      if (losF.authoritativeTag) losF.authoritativeTag = false;
-      state._factionDefectionBoost = state._factionDefectionBoost || {};
-      state._factionDefectionBoost[losF.id] = {
-        startSeason: state.season, startWeek: state.week,
-        weeks: cfg.victoryDefectionMultWeeks,
-        mult: cfg.victoryDefectionMult,
+      // 敗者(§5.2): 勢い -25・リーダーの信頼 -8・末端の信頼 -3・権威の失墜・寝返り/亀裂の確率 ×1.5 を 12週間
+      s = this.applyMomentumChange(s, losF.id, cfg.victoryLoserMomentum);
+      s = this._applyTrustToMembers(s, [losF.leaderId], cfg.victoryLoserLeaderTrust);
+      s = this._applyTrustToMembers(s, losF.memberIds.filter(id => id !== losF.leaderId), cfg.victoryLoserMemberTrust);
+      if (losF.authoritativeTag) {
+        s = { ...s, factions: s.factions.map(f => (f.id === losF.id ? { ...f, authoritativeTag: false } : f)) };
+      }
+      s = {
+        ...s,
+        _factionDefectionBoost: {
+          ...(s._factionDefectionBoost || {}),
+          [losF.id]: {
+            startSeason: state.season, startWeek: state.week,
+            weeks: cfg.victoryDefectionMultWeeks,
+            mult: cfg.victoryDefectionMult,
+            untilAbs: nowAbs + cfg.victoryDefectionMultWeeks,
+            ...this._factionStamp(losF),
+          },
+        },
       };
     }
-    // 共通: 両方向 hostility 減衰
-    this.applyHostilityChange(state, winF.id, losF.id, cfg.victoryHostilityDecay);
-    this.applyHostilityChange(state, losF.id, winF.id, cfg.victoryHostilityDecay);
+    // 共通(§5.3): 両方向 hostility -40
+    s = this.applyHostilityChange(s, winF.id, losF.id, cfg.victoryHostilityDecay);
+    s = this.applyHostilityChange(s, losF.id, winF.id, cfg.victoryHostilityDecay);
     // ペアエントリ削除
     const key = this._pairKey(winF.id, losF.id);
-    if (state.factionRivalryPoints) delete state.factionRivalryPoints[key];
-    // F08/F09 cooldown リセット(判定側 _f08Key / _f09Key と同じキー。旧コードは勝者/敗者順で不一致だった)
-    this._markCooldownInPlace(state, this._f08Key(winF.id, losF.id));
-    this._markCooldownInPlace(state, this._f09Key(winF.id, losF.id));
-    // タイムライン
-    if (Array.isArray(state.factionTimeline)) {
-      state.factionTimeline = [...state.factionTimeline, {
-        type: 'RIVALRY_CLOSED',
-        season: state.season, week: state.week,
-        winnerFactionId: winF.id, loserFactionId: losF.id,
-        reason,
-      }];
+    if (s.factionRivalryPoints && s.factionRivalryPoints[key]) {
+      const rp = { ...s.factionRivalryPoints };
+      delete rp[key];
+      s = { ...s, factionRivalryPoints: rp };
     }
-    return state;
+    // F08/F09 cooldown リセット(判定側 _f08Key / _f09Key と同じキー。旧コードは勝者/敗者順で不一致だった)
+    s = this._markCooldown(s, this._f08Key(winF.id, losF.id));
+    s = this._markCooldown(s, this._f09Key(winF.id, losF.id));
+    // タイムライン
+    if (Array.isArray(s.factionTimeline)) {
+      s = {
+        ...s,
+        factionTimeline: [...s.factionTimeline, {
+          type: 'RIVALRY_CLOSED',
+          season: s.season, week: s.week,
+          winnerFactionId: winF.id, loserFactionId: losF.id,
+          reason,
+        }],
+      };
+    }
+    return s;
+  },
+
+  // 決着の効果を付けた派閥の印。派閥IDは解散後に使い回される(createFaction は空いている最小の番号)ので、
+  // 付けた派閥と今その番号の派閥が同じか(結成の週)を読む側が確かめる
+  _factionStamp(faction) {
+    return {
+      factionCreatedSeason: faction && faction.createdSeason != null ? faction.createdSeason : null,
+      factionCreatedWeek: faction && faction.createdWeek != null ? faction.createdWeek : null,
+    };
+  },
+
+  // §5.1 の集客・§5.2 の寝返り/亀裂の確率のうち、今週その派閥に効いているもの(無ければ null)。
+  // table: state._factionAppealBoost | state._factionDefectionBoost
+  // 決着は週の処理(tickWeek)の終わりで付くので、効くのは翌週から untilAbs(決着の週 +12)の週まで(12週)。
+  // 旧版が書いた項目(untilAbs・結成の週を持たない)は開始週+weeks で期限を見て、派閥の照合は省く
+  _activeVictoryEffect(state, table, factionId) {
+    const b = table && factionId != null ? table[factionId] : null;
+    if (!b) return null;
+    const f = (state.factions || []).find(x => x.id === factionId);
+    if (!f) return null;
+    if (b.factionCreatedSeason !== undefined) {
+      const stamp = this._factionStamp(f);
+      if (stamp.factionCreatedSeason !== b.factionCreatedSeason || stamp.factionCreatedWeek !== b.factionCreatedWeek) return null;
+    }
+    const until = Number.isFinite(b.untilAbs)
+      ? b.untilAbs
+      : Engine.util.absWeekTotal(b.startSeason, b.startWeek, false, 0) + (b.weeks || 0);
+    return this._absWeek(state) <= until ? b : null;
+  },
+
+  // §5.2 敗者の寝返り(F04: 抜けられる側の派閥)・亀裂(F05)の発火確率の倍率
+  _defectionProbMult(state, factionId) {
+    const b = this._activeVictoryEffect(state, state._factionDefectionBoost, factionId);
+    return b && Number.isFinite(b.mult) ? b.mult : 1;
+  },
+
+  // §5.1 勝者が持ち越している派閥抗争 appeal(fA / fB のどちらかが勝者なら、その額。無ければ 0)
+  _victoryAppealCarry(state, fA, fB) {
+    let carry = 0;
+    for (const f of [fA, fB]) {
+      const b = this._activeVictoryEffect(state, state._factionAppealBoost, f && f.id);
+      if (b && Number.isFinite(b.appeal)) carry = Math.max(carry, b.appeal);
+    }
+    return carry;
   },
 
   // §3 F09 発火条件

@@ -142,4 +142,4 @@
 
 - 一言(38行)と地の文の文面は Keisuke の全文レビュー待ち(完了報告に全文)
 - A の結果で「ロッカールームの空気」などの二次効果を持たせるか(spec §5.4 は hostility −30 のみ。今回は仕様どおり)
-- 先取100の決着(`applyRivalryVictory` の POINTS)の勢い・信頼・絆・hostility の効果が入っていない既存の不具合(戻り値を捨てている)は別件として報告済み。F06_RECONCILE は戻り値を使う形で実装したので影響なし
+- ~~先取100の決着(`applyRivalryVictory` の POINTS)の勢い・信頼・絆・hostility の効果が入っていない既存の不具合~~ → 2026-09-26 修正済み(Keisuke 裁定「仕様どおり効かせる」。specs/faction-rivalry-points-spec-v0.1.md §5.5)。F06_RECONCILE(この画面の A)は従来どおり勝者敗者の効果なし
