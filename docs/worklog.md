@@ -1,5 +1,77 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 テストの仕組みの後始末 — headless 進行のスタブ・k1-parity の基準の取り直し3回目・save-regression で移行まで・ja-golden の基準の取り直し(Claude/Opus 5.5・worktree・src 無変更)
+
+派閥 F06 と K-4 の作業で見つかった「テスト用の仕組みの不具合と基準の古さ」をまとめて片付けた。**src は1行も変えていない**。
+
+### 1. headless 進行の計測の歪み(407721bf)
+- `test/ui-walkthrough/fixtures/headless-sim.js` の WM_I18N スタブは `t` しか持たず、factions.js の `_factionDisplayName`(`WM_I18N.pn`)を通る派閥の選択の適用が毎回「WM_I18N.pn is not a function」で失敗し、`autoHandleFactionEvent` の catch に黙って捨てられていた
+- 件数(6シード×30季。seed 42/7/1234/7919/2024/31337): **旧 100〜1,247件**(F07 が大半。ほかに COMMON_1・COMMON_4・COMMON_7・F03・F05H・F06_FORCE)→ **修正後 0件**(全シード)。seed 42 の S2W14(k1-parity の基準 fixture)までは6件(F07×5・F03×1)
+- 直し方: 手書きスタブをやめ、`test/helpers/wm-i18n-ja.js`(新規)で **src/i18n.js の本体**を隔離した vm の文脈で「localStorage に 'ja' 保存済み」の窓を渡して動かす(Node 21 以降の navigator.language で 'en' になるのを避ける)。契約(t・lang・pn・pnSurname・pnGiven・mv・mvShort)はゲームと同一になり、src が関数を足しても置いていかれない。呼び出し側が先に WM_I18N を置いていればそれを使う
+- 読むエンジン側ファイルを index.html・auto-sim と同じ並びに(coach-lines・data-faction-dialogue・flag-dialogue を追加)。台詞の表だけで、fixture は Math.random で選ぶ表示用の一言を除いて1バイトも変わらないことを確認
+- 握りつぶしの記録: 自動応答の例外を `swallowedErrors()` / `summarizeSwallowedErrors()` で読めるように(`advanceUntil` ごとにリセット。`WM_HEADLESS_STRICT=1` で投げる)。k1-parity は冒頭に件数を出し、**1件でもあれば照合の失敗**。点火カタログの fixture 生成は stderr に一覧(進行は止めない)
+- `faction-f06-force-close-test` の「headless-sim の既定スタブを置き換える先置きスタブ」を外した
+- ほかの手書きスタブ: auto-sim.js・ja-golden.js は pn/pnSurname/mv/mvShort を持ち、エンジンは pnGiven を呼ばないので影響なし。`test/helpers/load-game.js` も t だけ(pn 無し)だが、このヘルパーを使うテストは自動応答を握りつぶさないので、足りなければ落ちて見える(今回は触っていない)
+
+### 2. k1-parity の基準の取り直し3回目(2f17e53a)
+- スタブを直した fixture は派閥が1つ(2=[95,92,105,72,44,88])→ 2つ(2=[95,92,105,72,83]・1=[66,44,88])。どの派閥にも属さない選手がちょうど4人になり factions シナリオが組めなくなった → 新しい派閥 900 の顔ぶれの下限を5人から**実際に使う4人**に(`scenarios.js`。入力の作り方の直し)
+- 照合: **未登録0・消えた0・向きの食い違い0・握りつぶし0・項目数33のまま。新しい本物の差は無い**
+- **K1-A02 を mustAppear: true に戻した**: スランプ中の選手の回復モメンタム(`roster[*].slump.recoveryMomentum`)が全16本で A=実プレイだけ・B=両方で違う として出る(dome はブレークスルーの経歴も)
+- 既存項目の現れ方の違い(許容リストは変えていない): A14(乱入者が王座を奪い、王座・関係性キュー・熱が再び出る)/ A11(関係値)/ A09 の `_pendingFactionEvent` は出なくなった(旧 fixture は F07 が毎週立っていた)/ B02 士気が出るように / B01・B03・B05 は件数だけ
+- 派閥の作業者の「スタブを直すと未登録5・消えた1」は、0d391bcc の src に直したスタブで再現して分類した: [A] `_industryNewsEvents`(intrusion)→ K1-A14 / [B] `_pendingFactionEvent`(lastrun)→ K1-A09 の波及(K-4 S1 の取り直しで登録済み)/ [B] `factionRivalryPoints.*.naturalCalmStreak`(lastrun)→ K1-A09 の波及 / [A][B] `rivalries.*.lastShowNumber`(factions)→ K1-E08 / 消えた K1-A02 → 今の main では再び出る。どれも今の main(K-4 S1〜S8・第4回裁定5〜8 の後)では出ないので、許容リストに足していない(足すと照合が緩む)
+- 報告書 `docs/fun-audit-v0.1/k1-parity-report.md` の冒頭に「改訂 その5」、§8 の注記を「修正済み」に
+
+### 3. save-regression の Phase 1 で移行まで通す(d5d8526f)
+- Phase 1 は `save-doctor --dry-run`(診断のみ)だったので、K-4 の人生番号の移行(repairOnLoad の `migrateLegacyLives`)が毎回の検査を通っていなかった
+- 棚のセーブを一時フォルダへ複製 → `--repair --output` で修復・移行(元のファイルは渡さない・前後でハッシュ照合)→ 移行の印 `_migrated_k4_lives_v1` と `lifeSerial` があり、issues が none → 修復した結果にもう一度 `--repair` をかけ、**修復が1件も走らず、ファイルが1バイトも変わらない**こと
+- 実セーブ6本すべて通過。移行の数は K-4 の記録と一致(ultralong hof21/multi2/reborn9/hofDup1、mobile hof10/reborn4、prerefix hof4/archive6、v1.25 hof1、v1.0x・v1.20 は印だけ)
+
+### 4. ja-golden の基準の取り直し(6d3ca088 → 675b7022)
+旧基準 e43b8ed4(7,558行、P7-54 a819ca8f)。main(c53ac9be)では c6691d68(7,839行)。全体では S1W2 から軌道が分かれて 684/687 週に差があるので、**first-parent の各マージ(30本)で ja-golden を走らせ、隣どうしを行のタグで突き合わせた**(K-4 の2本は枝の中の各コミットまで)。a819ca8f で旧基準のハッシュが再現することを先に確かめた。
+
+| 取り込み | 行数 | 差の種類 | 最初の差 | 意図した変更 |
+|---|---|---|---|---|
+| a533f6b6 MVP 配点 20→13 | 7,558 | 文面だけ39行(新聞) | S8W34 秋の対抗戦の予告の「MVPレース○位」 | MVP の順位が変わった |
+| fec00b94 MVP v3 | 7,558 | 文面だけ182行+並び6(新聞) | S1W10 春のタッグの予告の MVP 順位 | 同上 |
+| 7ba3738e K-12 不仲タッグ−3 | →7,907 | 軌道が分かれた | S2W22 の興行(★3→★4) | 能力−3 を効かせた |
+| cff37d7a K-9(A)+K-13(A) | →7,223 | 軌道 | S1W2 AI の試合の怪我が別の選手 | AI の怪我を自団体と同じ式に |
+| 72591892 K-2+K-3+K-16 | →7,305 | 軌道 | S1W2 ★2→★3 | ★の再較正・会場の器・節目の逓減 |
+| 766ce210 記録と新聞の修正 | 7,305 | 文面だけ167行(引退の経歴欄のみ) | S12W14 | 経歴欄に大会・開眼が入った |
+| 3a95a4c7 K-7 返し | →7,400 | 軌道 | S1W4 試合評価 31→35 | ニアフォールの上乗せ |
+| 6784304f K-12 追加 | →7,473 | 軌道 | S3W12 春のタッグリーグ決勝 | 春のタッグにも不仲の罰 |
+| 8571a79b K-16 AI側 | →7,600 | 軌道 | S3W7 AI の練習中の怪我 | AI 団体の人気の節目の係数 |
+| 15b9cf35 K-1 第4段前半 | →7,727 | 軌道 | S1W8「メイン低評価で人気−3」(タッグ) | タッグにもメイン低評価の人気減 |
+| K-4 S1 d1d928df | →7,875 | 軌道 | S1W46 | デビュー済みは休眠プールに入れない |
+| K-4 S3 e42c9053 | →7,906 | 軌道 | S7W38 | 転生の関所(前の人生の関係値を退避して消す) |
+| K-4 S5 736b2e94 | →7,839 | 軌道 | S7W18 | 注目の人生は15季休み |
+
+- 変化なし(ハッシュ同一): P7-58・AI の勝敗の二重加算の修正・F09 のクールダウン・K-6(+追加)・K-14・K-11・通知とログ・呼び名とタッグ勝利セリフ・K-1 第1段・0 を値なしに扱う117か所・K-9 残り・大型イベントの人気の上限・K-1 第4段後半・派閥 F06・第4回裁定5〜8・K-4 S2/S4(引退記事の殿堂を人生番号で引く — この20季では該当する記事が出ない)/S6/S7/容量
+- **説明できない差は無かった**ので取り直した(6d3ca088)
+- **ハーネスの不具合を2つ直して取り直し(675b7022)**: ① 怪我引退の経歴欄 summary は `{icon, text}` の配列で、String() で "[object Object]" になり中身を一度も照合していなかった → 1行ずつ採る ② エンジンは `_pendingInjuryRetirements` を次の引退まで state に残す(K1-T04)ので、同じ引退を毎興行採り直していた(20季で282回、実際の怪我引退は3件)→ この興行で作られた配列だけ採る。**引退以外の 7,275 行は1文字も変わらない**ことを確認し、7,839 → 7,289 行(99ce4637)
+
+### 5. headless の fixture を使う手動チェック2本の追従(22603a2a)
+- `faction-f06-force-check`: 2択の前に出る派閥の通知だけのモーダル(COMMON_3 派閥加入。「見届ける ✓」1枚)を閉じられず NG 3件。**修正前のスタブの main でも同じ NG**(K-4 等の取り込みで合成の派閥に加入が起きるようになっていた)。閉じる対象に足して ALL CHECKS PASS
+- `injury-retire-departure-check`: スタブを直した fixture ではラストランの週に別れの後で成長イベントのポップアップ(スランプ中の選手)が出て「週を処理」を塞ぎ、時間切れ。閉じる対象に足し、週を処理の前にも残りを閉じるようにして ALL CHECKS PASS
+
+### 見つけたこと(直していない)
+- **headless の fixture に UI で消化される派閥加入の通知(`_pendingFactionJoinNotices`)が溜まったまま残る**。ロード直後の週にまとめて出るので、injury-retire-departure-check では「その週に引退した選手が派閥に加入した」通知が別れの後に出る(fixture の残骸。実プレイでは週ごとに消化される)。`toSaveState` で捨てるかは fixture の軌道にも関わるので別件
+- **headless-sim は季末の引退候補(pendingRetirements)を確定しない**(auto-sim・ja-golden は `commitRetirements` で確定する)。引退するはずの選手がロスターに残って歳を取り、長い headless 進行で validateGameState の「age が不正値: 41〜47」が出る(6シード×30季で確認。S2W14 の k1-parity の fixture は若いロスターで引退候補が無く影響なし)。fixture を季をまたいで作るシナリオ(点火の chronicle・tenchosen など)は影響を受けうる。直すと各 fixture の軌道が変わるので別件
+- **点火カタログの faction-ignite の fixture が作れない**(seed 7・S2W6 で派閥が1つしか無く「リーダー健在の派閥が2つ無い」)。修正前のスタブ(main)でも同じで、今回の変更による退行ではない。停止週かシードの選び直しが要る
+- ほかの点火シナリオ10本は fixture の生成(assert・validateGameState)まで通ることを確認
+
+### 検証
+- `npm test` 307/307 / `npm run test:k1:parity` PASS(33件・未登録0・向きの食い違い0・消えた0・握りつぶし0)/ `node test/ja-golden.js` OK(7,289行・99ce4637)/ `node test/save-regression.js`(Phase 1)ALL CLEAR 6/6
+- `git merge main`(Already up to date。main は c53ac9be のまま)の後にもう一度: npm test 307/307・parity PASS・ja-golden OK・save-regression ALL CLEAR
+- headless-sim を使うテスト6本(challenge-request-stale-pending・faction-f06-force-close・fun-audit-round4・k1-stage1/4b/4b2)PASS。手動チェック2本 ALL CHECKS PASS。点火カタログ: fixture 生成10本 OK(faction-ignite は上のとおり修正前から作れない)、`npm run test:ui:ignite -- --scenario tenchosen` PASS・Issues 0
+- src 無変更なので auto-sim・UI 走破は回していない
+
+### 触ったファイル
+- test/helpers/wm-i18n-ja.js(新規)/ test/ui-walkthrough/fixtures/headless-sim.js / test/ui-walkthrough/fixtures/generate-scenario-fixture.js / test/faction-f06-force-close-test.js
+- test/k1-parity/run.js・scenarios.js・allowlist.js / docs/fun-audit-v0.1/k1-parity-report.md
+- test/save-regression.js
+- test/ja-golden.js・test/fixtures/ja-golden-baseline.json / test/ui-walkthrough/faction-f06-force-check.js・injury-retire-departure-check.js
+- docs/game-system-roadmap.md(総点検の行)
+
 ## 2026-09-26 K-4 S4〜S8 — 恒久記録を「ID+人生番号」に・注目の人生は15季・画面の読み手・既存セーブの移行・仕様(Claude/Opus 5.5・worktree)
 
 裁定 K-4 の後半。設計書 `docs/fun-audit-v0.1/k4-separate-lives-design.md` §8 の S4〜S8 と、追加依頼のセーブ容量。人生番号は画面に出さない・「二代目」等の呼び方もしない。仕様の正は新規 `specs/life-identity-spec-v1.0.md`。
