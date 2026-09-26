@@ -374,7 +374,7 @@ Bond/Rivalryシステム（relationship-system-spec参照）からの信頼変�
 - **ログ(2026-09-26 総点検 第4回裁定7)**: 実プレイの `_finalizeShowImpl` がログのタブに1行 `{ type: 'sudden_departure', data: { name, variant: 'org'|'free', orgName } }` を積む。文は `GAMELOG_TEMPLATES.sudden_departure`(「🚪 ○○が突然退団し、△△へ移籍した」/「🚪 ○○が突然退団し、フリーとなった」。英訳つき)。分類はイベント
 - **前兆(社長に見えるもの)**: 信頼40未満で所属タブのロスターカードと選手ポップアップに「💭よそよそしい」、選手ポップアップの「💬 声をかけに行く」がオレンジで脈打つ。信頼20を割った週に「退団を考えているという噂」(ログ1行+道場「休憩中の選手」の確定枠で本人の吹き出し。Glimpse A `trust_below_20`・確率100%・12週クールダウン・30を超えると再武装)。auto-sim 40季×2シードで信頼15未満に落ちた8人全員に、15未満になる1〜7週前に噂が出ていた
 - **臨界帯の前兆(2026-09-26 総点検 第4回裁定8)**: 信頼15を割った週(=突然の退団の判定が始まる帯に入った週)に「退団を決めかけているという噂」をもう一度出す。出し方は20の噂と同じ(ログ1行「💬 ○○が退団を決めかけているという噂がある」+道場の確定枠で本人の一言。一言はアーキタイプ第一×性格第二で実在の34セルを書き分けた `GLIMPSE_A_LINES.trust_below_15`)。Glimpse A `trust_below_15`・確率100%・12週クールダウン・25を超えると再武装。20と同じ週に両方をまたいだら15の噂1回にまとめる(20の発火の記録は残す)。率の抽選をせず、一言も専用の種で選ぶので、既存の噂・垣間見えの乱数の並び(共有の rng・Math.random)は変わらない。ログは両方とも `{ type: 'trust_departure_rumor', data: { name, variant: 'below20'|'below15' } }`(below20 は以前の文字列ログと同じ文。英訳つき)
-- **噂の原因(2026-09-26 退団寸前の引き留め §17)**: 噂には帳簿が選んだ「においわせる原因」が付く。ログは `data.cause`(stage/bonds/air/pay/title)を足し、文の後ろに原因の一節(§17-4)。原因がはっきりしない・約束・派閥と、cause の無い古いログは上の文のまま。選手ポップアップの声かけ欄は、噂の状態(`lastWarning`)が付いていて信頼20未満のとき理由を「退団の噂が耳に入っている。」にする(ボタン・色・脈打ちは同じ)
+- **噂の原因(2026-09-26 退団寸前の引き留め §17)**: 噂には帳簿が選んだ「においわせる原因」が付く。ログは `data.cause`(stage/bonds/air/pay/title)を足し、文の後ろに原因の一節(§17-4)。原因がはっきりしない・約束・派閥と、cause の無い古いログは上の文のまま。20割れの噂の道場の一言は、原因が出番・人間関係なら原因別の表(`LAST_WARNING_RUMOR_LINES`・承認済み68本 §17-5)から引く。選手ポップアップの声かけ欄は、噂の状態(`lastWarning`)が付いていて信頼20未満のとき理由を「退団の噂が耳に入っている。」にする(ボタン・色・脈打ちは同じ)
 
 ---
 
@@ -492,16 +492,18 @@ trust 40 → 割引0%、trust 100 → 割引8%（線形補間）。契約交渉�
 ### §17-5 見せ方(ログの一節・セリフの器)
 
 - **噂のログの一節**(`GAMELOG_TEMPLATES.trust_departure_rumor` の `{variant}_{cause}`。英訳つき): 出番「出番のない興行が続いている」(20)/「控室で出番表を見ていたという」(15)、人間関係「控室で浮いているらしい」(20)/「控室で誰とも口をきいていないという」(15)、空気「団体の空気に嫌気がさしているらしい」、給与「同じ格の選手との待遇の差を気にしているらしい」、王座「ベルトに挑む機会が回ってこないことに焦れているらしい」
-- **セリフの器**(data.js。形はどれも 原因 → アーキタイプ → 性格 → [セリフ]。実在34セル×各1本の想定。本文は下書きの承認後に流し込む):
+- **セリフの表**(data.js。形はどれも 原因 → アーキタイプ → 性格 → [セリフ]。実在34セル×各1本=計204本。本文は 2026-09-26 Keisuke 承認の `docs/care-last-warning-lines-draft.md`(本文のまま・【迷い】6本はすべて1案目)。英訳はセリフ台帳 `i18n/dialogue-ledger.json` → `src/lang-en-dialogue.js`。セリフ編集ワークブックの台帳(`tools/extract-dialogue.js`)に登録済み。全127人が自分のセルの1本を引く(normal への落ちは起きない)):
 
 | 表 | 原因のキー | 使う場所 | 引けないとき |
 |---|---|---|---|
-| `LAST_WARNING_RUMOR_LINES` | stage / bonds | 20割れの噂の本人の一言(道場の確定枠) | 今の `GLIMPSE_A_LINES.trust_below_20` |
-| `LAST_WARNING_ENCOURAGE_LINES` | stage / bonds / general(給与・王座・空気・約束・派閥も general) | 信頼20未満の声かけの反応(`encourage_last_warning`) | 今の `CARE_REACTION_DIALOGUES.encourage` |
-| `LAST_WARNING_ANSWERED_LINES` | stage | 出番の手当てが成立した週に Glimpse A `last_warning_answered`(tone positive・`milestone: true`)→ 道場「休憩中の選手」の確定枠 | 出さない |
+| `LAST_WARNING_RUMOR_LINES` | stage / bonds(各34本) | 20割れの噂の本人の一言(道場の確定枠) | 今の `GLIMPSE_A_LINES.trust_below_20` |
+| `LAST_WARNING_ENCOURAGE_LINES` | stage / bonds / general(各34本。給与・王座・空気・約束・派閥・原因なしも general) | 信頼20未満の声かけの反応(`encourage_last_warning`)。結果モーダルの本人の吹き出し | 今の `CARE_REACTION_DIALOGUES.encourage` |
+| `LAST_WARNING_ANSWERED_LINES` | stage(34本) | 出番の手当てが成立した週に Glimpse A `last_warning_answered`(tone positive・`milestone: true`)→ 道場「休憩中の選手」の確定枠 | 出さない |
 
 - 引き方は `Engine.trust.lastWarningLinePool(kind, cause, fighter)`: セル → 同じアーキタイプの normal → null。**別の口調のセリフには落ちない**。道場の一言・応えてもらえた一言の文選びは Math.random・共有の乱数の引く回数を変えない(原因の表は同じ引き方、応えてもらえた一言は専用の種)
 - 15割れの一言(`trust_below_15`)は原因を問わずそのまま
+- 回帰は `test/care-last-warning-test.js`(34セル×6表・全127人・checkALayer/声かけの実経路・tickWeek・EN 204本)、実UIの確認は `node test/ui-walkthrough/care-last-warning-lines-check.js`(道場の確定枠と声かけの結果モーダルを JA/EN で。手動実行)
+- **既知の制約(2026-09-26 流し込み時に計測)**: 道場の「休憩中の選手」の吹き出し(`.dojo-rest-bubble` 幅150px・2行で切る)と結果モーダルの本人の吹き出し(2行で切る)は、長い一言を「…」で切る。道場に出る102本のうち JA 89本・EN 92本が3行以上(既存の15割れの一言も 24/34 本が同じ)。吹き出しの大きさは UI の物差し(mockup-baseline §吹き出し・02-layouts「長文は2行程度で切る」)の側の判断として残している
 
 ### §17-6 計測(auto-sim --remedy)
 

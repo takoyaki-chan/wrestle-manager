@@ -147,10 +147,28 @@ GameState.factionEventCooldowns = {
 - メンバー数が **3人未満** になった派閥は自動消滅
 - 対立派閥があった場合、その派閥の勢い -3〜-5（張り合いを失う）
 - 消滅は即時、通知のみ（演出イベントはなし）
+- **週のログに1行(2026-09-26 Keisuke 承認・実装)**: 以前は記事もログも出ず、派閥画面から静かに消えるだけだった。
+  消えた派閥ごとに `{ type: 'faction_dissolved', data: { variant, factionName, leaderName?, remainName? } }`(分類はイベント・記事なし)。
+  文は `GAMELOG_TEMPLATES.faction_dissolved`(英訳つき・数値なし):
+  - `members_last`「🎭 ○○派が解散した。メンバーが抜けていき、{リーダー}のもとに残ったのは{残った1人}だけだった」
+  - `members_alone`「🎭 ○○派が解散した。メンバーが抜けていき、{リーダー}のもとには誰も残らなかった」
+  - `members`(リーダーが memberIds に居ない壊れた形の保険)「🎭 ○○派が解散した。メンバーが抜けていき、派閥の形を保てなくなった」
+  - 行は `Engine.factions.buildDissolutionLogs(before, after)`(消える処理の直前・直後の state を比べる純関数・表示専用)が組み、
+    tickWeek が `checkDissolutionConditions` と `reconcileRoster` の前後で呼ぶ。抗争の決着「⚔ ○○派の抗争は、相手の派閥の消滅で終わった」
+    (faction-rivalry-points §5.6)より前に並ぶ。ログの有無で state は変わらない
+  - 出さない経路(既存の表示と二重にしない): F03 の結果(結果モーダル+業界ニュース `factionDissolution`)、社長の派閥解散命令
+    (ログ「⚖️ 社長命令により ○○派 を解散させた」+結果モーダル。faction-decree-spec)
+  - 回帰: `test/faction-dissolution-log-test.js`
 
 ### §2.5 リーダー喪失時の後継判定
 
 リーダーが退団・引退・長期離脱（8週以上の重傷等）のいずれかになった時点で F03 を発動。§9.3 を参照。
+
+- **季末の引退の確定(`Engine.retirement.commitRetirements`)は F03 を通らない**: 引退者をロスターから外した直後に `reconcileRoster` →
+  `handleLeaderLoss` で後継判定をその場で行う(F03 のモーダル・記事は出ない)。ここで後継が立たずに派閥が消えたら、ログの「🏁 ○○が引退を表明」の後に
+  `faction_dissolved` を1行(2026-09-26。§2.4 と同じ仕組み): `leader`「🎭 ○○派が解散した。まとめ役を失い、メンバーは散り散りになった」/
+  残った者がいなければ `leader_alone`「🎭 ○○派が解散した。まとめ役がいなくなり、あとに残る者もいなかった」。
+  tickWeek の `reconcileRoster` の解散も同じ行を出す(F03 が先に立つので実際にはほぼ通らない)
 
 ### §2.6 派閥制度の解散
 
@@ -160,6 +178,9 @@ GameState.factionEventCooldowns = {
 - 対立度・勢いをクリア
 - authoritativeTag / dictatorTag もクリア
 - 通知: 「派閥は事実上、団体そのものとなった。派閥という区分は意味を失った」
+  - **実装(2026-09-26)**: 上の通知文は実装されていなかった(診断ログ wmDiag のみ)。§2.4 と同じ週のログ `faction_dissolved` を消えた派閥ごとに1行:
+    独占した派閥 `dominance`「🎭 ○○派が解散した。団体のほぼ全員が加わり、派閥の区切りそのものがなくなった」/
+    ほかの派閥 `dominance_other`「🎭 ○○派が解散した。団体のほぼ全員がひとつの派閥に集まり、派閥の区切りそのものがなくなった」
 - §2.1 の発生条件を再び満たした時点で、新たに派閥が発生しうる
 
 ---
