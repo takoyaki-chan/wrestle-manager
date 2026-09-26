@@ -11394,7 +11394,8 @@ const Engine = {
       }
 
       const choiceIdx = this._pickAIChoice(rng, event, org.tier, aiState);
-      const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, aiState, rng);
+      // opts.ai: AI 団体の選手(退団寸前の引き留めの帯の倍率を掛けない。AI のケアは別の簡略モデル)
+      const result = Engine.eventSystem.applyChoiceEffect(event, choiceIdx, aiState, rng, { ai: true });
       let orgPopDelta = 0;
       (result.events || []).forEach(entry => {
         if (typeof entry === 'string' && entry.indexOf('__orgPop:') === 0) {
@@ -11968,7 +11969,7 @@ const Engine = {
             roster = roster.filter(f => f.id !== retiree.id);
 
             // 残留メンバーへのtrust影響
-            roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI怪我引退' });
+            roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI怪我引退', ledger: false });
 
             // midSeasonRetirees蓄積（シーズン末HOF判定用）
             // シーズン途中の怪我引退は**この週**が引退週。シーズン末にまとめて積むと
@@ -12401,7 +12402,7 @@ const Engine = {
 
         // Phase 5 R3: AI退団者の退団trust影響（残留メンバーに適用）
         aiRetirees.forEach(retiree => {
-          roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI引退' });
+          roster = Engine.trust.applyDepartureTrustImpact(roster, retiree.id, state.relationships, { name: retiree.name, reason: 'AI引退', ledger: false });
         });
 
         // Step 5b: AI契約退団（trust不満ベース）
@@ -12596,7 +12597,7 @@ const Engine = {
         roster.splice(i, 1);
 
         // 残留メンバーへのtrust影響
-        roster = Engine.trust.applyDepartureTrustImpact(roster, f.id, state.relationships, { name: f.name, reason: 'AI契約不満退団' });
+        roster = Engine.trust.applyDepartureTrustImpact(roster, f.id, state.relationships, { name: f.name, reason: 'AI契約不満退団', ledger: false });
 
         departures.push({
           orgName: org ? org.name : '',
@@ -12685,7 +12686,7 @@ const Engine = {
           state.dormantPool = rel.dormantPool;
         }
         next = Engine.trust.applyDepartureTrustImpact(next, f.id, state.relationships,
-          { name: f.name, reason: 'AI世代交代' });
+          { name: f.name, reason: 'AI世代交代', ledger: false });
       });
       return { roster: next, released };
     },
@@ -14560,7 +14561,8 @@ const Engine = {
 
         // v2.1: trust 月次更新（出場+1.53/不出場-2.64、自然減衰、grievance、_trustBonus消費）
         // Engine.executeShow（auto-sim用）と同一ロジックをプレイヤーゲームパスでも適用
-        const trustResult = Engine.trust.applyShowTrust(roster, G.lastShowResults, G.titles, G);
+        // ledger: 退団寸前の引き留めの帳簿と、出番・王座の手当て(自団体の通常興行だけ。docs/care-last-warning-design-v0.1.md §4)
+        const trustResult = Engine.trust.applyShowTrust(roster, G.lastShowResults, G.titles, G, { ledger: true });
         roster = trustResult.roster;
         newLockerRoomMorale = Engine.trust.updateLockerRoomMorale(G, trustResult);
       }
@@ -15250,11 +15252,39 @@ const Engine = {
       // ただし退団の噂(trust danger級: 信頼20を割った週・15を割った週)だけは社長の実務に直結するため、
       // 週次レポートに1行だけ静かに残す。文は GAMELOG_TEMPLATES.trust_departure_rumor(表示時に言語を引く。
       // below20 は以前の文字列ログと同じ文)。15を割った週は「決めかけている」(2026-09-26 第4回裁定8)
+      // 退団寸前の引き留め(docs/care-last-warning-design-v0.1.md §4-2・§5-1): 帳簿が選んだ原因(g.cause)の一節を足す
+      // (原因がはっきりしない・約束・派閥は今の文のまま=data に cause を載せない)
       glimpseAResult.glimpses
         .filter(g => g.tone === 'danger')
-        .forEach(g => events.push({ type: 'trust_departure_rumor', data: {
-          name: g.speakerName, variant: g.type === 'trust_below_15' ? 'below15' : 'below20',
-        }, s: s.season, w: s.week }));
+        .forEach(g => {
+          const data = { name: g.speakerName, variant: g.type === 'trust_below_15' ? 'below15' : 'below20' };
+          if (g.cause && ['stage', 'bonds', 'air', 'pay', 'title'].includes(g.cause)) data.cause = g.cause;
+          events.push({ type: 'trust_departure_rumor', data, s: s.season, w: s.week });
+        });
+      // 噂の状態(lastWarning)を付ける。20割れ・15割れのどちらかの噂が最初に出た週に付き、続いている間に次の噂が出たら、
+      // まだ応えていなければ原因をその時点の帳簿で選び直す(応えた後なら何もしない)
+      const rumorCause = new Map();
+      glimpseAResult.glimpses.filter(g => g.tone === 'danger' && g.cause).forEach(g => rumorCause.set(g.speakerId, g.cause));
+      if (rumorCause.size > 0) {
+        const rumorAbsWeek = Engine.util.absWeek(s.season, s.week);
+        s = { ...s, roster: s.roster.map(f => {
+          if (!rumorCause.has(f.id)) return f;
+          const lw = f.lastWarning;
+          if (lw && Engine.trust.isWarningLive(f)) {
+            if (lw.answered || lw.cause === rumorCause.get(f.id)) return f;
+            return { ...f, lastWarning: { ...lw, cause: rumorCause.get(f.id) } };
+          }
+          return { ...f, lastWarning: { cause: rumorCause.get(f.id), week: rumorAbsWeek, answered: false } };
+        }) };
+      }
+    }
+    // 噂の状態は信頼 clearAt(30)に戻ったら外す(20の噂の再武装と同じ線)
+    if ((s.roster || []).some(f => f.lastWarning && !Engine.trust.isWarningLive(f))) {
+      s = { ...s, roster: s.roster.map(f => {
+        if (!f.lastWarning || Engine.trust.isWarningLive(f)) return f;
+        const { lastWarning: _clearedWarning, ...rest } = f;
+        return rest;
+      }) };
     }
     // ── スナップショット生成 ──
     const snapshotRng = Engine.rng.create(
@@ -24965,6 +24995,141 @@ Engine.trust = {
     return trust >= 40 ? 1.0 : 0.35 + (trust / 40) * 0.65;
   },
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // 退団寸前の引き留め(docs/care-last-warning-design-v0.1.md。数値は data.js の CARE_LAST_WARNING)
+  //   帳簿 trustStrain: { stage, pay, title, bonds, air, promise, faction, other } — 信頼を減らした力(帯の感度を
+  //     掛けた後の実数)を原因のまとまり別に積む。増えた分は引かない(減りの記録であって残高ではない)。
+  //     消えるのは原因に応えたとき(そのまとまりを0に)と、通常興行ごとの ×strainDecay だけ
+  //   噂の状態 lastWarning: { cause, week, answered, answeredBy?, answeredWeek?, relief? } — 20割れ・15割れの噂が
+  //     最初に出た週に付き(tickWeek)、信頼 clearAt に戻ったら外れる
+  //   自団体の選手だけが持つ(AI 団体の選手・レンタルは積まない)。古いセーブに無い選手は「はっきりしない」扱い
+  // ══════════════════════════════════════════════════════════════════════════
+  STRAIN_GROUPS: ['stage', 'pay', 'title', 'bonds', 'air', 'promise', 'faction', 'other'],
+  // においわせる原因の候補(「その他」は選ばない)。同じ重さなら並びが先の方
+  WARNING_CAUSES: ['stage', 'pay', 'title', 'bonds', 'air', 'promise', 'faction'],
+
+  lastWarningConfig() {
+    const d = { strainDecay: 0.8, causeShare: 0.3, relief: 0.5, clearAt: 30, encourageHi: 25, encourageLo: 20, encourageFloor: 0.25 };
+    return (typeof CARE_LAST_WARNING !== 'undefined' && CARE_LAST_WARNING) ? { ...d, ...CARE_LAST_WARNING } : d;
+  },
+
+  // 帳簿に減りを積む(amount は失った信頼の実数・正の値)。戻り値: 新しい選手(0以下・非数なら同じ選手)
+  addStrain(fighter, group, amount) {
+    if (!fighter || !(amount > 0) || !Number.isFinite(amount)) return fighter;
+    const cur = fighter.trustStrain || {};
+    const v = Math.round(((cur[group] || 0) + amount) * 1000) / 1000;
+    return { ...fighter, trustStrain: { ...cur, [group]: v } };
+  },
+
+  // 通常興行の信頼更新の入口で帳簿を薄める(×strainDecay)。ごく小さくなったまとまりは消す
+  decayStrain(fighter) {
+    const cur = fighter && fighter.trustStrain;
+    if (!cur) return fighter;
+    const decay = Engine.trust.lastWarningConfig().strainDecay;
+    const next = {};
+    Object.keys(cur).forEach(k => {
+      const v = Math.round((cur[k] || 0) * decay * 1000) / 1000;
+      if (v > 0) next[k] = v;
+    });
+    return { ...fighter, trustStrain: next };
+  },
+
+  // 噂が出た週に「においわせる原因」を決める。その他を除いていちばん重いまとまりが、帳簿全体の causeShare 以上なら
+  // その原因、それ未満(原因が混ざっている)・帳簿が空(古いセーブ)なら 'general'(はっきりしない)
+  pickWarningCause(fighter) {
+    const s = (fighter && fighter.trustStrain) || {};
+    let total = 0;
+    Engine.trust.STRAIN_GROUPS.forEach(g => { total += s[g] || 0; });
+    if (!(total > 0)) return 'general';
+    let best = null, bv = 0;
+    Engine.trust.WARNING_CAUSES.forEach(g => { if ((s[g] || 0) > bv) { bv = s[g]; best = g; } });
+    return best && bv / total >= Engine.trust.lastWarningConfig().causeShare ? best : 'general';
+  },
+
+  // 噂の状態が生きているか(付いていて、信頼が clearAt 未満)
+  isWarningLive(fighter) {
+    return !!(fighter && fighter.lastWarning) && (fighter.trust != null ? fighter.trust : 50) < Engine.trust.lastWarningConfig().clearAt;
+  },
+
+  // A: 声かけ(と S4「励ましの言葉」)の信頼の伸びに掛ける倍率。声をかける前の信頼で決める
+  //   encourageHi 以上 ×1(1ビットも変えない) / encourageLo 以下 ×encourageFloor / 間は smoothstep でなだらかに
+  encourageBandMult(trust) {
+    const c = Engine.trust.lastWarningConfig();
+    const t = trust != null ? trust : 50;
+    if (t >= c.encourageHi) return 1;
+    if (t <= c.encourageLo) return c.encourageFloor;
+    const x = (t - c.encourageLo) / (c.encourageHi - c.encourageLo);
+    const s = x * x * (3 - 2 * x);
+    return c.encourageFloor + (1 - c.encourageFloor) * s;
+  },
+
+  // B: 原因に応えたかの判定と、帳簿・噂の状態の書き換え(信頼はまだ動かさない)。
+  //   噂の状態が生きていて・まだ応えておらず・原因が cause と一致するときだけ成立(応えられるのは噂1回につき1度)。
+  //   生きているかは手当てを打つ前の信頼(trustBefore。省略時は今の信頼)で見る — 手当てそのものの効き目で30を超えても応えたことになる
+  //   戻り値: { fighter, relief } — relief は戻す量(帳簿のその原因の分 × relief)。不成立なら { fighter(同じ), relief: 0, answered: false }
+  consumeWarningAnswer(fighter, cause, by, absWeek, trustBefore) {
+    const lw = fighter && fighter.lastWarning;
+    const tBefore = trustBefore != null ? trustBefore : (fighter && fighter.trust != null ? fighter.trust : 50);
+    if (!lw || lw.answered || lw.cause !== cause || !(tBefore < Engine.trust.lastWarningConfig().clearAt)) {
+      return { fighter, relief: 0, answered: false };
+    }
+    const strain = fighter.trustStrain || {};
+    const relief = Engine.trust.lastWarningConfig().relief * (strain[cause] || 0);
+    const nextStrain = { ...strain };
+    delete nextStrain[cause];
+    return {
+      fighter: {
+        ...fighter,
+        trustStrain: nextStrain,
+        lastWarning: { ...lw, answered: true, answeredBy: by, answeredWeek: absWeek, relief: Math.round(relief * 10000) / 10000 },
+      },
+      relief,
+      answered: true,
+    };
+  },
+
+  // B: 興行の外の手当て(慰労会・ボーナス・関係修復・契約更改・S4 待遇改善)で原因に応える。戻す量は trustCap(S4/E6 の後遺症)を超えない。
+  //   fighter は手当てそのものの効き目を乗せた後の選手、trustBefore は手当てを打つ前の信頼
+  //   戻り値: { fighter, relief(実際に戻った量), answered }
+  answerWarning(fighter, cause, by, state, trustBefore) {
+    const absWeek = state ? Engine.util.absWeek(state.season || 1, state.week || 1) : 0;
+    const r = Engine.trust.consumeWarningAnswer(fighter, cause, by, absWeek, trustBefore);
+    if (!r.answered) return { fighter, relief: 0, answered: false };
+    const oldT = r.fighter.trust != null ? r.fighter.trust : 50;
+    let t = Engine.util.clamp(oldT + r.relief, 0, 100);
+    const cap = r.fighter.trustCap;
+    if (cap && state) {
+      const cw = (state.season || 1) * 100 + (state.week || 1);
+      if (!(cw >= cap.expiresWeek) && t > cap.value) t = Math.max(oldT, cap.value);
+    }
+    return { fighter: { ...r.fighter, trust: t }, relief: t - oldT, answered: true };
+  },
+
+  // 退団寸前のセリフの器(data.js LAST_WARNING_*_LINES)から1本の候補を引く。表の形は 原因 → アーキタイプ → 性格 → [セリフ]。
+  //   kind: 'rumor'(§5-2 道場の一言)/ 'encourage'(§5-3 声かけの反応)/ 'answered'(§5-4 応えてもらえた一言)
+  //   セルが無ければ同じアーキタイプの normal まで(個別の声 _voice があればそれ)。それも無ければ null
+  //   = 呼び出し側が今の表・今の反応文に落ちる(別の口調のセリフには落ちない)
+  //   encourage は stage/bonds 以外の原因を general の表で引く
+  lastWarningLinePool(kind, cause, fighter) {
+    const tables = {
+      rumor: typeof LAST_WARNING_RUMOR_LINES !== 'undefined' ? LAST_WARNING_RUMOR_LINES : null,
+      encourage: typeof LAST_WARNING_ENCOURAGE_LINES !== 'undefined' ? LAST_WARNING_ENCOURAGE_LINES : null,
+      answered: typeof LAST_WARNING_ANSWERED_LINES !== 'undefined' ? LAST_WARNING_ANSWERED_LINES : null,
+    };
+    const table = tables[kind];
+    if (!table || !fighter) return null;
+    let key = cause || 'general';
+    if (kind === 'encourage' && key !== 'stage' && key !== 'bonds') key = 'general';
+    const byCause = table[key];
+    if (!byCause || typeof byCause !== 'object') return null;
+    const asPool = v => (Array.isArray(v) && v.length ? v : (typeof v === 'string' && v ? [v] : null));
+    const voicePool = fighter.voice && byCause._voice ? asPool(byCause._voice[fighter.voice]) : null;
+    if (voicePool) return voicePool;
+    const bucket = byCause[fighter.archetype || 'standard'];
+    if (!bucket || typeof bucket !== 'object' || Array.isArray(bucket)) return null;
+    return asPool(bucket[fighter.personality || 'normal']) || asPool(bucket.normal) || null;
+  },
+
   // ── Phase 2: 待遇不満の蓄積型trust減少 ───────────────────────────────────
   // 毎興行、条件を満たす選手にじわじわ効く。全条件は重複加算。
   // rosterContext は applyShowTrust 内で事前計算してキャッシュする。
@@ -25031,9 +25196,11 @@ Engine.trust = {
 
   // ── Phase 3: 選手間関係によるtrust変動（興行ごと） ───────────────────────
   // matchContext: { participatedIds: Set, matchResults: [{leftId, rightId, winnerId}], sameOrgActiveRoster: [] }
+  // 戻り値の loss は減った分だけの合計(正の値。R1・R2・R5。退団寸前の帳簿 trustStrain.bonds に積む。delta は従来どおり)
   calcRelationshipTrustDelta(fighter, state, matchContext) {
-    if (!state.relationships) return { delta: 0, flags: {} };
+    if (!state.relationships) return { delta: 0, flags: {}, loss: 0 };
     let delta = 0;
+    let loss = 0;
     const flags = {};  // Phase 5: スナップショット用フラグ
     const rels = state.relationships;
 
@@ -25046,6 +25213,7 @@ Engine.trust = {
         const r = rels[key];
         if (r && Engine.relationships.isNegativeBond(r.bond)) {
           delta -= 0.3;
+          loss += 0.3;
           if (!flags.R1) flags.R1 = [];
           flags.R1.push(otherId);
         }
@@ -25067,6 +25235,7 @@ Engine.trust = {
       }
       if (bondFriends <= 1) {
         delta -= 0.4;
+        loss += 0.4;
         flags.R2 = true;
       }
     }
@@ -25086,20 +25255,22 @@ Engine.trust = {
       const won = mr.winnerId === fighter.id;
       const lost = mr.winnerId === oppId;
       if (won) { delta += 0.2; flags.R4 = oppId; }
-      else if (lost) { delta -= 0.3; flags.R5 = oppId; }
+      else if (lost) { delta -= 0.3; loss += 0.3; flags.R5 = oppId; }
     }
 
-    return { delta, flags };
+    return { delta, flags, loss };
   },
 
   // ── Phase 3 R3: 仲の良い選手が退団/引退した時のtrust影響 ──────────────
   // 残されたロスターメンバーのうち、退団者とbond65+の選手のtrustを直接低下させる。
   // delta = -(bond - 50) * 0.2  →  bond65: -3.0 / bond75: -5.0 / bond85: -7.0
   // 返り値: 更新後のroster
+  // meta.ledger === false: AI 団体のロスター(退団寸前の帳簿 trustStrain に積まない)。既定は自団体として人間関係に積む
   applyDepartureTrustImpact(roster, departedId, relationships, meta) {
     if (!relationships) return roster;
     const departedName = (meta && meta.name) || '';
     const reason = (meta && meta.reason) || '';
+    const ledger = !(meta && meta.ledger === false);
     return roster.map(f => {
       if (f.isRental) return f;
       const key = Engine.relationships._key(f.id, departedId);
@@ -25109,15 +25280,21 @@ Engine.trust = {
       const oldTrust = f.trust != null ? f.trust : 50;
       const newTrust = Engine.util.clamp(oldTrust + impact, 0, 100);
       if (Math.abs(newTrust - oldTrust) < 0.01) return f;
-      return {
+      const out = {
         ...f, trust: newTrust,
         _departureBondImpact: { departedId, departedName, bond: r.bond, reason },  // Phase 5: スナップショット用
       };
+      return ledger ? Engine.trust.addStrain(out, 'bonds', oldTrust - newTrust) : out;
     });
   },
 
-  applyShowTrust(roster, results, titles, state) {
+  // opts.ledger: 自団体の通常興行の更新(processSettlement だけが立てる)。退団寸前の引き留め
+  //   (docs/care-last-warning-design-v0.1.md §4)の帳簿 trustStrain を ×strainDecay で薄めてからこの興行の減りを原因別に積み、
+  //   噂の状態の選手を出場させたら出番(王座戦なら王座)の手当てとして応える。AI 団体の呼び出しは立てない(何も変わらない)
+  applyShowTrust(roster, results, titles, state, opts) {
     if (results.length === 0) return { roster, changes: [] };
+    const ledger = !!(opts && opts.ledger);
+    const ledgerAbsWeek = ledger && state ? Engine.util.absWeek(state.season || 1, state.week || 1) : 0;
 
     // 出場選手IDセット
     const participated = new Set();
@@ -25190,6 +25367,9 @@ Engine.trust = {
 
     const changes = [];
     const newRoster = roster.map(fighter => {
+      // 退団寸前の帳簿: 通常興行ごとに全まとまりを薄める(怪我中・休暇中の選手も。レンタル・統一王座の客は持たない)
+      const ledgerTarget = ledger && !fighter.isRental && !fighter.isUnifiedTitleGuest;
+      if (ledgerTarget) fighter = Engine.trust.decayStrain(fighter);
       // 怪我中・休暇中は変動なし（noAppearStreakもリセットしない）
       // 休暇辞令で休ませた選手に不出場ペナルティを課すと、休暇の信頼収支が赤字になる
       if (fighter.injury || fighter.onLeave) return fighter;
@@ -25198,13 +25378,26 @@ Engine.trust = {
       const oldTrust = fighter.trust != null ? fighter.trust : 50;
       let delta = 0;
       let updated = { ...fighter };
+      // この興行の減り(帯の感度を掛ける前。最後に感度を掛けて帳簿に積む)と、原因に応えた分のすぐ戻る量
+      const strainRaw = ledgerTarget ? {} : null;
+      const addRaw = (group, amount) => { if (strainRaw && amount > 0) strainRaw[group] = (strainRaw[group] || 0) + amount; };
+      let answerRelief = 0;
 
       if (participated.has(fighter.id)) {
+        // 退団寸前の引き留め B(§4-3): 噂の状態の選手を通常興行のカードに入れた = 出番の手当て(どの試合でも。タッグも可)。
+        // 王座戦に出した = 王座の手当て。帳簿のその原因の分の半分がすぐ戻り(感度を掛けた後に足す)、以後は下の戻りの鈍りが外れる
+        if (ledgerTarget && updated.lastWarning) {
+          const causeHere = titleFighters.has(fighter.id) && updated.lastWarning.cause === 'title' ? 'title' : 'stage';
+          const ans = Engine.trust.consumeWarningAnswer(updated, causeHere, causeHere === 'title' ? 'titleMatch' : 'card', ledgerAbsWeek);
+          if (ans.answered) { updated = ans.fighter; answerRelief = ans.relief; }
+        }
+        const warningAnswered = ledgerTarget && Engine.trust.isWarningLive(updated) && updated.lastWarning.answered;
+
         // §2.2: 出場 基本値 +1.53
         let gainDelta = 1.53;
 
-        // §5.2: low帯の回復減衰（出場基本値に適用）
-        gainDelta *= Engine.trust.recoveryMult(oldTrust);
+        // §5.2: low帯の回復減衰（出場基本値に適用）。原因に応えてもらえた噂の状態の選手は外す(退団寸前の引き留め §4-3)
+        if (!warningAnswered) gainDelta *= Engine.trust.recoveryMult(oldTrust);
 
         // §3: 舞台の質による追加
         if (mainFighters.has(fighter.id))     gainDelta += 1.07;  // メイン抜擢
@@ -25236,6 +25429,7 @@ Engine.trust = {
         const m3Threshold = 40 + Engine.orgPop.getTrustMQShift(state ? (state.orgPop || 0) : 0);
         if (fighterMatch && (fighterMatch.mq || 0) < m3Threshold) {
           delta -= 0.46;
+          addRaw('other', 0.46);
         }
       } else {
         // §2.2: 不出場 基本値 -2.64
@@ -25250,6 +25444,7 @@ Engine.trust = {
 
         // §4.3: 負方向は逓減なし
         delta += lossDelta;
+        addRaw('stage', -lossDelta);
 
         // §2.3B: ストリーク加算
         updated.noAppearStreak = streak + 1;
@@ -25283,6 +25478,18 @@ Engine.trust = {
           grievanceDelta *= 0.7;
         }
         delta += grievanceDelta;
+        // 退団寸前の帳簿: 待遇不満を立ったフラグの素点(G1 0.4 / G2 0.6 / G3 0.5 / G4 0.35)で按分する
+        // (G1・G2=給与 / G3=王座 / G4=出番。コーチの軽減・リーダー気質の軽減は按分の前に掛かっている)
+        if (strainRaw && grievanceDelta < 0) {
+          const gf = grievanceResult.flags;
+          const w = { G1: gf.G1 ? 0.4 : 0, G2: gf.G2 ? 0.6 : 0, G3: gf.G3 ? 0.5 : 0, G4: gf.G4 ? 0.35 : 0 };
+          const wSum = w.G1 + w.G2 + w.G3 + w.G4;
+          if (wSum > 0) {
+            addRaw('pay', -grievanceDelta * (w.G1 + w.G2) / wSum);
+            addRaw('title', -grievanceDelta * w.G3 / wSum);
+            addRaw('stage', -grievanceDelta * w.G4 / wSum);
+          }
+        }
         // Phase 5: スナップショット用フラグを選手オブジェクトに転写
         if (Object.keys(grievanceResult.flags).length > 0) {
           updated._grievanceFlags = grievanceResult.flags;
@@ -25298,6 +25505,7 @@ Engine.trust = {
         };
         const relResult = Engine.trust.calcRelationshipTrustDelta(fighter, state, matchContext);
         delta += relResult.delta;
+        addRaw('bonds', relResult.loss || 0);
         // Phase 5: スナップショット用フラグを選手オブジェクトに転写
         if (Object.keys(relResult.flags).length > 0) {
           updated._relationshipFlags = relResult.flags;
@@ -25307,9 +25515,21 @@ Engine.trust = {
       // §8.1: 自然変動（興行ごと）+ §13.5 P-後輩への好影響 + §9 v3.0 morale侵食
       const _trustMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
       delta += Engine.trust.calcMonthlyNatural(mental, seniorCount, oldTrust, _trustMorale);
+      // 退団寸前の帳簿: 自然減(メンタル)と高帯の維持コストは「その他」、士気45未満の侵食は「空気」
+      // (calcMonthlyNatural と同じ式の各項。先輩の好影響は増える側なので積まない)
+      if (strainRaw) {
+        addRaw('other', -(-0.46 + ((mental || 50) / 217)));
+        addRaw('other', Math.max(0, oldTrust - 60) * 0.04);
+        if (_trustMorale < 45) addRaw('air', (45 - _trustMorale) / 100);
+      }
 
-      delta *= Engine.trust.trustSensitivity(oldTrust);
-      let newTrust = Engine.util.clamp(oldTrust + delta, 0, 100);
+      const sensitivity = Engine.trust.trustSensitivity(oldTrust);
+      delta *= sensitivity;
+      // 原因に応えてもらえた分は、帯の感度を掛けた後にそのまま足す(帳簿は感度を掛けた後の実数で積んでいる)。応えていなければ +0
+      let newTrust = Engine.util.clamp(oldTrust + delta + answerRelief, 0, 100);
+      if (strainRaw) {
+        Object.keys(strainRaw).forEach(g => { updated = Engine.trust.addStrain(updated, g, strainRaw[g] * sensitivity); });
+      }
 
       // §14.1D: trustCap処理（S4/E6後遺症）
       if (updated.trustCap) {
@@ -26361,6 +26581,9 @@ Engine.shachoshitsu = {
           f = applyTrust(f, bandResult.baseDelta * currentFinalMult);
         }
         f._bonusRepeat = (f._bonusRepeat || 0) + 1;
+        // 退団寸前の引き留め B(§4-3): 給与が原因の噂の選手に相場以上(r ≥ 0.8)を払った = 給与の手当て。
+        // ボーナスそのものの効き目は上で今のまま乗っていて、帳簿の給与の分の半分がその上に戻る
+        if (proposal.r >= 0.8) f = Engine.trust.answerWarning(f, 'pay', 'bonus', state, _trustBeforeBonus).fighter;
         events.push(`💰 ${f.name}にボーナス${actualCost}万を支給`);
         if (bandResult.band === 'insult') {
           suppressTone = true;
@@ -26395,8 +26618,14 @@ Engine.shachoshitsu = {
         }
         // Phase 8: trust 効果のみに性格×アーキタイプ倍率を適用
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('encourage', f);
-        f = applyTrust(f, (doc.effect.trust ?? 0.77) * currentFinalMult);
+        // 退団寸前の引き留め A(§3): 言葉だけでは届かない帯。声をかける前の信頼で決まる倍率を信頼の伸びにだけ掛ける
+        // (25以上は ×1 のまま=掛けない。スランプの回復促進・周りとの絆の微増はそのまま)
+        const encourageBandMult = Engine.trust.encourageBandMult(curTrust);
+        const encourageGain = (doc.effect.trust ?? 0.77) * currentFinalMult;
+        f = applyTrust(f, encourageBandMult < 1 ? encourageGain * encourageBandMult : encourageGain);
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
+        // 噂の帯(信頼20未満)では、本人が原因を口にする反応に切り替える(反応文は Engine.shachoshitsu.getReactionText)
+        if (curTrust < Engine.trust.lastWarningConfig().encourageLo) reactionKey = 'encourage_last_warning';
         events.push(`💬 社長が${f.name}に声をかけた`);
       } else if (docId === 'pledge') {
         // care-rework2 P2-G: 「次の通常興行のメインで使う」と約束する。
@@ -26549,8 +26778,10 @@ Engine.shachoshitsu = {
             : _wmFillWithDict(dict, '{stat}を重点に据えて練習を組んでもらう', { stat: fLabelText });
           changes.push({ label: _wmFillWithDict(dict, '重点の指定'), emoji: '🎯', text: focusText });
         }
-      } else if (docId !== 'special_treatment' && _after.trust !== _before.trust) {
+      } else if (docId !== 'special_treatment' && _after.trust !== _before.trust
+          && reactionKey !== 'encourage_last_warning') {
         // 内部値は見せず、選手の反応として伝える。
+        // (噂の帯の声かけは下の「気持ちの揺らぎ」の地の文=表情は硬いまま、が本人の様子を担うので、和らいだ等は出さない)
         const trustDelta = _after.trust - _before.trust;
         const reactionText = trustDelta >= 5
           ? '社長の対応に、はっきりと報われた表情を見せた'
@@ -26572,7 +26803,11 @@ Engine.shachoshitsu = {
         // slump/motivLoss 中なら「スランプ回復」、そうでない(trust 低下のみ)なら「気持ちの揺らぎ」
         if (f.slump || f.motivationLoss) {
           changes.push({ label: _wmFillWithDict(dict, 'スランプ回復'), emoji: '💪', text: _wmFillWithDict(dict, 'ほんの少し、気持ちが楽になったようだ') });
-        } else {
+        }
+        if (reactionKey === 'encourage_last_warning') {
+          // 退団寸前の引き留め A(§3-3): 言葉は届いているが、流れは変えられない
+          changes.push({ label: _wmFillWithDict(dict, '気持ちの揺らぎ'), emoji: '💭', text: _wmFillWithDict(dict, '話は最後まで聞いてくれた。けれど、表情は硬いままだ') });
+        } else if (!(f.slump || f.motivationLoss)) {
           changes.push({ label: _wmFillWithDict(dict, '気持ちの揺らぎ'), emoji: '💭', text: _wmFillWithDict(dict, '話を聞いてもらえたことで、少しだけ救われたようだ') });
         }
       }
@@ -26605,7 +26840,12 @@ Engine.shachoshitsu = {
         roster = roster.map(f => {
           if (f.injury || f.onLeave) return f;
           const mult = Engine.shachoshitsu.calcUncertainty('party', f);
-          return applyTrust(f, (doc.effect.trust ?? 1.84) * mult);
+          const partied = applyTrust(f, (doc.effect.trust ?? 1.84) * mult);
+          // 退団寸前の引き留め B(§4-3): 人間関係・空気が原因の噂の選手が出席した慰労会 = その原因の手当て
+          // (原因が合わなければ何もしない。慰労会そのものの効き目は上で今のまま乗る)
+          if (!partied.lastWarning) return partied;
+          const cause = partied.lastWarning.cause === 'air' ? 'air' : 'bonds';
+          return Engine.trust.answerWarning(partied, cause, 'party', state, f.trust != null ? f.trust : 50).fighter;
         });
         lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale ?? 6), 0, 100);
         // care-rework2 P2-B: 余韻。翌週から3週にわたって +1 ずつ効く(tickWeek で消化)。
@@ -26671,6 +26911,9 @@ Engine.shachoshitsu = {
         rels[keyAB] = { ...curAB, bond: Engine.util.clamp((curAB.bond != null ? curAB.bond : 50) + delta, 0, 100) };
         rels[keyBA] = { ...curBA, bond: Engine.util.clamp((curBA.bond != null ? curBA.bond : 50) + delta, 0, 100) };
         pairRepairResult = { success: true, delta, idA, idB, nameA: fA.name, nameB: fB.name, relationships: rels };
+        // 退団寸前の引き留め B(§4-3): 人間関係が原因の噂の選手が当事者の修復が成功した = 人間関係の手当て
+        roster = roster.map(c => ((c.id === idA || c.id === idB) && c.lastWarning)
+          ? Engine.trust.answerWarning(c, 'bonds', 'repair', state).fighter : c);
         // 2026-09-25 総点検04§5: ログと決裁結果に内部変数名(bond)と増減の数値を出していた。質的に書く(効果の値は不変)
         events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功。わだかまりがいくらか解けた`);
         changes.push({ label: _wmFillWithDict(dict, '関係修復'), emoji: '🤝', text: _wmFillWithDict(dict, '{nameA}と{nameB}の間のわだかまりが、いくらか解けた', { nameA: fA.name, nameB: fB.name }) });
@@ -26838,6 +27081,14 @@ Engine.shachoshitsu = {
   // ── リアクションセリフ取得(既存 CARE_REACTION_DIALOGUES 辞書を流用) ─────────
   // Phase 5 で DECISION_REACTION_DIALOGUES にリネーム予定だが、Phase 4 では既存辞書を参照
   getReactionText(docId, fighter) {
+    // 退団寸前の引き留め(§5-3): 噂の帯の声かけは、本人が原因を口にする表(原因 × アーキタイプ × 性格)。
+    // 引けなければ今の声かけの反応文に落ちる
+    if (docId === 'encourage_last_warning') {
+      const cause = (fighter && fighter.lastWarning && fighter.lastWarning.cause) || 'general';
+      const pool = Engine.trust.lastWarningLinePool('encourage', cause, fighter);
+      if (pool) return pool[Math.floor(Math.random() * pool.length)];
+      docId = 'encourage';
+    }
     if (typeof CARE_REACTION_DIALOGUES === 'undefined') return '…';
     const dialogues = CARE_REACTION_DIALOGUES[docId];
     if (!dialogues) return '…';
@@ -26917,7 +27168,10 @@ Engine.shachoshitsu = {
         // careOvrMult も掛けない — あの傾斜は「格下ほどケアが効く」という
         // 増加側の設計で、罰に掛けると格下ほど重く罰する逆向きの意味になり、
         // かつ -6 を超えて落ちうる(不変条件「破約は-6以内」を破る)。
+        const beforeBroken = f.trust != null ? f.trust : 50;
         f = applyTrust(f, PLEDGE_BROKEN_TRUST, true);
+        // 退団寸前の帳簿: 破約で減った分は「約束」
+        f = Engine.trust.addStrain(f, 'promise', beforeBroken - (f.trust != null ? f.trust : 50));
       }
       newRoster[idx] = f;
       return { roster: newRoster, outcome: kept ? 'kept' : 'broken', fighterId: p.fighterId };
@@ -27397,7 +27651,9 @@ Engine.eventSystem = {
 
   // ── 選択型イベントの効果適用（純粋関数） ─────────────────────────────────
   // 返り値: { roster, funds, lockerRoomMorale, events, log }
-  applyChoiceEffect(event, choiceIdx, state, rng = null) {
+  // opts.ai: AI 団体のイベント(Engine.rival の AI イベント処理だけが立てる)
+  applyChoiceEffect(event, choiceIdx, state, rng = null, opts = null) {
+    const isAIEvent = !!(opts && opts.ai);
     let roster = state.roster.map(f => ({ ...f }));
     let funds = state.funds || 0;
     let lockerRoomMorale = state.lockerRoomMorale != null ? state.lockerRoomMorale : 60;
@@ -27470,19 +27726,23 @@ Engine.eventSystem = {
             const capVal = s4Count >= 1 ? 55 : 60;
             const capWeeks = s4Count >= 1 ? 12 : 8;
             const currentWeek = (state.season || 1) * 100 + (state.week || 1);
-            return {
+            const improved = {
               ...f,
               trust: Engine.util.clamp(oldT + 10.0, 0, 100),
               s4Count: s4Count + 1,
               trustCap: { value: capVal, expiresWeek: currentWeek + capWeeks },
             };
+            // 退団寸前の引き留め B(§4-3): 給与が原因の噂の選手の待遇を改善した = 給与の手当て(戻る量も上限 trustCap の内)
+            return improved.lastWarning ? Engine.trust.answerWarning(improved, 'pay', 's4', state, oldT).fighter : improved;
           });
           events.push(`💴 ${event.name}の待遇を改善（-${s4Cost}万）。本人の態度が軟化した`);
         } else if (choiceIdx === 1) {
           roster = roster.map(f => f.id === event.fighter ? { ...f, s4Count: s4Count + 1 } : f);
           events.push(`🤝 ${event.name}への出場約束（次の興行に出場させること）`);
         } else if (choiceIdx === 3) {
-          applyTrust(event.fighter, 2.30);
+          // 退団寸前の引き留め A(§3-4): 声かけと同じ「言葉だけ」の行為なので、同じ帯の倍率を掛ける(信頼25以上は掛けない)
+          const s4EncMult = isAIEvent ? 1 : Engine.trust.encourageBandMult(f4 && f4.trust != null ? f4.trust : 50);
+          applyTrust(event.fighter, s4EncMult < 1 ? 2.30 * s4EncMult : 2.30);
           roster = roster.map(f => f.id === event.fighter ? { ...f, s4Count: s4Count + 1 } : f);
           events.push(`💬 ${event.name}を励ました（焼け石に水）`);
         } else if (choiceIdx === 4) {
@@ -29056,6 +29316,17 @@ Engine.validateGameState = function(G) {
           warn(`キャラ "${c.name}" (id:${c.id}) のtrustが範囲外: ${c.trust}（範囲: 0-100）`);
         }
       }
+      // 退団寸前の引き留め: 帳簿は原因のまとまり別の0以上の有限値、噂の状態の原因は決まった名前だけ
+      if (c.trustStrain !== undefined) {
+        if (!c.trustStrain || typeof c.trustStrain !== 'object'
+            || Object.keys(c.trustStrain).some(k => !Engine.trust.STRAIN_GROUPS.includes(k) || !isValidNum(c.trustStrain[k]) || c.trustStrain[k] < 0)) {
+          warn(`キャラ "${c.name}" (id:${c.id}) の退団寸前の帳簿(trustStrain)が不正: ${JSON.stringify(c.trustStrain)}`);
+        }
+      }
+      if (c.lastWarning !== undefined && (!c.lastWarning
+          || ![...Engine.trust.WARNING_CAUSES, 'general'].includes(c.lastWarning.cause))) {
+        warn(`キャラ "${c.name}" (id:${c.id}) の噂の状態(lastWarning)が不正: ${JSON.stringify(c.lastWarning)}`);
+      }
       if (c.age !== undefined && (!isValidNum(c.age) || c.age < 10 || c.age > 40)) {
         warn(`キャラ "${c.name}" (id:${c.id}) のageが不正値: ${c.age}`);
       }
@@ -30145,9 +30416,18 @@ Engine.contract = {
     }
 
     // trust適用（メンタル係数付き）
+    const trustBeforeNegotiation = f.trust ?? 50;
     if (trustDelta !== 0) {
       const adjusted = Engine.trust.applyCoeff(trustDelta, f.mn);
+      const beforeNeg = f.trust ?? 50;
       f.trust = Engine.util.clamp((f.trust ?? 50) + adjusted, 0, 100);
+      // 退団寸前の帳簿: 契約更改で信頼が下がった分(昇給を断った・厳しい改定など)は「給与」
+      if (f.trust < beforeNeg) f = Engine.trust.addStrain(f, 'pay', beforeNeg - f.trust);
+    }
+    // 退団寸前の引き留め B(§4-3): 給与が原因の噂の選手の昇給を受けた・引き留めに成功した = 給与の手当て
+    if (f.lastWarning && (reactionPhase === 'raise_accept' || reactionPhase === 'raise_negotiate_accept'
+        || reactionPhase === 'transfer_retain_success')) {
+      f = Engine.trust.answerWarning(f, 'pay', 'contract', s, trustBeforeNegotiation).fighter;
     }
 
     // 厳格改定でtrustが40未満まで落ちた場合だけ、40%で移籍志願へ発展する。

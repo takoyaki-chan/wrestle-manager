@@ -865,7 +865,9 @@ Engine.relationships = {
       updateFighter(fighterId, fighter => {
         const oldTrust = fighter.trust != null ? fighter.trust : 50;
         const adjusted = rawDelta * Engine.trust.trustSensitivity(oldTrust);
-        return { ...fighter, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
+        const out = { ...fighter, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
+        // 退団寸前の帳簿(docs/care-last-warning-design-v0.1.md §4-1): 週次の関係の出来事で減った分は「人間関係」
+        return (!fighter.isRental && Engine.trust.addStrain) ? Engine.trust.addStrain(out, 'bonds', oldTrust - out.trust) : out;
       });
     };
     const applyConditionDelta = (fighterId, delta) => {
@@ -5158,7 +5160,14 @@ Engine.orgTimeline = {
       timeline[timeline.length - 1] = { ...last, toSeason: season, toWeek: week };
     }
     timeline.push({ orgId: newOrgId, fromSeason: season, fromWeek: week });
-    return { ...fighter, careerStage: newOrgId === 'fa' ? fighter.careerStage : 'active', orgTimeline: this.normalize(timeline) };
+    const moved = { ...fighter, careerStage: newOrgId === 'fa' ? fighter.careerStage : 'active', orgTimeline: this.normalize(timeline) };
+    // 退団寸前の引き留めの帳簿と噂の状態は、その団体での気持ちの記録。団体を移ったら持ち越さない
+    // (docs/care-last-warning-design-v0.1.md §4-1。付いていない選手は何も変わらない)
+    if (moved.trustStrain !== undefined || moved.lastWarning !== undefined) {
+      delete moved.trustStrain;
+      delete moved.lastWarning;
+    }
+    return moved;
   },
   /** state からID指定で fighter オブジェクトを引く（roster/aiOrgs/freeAgents/retiredFighters 横断） */
   _findFighter(state, id) {
@@ -5447,18 +5456,32 @@ Engine.glimpse = {
 
         cooldowns[cdKey] = absWeek;
         fired[cdKey] = true;
+        // 退団寸前の引き留め(docs/care-last-warning-design-v0.1.md §4-2): 退団の噂(danger)には「においわせる原因」を載せる。
+        // 帳簿でいちばん重い原因。噂の状態がまだ生きていて、すでに原因に応えてもらえていれば、その原因のまま(選び直さない)
+        let cause = null;
+        if (th.tone === 'danger' && Engine.trust && Engine.trust.pickWarningCause) {
+          const lwPrev = f.lastWarning;
+          cause = (lwPrev && lwPrev.answered && Engine.trust.isWarningLive(f)) ? lwPrev.cause : Engine.trust.pickWarningCause(f);
+        }
         // セリフの文選びも、roll:false の閾値は共有の乱数(Math.random・この rng)に触れない専用の種で選ぶ
         // (表示専用の文選びなので Math.random でもよいが、auto-sim/JAゴールデンは Math.random に種を入れて
         // 回しているため、引く回数が増えると後ろの文選びがずれる)
+        // 20割れの噂の本人の一言は、原因が出番・人間関係のときだけ原因別の表(LAST_WARNING_RUMOR_LINES §5-2)。
+        // その表で引けなければ今の表(同じ引き方なので Math.random を引く回数は変わらない)
+        const causeTable = (th.id === 'trust_below_20' && (cause === 'stage' || cause === 'bonds')
+          && typeof LAST_WARNING_RUMOR_LINES !== 'undefined')
+          ? Engine.trust.lastWarningLinePool('rumor', cause, f) : null;
+        const lineSource = causeTable ? { standard: { normal: causeTable } } : GLIMPSE_A_LINES[th.id];
         const line = th.roll === false
-          ? this._pickLineWithOwnSeed(GLIMPSE_A_LINES[th.id], f, state, th.id)
-          : pickDialogueLine(GLIMPSE_A_LINES[th.id], f);
+          ? this._pickLineWithOwnSeed(lineSource, f, state, th.id)
+          : pickDialogueLine(lineSource, f);
         const g = {
           layer: 'A', type: th.id, tone: th.tone, label: th.label,
           speakerId: f.id, speakerName: f.name,
           targetId: null, targetName: null,
           dialogue: line, axis: 'trust', value: curTrust,
         };
+        if (cause) g.cause = cause;
         glimpses.push(g);
         firedHere.push(g);
       });
@@ -5473,6 +5496,24 @@ Engine.glimpse = {
         const at = glimpses.indexOf(covered);
         if (at >= 0) glimpses.splice(at, 1);
       });
+
+      // 退団寸前の引き留め(§5-4): 出番が原因の噂の選手を、噂のあと初めて通常興行のカードに入れた週 = 応えてもらえた一言。
+      // 道場「休憩中の選手」の確定枠で見せる(tone positive)。セリフの表(LAST_WARNING_ANSWERED_LINES)で引けなければ出さない。
+      // 共有の乱数・Math.random は引かない(専用の種)
+      const lwAns = f.lastWarning;
+      if (lwAns && lwAns.answered && lwAns.cause === 'stage' && lwAns.answeredBy === 'card' && lwAns.answeredWeek === absWeek
+          && Engine.trust && Engine.trust.lastWarningLinePool) {
+        const ansPool = Engine.trust.lastWarningLinePool('answered', 'stage', f);
+        if (ansPool) {
+          glimpses.push({
+            layer: 'A', type: 'last_warning_answered', tone: 'positive', label: '出番表に名前があった',
+            speakerId: f.id, speakerName: f.name,
+            targetId: null, targetName: null,
+            dialogue: this._pickLineWithOwnSeed({ standard: { normal: ansPool } }, f, state, 'last_warning_answered'),
+            axis: 'trust', value: curTrust, milestone: true,
+          });
+        }
+      }
     });
 
     // 新しいスナップショットを記録

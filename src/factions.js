@@ -949,7 +949,9 @@ Engine.factions = {
         if (d == null) return c;
         const oldT = c.trust != null ? c.trust : 50;
         const sensitivity = (Engine.trust && Engine.trust.trustSensitivity) ? Engine.trust.trustSensitivity(oldT) : 1;
-        return { ...c, trust: Engine.util.clamp(oldT + d * sensitivity, 0, 100) };
+        const out = { ...c, trust: Engine.util.clamp(oldT + d * sensitivity, 0, 100) };
+        // 退団寸前の帳簿(docs/care-last-warning-design-v0.1.md §4-1): 派閥の出来事で減った分は「派閥」
+        return (Engine.trust && Engine.trust.addStrain) ? Engine.trust.addStrain(out, 'faction', oldT - out.trust) : out;
       });
       s = { ...s, roster: newRoster };
     }
@@ -1236,7 +1238,9 @@ Engine.factions = {
       if (!idSet.has(c.id)) return c;
       const oldT = c.trust != null ? c.trust : 50;
       const sensitivity = (Engine.trust && Engine.trust.trustSensitivity) ? Engine.trust.trustSensitivity(oldT) : 1;
-      return { ...c, trust: Engine.util.clamp(oldT + rawDelta * sensitivity, 0, 100) };
+      const out = { ...c, trust: Engine.util.clamp(oldT + rawDelta * sensitivity, 0, 100) };
+      // 退団寸前の帳簿(docs/care-last-warning-design-v0.1.md §4-1): 派閥の出来事で減った分は「派閥」
+      return (Engine.trust && Engine.trust.addStrain) ? Engine.trust.addStrain(out, 'faction', oldT - out.trust) : out;
     });
     return { ...state, roster: newRoster };
   },

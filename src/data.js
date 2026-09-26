@@ -28720,6 +28720,47 @@ GLIMPSE_A_LINES.trust_below_15 = {
   },
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 退団寸前の引き留め(docs/care-last-warning-design-v0.1.md。2026-09-26 Keisuke 承認 = §9 の10問すべて「おすすめ」)
+//   A 言葉だけでは届かない帯: 声かけ・S4「励ましの言葉」の信頼の伸びに、声をかける前の信頼で決まる倍率を掛ける
+//     (encourageHi 以上 ×1 / encourageLo 以下 ×encourageFloor / 間はなだらか)。スランプの回復促進・絆の微増は変えない
+//   B 原因に合った手当て: 選手ごとに「何で信頼が減ったか」の帳簿(trustStrain。原因のまとまり別。通常興行の信頼更新の
+//     たびに ×strainDecay で薄れる)を持ち、噂が出た週にいちばん重い原因を「においわせる原因」(lastWarning.cause)に決める
+//     (全体の causeShare 未満なら「はっきりしない」)。原因に合った既存の手を打つと、帳簿のその原因の分の relief 倍が
+//     すぐ戻り、以後 clearAt に戻るまで出場したときの低い帯の戻りの鈍り(recoveryMult)が外れる。仕組みは Engine.trust
+// 帳簿の中身・原因の名前・倍率は画面に出さない(原因はログの一節と本人の言葉だけで伝わる)
+const CARE_LAST_WARNING = {
+  strainDecay: 0.8,     // 通常興行ごとに帳簿を薄める率(6興行=12週前の減りは約4分の1)
+  causeShare: 0.3,      // いちばん重い原因が帳簿全体のこの割合未満なら「はっきりしない」(general)
+  relief: 0.5,          // 原因に応えたとき、その原因で減った分のうちすぐ戻る割合(半分は傷として残る)
+  clearAt: 30,          // 噂の状態(lastWarning)が解ける信頼(20の噂の再武装と同じ線)
+  encourageHi: 25,      // 声かけの効き目が下がり始める信頼(15割れの噂の再武装の線と同じ)
+  encourageLo: 20,      // 声かけの効き目が底になる信頼(噂が出る線)
+  encourageFloor: 0.25, // 底の倍率(20を割る直前の12週の「下げた力」1興行あたり約−3.2 の約6分の1が2週の声かけで戻る大きさ)
+};
+
+// ── 退団寸前の引き留めのセリフの器(設計書 §5-2〜§5-4)──
+// 形はどれも 原因 → アーキタイプ(口調) → 性格 → [セリフ, ...](アーキタイプ第一×性格第二。trust_below_15 と同じ並び)。
+// 全127人に実在する34セル(アーキタイプ×性格)に各1本の想定。引き方は Engine.trust.pickLastWarningLine:
+//   セルが無ければ同じアーキタイプの normal まで落ち、それも無ければ null を返して呼び出し側が今の表・今の反応文に落ちる
+//   (別の口調のセリフには絶対に落ちない)。本文は下書き(並行作業)の承認後にここへ流し込む
+// 原因のキー: stage=出番 / bonds=人間関係 / general=はっきりしない(給与・王座・空気・約束・派閥もこちら)
+// §5-2 道場の一言(20割れの噂の本人の一言)。原因が出番・人間関係のときだけ GLIMPSE_A_LINES.trust_below_20 を差し替える
+const LAST_WARNING_RUMOR_LINES = {
+  stage: {},
+  bonds: {},
+};
+// §5-3 声かけの反応(信頼20未満。反応の鍵 encourage_last_warning)。stage/bonds 以外の原因は general の表を使う
+const LAST_WARNING_ENCOURAGE_LINES = {
+  stage: {},
+  bonds: {},
+  general: {},
+};
+// §5-4 応えてもらえた一言(出番のみ)。噂のあと初めて通常興行のカードに入った週に、道場「休憩中の選手」の確定枠で出す
+const LAST_WARNING_ANSWERED_LINES = {
+  stage: {},
+};
+
 GLIMPSE_A_LINES.trust_above_75 = {
   normal: {
     standard: ['この団体に来てよかった。ここが自分の居場所だ', 'みんなと一緒にもっと上を目指したい'],
@@ -32085,9 +32126,22 @@ const GAMELOG_TEMPLATES = {
   // ── management.js tickWeek: 退団の噂(Glimpse A の信頼の閾値。社長の実務情報として週次レポートに1行) ──
   // below20 は以前の文字列ログと同じ文。below15 は突然の退団の判定が始まる臨界帯に入った週
   // (2026-09-26 第4回裁定8)。20と同じ週に両方をまたいだら below15 の1行にまとめる
+  // 退団寸前の引き留め(docs/care-last-warning-design-v0.1.md §5-1): 噂が出た週に帳簿が選んだ原因(data.cause)の一節を
+  // 足した文。キーは「{variant}_{cause}」(gameLogEntryText が cause 付きのキーを先に引く)。原因がはっきりしない・約束・派閥と、
+  // cause の無い古いログは今の文のまま。噂なので断定しない(出番の一節だけは社長自身が組んだカードの事実なので断定する)
   trust_departure_rumor: {
     below20: '💬 {name}が退団を考えているという噂がある',
     below15: '💬 {name}が退団を決めかけているという噂がある',
+    below20_stage: '💬 {name}が退団を考えているという噂がある。出番のない興行が続いている',
+    below15_stage: '💬 {name}が退団を決めかけているという噂がある。控室で出番表を見ていたという',
+    below20_bonds: '💬 {name}が退団を考えているという噂がある。控室で浮いているらしい',
+    below15_bonds: '💬 {name}が退団を決めかけているという噂がある。控室で誰とも口をきいていないという',
+    below20_air: '💬 {name}が退団を考えているという噂がある。団体の空気に嫌気がさしているらしい',
+    below15_air: '💬 {name}が退団を決めかけているという噂がある。団体の空気に嫌気がさしているらしい',
+    below20_pay: '💬 {name}が退団を考えているという噂がある。同じ格の選手との待遇の差を気にしているらしい',
+    below15_pay: '💬 {name}が退団を決めかけているという噂がある。同じ格の選手との待遇の差を気にしているらしい',
+    below20_title: '💬 {name}が退団を考えているという噂がある。ベルトに挑む機会が回ってこないことに焦れているらしい',
+    below15_title: '💬 {name}が退団を決めかけているという噂がある。ベルトに挑む機会が回ってこないことに焦れているらしい',
   },
 
   // ── app.js: 挑戦試合コーチ要約(_challengeRequestCoachLogLine・監査3-5と同法の6変種) ──
@@ -32222,7 +32276,13 @@ function gameLogEntryText(entry) {
   if (typeof entry.text === 'string') return entry.text; // 既存snapshot系など
   const tpl = entry.type ? GAMELOG_TEMPLATES[entry.type] : null;
   if (tpl == null) return '';
-  const resolved = (typeof tpl === 'object') ? tpl[entry.data && entry.data.variant] : tpl;
+  // 退団の噂の原因の一節(trust_departure_rumor)。data.cause があれば「{variant}_{cause}」のキーを先に引き、
+  // 無ければ variant の文(cause の無い古いログ・原因がはっきりしない回は今の文のまま)
+  const causeKey = (typeof tpl === 'object' && entry.data && entry.data.cause && entry.data.variant)
+    ? `${entry.data.variant}_${entry.data.cause}` : null;
+  const resolved = (typeof tpl === 'object')
+    ? ((causeKey && typeof tpl[causeKey] === 'string') ? tpl[causeKey] : tpl[entry.data && entry.data.variant])
+    : tpl;
   if (typeof resolved !== 'string') return '';
   // i18n Stage B P4-4: venue_heat_crowdのcrowdLabelはFILL_PRESSURE_BANDS(management.js)の
   // JA固定文字列がそのまま値として渡ってくる「成形済み値」の生成元。テンプレ本文だけ
@@ -32380,6 +32440,7 @@ if (typeof module !== 'undefined' && module.exports) {
     DRAFT_CONFIG, ORG_ASSIGN, generateDraftConfig, seededShuffle,
     SALARY_PARAMS, LOSING_STREAK_PENALTIES,
     GLIMPSE_A_THRESHOLDS, GLIMPSE_A_REARM_MARGIN, GLIMPSE_A_LINES, GLIMPSE_HOTSTREAK_END_LINES, GLIMPSE_B_LINES,
+    CARE_LAST_WARNING, LAST_WARNING_RUMOR_LINES, LAST_WARNING_ENCOURAGE_LINES, LAST_WARNING_ANSWERED_LINES,
     // i18n Stage A P3a-3: gameLog構造化(D-G1〜D-G5)。require()経由のテストが
     // 表示時整形結果を検算できるようにエクスポートする。
     GAMELOG_TEMPLATES, fillTemplateVars, gameLogEntryText, composedSnapshotText, GAMELOG_TYPE_CATEGORY, gameLogEntryCategory,
