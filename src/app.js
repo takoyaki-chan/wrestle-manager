@@ -8183,19 +8183,9 @@ const App = {
         const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right, 0xBE77));
         const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(resRng, 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);
         const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
-        const updatedEntry = {
-          ...rivalries[key],
-          matches: 0,
-          lastWeek: s.week,
-          lastAbsWeek: Engine.util.absWeek(s.season, s.week),
-          lastResolvedWeek: s.week,
-          resolutionCount: resolution.newResolutionCount,
-          lastBand: 0,
-          oneSided: null,
-          pendingClashBonus: 0,
-          ...(resolution.resolved ? { resolved: resolution.resolved } : {}),
-          ...(resolution.resolved === 'bitter' ? { bitterResolutionWinnerId: winnerId } : {}),
-        };
+        // K-1 第2段(K1-E08): エンジンの executeShow と同じ Engine.show.resolvedRivalryEntry で作る
+        // (宿怨の決着の勝者 bitterResolutionWinnerId と、何番目の興行か lastShowNumber の両方を持つ)
+        const updatedEntry = Engine.show.resolvedRivalryEntry(rivalries[key], resolution, s, winnerId);
         rivalries = { ...rivalries, [key]: updatedEntry };
         if (s.relationships) {
           const rels = { ...(s.relationships || {}) };
@@ -8742,25 +8732,8 @@ const App = {
 
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek };
 
-    // v0.95: Season stats
-    const stats = { ...G.seasonStats };
-    stats.showCount++;
-    results.forEach((r, rIdx) => {
-      const m = validMatches[rIdx];
-      if (r.matchType === 'tag') {
-        const tA1 = roster.find(c => c.id === m.teamA.fighter1);
-        const tA2 = roster.find(c => c.id === m.teamA.fighter2);
-        const tB1 = roster.find(c => c.id === m.teamB.fighter1);
-        const tB2 = roster.find(c => c.id === m.teamB.fighter2);
-        if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${tA1?.name||'?'} & ${tA2?.name||'?'} vs ${tB1?.name||'?'} & ${tB2?.name||'?'}`; }
-        if (r.winner === 'teamA' || r.winner === 'teamB') stats.wins++;
-        if (r.winner === 'draw') stats.draws++;
-      } else {
-        if (r.mq > stats.bestMQ) { stats.bestMQ = r.mq; stats.bestMQMatch = `${r.left.name} vs ${r.right.name}`; }
-        if (r.winner === 'left' || r.winner === 'right') stats.wins++;
-        if (r.winner === 'draw') stats.draws++;
-      }
-    });
+    // v0.95: Season stats — K-1 第2段: 集計は Engine.show.accumulateSeasonStats(K1-A03)
+    const stats = Engine.show.accumulateSeasonStats(G.seasonStats, validMatches, results, roster);
 
     // v1.8: §2 ブレークスルー判定 & careerBestMQ 更新（試合後）
     const pendingGrowthEvents = [];
@@ -8876,41 +8849,10 @@ const App = {
       });
     });
 
-    // h2h記録: ペア別対戦履歴（タッグ: 対角4ペア + 味方ペア記録）
-    let h2h = { ...(s.h2h || {}) };
-    results.forEach((r, idx) => {
-      const m = validMatches[idx];
-      if (m.matchType === 'tag') {
-        // タッグ: 対角4ペア（A1vsB1, A1vsB2, A2vsB1, A2vsB2）を記録
-        const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
-        const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
-        for (const aId of teamAIds) {
-          for (const bId of teamBIds) {
-            const tagWinner = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
-            h2h = Engine.h2h.update(h2h, aId, bId, tagWinner, r.mq, false, false, s.season, s.week, 'show', 'player', 'player');
-          }
-        }
-      } else if (m.isCRMatch) {
-        // challenge-request-spec-v0.1 Phase 3: 直訴試合はh2h/betrayal通知を専用処理
-        // (_applyChallengeRequestResult内、正しいorg IDで)済みのためここでは二重記録しない
-      } else {
-        const meta = App._buildMatchMeta(s, m.left, m.right, !!m.isReclaim);
-        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player', meta);
-        // 業界ニュース: B-3 元同僚 離脱後初対面（試合カード=単発のみ）
-        if (meta.betrayal) {
-          const fA = (s.roster || []).find(c => c.id === m.left);
-          const fB = (s.roster || []).find(c => c.id === m.right);
-          if (fA && fB) {
-            s = Engine.industryNews.push(s, {
-              type: 'firstMeetSinceDeparture',
-              characterId: m.left,
-              data: { nameA: fA.name, nameB: fB.name },
-            });
-          }
-        }
-      }
-    });
-    s = { ...s, h2h };
+    // h2h記録: ペア別対戦履歴(タッグ: 対角4ペア)。K-1 第2段(K1-A06): エンジンの executeShow と同じ
+    // Engine.show.recordShowH2h を通す(シングルの履歴の印=元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦、
+    // 元同僚の初対面の業界ニュース)。直訴試合は _applyChallengeRequestResult が正しい団体IDで記録済みなので飛ばす
+    s = Engine.show.recordShowH2h(s, validMatches, results);
 
     // recentMatches記録（直近5戦FIFO）
     results.forEach((r, idx) => {
@@ -9314,8 +9256,11 @@ const App = {
     }, 2500);
 
     // 新聞データをGに保存（データベースタブで閲覧）
+    // K-1 第2段(K1-A04): エンジンの executeShow と同じ Engine.show.buildShowNewspaperData で組む(以前は
+    // App._buildShowResultNewspaperData。エンジンの週刊新聞には自団体の興行記事が載らなかった)。見出し・本文の
+    // 文選びは Math.random から専用の乱数系列(季・週・0x9E75)に変わった(表示だけ。同じ興行は同じ見出しになる)
     try {
-      const paperData = App._buildShowResultNewspaperData();
+      const paperData = Engine.show.buildShowNewspaperData(G, { titleOutcomes: titleMatchOutcomes, injuryResults, dict: WM_I18N.t });
       if (paperData) {
         G = { ...G, currentNewspaper: { ...paperData, generatedWeek: G.week, generatedSeason: G.season } };
       }
@@ -9810,395 +9755,10 @@ const App = {
     ],
   },
 
-  _generateNewspaperTexts(d) {
-    // カテゴリ優先度で選択
-    let cat;
-    if (d.isDraw) cat = 'draw';
-    else if (d.isSuperMQ && !d.isDominant) cat = 'superMQ';
-    else if (d.isTitleMatch) cat = d.isTitleDefense ? 'titleDefend' : 'titleWin';
-    else if (d.isUpset) cat = 'upset';
-    else if (d.hasRivalry) cat = 'rivalry';
-    else if (d.isDominant) cat = 'dominant';
-    else if (d.isCloseMatch && d.isHighMQ) cat = 'closeMQ';
-    else if (d.isLowMQ) cat = 'normal';
-    else cat = 'normal';
-
-    // タイトルマッチ確定（superMQ/upset は歴史的名勝負/番狂わせ表現を優先）
-    if (d.isTitleMatch && !d.isDraw) {
-      if (cat !== 'superMQ' && cat !== 'upset') {
-        cat = d.isTitleDefense ? 'titleDefend' : 'titleWin';
-      }
-    }
-
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const HL = App._NEWSPAPER_HEADLINES;
-    const AR = App._NEWSPAPER_ARTICLES;
-
-    // i18n Stage B P4-5(D-P4-2): 見出し/本文は自団体新聞としてGに焼かれるため、
-    // 生成時点のWM_I18N.tを直接通す(kurodaText経由。src/kuroda-text.jsのヘルパーを
-    // app.js側からも再利用 — kuroda-text.jsはindex.htmlでapp.jsより先に読み込まれる)。
-    // i18n P7-58: pick()はMath.random()で選ぶため、この号を跨いで言語を切り替えても
-    // どのテンプレが選ばれたか再現できない(specs §14-3と同じ制約)。kurodaTextParts()で
-    // 完成文の隣に{tpl, vars}(=WM_I18N.tへ渡せるJA原文+差し込み値)も作っておき、
-    // App._buildShowResultNewspaperData経由でG.currentNewspaperへheadlineTpl/headlineVars
-    // 等として併記する(表示側はEngine.newspaper.generateが作るplayerShowTitle/Normal記事の
-    // headlineTpl/bodyTplへそのまま引き継ぐ)。
-    const headlinePick = pick(HL[cat] || HL.normal);
-    const { text: headline, tpl: headlineTpl, vars: headlineVars } = kurodaTextParts(headlinePick, d, WM_I18N.t);
-
-    // サブヘッドライン：常にカードと数値情報
-    // i18n Stage A P3a-2: NEWSPAPER_SUB_TEMPLATES(data.js・監査3-3)。3分岐→3テンプレ。
-    // i18n Stage B P4-2(D-P4-2): 自団体新聞は生成時にGへ焼くため、生成時点のWM_I18N.langで
-    // 確定させる。app.jsは(Engineと違い)WM_I18Nを直接呼んでよいレイヤーなのでt()を直接通す。
-    let subKey;
-    if (d.isDraw) subKey = 'draw';
-    else if (d.otherHighMQ.length > 0) subKey = 'otherHighMQ';
-    else subKey = 'default';
-    const subheadlineTpl = NEWSPAPER_SUB_TEMPLATES[subKey];
-    const subheadlineVars = {
-      showName: d.showName,
-      venue: d.venue.name,
-      attendance: d.attendance.toLocaleString(),
-      turns: d.turns,
-      totalMatches: d.totalMatches,
-      avgMQ: d.avgMQ,
-      mq: d.mq,
-    };
-    const subheadline = fillTemplateVars(WM_I18N.t(subheadlineTpl), subheadlineVars);
-
-    // 記事本文
-    let articleCat = cat;
-    if (d.isGoodRival && !d.isDraw && cat !== 'superMQ') articleCat = 'goodRival';
-    const articlePool = AR[articleCat] || AR.normal;
-    let articlePick = pick(articlePool);
-
-    // 低MQ追記
-    if (d.isLowMQ && cat !== 'draw') {
-      articlePick = pick(AR.lowMQ);
-    }
-    const { text: article, tpl: articleTpl, vars: articleVars } = kurodaTextParts(articlePick, d, WM_I18N.t);
-
-    // i18n P7-58: finishLabel/rivalLabelはdへ渡す前に既に翻訳済みの「成形済み値」
-    // (§6の構造穴)なので、kurodaTextPartsが抽出したvarsにそのまま入っても表示時の
-    // 再翻訳では古い言語のまま残る。テンプレが実際にこれらのキーを使ったときだけ、
-    // 元になった生キー(finType/finMove・rivalLabelJa)からの再計算指示(derive)を添える
-    // (ui-render.js _npMaterializeVars の 'formatFinish'/'dictLabel' kindが読む)。
-    const _buildDerive = (vars) => {
-      if (!vars) return null;
-      const derive = [];
-      if ('finishLabel' in vars) {
-        derive.push({ key: 'finishLabel', kind: 'formatFinish', finType: d.finType || null, finMove: d.finMove || null, fallback: vars.finishLabel });
-      }
-      if ('rivalLabel' in vars && d.rivalLabelJa) {
-        derive.push({ key: 'rivalLabel', kind: 'dictLabel', raw: d.rivalLabelJa });
-      }
-      return derive.length ? derive : null;
-    };
-
-    return {
-      headline, subheadline, article,
-      headlineTpl, headlineVars, subheadlineTpl, subheadlineVars, articleTpl, articleVars,
-      headlineDerive: _buildDerive(headlineVars), articleDerive: _buildDerive(articleVars),
-    };
-  },
-  _buildShowResultNewspaperData() {
-    const results = G.lastShowResults || [];
-    if (!results.length) return null;
-    const rawMain = results[0];
-    if (!rawMain) return null;
-    const totalMatches = results.length;
-
-    const buildTagNewsMatch = (r, originalIndex) => {
-      const tA = r.teamA || {};
-      const tB = r.teamB || {};
-      const aMembers = [
-        { id: tA.f1Id || 0, name: tA.f1Name || '?' },
-        { id: tA.f2Id || 0, name: tA.f2Name || '?' },
-      ];
-      const bMembers = [
-        { id: tB.f1Id || 0, name: tB.f1Name || '?' },
-        { id: tB.f2Id || 0, name: tB.f2Name || '?' },
-      ];
-      const aLabel = aMembers.map(f => f.name).join(' & ');
-      const bLabel = bMembers.map(f => f.name).join(' & ');
-      const isMatchDraw = r.winner === 'draw';
-      const winSide = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
-      const winnerName = isMatchDraw ? null : (winSide === 'left' ? aLabel : bLabel);
-      const loserName  = isMatchDraw ? null : (winSide === 'left' ? bLabel : aLabel);
-      return {
-        left: { id: tA.f1Id || 0, name: aLabel, ovr: 0, members: aMembers },
-        right: { id: tB.f1Id || 0, name: bLabel, ovr: 0, members: bMembers },
-        teamA: { label: aLabel, members: aMembers },
-        teamB: { label: bLabel, members: bMembers },
-        winner: winSide,
-        winnerName,
-        loserName,
-        mq: r.mq || 0,
-        turns: r.turns || 0,
-        // i18n Stage B P4-5で発見: finishLabelがJA原文のまま新聞テンプレへ焼かれていた
-        // (成形済み値の構造穴。specs/i18n-runtime-spec-v1.0.md §6 Engine.formatFinishの
-        // dict糸通し先例に倣い、app.js側からWM_I18N.tを渡す)。
-        finishLabel: Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t),
-        isDraw: isMatchDraw,
-        isUpset: false,
-        isDominant: !isMatchDraw && (r.turns || 99) <= 6,
-        isTitleMatch: false,
-        isTag: true,
-        matchNumber: originalIndex === 0 ? totalMatches : Math.max(1, totalMatches - originalIndex),
-        matchLabel: originalIndex === 0 ? WM_I18N.t('メインイベント') : WM_I18N.t('第{n}試合', { n: Math.max(1, totalMatches - originalIndex) }),
-      };
-    };
-
-    // タッグメインの場合: チーム代表名でleft/right/winner/loserを合成
-    const isTagMain = rawMain.matchType === 'tag';
-    let main;
-    if (isTagMain) {
-      const tagMain = buildTagNewsMatch(rawMain, 0);
-      main = {
-        ...rawMain,
-        left: tagMain.left,
-        right: tagMain.right,
-        teamA: tagMain.teamA,
-        teamB: tagMain.teamB,
-        winner: tagMain.winner,
-        isTag: true,
-        matchNumber: tagMain.matchNumber,
-        matchLabel: tagMain.matchLabel,
-        isTitleMatch: false, // タッグはタイトル戦ではない
-      };
-    } else {
-      if (!rawMain.left || !rawMain.right) return null;
-      main = rawMain;
-    }
-    const venue = VENUES[G.showVenue] || { name: 'Arena' };
-    const isDraw = main.winner === 'draw';
-    const winner = isDraw ? null : (main.winner === 'left' ? main.left : main.right);
-    const loser = isDraw ? null : (main.winner === 'left' ? main.right : main.left);
-    const avgMQ = Math.round(results.reduce((sum, r) => sum + (r.mq || 0), 0) / results.length);
-    const attendance = G.lastShowAttendance || 0;
-    const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? WM_I18N.t('特別興行') : WM_I18N.t('第{n}回 定期興行', { n: G.totalShows }));
-    // i18n Stage B P4-5で発見: 同上(finishLabelの成形済み値をWM_I18N.t経由に)
-    const finishLabel = Engine.formatFinish(main.finType, main.finMove, undefined, WM_I18N.t);
-    const turns = main.turns || 0;
-    const mq = main.mq || avgMQ;
-    const hpL = main.hpLeft || { final: 0, max: 100 };
-    const hpR = main.hpRight || { final: 0, max: 100 };
-
-    // 試合状況フラグ
-    const loserHpPct = isDraw ? 50 : (main.winner === 'left'
-      ? Math.round((hpR.final / Math.max(1, hpR.max)) * 100)
-      : Math.round((hpL.final / Math.max(1, hpL.max)) * 100));
-    const winnerHpPct = isDraw ? 50 : (main.winner === 'left'
-      ? Math.round((hpL.final / Math.max(1, hpL.max)) * 100)
-      : Math.round((hpR.final / Math.max(1, hpR.max)) * 100));
-    const isCloseMatch = !isDraw && loserHpPct >= 15;
-    const isDominant = !isDraw && turns <= 6;
-    const isLongBattle = turns >= 18;
-    const isHighMQ = mq >= 80;
-    const isSuperMQ = mq >= 90;
-    const isLowMQ = mq < 40;
-    const isPPVShow = isPPV(G.week);
-    const isSpecial = isSpecialShow(G.week);
-
-    // 因縁・関係データ（タッグはチーム単位のため個人因縁は適用しない）
-    const rivalLvl = isTagMain ? null : getRivalryLevel(main.left.id, main.right.id);
-    const hasRivalry = !!rivalLvl && !rivalLvl.isGoodRival;
-    const isGoodRival = !!rivalLvl && rivalLvl.isGoodRival;
-    // i18n P7-43: RIVALRY_THRESHOLDSのlabel(因縁/宿敵/宿命)は成形済みのJA一語ラベルで、
-    // ui-ledgerに既訳がある(§14-2と同型)。_generateNewspaperTexts経由でd.rivalLabelとして
-    // kurodaTemplateOf正規化済みテンプレへ差し込まれるが、これは名前辞書(pn)の対象ではないため
-    // t()のparams自動変換だけでは訳せず、ここで先に辞書を引いておく必要がある
-    // (EN走破で新聞の因縁記事に「宿敵」が生JAのまま露出していた)。
-    const rivalLabel = rivalLvl ? _wmDictLabel(WM_I18N.t, rivalLvl.label) : null;
-    let bondAvg = 50;
-    if (!isTagMain && G.relationships) {
-      const kAB = `${main.left.id}>${main.right.id}`;
-      const kBA = `${main.right.id}>${main.left.id}`;
-      // 絆0は正当な値(冷え切った仲)。欠損・数値でないときだけ50(旧 `|| 50` は0を50に化けさせていた)
-      const _bondOf = rel => (rel && Number.isFinite(rel.bond)) ? rel.bond : 50;
-      const bA = _bondOf(G.relationships[kAB]);
-      const bB = _bondOf(G.relationships[kBA]);
-      bondAvg = Math.round((((bA + bB) / 2) + Number.EPSILON) * 10) / 10;
-    }
-    const isHighBond = bondAvg >= 70;
-
-    // OVR差（タッグは合成代表のOVRが0のためupset判定をスキップ）
-    const ovrL = isTagMain ? 0 : Engine.util.ov(main.left);
-    const ovrR = isTagMain ? 0 : Engine.util.ov(main.right);
-    const ovrGap = Math.abs(ovrL - ovrR);
-    const isUpset = !isTagMain && !isDraw && winner && (
-      (winner.id === main.left.id && ovrL < ovrR - 8) ||
-      (winner.id === main.right.id && ovrR < ovrL - 8)
-    );
-
-    // 他の試合のハイライト
-    const otherHighMQ = results.slice(1).filter(r => (r.mq || 0) >= 75);
-    // タイトルマッチの場合、防衛/奪取を判定（_lastTitleOutcomes は本関数呼び出し直前に設定されている）
-    let isTitleDefense = false;
-    if (main.isTitleMatch && !isDraw && winner) {
-      const outcomes = App._lastTitleOutcomes || [];
-      const winnerId = winner.id;
-      const mainOutcome = outcomes.find(o =>
-        (o.outcome === 'defense' && o.champId === winnerId) ||
-        (o.outcome === 'change' && o.newChampId === winnerId)
-      );
-      isTitleDefense = mainOutcome?.outcome === 'defense';
-    }
-
-    // ─── テキスト生成 ───
-    // i18n P7-58: finishLabel/rivalLabelはこのdを組み立てる時点のWM_I18N.tで既に
-    // 訳された「成形済み値」(§6の構造穴)。kurodaTextParts が抽出するvarsへそのまま
-    // 入ると、号を跨いで言語を切り替えたときに生成時点の言語のまま残る。表示側
-    // (_npResolvePlayerShowData→_npMaterializeVars)が再翻訳できるよう、値の元になった
-    // 生キー(finType/finMove・rivalLabelJa)も一緒に渡す — _generateNewspaperTexts側で
-    // 「varsにfinishLabel/rivalLabelが実際に登場したときだけ」derive指示を組み立てる。
-    const np = App._generateNewspaperTexts({
-      isDraw, winner, loser, left: main.left, right: main.right,
-      isTitleMatch: !!main.isTitleMatch, isTitleDefense, finishLabel, turns, mq,
-      loserHpPct, winnerHpPct, isCloseMatch, isDominant, isLongBattle,
-      isHighMQ, isSuperMQ, isLowMQ, isPPVShow, isSpecial,
-      hasRivalry, isGoodRival, rivalLabel, isHighBond,
-      ovrGap, isUpset, venue, attendance, showName, avgMQ,
-      otherHighMQ, totalMatches, orgName: G.orgName,
-      finType: main.finType, finMove: main.finMove,
-      rivalLabelJa: rivalLvl ? rivalLvl.label : null,
-    });
-
-    // ── allMatches: メイン以外の全試合ダイジェスト ──
-    const allMatches = results.slice(1).map((r, relIdx) => {
-      if (!r) return null;
-      const originalIndex = relIdx + 1;
-      // タッグ試合: チーム代表名で合成
-      if (r.matchType === 'tag') {
-        return buildTagNewsMatch(r, originalIndex);
-      }
-      if (!r.left || !r.right) return null;
-      const isMatchDraw = r.winner === 'draw';
-      const matchWinner = isMatchDraw ? null : (r.winner === 'left' ? r.left : r.right);
-      const matchLoser = isMatchDraw ? null : (r.winner === 'left' ? r.right : r.left);
-      const ovrL = Engine.util.ov(r.left);
-      const ovrR = Engine.util.ov(r.right);
-      return {
-        left: { id: r.left.id, name: r.left.name, ovr: ovrL },
-        right: { id: r.right.id, name: r.right.name, ovr: ovrR },
-        winner: r.winner,
-        winnerName: matchWinner?.name || null,
-        loserName: matchLoser?.name || null,
-        mq: r.mq || 0,
-        turns: r.turns || 0,
-        // i18n Stage B P4-5で発見: finishLabelがJA原文のまま新聞テンプレへ焼かれていた
-        // (成形済み値の構造穴。specs/i18n-runtime-spec-v1.0.md §6 Engine.formatFinishの
-        // dict糸通し先例に倣い、app.js側からWM_I18N.tを渡す)。
-        finishLabel: Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t),
-        isDraw: isMatchDraw,
-        isUpset: !isMatchDraw && matchWinner && (
-          (matchWinner.id === r.left.id && ovrL < ovrR - 8) ||
-          (matchWinner.id === r.right.id && ovrR < ovrL - 8)
-        ),
-        isDominant: !isMatchDraw && (r.turns || 99) <= 6,
-        isTitleMatch: !!r.isTitleMatch,
-        isTag: false,
-        matchNumber: Math.max(1, totalMatches - originalIndex),
-        matchLabel: WM_I18N.t('第{n}試合', { n: Math.max(1, totalMatches - originalIndex) }),
-      };
-    }).filter(Boolean);
-
-    // 集客v2: ★評価をv2 calcShowRating で算出
-    const npValidMatches = (G.showCard || []).filter(m => m.left > 0 && m.right > 0);
-    const npFanExpects = Engine.fanExpect.generate(G);
-    const npRatingCtx = {
-      hasTitleMatch: npValidMatches.some(m => m.isTitle),
-      titleGreatMQ: npValidMatches.some(m => m.isTitle) ? results.find((r, i) => npValidMatches[i]?.isTitle)?.mq || 0 : 0,
-      rivalryResolved: results.some(r => r.rivalryResolved),
-      rivalryCards: npValidMatches.filter(m => {
-        if (!G.relationships) return false;
-        const rAB = G.relationships[`${m.left}>${m.right}`]?.rivalry || 0;
-        const rBA = G.relationships[`${m.right}>${m.left}`]?.rivalry || 0;
-        return Math.max(rAB, rBA) >= 30;
-      }).length,
-      fanExpectMatches: npFanExpects ? Engine.fanExpect.countMatched(npValidMatches, npFanExpects) : 0,
-    };
-    // K-2: 興行の処理で決まった★をそのまま使う(1興行の★は1つ。保存が無い旧セーブ等だけ再計算)
-    const npRating = Engine.attendanceV2.getStoredShowRating(G)
-      || Engine.attendanceV2.calcShowRating(results, attendance, VENUES[G.showVenue].cap, G.showVenue, npRatingCtx);
-    const showRating = { stars: npRating.stars, totalScore: npRating.totalScore, mqScore: npRating.mqScore, occScore: npRating.occScore, bonusScore: npRating.bonusScore, actual: avgMQ };
-
-    // ── preview: 次回展望データ ──
-    const preview = { fanExpect: [], rivalry: null, title: null };
-    // ファン期待カード（動的生成）
-    const pvFanExpects = Engine.fanExpect.generate(G);
-    if (pvFanExpects && pvFanExpects.length > 0) {
-      pvFanExpects.slice(0, 2).forEach(fe => {
-        const feLeft = G.roster.find(f => f.id === fe.leftId) || ALL_CHARS.find(c => c.id === fe.leftId);
-        const feRight = G.roster.find(f => f.id === fe.rightId) || ALL_CHARS.find(c => c.id === fe.rightId);
-        if (feLeft && feRight) {
-          preview.fanExpect.push({ leftId: feLeft.id, leftName: feLeft.name, rightId: feRight.id, rightName: feRight.name });
-        }
-      });
-    }
-    // 因縁ペア（tierが最大のもの）
-    if (G.rivalries) {
-      let maxTier = 0, hotPair = null;
-      Object.entries(G.rivalries).forEach(([key, riv]) => {
-        const tier = riv.tier || 0;
-        const matches = riv.matches || 0;
-        if (tier > maxTier || (tier === maxTier && matches > (hotPair?._matches || 0))) {
-          maxTier = tier;
-          const ids = key.split('>');
-          const rLeft = G.roster.find(f => f.id === ids[0]);
-          const rRight = G.roster.find(f => f.id === ids[1]);
-          if (rLeft && rRight) hotPair = { leftName: rLeft.name, rightName: rRight.name, _matches: matches };
-        }
-      });
-      if (hotPair && maxTier >= 1) {
-        preview.rivalry = { leftName: hotPair.leftName, rightName: hotPair.rightName };
-      }
-    }
-    // タイトル戦展望
-    const champId = G.titles?.world?.championId;
-    if (champId) {
-      const champ = G.roster.find(f => f.id === champId);
-      const challenger = [...G.roster]
-        .filter(f => f.id !== champId)
-        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0];
-      if (champ && challenger) {
-        preview.title = { championName: champ.name, challengerName: challenger.name };
-      }
-    }
-
-    return {
-      showName, venueName: venue.name, venueIdx: G.showVenue, attendance, avgMQ,
-      headline: np.headline, subheadline: np.subheadline, article: np.article,
-      // i18n P7-58: 完成文の隣に「表示時再生成」用のテンプレ+差し込み値を併記する
-      // (specs §14-3)。Engine.newspaper.generate がplayerShowTitle/Normal記事の
-      // headlineTpl/bodyTplへそのまま引き継ぎ、旧セーブ(このフィールドが無い号)は
-      // 完成文のまま表示される。
-      headlineTpl: np.headlineTpl, headlineVars: np.headlineVars, headlineDerive: np.headlineDerive,
-      subheadlineTpl: np.subheadlineTpl, subheadlineVars: np.subheadlineVars,
-      articleTpl: np.articleTpl, articleVars: np.articleVars, articleDerive: np.articleDerive,
-      winner, loser, left: main.left, right: main.right, isDraw, finishLabel,
-      // i18n P7-58: finType/finMoveはfinishLabel(Engine.formatFinishの成形済み値)の
-      // 元になった生キー。finishLabel自体は生成時点の言語で焼かれる(_npRenderPlayerShowが
-      // d.finishLabelを直接読む3箇所で使う)ため、表示側(_npResolvePlayerShowData)が
-      // Engine.formatFinish(finType, finMove, ...)を呼び直せるよう併記する。
-      finType: main.finType || null, finMove: main.finMove || null,
-      turns, mq, hpLeft: hpL, hpRight: hpR, isTitleMatch: !!main.isTitleMatch,
-      isTag: !!main.isTag, teamA: main.teamA || null, teamB: main.teamB || null,
-      // i18n P7-58: 「メインイベント」をここで訳して焼くと号を跨いだ言語切替で古い言語の
-      // まま残る(_npRenderPlayerShowが持つ`d.matchLabel || WM_I18N.t('メインイベント')`
-      // という表示時フォールバックが、常にmatchLabelが埋まっているせいで一度も働いていなかった)。
-      // main.matchLabelが無いとき(シングルのメイン。最も多いケース)はnullのまま渡し、
-      // 表示時フォールバックに委ねる。
-      matchNumber: main.matchNumber || totalMatches, matchLabel: main.matchLabel || null,
-      injuries: (App._lastInjuries || []).filter(ir => ir && ir.injury && !ir.retireType).map(ir => ({
-        name: ir.name,
-        type: ir.injury.type,
-        weeksLeft: ir.injury.weeksLeft,
-      })),
-      allMatches, showRating, preview,
-      generatedWeek: G.week, generatedSeason: G.season,
-    };
-  },
+  // 興行結果の新聞データ(currentNewspaper)の組み立て(旧 App._buildShowResultNewspaperData)と見出し・本文の文選び
+  // (旧 App._generateNewspaperTexts)は Engine.show.buildShowNewspaperData / generateShowNewspaperTexts へ移した
+  // (K-1 第2段 K1-A04。エンジンの executeShow も同じ関数で組む)。テンプレの表は上の _NEWSPAPER_HEADLINES /
+  // _NEWSPAPER_ARTICLES に置いたまま、読み込み時に Engine.show.registerNewspaperTextPools で登録する
 
   _glimpseSignature(glimpse) {
     // 識別に使うのは「どのペアの、どの種類の」glimpseかという安定情報のみ。
@@ -11635,32 +11195,8 @@ const App = {
     return s;
   },
 
-  // h2h.history に積む meta フラグを構築（B-3 / 派閥抗争 / ロッカー荒廃 / 奪還）
-  _buildMatchMeta(state, idA, idB, isReclaim) {
-    const meta = {};
-    // betrayal: B-3 元同僚 離脱後初対面
-    if (Engine.orgTimeline && typeof Engine.orgTimeline.checkFirstMeetSinceDeparture === 'function') {
-      try { if (Engine.orgTimeline.checkFirstMeetSinceDeparture(state, idA, idB)) meta.betrayal = true; } catch (_) {}
-    }
-    // factionWar: 同団体内で別派閥所属、両派閥が hostility 状態
-    if (Engine.factions && typeof Engine.factions.getFactionByFighterId === 'function') {
-      try {
-        const fA = Engine.factions.getFactionByFighterId(state, idA);
-        const fB = Engine.factions.getFactionByFighterId(state, idB);
-        if (fA && fB && fA.id !== fB.id && (fA.inHostility || fB.inHostility)) {
-          meta.factionWar = true;
-        }
-      } catch (_) {}
-    }
-    // lockerStress: _lockerCrisisWeek が直近4週以内
-    if (state._lockerCrisisWeek != null && Engine.util && typeof Engine.util.absWeek === 'function') {
-      const aw = Engine.util.absWeek(state.season, state.week);
-      if (aw - state._lockerCrisisWeek <= 4) meta.lockerStress = true;
-    }
-    // reclaim: 奪還挑戦試合
-    if (isReclaim) meta.reclaim = true;
-    return meta;
-  },
+  // h2h.history に積む meta フラグ(B-3 / 派閥抗争 / ロッカー荒廃 / 奪還)は Engine.show.buildMatchMeta で組む
+  // (K-1 第2段 K1-A06。以前はここ App._buildMatchMeta にあり、エンジンの通常興行は印を刻んでいなかった)
 
   // 業界ニュースはポップアップで見せずに新聞へ流す（2026-07-27）。
   // ここでは何も表示しない。溜まった記事は次に発行される号（オフシーズン中は新聞が
@@ -15885,7 +15421,7 @@ const App = {
     let warH2h = { ...(G.h2h || {}) };
     wp.results.forEach(r => {
       const winner = r.playerWon ? 'left' : 'right';
-      const warMeta = App._buildMatchMeta(G, r.playerFighter.id, r.aiFighter.id, false);
+      const warMeta = Engine.show.buildMatchMeta(G, r.playerFighter.id, r.aiFighter.id, false);
       warH2h = Engine.h2h.update(warH2h, r.playerFighter.id, r.aiFighter.id, winner, r.mq, false, false, G.season, G.week, 'war', 'player', ev.opponentOrgId, warMeta);
       // firing-grudge-spec-v0.1 タスクc(2026-07-17): 対抗戦は元同僚(B-3)が最も出会いやすいクロス団体戦のため firedReturn を接続
       G = App._maybeEmitFiredReturn(G, r.playerFighter, ev.opponentOrgId, 'player');
@@ -15949,6 +15485,10 @@ const App = {
     App._warPreview = null;
   }
 };
+
+// K-1 第2段(K1-A04): 興行結果の新聞の見出し・本文のテンプレを、エンジンの共通関数(Engine.show.buildShowNewspaperData)へ登録する。
+// 表は i18n の抽出・セリフ台帳が app.js のこの場所を読むので、ここに置いたまま渡す
+Engine.show.registerNewspaperTextPools(App._NEWSPAPER_HEADLINES, App._NEWSPAPER_ARTICLES);
 
 // ══════════════════════════════════════════════
 //  PPV GRAND FINAL: Show Day System (Step 4)
@@ -16400,7 +15940,7 @@ App.finalizePPV = function() {
     const match = pp.card[idx];
     const lOrg = _findOrgKey(match.left.id);
     const rOrg = _findOrgKey(match.right.id);
-    const ppvMeta = App._buildMatchMeta(s, match.left.id, match.right.id, false);
+    const ppvMeta = Engine.show.buildMatchMeta(s, match.left.id, match.right.id, false);
     ppvH2h = Engine.h2h.update(ppvH2h, match.left.id, match.right.id, r.winner, r.mq, false, true, s.season, s.week, 'ppv', lOrg, rOrg, ppvMeta);
     // firing-grudge-spec-v0.1 タスクc(2026-07-17): PPVは合同興行=元同僚(B-3)の再会が起きやすいクロス団体戦のためfiredReturnを接続
     if (lOrg && rOrg && lOrg !== rOrg) {

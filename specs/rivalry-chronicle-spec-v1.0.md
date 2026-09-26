@@ -9,6 +9,7 @@
 
 ### v1.1 (2026-04-30)
 - **h2h.history メタデータ拡張**: 各 history entry に `bt`(B-3 元同僚初対面) / `fc`(派閥抗争中) / `lc`(ロッカー荒廃中) / `rc`(奪還挑戦試合) フラグを追加。`Engine.h2h.update` に第13引数 `meta` を追加。
+  - 2026-09-26(K-1 第2段): 印の組み立ては `Engine.show.buildMatchMeta(state, idA, idB, isReclaim)`(旧 `App._buildMatchMeta`)。通常興行の記録は `Engine.show.recordShowH2h` で**実プレイとエンジン(auto-sim)の両方**が刻む(以前のエンジンの通常興行は印なし・元同僚の初対面の記事なし)。対抗戦・PPV の印も同じ関数
 - **context tag 導出 (`_deriveRelationContext`)**: 9象限分類に加えて、ペアごとの状況コンテキスト 5 種 (`reclaiming`/`betrayed`/`factionWar`/`lockerStress`/`repaired`) を h2h.history と現在 state から導出。優先順は記載順。
 - **context-aware narrative**: `KURODA_RELATION_NARRATIVE[tag].contexts[ctxTag]` 2階層化。意味的に成立する 23 セルに専用 headline/body プールを追加(各3本ずつ、計 ~100文)。`fated_admiration.repaired` / `pure_hatred.betrayed` / `bitter_feud.factionWar` / `destined_rival.reclaiming` 等。
 - **featured 選出 event boost**: `_pickRivalryFeatured` に `contextBoost = { betrayed:25, reclaiming:20, factionWar:15, repaired:10, lockerStress:5 }` を加算。

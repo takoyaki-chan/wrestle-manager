@@ -46,6 +46,9 @@ module.exports = [
       'relationships.*', 'relationships.*.*', 'relationshipCounters.*', 'roster[*].*', 'roster[*].*.*', '_modalQueue',
       // 2026-09-26 追加(fixture の更新で乱入者が王座を奪う結果になった): 王座・興行評価・熱
       'titles.world.*', 'lastShowRating.*', 'heatScore',
+      // K-1 第2段: 季節の統計(K1-A03)と興行結果の新聞データ(K1-A04)を両経路が同じ関数で作るようになり、
+      // 乱入で別物になった試合結果がそのまま写る(季の最高評価・新聞の見出しと中身)
+      'seasonStats.*', 'currentNewspaper',
     ],
     mustAppear: true, refs: 'app.js:7004-7047(判定・差し替え), 7845-7890(結果処理) / エンジン側なし',
     note: '乱入は App.executeShow の中でだけ判定される。王座戦の対戦相手そのものが変わるので、この興行の結果は全面的に別物になる。',
@@ -95,7 +98,9 @@ module.exports = [
     category: 'processing', side: 'app', impact: '数値', scenarios: ['factions'], checkpoints: ['A', 'B'],
     // factionRivalryPoints.*.pointsA/B: 試合ごとの加点は両経路で一致(第4段 4-B-2)。差はスイープボーナス +15 だけ
     patterns: ['_pendingF09', 'factionTimeline', 'factionEventCooldowns.*', '_industryNewsEvents',
-      'factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB'],
+      'factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB',
+      // K-1 第2段(K1-A04 を両経路でそろえた後)(B): 実プレイの号だけに F09 の決着記事(factionWarSettled)が載る
+      'weeklyNewspaper'],
     mustAppear: true, refs: 'app.js _finalizeShowImpl の F09 決着(applyF09SweepBonus) / エンジン側なし(_f09Locked は加点倍率にだけ使う)',
   },
   // K1-E06(実プレイの歴代最高評価の記録に matchType と勝者が渡らない)は K-1 第1段で解消したので外した(2026-09-26)。
@@ -118,6 +123,9 @@ module.exports = [
       // 整理するので、週次の関係性ポップアップの積み方(M-19 の冷却・直近12週の件数)と派閥イベント F07 の
       // 抽選が変わる。処理の差ではなく上の差の波及
       '_modalQueue', 'relationshipFlagCounters.*.lastWeek', 'relModalWindow[*].other', '_pendingFactionEvent',
+      // K-1 第2段(K1-A04 を両経路でそろえた後): 実プレイは引退を済ませた状態で新聞データを組むので、次回展望
+      // (ファンの期待カード・王座戦の展望)から引退した選手が外れる。同じ週の号にも写る
+      'currentNewspaper', 'weeklyNewspaper',
     ],
     mustAppear: true, refs: 'app.js:9272-9344(finalize)・10867-10970(closeShowResult 前半) / エンジン側なし',
   },
@@ -152,12 +160,8 @@ module.exports = [
     patterns: ['roster[*].recentMatches'],
     mustAppear: true, refs: 'app.js:8979-8995 / management.js:15450-15455(タッグは飛ばす)',
   },
-  {
-    id: 'K1-E08', title: '因縁決着エントリの記録欄(エンジン=lastShowNumber / 実プレイ=宿怨の勝者ID)',
-    category: 'formula', side: 'both', impact: '表示', scenarios: ['title-defense', 'rivalry'], checkpoints: ['A', 'B'],
-    patterns: ['rivalries.*.lastShowNumber', 'rivalries.*.bitterResolutionWinnerId'],
-    mustAppear: true, refs: 'management.js:14920-14932 / app.js:8192-8204。lastShowNumber は誰も読まない。bitterResolutionWinnerId は app.js:132 の試合前演出が読む',
-  },
+  // K1-E08(因縁決着エントリの記録欄。エンジン=lastShowNumber / 実プレイ=宿怨の勝者ID)は K-1 第2段で解消したので
+  // 外した(2026-09-26)。両経路が Engine.show.resolvedRivalryEntry で作り、両方の欄を持つ。
 
   // ════════════════ 全シナリオ共通(毎回出る差) ════════════════
   // K1-E01(出場選手のプロモ蓄積 promoStack のリセットが実プレイに無い)は K-1 第4段 4-B-5 で解消したので外した
@@ -184,36 +188,20 @@ module.exports = [
     // (dome はブレークスルーの経歴も)。元の強さ(mustAppear: true)に戻した。A02 を一本化したら項目ごと外すこと
     mustAppear: true, refs: 'app.js:8829-8941 / エンジン側なし(乱数ストリーム 0xB818/0x5C6/0x5C7/0x5C8 は実プレイだけが引く)',
   },
-  {
-    id: 'K1-A03', title: '季節統計(seasonStats: 興行数・勝敗・最高評価)',
-    category: 'processing', side: 'app', impact: '表示', checkpoints: ['A', 'B'],
-    patterns: ['seasonStats.*'], sides: { A: ['appOnly'] },
-    mustAppear: true, refs: 'app.js:8809-8827 / エンジン側なし(序章ハイライトや年間表彰が読む)',
-  },
-  {
-    id: 'K1-A04', title: '興行結果の新聞データ(currentNewspaper)→ 週刊新聞の興行記事',
-    category: 'processing', side: 'app', impact: '表示', checkpoints: ['A', 'B'],
-    patterns: ['currentNewspaper', 'weeklyNewspaper',
-      // 2026-09-26(K-4 S1 後の fixture で見えた)(B): 実プレイの号は自団体の興行記事が枠を取るので、同じ週に積まれた
-      // 業界ニュース(mq-record では連敗の節目)が載りきらずに持ち越される。エンジンの号には載る
-      '_industryNewsEvents'],
-    mustAppear: true, refs: 'app.js:9355-9363 / エンジン側なし(auto-sim の新聞には自団体の興行記事が載らない)',
-  },
-  {
-    id: 'K1-A06', title: '対戦成績の履歴メタ(裏切り初対面・派閥抗争・ロッカー荒廃)と元同僚初対面ニュース',
-    category: 'processing', side: 'app', impact: '表示', checkpoints: ['A', 'B'],
-    patterns: ['h2h.*.history[*].lc', 'h2h.*.history[*].bt', 'h2h.*.history[*].fc', 'h2h.*.history[*].rc'],
-    mustAppear: true, refs: 'app.js:8957-8975, 11620-11644 / management.js:15445(meta なし)',
-  },
+  // K1-A03(季節統計 seasonStats: 興行数・勝敗・最高評価)は K-1 第2段で解消したので外した(2026-09-26)。
+  // 両経路が Engine.show.accumulateSeasonStats を通す。季の収支合計(seasonStats.total*・peak*)は closeShowResult の
+  // 後半にあり、K1-C05 に数える(第5段で tickWeek へ)。
+  // K1-A04(興行結果の新聞データ currentNewspaper → 週刊新聞の興行記事)は K-1 第2段で解消したので外した(2026-09-26)。
+  // 両経路が Engine.show.buildShowNewspaperData を通す(見出し・本文のテンプレは app.js が読み込み時に登録)。
+  // 乱入・ラストラン・F09 の週に残る新聞の差は、それぞれ K1-A14・K1-A09・K1-A13 の写り込み。
+  // K1-A06(対戦成績の履歴メタ=元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦と、元同僚初対面の記事)は
+  // K-1 第2段で解消したので外した(2026-09-26)。両経路が Engine.show.recordShowH2h(印は Engine.show.buildMatchMeta)を通す。
   // K1-P01(結果画面の先読み tickWeek が G を直接書き換える)は K-1 第1段で解消したので外した(2026-09-26)。
   // エンジン側で逓減カウンター・W-1 回数・伝染のクールダウン・関係フラグのクールダウン・他団体の経歴の区切り・
   // ブレークスルー記録の台詞を「写してから書く」形にし、先読みには G の複製を渡す(app.js prepareShowResultInlinePopups)。
   // 以後、先読み(P)で G が変わると「未登録」で落ちる。
-  {
-    id: 'K1-T01', title: '_pendingReclaim の null 正規化(エンジンだけ saveDoctor の戻り値を常に採用)',
-    category: 'transient', side: 'engine', impact: '一時', checkpoints: ['A', 'B'],
-    patterns: ['_pendingReclaim'], mustAppear: true, refs: 'management.js:14588-14590, 275-298',
-  },
+  // K1-T01(_pendingReclaim の null 正規化。エンジンだけ saveDoctor の戻り値を常に採用)は K-1 第2段で解消したので
+  // 外した(2026-09-26)。Engine.saveDoctor.repairProgressionState が、予約の無い状態に null の欄を作らない。
   {
     id: 'K1-T02', title: '宣戦布告ポップアップ既読(_rivalryPopupSeen)',
     category: 'transient', side: 'app', impact: '一時', checkpoints: ['A', 'B'],

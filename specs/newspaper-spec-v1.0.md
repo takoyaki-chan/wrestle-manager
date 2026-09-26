@@ -221,7 +221,12 @@ promising以下しかいなければ1名だけ。raw/material しかいない年
 
 ### 3-5. 自団体の興行記事は「その週の号」だけ（2026-09-25）
 
-自団体の興行結果(`state.currentNewspaper`。App が興行後に `generatedWeek/generatedSeason` 付きで置く)は、
+自団体の興行結果(`state.currentNewspaper`。興行後に `generatedWeek/generatedSeason` 付きで置く。2026-09-26 K-1 第2段から
+実プレイ `App._finalizeShowImpl` とエンジン `Engine.executeShow` の両方が `Engine.show.buildShowNewspaperData` で組む
+— 以前は実プレイだけで、auto-sim の新聞には自団体の興行記事が載らなかった。見出し・本文のテンプレの表は app.js の
+`App._NEWSPAPER_HEADLINES`/`_NEWSPAPER_ARTICLES` に置いたまま読み込み時に `Engine.show.registerNewspaperTextPools` で登録し、
+文選びは専用の乱数系列(季・週・0x9E75)。登録の無い Node の検査では見出し・本文が空になり、既定の見出し
+`NEWS_FALLBACK_TEMPLATES.playerShowHeadline`「定期興行開催」(Tpl つき)+サブ見出し(興行名の組み直し指示つき)で載る)は、
 **興行週で、かつ今週生成された結果**のときだけ記事(`playerShowNormal`/`playerShowTitle`)と
 詳報(`playerShowData`=本紙つづき)に載せる(`Engine.newspaper._isFreshPlayerShow`)。
 `currentNewspaper` は次の興行週の頭まで残るので、存在だけを見ると非興行週の号・新年号に前週の興行記事が

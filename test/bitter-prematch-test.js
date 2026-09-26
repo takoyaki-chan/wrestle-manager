@@ -69,7 +69,10 @@ assert.deepStrictEqual(bitterExpiry().seen, {}, '宿怨は16週後に再表示�
 assert.ok(app.includes('rivalLvl && rivalLvl.isBitterRival'), '宿怨は通常因縁と独立して検出する');
 assert.ok(app.includes('confrontations.splice(RIVALRY_POPUP_CONFIG.maxNormalPerShow)'), '興行あたりの上限に合流する');
 assert.ok(app.includes('a.isBitter ? -1 : 1'), '宿怨を通常因縁より優先する');
-assert.ok(app.includes('bitterResolutionWinnerId'), '決着戦の勝者IDを記録する');
+// K-1 第2段(K1-E08): 決着エントリはエンジンと共通の Engine.show.resolvedRivalryEntry で作る(勝者IDはそこで刻む)
+assert.ok(app.includes('Engine.show.resolvedRivalryEntry(rivalries[key], resolution, s, winnerId)'), '決着戦の勝者IDを記録する(共通の決着エントリ)');
+assert.ok(readSource('src', 'management.js').includes("resolution.resolved === 'bitter' ? { bitterResolutionWinnerId: winnerId }"),
+  '共通の決着エントリが宿怨の勝者IDを持つ');
 assert.ok(app.includes('旧セーブには決着戦勝者IDが無い'), '旧セーブ用H2Hフォールバックの理由を残す');
 
 const sideFn = new Function('Engine', `return (${extractFunction(app, 'function _bitterPrematchSide(')});`)({

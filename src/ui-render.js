@@ -7886,6 +7886,9 @@ function _npMaterializeVars(vars, opts) {
           out[d.key] = WM_I18N.t('{wins}勝', { wins: out[d.winsKey] });
         } else if (d.kind === 'dictLabel' && typeof _wmDictLabel === 'function') {
           out[d.key] = _wmDictLabel(WM_I18N.t, d.raw) || out[d.key];
+        } else if (d.kind === 'tpl' && d.tpl) {
+          // K-1 第2段(K1-A04): テンプレから組んだ成形済みの値(興行名「第{n}回 定期興行」など)を表示時の言語で組み直す
+          out[d.key] = WM_I18N.t(d.tpl, d.vars || undefined);
         }
       } catch (_e) { /* fail-open: 元の値のまま */ }
     });
@@ -8090,8 +8093,20 @@ function _npResolvePlayerShowData(psd) {
         : finishLabel;
     } catch (_e) { /* fail-open */ }
   }
-  if (headline === psd.headline && article === psd.article && finishLabel === psd.finishLabel && matchLabel === psd.matchLabel) return psd;
-  return Object.assign({}, psd, { headline, article, finishLabel, matchLabel });
+  // K-1 第2段(K1-A04): ダイジェスト(allMatches)の決着文も、生キー finType/finMove があれば表示時の言語で組み直す
+  // (Engine.show.buildShowNewspaperData が併記する。無い旧データは保存値のまま)
+  let allMatches = psd.allMatches;
+  if (Array.isArray(allMatches) && allMatches.some(m => m && (m.finType || m.finMove))
+      && typeof Engine !== 'undefined' && Engine.formatFinish) {
+    try {
+      allMatches = allMatches.map(m => (m && (m.finType || m.finMove))
+        ? Object.assign({}, m, { finishLabel: Engine.formatFinish(m.finType, m.finMove, false, WM_I18N.t) })
+        : m);
+    } catch (_e) { allMatches = psd.allMatches; /* fail-open */ }
+  }
+  if (headline === psd.headline && article === psd.article && finishLabel === psd.finishLabel && matchLabel === psd.matchLabel
+      && allMatches === psd.allMatches) return psd;
+  return Object.assign({}, psd, { headline, article, finishLabel, matchLabel, allMatches });
 }
 
 // ── 一面(旧レイアウト) ───────────────────────────────
