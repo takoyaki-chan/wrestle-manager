@@ -275,7 +275,10 @@ const scenarios = [
       const insiders = f.filter(x => inExisting.has(x.id) && x.id !== existing.leaderId);
       const leaderA = G.roster.find(x => x.id === existing.leaderId);
       // 使うのは insiders[0..2] の3人(2026-09-26: 基準状態の派閥が4人=リーダー+3人になったので下限を実際の使用数に合わせた)
-      if (outsiders.length < 5 || insiders.length < 3 || !leaderA) throw new Error(`${this.name}: not enough fighters to form a second faction`);
+      // と outsiders[0..3] の4人(2026-09-26 基準の取り直し3回目: headless 進行の WM_I18N スタブを直して派閥の選択が
+      // 効くようになり、基準状態の派閥が 5人+3人 になって、どの派閥にも属さない選手がちょうど4人になった。
+      // 下限を5人から実際の使用数の4人に合わせた)
+      if (outsiders.length < 4 || insiders.length < 3 || !leaderA) throw new Error(`${this.name}: not enough fighters to form a second faction`);
       const newMembers = outsiders.slice(0, 4);
       const factionB = {
         ...clone(existing), id: 900, name: `${newMembers[0].surname || newMembers[0].name}派`,

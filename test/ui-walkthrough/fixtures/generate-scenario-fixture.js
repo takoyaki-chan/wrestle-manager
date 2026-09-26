@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const scenarios = require('../scenarios');
-const { advanceUntil, collectValidationWarnings, toSaveState } = require('./headless-sim');
+const { advanceUntil, collectValidationWarnings, toSaveState, summarizeSwallowedErrors } = require('./headless-sim');
 
 const scenarioName = process.argv[2];
 const scenario = scenarios[scenarioName];
@@ -32,6 +32,13 @@ let G = advanceUntil({
   ...(scenario.fixture.maxWeeks ? { maxWeeks: scenario.fixture.maxWeeks } : {}),
 });
 if (scenario.fixture.engineer) G = scenario.fixture.engineer(G);
+
+// headless 進行の自動応答が例外で失敗した件数(2026-09-26。以前は黙って捨てていた)。進行は止めずに知らせる
+const swallowed = summarizeSwallowedErrors();
+if (swallowed.length > 0) {
+  console.error(`headless 進行の自動応答で握りつぶした例外 ${swallowed.reduce((n, g) => n + g.count, 0)} 件 (${scenarioName}, seed=${seed}):`);
+  for (const g of swallowed) console.error(`  - ${g.where} ${g.detail} ×${g.count}(最初 ${g.first}): ${g.message}`);
+}
 
 const assertFails = scenario.fixture.assert ? scenario.fixture.assert(G) : [];
 if (assertFails.length > 0) {
