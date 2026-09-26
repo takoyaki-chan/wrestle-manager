@@ -196,7 +196,10 @@ section('E03: 実プレイ(app.js)とエンジン(executeShow)が同じ関数で
   assert.ok(!/Engine\.show\.rollMatchInjury\(/.test(body), '_finalizeShowImpl が怪我だけ付けて残す旧コード(rollMatchInjury の直呼び)を持っている');
   const app = readSource('src', 'app.js');
   const close = app.slice(app.indexOf('  closeShowResult() {'), app.indexOf('  closeShowResult() {') + 40000);
-  assert.ok(/showRetirementPopups\(pendingInjuryRetirements/.test(close), 'closeShowResult が怪我引退の本人ポップアップを出していない');
+  // 本人の引退ポップアップは、ラストランの引退とまとめて週の表示の先頭で出す(2026-09-26 第4回裁定6。
+  // 詳しい順番の検査は test/fun-audit-round4-test.js)
+  assert.ok(/const farewells = \[\.\.\.pendingLastRunRetirements, \.\.\.pendingInjuryRetirements\]/.test(close)
+    && /App\._showFarewellsFirst\(farewells/.test(close), 'closeShowResult が怪我引退の本人ポップアップを出していない');
   // 関係性フラグのポップアップ(M-22「引退の置き土産」を含む)は出さない(2026-09-26 第4回裁定5。以前はここで
   // 本人の引退ポップアップの後に回していたが、表示の関数そのものが一度も動いていなかった)
   assert.ok(!/_drainFlagModalQueue\s*\(/.test(close), 'closeShowResult が関係性フラグのポップアップを流している');

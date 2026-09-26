@@ -13,7 +13,9 @@ function method(name) {
 }
 const closeStart = app.indexOf('\n  closeShowResult()');
 const chainStart = app.indexOf('    const popupActions = [];', closeStart);
-const chainEnd = app.indexOf('    // relationship-flags-spec-v1.0', chainStart);
+// 連鎖の組み立ての終わり = 次の段落(派閥加入通知の消化)の注記。2026-09-26 に関係性フラグの
+// ポップアップの注記(旧の終わりの目印)を消したので、目印を付け替えた
+const chainEnd = app.indexOf('    // Common-3 派閥加入通知', chainStart);
 assert.ok(chainStart > closeStart && chainEnd > chainStart);
 const chain = app.slice(chainStart, chainEnd);
 let queued, choiceCallback, shown, saved;
@@ -26,6 +28,8 @@ const context = vm.createContext({
   showMilestoneEvent(evt, choose) { shown.push(evt.id); choiceCallback = choose; },
   showCeremonyEvent() { throw new Error('Unexpected pre-show ceremony'); },
   _chainEventPopupQueueEmpty(fn) { queued = fn; },
+  // 引退の無い週: 表示の開始はその場で(closeShowResult の whenFarewellDone と同じ。2026-09-26 第4回裁定6)
+  whenFarewellDone(start) { start(); },
   titleOutcomes: [], pendingLastRunRetirements: [], pendingInjuryRetirements: [],
   pendingGrowthEventsShow: [], pendingResolutions: [], hasEventPopups: false,
   wmDiag() {},

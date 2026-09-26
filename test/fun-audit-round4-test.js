@@ -89,6 +89,52 @@ section('5: 関係性のポップアップを出す経路は無い — _drainFla
   });
 });
 
+// ── 6. 引退の週は、本人の別れのポップアップを先に出す ──
+// 画面の流れそのものは手動チェック node test/ui-walkthrough/injury-retire-departure-check.js(実UI)が見る。
+// ここは closeShowResult の組み立て(文面)を押さえる
+function closeShowResultBody() {
+  const app = readSource('src', 'app.js');
+  const start = app.indexOf('  closeShowResult() {');
+  assert.ok(start >= 0, 'closeShowResult が見つからない');
+  const end = app.indexOf('\n  },\n', start);
+  return app.slice(start, end);
+}
+function appMethodBody(name) {
+  const app = readSource('src', 'app.js');
+  const start = app.indexOf(`  ${name}(`);
+  assert.ok(start >= 0, `App.${name} が見つからない`);
+  return app.slice(start, app.indexOf('\n  },\n', start));
+}
+
+section('6: 引退の週は別れのポップアップを週の表示の先頭で出し、ほかの表示は別れが閉じ切ってから始める', () => {
+  const close = closeShowResultBody();
+  assert.ok(/const farewells = \[\.\.\.pendingLastRunRetirements, \.\.\.pendingInjuryRetirements\]/.test(close), 'ラストランと怪我の引退をまとめた別れの一覧が無い');
+  assert.ok(/App\._showFarewellsFirst\(farewells, afterFarewell\)/.test(close), 'closeShowResult が別れを先に出す App._showFarewellsFirst を呼んでいない');
+  // 以前の出し方(節目・王座の式典の後に popupActions の中で出す)が残っていない
+  assert.ok(!/popupActions\.push\([^\n]*showRetirementPopups/.test(close), '引退のポップアップがまだ popupActions の連鎖(通知の後)に入っている');
+  // 別れの前に始まってはいけない表示の開始が、すべて whenFarewellDone に預けられている
+  const deferred = [
+    ['因縁の試合後コメント', /whenFarewellDone\(\(\) => setTimeout\(\(\) => showPostMatchDialogues/],
+    ['引退でない怪我のポップアップ', /whenFarewellDone\(\(\) => setTimeout\(\(\) => \{\s*showEventPopup\(\{\s*type: 'fighter', id: ch\.id/],
+    ['突然の退団のトースト', /whenFarewellDone\(\(\) => App\._showSuddenDepartureToasts\(/],
+    ['節目・王座の式典・成長・因縁の連鎖', /whenFarewellDone\(\(\) => _chainEventPopupQueueEmpty\(runPopupActions\)\)/],
+    ['派閥加入・アーキタイプ遷移', /whenFarewellDone\(\(\) => setTimeout\(\(\) => \{\s*App\._drainFactionJoinNotices\(\)/],
+    ['大ニュース', /App\._maybeShowBigNewsPopup\(1200, whenFarewellDone\)/],
+    ['派閥イベント・直訴(1.4秒後)', /whenFarewellDone\(\(\) => setTimeout\(\(\) => \{\s*if \(!G \|\| G\.weekPhase !== 'manage'\) return;/],
+  ];
+  deferred.forEach(([label, re]) => assert.ok(re.test(close), `${label}の開始が別れの後に預けられていない`));
+  // 預けたものは、引退の無い週はその場で始める(従来どおり)
+  assert.ok(/if \(holdForFarewell\) afterFarewell\.push\(start\);\s*else start\(\);/.test(close), '引退の無い週の扱いが変わっている');
+});
+
+section('6: App._showFarewellsFirst — 待ちに時限の保険と二重起動防止(§5-D 鉄則1)', () => {
+  const body = appMethodBody('_showFarewellsFirst');
+  assert.ok(/showRetirementPopups\(farewells, release\)/.test(body), '別れのポップアップが閉じ切ったら預けた表示を始める形になっていない');
+  assert.ok(/if \(released\) return;\s*released = true;/.test(body), '預けた表示を二重に始めない印が無い');
+  assert.ok(/FAREWELL_LOST_MS/.test(body) && /setTimeout\(watch, App\.FAREWELL_POLL_MS\)/.test(body), '別れが押し流されたときの時限の保険が無い');
+  assert.ok(/setTimeout\(\(\) => \{\s*try \{\s*showRetirementPopups/.test(body), '週送りの全消去の後に開くタイマーに載っていない');
+});
+
 if (failed > 0) {
   console.log(`\nfun-audit-round4-test: ${failed} 件の FAIL`);
   process.exit(1);
