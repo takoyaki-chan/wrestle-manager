@@ -19,6 +19,10 @@ function loadEngines() {
   global.window = global.window || { IS_TRIAL: false };
   // i18n Stage A P3a-4d: factions.js が WM_I18N.t() を呼ぶようになったため、
   // i18n.js 本体は読み込まずスタブで賄う（ja では素通し+プレースホルダ置換）。
+  // 既知の差(2026-09-26 報告・裁定待ち): auto-sim.js のスタブと違い pn/pnSurname を持たないため、
+  // factions.js の _factionDisplayName(WM_I18N.pn)を通る F06/F07/F06_FORCE 等の選択の適用が例外になり、
+  // 下の autoHandleFactionEvent が黙って握りつぶす(F07 のクールダウンが付かず毎週 F07 が立つ)。
+  // 足すと k1-parity の基準 fixture の軌道が変わるので、ここでは直さない(docs/worklog.md 2026-09-26)
   global.WM_I18N = global.WM_I18N || { t(text, params) {
     if (typeof text !== 'string' || !params) return text;
     let out = text;
@@ -154,6 +158,11 @@ function autoHandleFactionEvent(G, simRng) {
         const r = fn.call(Engine.factions, s, fe.payload, choiceId, rng);
         if (r && r.state) s = r.state;
       }
+    } else if (fe.eventId === 'F06_FORCE') {
+      // 派閥抗争 §4.3 40週の2択(A 和解させる / B 続けさせる)。他の派閥イベントと同じく等確率で選ぶ
+      const f06ChoiceId = Engine.rng.float(simRng) < 0.5 ? 'A' : 'B';
+      const r = Engine.factions.applyF06ForceChoice(s, fe.payload, f06ChoiceId, rng);
+      if (r && r.state) s = r.state;
     } else if (fe.eventId === 'COMMON_1' || fe.eventId === 'COMMON_5' || fe.eventId === 'COMMON_7') {
       const choices = ['A', 'B', 'C'];
       const choiceId = choices[Math.floor(Engine.rng.float(simRng) * 3)];

@@ -1538,6 +1538,8 @@ const FACTION_AUDIO_MAP = {
   // §2-3 v7 確定（faction-events.md §音響設計 表拡張に準拠）
   F05:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
   F06:            { src: FACTION_AUDIO.SOFT,    volume: 0.16,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.10 } },
+  // 長引いた抗争の2択(2026-09-26)。対立の張り詰めは残したまま、疲れの見える低めの音量(F02_ENDLESS と同じ系統)
+  F06_FORCE:      { src: FACTION_AUDIO.TENSION, volume: 0.12 },
   F07:            { src: FACTION_AUDIO.TENSION, volume: 0.15 },
   F08:            { src: FACTION_AUDIO.TENSION, volume: 0.17, openStinger:  { src: FACTION_AUDIO.GONG,  volume: 0.15 } },
   COMMON_1:       { src: FACTION_AUDIO.TENSION, volume: 0.14 },
@@ -13985,6 +13987,52 @@ const App = {
           charName: leader6 ? leader6.name : payload.leaderAName,
           factionName: payload.factionAName || payload.factionBName || '',
           factionTone: 'allied',
+          impactSummary: result.impactSummary || [],
+          weekLabel: `S${G.season} W${G.week}`,
+          state: G,
+        }, finalizeAudio);
+      });
+    } else if (eventId === 'F06_FORCE') {
+      // 派閥抗争 §4.3 40週の2択(2026-09-26 裁定4)。A 和解させる / B 続けさせる。
+      // 出すまでの間に記録が決着・派閥が消滅していたら、説明を出さずに静かに取り下げる(§5-D 鉄則6)
+      if (!Engine.factions.isF06ForceStillValid(G, payload)) {
+        wmDiag('[WM Faction] F06_FORCE dropped: the rivalry record or a faction is gone');
+        return;
+      }
+      _factionAudioOpen(eventId);
+      showFactionF06ForceModal(payload, G, (choiceId) => {
+        if (choiceId !== 'A' && choiceId !== 'B') return;
+        const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFA1C));
+        const result = Engine.factions.applyF06ForceChoice(G, payload, choiceId, rng);
+        G = { ...result.state };
+        // 業界ニュース: 和解の成立(A のみ。F06 の和解と同じ型)
+        if (choiceId === 'A' && !result.skipped) {
+          App._pushIndustryNews({
+            type: 'factionReconcile',
+            characterId: payload.leaderAId || null,
+            data: {
+              org: G.orgName || '?',
+              factionAName: payload.factionAName || '?',
+              factionBName: payload.factionBName || '?',
+            },
+          });
+        }
+        Storage.autoSave();
+        Audio.play('event');
+        renderWeekScreen();
+        // 結果の主役は先行側のリーダー(同点なら A 側)
+        const leadIsB = (Number(payload.pointsB) || 0) > (Number(payload.pointsA) || 0);
+        const heroId = leadIsB ? payload.leaderBId : payload.leaderAId;
+        const hero = (G.roster || []).find(c => c.id === heroId);
+        showFactionEventResult({
+          // 見出しの記号は仕様の呼び名「F06」(内部の区別名 F06_FORCE はプレイヤーに見せない)
+          eventId: 'F06',
+          category: choiceId === 'A' ? WM_I18N.t('抗争の幕引き') : WM_I18N.t('抗争続行'),
+          resultText: result.resultText,
+          charId: hero ? hero.id : null,
+          charName: hero ? hero.name : (leadIsB ? payload.leaderBName : payload.leaderAName),
+          factionName: (leadIsB ? payload.factionBName : payload.factionAName) || '',
+          factionTone: choiceId === 'A' ? 'allied' : 'hostile',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
           state: G,

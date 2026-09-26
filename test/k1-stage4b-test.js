@@ -134,7 +134,9 @@ section('E05: 派閥の違う選手の試合で、勝者の派閥に抗争ポイ
   const s0 = factionState();
   const out = Engine.show.accrueFactionPoints(s0, [single(1, 3), single(2, 4)], [singleRes('left'), singleRes('draw')]);
   const e = out.factionRivalryPoints['1-2'];
-  assert.strictEqual(e.pointsA, 5 + FACTION_CONFIG.pointsByRank.top, `リーダー同士の勝ちで ${e.pointsA}`);
+  // 先頭の試合=メイン(2026-09-26 裁定3)。§2.2 のメイン +0.3 が掛かる
+  const mainTop = Math.round(FACTION_CONFIG.pointsByRank.top * (1 + FACTION_CONFIG.pointsMainEventBonus));
+  assert.strictEqual(e.pointsA, 5 + mainTop, `リーダー同士の勝ちで ${e.pointsA}`);
   assert.strictEqual(e.pointsB, 0, '引き分けで加点された');
 });
 
@@ -158,7 +160,9 @@ section('E05: 週の上限(同じ組で20pt)と F09(×1.8・上限なし)', () =
   assert.strictEqual(capped.pointsA, 5 + FACTION_CONFIG.pointsWeeklyCapPerPair, `上限を超えた: ${capped.pointsA}`);
   const f09 = Engine.show.accrueFactionPoints(factionState(), cards.map(m => ({ ...m, _f09Locked: true })), res).factionRivalryPoints['1-2'];
   const per = Math.round(FACTION_CONFIG.pointsByRank.top * FACTION_CONFIG.f09PointsMult);
-  assert.strictEqual(f09.pointsA, 5 + per * 3, `F09 の加点 ${f09.pointsA}`);
+  // 先頭の1試合はメイン(+0.3)が先に掛かってから ×1.8(§2.5 / §3.4。2026-09-26 裁定3)
+  const perMain = Math.round(Math.round(FACTION_CONFIG.pointsByRank.top * (1 + FACTION_CONFIG.pointsMainEventBonus)) * FACTION_CONFIG.f09PointsMult);
+  assert.strictEqual(f09.pointsA, 5 + perMain + per * 2, `F09 の加点 ${f09.pointsA}`);
 });
 
 section('E05: Common-1 で清算した試合は派閥内ポイントを二重に入れない / タッグはチーム代表(fighter1)で数える', () => {
@@ -172,7 +176,8 @@ section('E05: Common-1 で清算した試合は派閥内ポイントを二重に
   const tag = Engine.show.accrueFactionPoints(factionState(),
     [{ matchType: 'tag', teamA: { fighter1: 3, fighter2: 5 }, teamB: { fighter1: 1, fighter2: 5 } }],
     [{ matchType: 'tag', winner: 'teamA', mq: 50 }]).factionRivalryPoints['1-2'];
-  const tagPt = Math.round(FACTION_CONFIG.pointsByRank.top * (1 + FACTION_CONFIG.pointsTagBonus));
+  // 1試合だけのカード=先頭=メイン(2026-09-26 裁定3): 1.0 + メイン +0.3 + タッグ -0.5
+  const tagPt = Math.round(FACTION_CONFIG.pointsByRank.top * (1 + FACTION_CONFIG.pointsMainEventBonus + FACTION_CONFIG.pointsTagBonus));
   assert.strictEqual(tag.pointsB, tagPt, `タッグの加点 ${tag.pointsB}`);
 });
 

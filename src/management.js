@@ -14852,6 +14852,12 @@ const Engine = {
       // factionPendingIgnite は null 許容なので初期化不要
       // Phase B: 抗争ポイント
       if (!s.factionRivalryPoints || typeof s.factionRivalryPoints !== 'object') s = { ...s, factionRivalryPoints: {} };
+      // 旧セーブの残骸: 40週の印 _pendingForceCloseRivalry は拾う処理が無いまま立ち続けていた(2026-09-26 まで)。
+      // 今は F06_FORCE の派閥イベントで扱うので、印は静かに捨てる(記録が40週を過ぎていれば今週の判定で2択が出る)
+      if (s._pendingForceCloseRivalry !== undefined) {
+        const { _pendingForceCloseRivalry: _staleForceClose, ...withoutStaleForceClose } = s;
+        s = withoutStaleForceClose;
+      }
       // 派閥内ポイント制（spec: faction-internal-rank-spec-v0.2 §2）
       if (Engine.factions && typeof Engine.factions._ensureInternalPointsInit === 'function') {
         s = Engine.factions._ensureInternalPointsInit(s);
@@ -14911,7 +14917,14 @@ const Engine = {
         // Phase B: 抗争ポイント決着判定（spec §4） — pending イベントなしのときのみ
         if (Engine.factions && !s._pendingFactionEvent && typeof Engine.factions.checkRivalryResolution === 'function') {
           const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA1B));
-          Engine.factions.checkRivalryResolution(s, resRng);
+          const resolution = Engine.factions.checkRivalryResolution(s, resRng);
+          // §4.3 40週の2択(F06_FORCE)。社長の判断を派閥イベントとして待つ(2026-09-26 裁定4)。
+          // 画面は App.handleFactionEvent、auto-sim は autoHandleFactionEvent が Engine.factions.applyF06ForceChoice を呼ぶ
+          if (resolution && resolution.forceClose && !s._pendingFactionEvent
+              && typeof Engine.factions.buildF06ForcePayload === 'function') {
+            const f06Payload = Engine.factions.buildF06ForcePayload(s, resolution.forceClose);
+            if (f06Payload) s = { ...s, _pendingFactionEvent: { eventId: 'F06_FORCE', payload: f06Payload } };
+          }
         }
         // Phase B: F09 派閥対抗戦 発火判定（spec §3） — 興行週のみ・pending F09 なし・pending イベントなし
         if (Engine.factions && !s._pendingFactionEvent && !s._pendingF09 && Engine.util.isRegularShowWeek(s.week)
@@ -15223,8 +15236,10 @@ const Engine = {
     // applyCommon1MatchResult(§3.1)で入れ済みなので、この試合には isCommon1 を立てて二重加算を防ぐ(実プレイだけが使う)。
     // factions.js の加点関数は受け取った状態をその場で書き換えるので、書き換わる入れ子(抗争ポイントの各ペア・
     // 週の上限の記録・派閥内ポイント・派閥)を写してから渡す。数値はその場で書き換えた場合と同じ。
-    // 注: isMain はカードの isSummit(PPV の頂上決戦の印)を見ている。通常興行のカードには立たないので、
-    // 通常興行ではメイン加算(抗争 +0.3・派閥内 +2)が掛からない(エンジンの従来どおり。仕様との差は報告済み)
+    // メイン(§2.2 抗争 +0.3・派閥内 §3.2 +2pt): 興行カードの先頭の試合(validMatches[0])。人気(applyMatchPopularity)・
+    // 怪我の舞台の格(rollMatchInjury)・起用約束(settlePledge)と同じ「先頭=メインイベント」の規約。
+    // PPV の頂上決戦の印(isSummit)が付いた試合も従来どおりメイン(2026-09-26 裁定3。以前は isSummit だけを見ていて、
+    // 通常興行では一度も掛かっていなかった)
     accrueFactionPoints(state, validMatches, results, opts = {}) {
       const F = Engine.factions;
       if (!F || typeof F.accrueRivalryPointsFromMatch !== 'function') return state;
@@ -15259,7 +15274,7 @@ const Engine = {
         if (winner === 'draw') continue;
         const matchCtx = {
           fighterIdA, fighterIdB, winner,
-          isMain: !!m.isSummit,
+          isMain: !!m.isSummit || i === 0,
           isTitle: !!m.isTitle,
           isTag: m.matchType === 'tag',
           isF09: !!m._f09Locked,

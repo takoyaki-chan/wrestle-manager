@@ -195,6 +195,160 @@ const FACTION_F08_LEADER_LINES = {
 };
 
 // ─────────────────────────────────────────────────────────────
+// F06_FORCE: 長引いた抗争の2択(faction-rivalry-points-spec §4.3)— 両リーダーの一言
+// 抗争ポイントで先行している側(AHEAD)と、並んでいる/追う側(BEHIND)で分ける。
+// BEHIND は同点でも使うので「負けている」とは言い切らない(「まだ決まっていない」「勝ち切れていない」)。
+// 第一分岐はアーキタイプ(口調)、欠けた性格は同じ口調の normal へ落ちる(getFactionLine)
+// ─────────────────────────────────────────────────────────────
+const FACTION_F06_FORCE_AHEAD_LINES = {
+  standard: {
+    normal: [
+      "あと少しなのは、見ればわかるでしょ。ここで止める理由がない。",
+    ],
+    bold: [
+      "リードしてるのはこっち。最後まで取り切らなきゃ、勝ったことにならない。",
+    ],
+    quiet: [
+      "……ここまで来た。最後まで、やる。",
+    ],
+    shy: [
+      "やっと、ここまで来られたんです……途中で終わるのは、ちょっと……",
+    ],
+    easygoing: [
+      "えー、ここでストップ？　……まあ、正直ちょっと長かったけどさ。",
+    ],
+    earnest: [
+      "決着は、はっきりした形でつけたいです。ここで曖昧にしたら、ついてきてくれた仲間に顔向けできません。",
+    ],
+    emotional: [
+      "ここまで来て、なかったことにされるなんて絶対いや！",
+    ],
+  },
+  ojousama: {
+    normal: [
+      "勝ちが見えているのに、ここで手を引く理由はございません。",
+    ],
+    earnest: [
+      "最後までやり遂げさせてくださいませ。中途半端な幕引きでは、誰も納得いたしませんわ！",
+    ],
+  },
+  cool: {
+    normal: [
+      "勝ちは見えてる。あとは取るだけ。",
+    ],
+    quiet: [
+      "……終わらせる。こっちの手で。",
+    ],
+  },
+  delinquent: {
+    normal: [
+      "今さら手打ちとか、ありえねえだろ。勝ってんのはこっちだぞ。",
+    ],
+    bold: [
+      "ここまで追い込んどいて、引く奴がどこにいんだよ。",
+    ],
+  },
+  polite: {
+    normal: [
+      "あと少しで届きます。できれば、最後まで戦わせてください。",
+    ],
+    earnest: [
+      "ここまで積み重ねてきた一勝一勝を、きちんと形にしたいんです。お願いします。",
+    ],
+  },
+  seductive: {
+    normal: [
+      "ふふ、もうすぐ落ちるのに。ここで手を離すなんて、もったいないわ。",
+    ],
+    emotional: [
+      "ここで終わりにされたら……許さないわよ。",
+    ],
+  },
+  composed: {
+    normal: [
+      "流れはこっちにある。慌てる必要はないけど、止める必要もないね。",
+    ],
+    bold: [
+      "勝ってる側が引く理由なんてないよ。最後まで付き合ってもらう。",
+    ],
+  },
+};
+
+const FACTION_F06_FORCE_BEHIND_LINES = {
+  standard: {
+    normal: [
+      "まだ何も決まってない。ここから取りにいく。",
+    ],
+    bold: [
+      "このまま終われるわけないじゃん。勝ちをもぎ取るのはここからだよ。",
+    ],
+    quiet: [
+      "……まだ、終わってない。",
+    ],
+    shy: [
+      "……このまま終わったら、わたし、ずっと引きずると思います。",
+    ],
+    easygoing: [
+      "正直、ちょっと疲れたかも。でもさ、勝てないまま終わるのはナシでしょ。",
+    ],
+    earnest: [
+      "決着がつかないまま終わるのは、逃げるのと同じです。まだ戦わせてください。",
+    ],
+    emotional: [
+      "こんな終わり方、納得できるわけないでしょ……！　まだやれる！",
+    ],
+  },
+  ojousama: {
+    normal: [
+      "勝ちきれていないことは承知しております。だからこそ、ここで退くわけにはまいりません。",
+    ],
+    earnest: [
+      "このまま幕を引かれては、わたくしどもの名折れですわ！　どうか、もう一度機会を！",
+    ],
+  },
+  cool: {
+    normal: [
+      "まだ終わりじゃない。それだけ。",
+    ],
+    quiet: [
+      "……まだ、やれる。",
+    ],
+  },
+  delinquent: {
+    normal: [
+      "勝てねえまま手打ちなんて、冗談じゃねえ。",
+    ],
+    bold: [
+      "こっからだろ。ここで止められてたまるかよ。",
+    ],
+  },
+  polite: {
+    normal: [
+      "苦しいのは事実です。でも、まだ諦めてはいません。",
+    ],
+    earnest: [
+      "ここで終わりにすれば、届かなかったと認めることになります。それだけは、できません。",
+    ],
+  },
+  seductive: {
+    normal: [
+      "あら、もう終わらせるの？　まだ見せてないものが、たくさんあるのに。",
+    ],
+    emotional: [
+      "……このまま引き下がると思った？　冗談でしょ。",
+    ],
+  },
+  composed: {
+    normal: [
+      "長くやりすぎたかもしれないね。けど、勝てないまま手を引くのは性に合わない。",
+    ],
+    bold: [
+      "このままじゃ終われないよ。最後にどっちが立ってるか、はっきりさせよう。",
+    ],
+  },
+};
+
+// ─────────────────────────────────────────────────────────────
 // Phase 3e: F08-A 直接対決 試合前後演出
 // 4テーブル × hostility帯 / HP帯分岐
 // 6性格 × 6アーキタイプ、normal フォールバック、cool/delinquent/ojousama は核
@@ -1061,6 +1215,8 @@ const INTERNAL_CHALLENGE_POST_LOSER_LINES = {
 
 // window export（ブラウザ参照用、既存テーブルとの整合）
 if (typeof window !== 'undefined') {
+  window.FACTION_F06_FORCE_AHEAD_LINES = FACTION_F06_FORCE_AHEAD_LINES;
+  window.FACTION_F06_FORCE_BEHIND_LINES = FACTION_F06_FORCE_BEHIND_LINES;
   window.FACTION_F08_PRE_MATCH_LINES_A = FACTION_F08_PRE_MATCH_LINES_A;
   window.FACTION_F08_PRE_MATCH_LINES_B = FACTION_F08_PRE_MATCH_LINES_B;
   window.FACTION_F08_POST_MATCH_WINNER_LINES = FACTION_F08_POST_MATCH_WINNER_LINES;
@@ -1082,6 +1238,8 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {    FACTION_F05_DISSIDENT_LINES,
     FACTION_F06_AMBIENT_LINES,    FACTION_F08_LEADER_LINES,
+    FACTION_F06_FORCE_AHEAD_LINES,
+    FACTION_F06_FORCE_BEHIND_LINES,
     FACTION_F08_PRE_MATCH_LINES_A,
     FACTION_F08_PRE_MATCH_LINES_B,
     FACTION_F08_POST_MATCH_WINNER_LINES,

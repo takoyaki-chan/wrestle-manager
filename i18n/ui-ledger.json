@@ -2778,6 +2778,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{a}と{b}の抗争は、社長の預かりで幕を下ろした。勝ち名乗りを上げた者はいない。",
+    "en": "The feud between {a} and {b} was closed on the president's authority. No one got to claim the win.",
+    "files": [
+      "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}と{b}の抗争は続く。決着は、リングの上でつけることになった。",
+    "en": "The feud between {a} and {b} goes on. It will be settled in the ring.",
+    "files": [
+      "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{a}と{b}の火種は、ついにリングで燃え上がる。",
     "en": "The spark between {a} and {b} finally catches fire in the ring.",
     "files": [
@@ -5846,6 +5866,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{pa} — {pb} のまま持ち越し",
+    "en": "Carried over at {pa} — {pb}",
+    "files": [
+      "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{period}の給与支払い",
     "en": "Payroll for {period}",
     "files": [
@@ -7914,6 +7944,16 @@
   {
     "key": "⏳ 交渉中",
     "en": "⏳ In Talks",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⏳ 長引く抗争",
+    "en": "⏳ A Feud That Won't End",
     "files": [
       "ui-common.js"
     ],
@@ -11003,6 +11043,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "この抗争を、社長としてどう扱いますか？",
+    "en": "How do you handle this feud?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "この挑戦、どう受けますか？",
     "en": "How do you take this challenge?",
     "files": [
@@ -13797,6 +13847,56 @@
     "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
   },
   {
+    "key": "ポイントはそのまま持ち越す。決着はリングに任せ、当面は口を出さない",
+    "en": "The points carry over as they are. The ring decides it, and you stay out of it for now.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ポイントは白紙に戻し、勝者も敗者も出さずに幕を引く。両派閥の対立はやわらぐ",
+    "en": "The points are wiped clean and it ends with no winner and no loser. The tension between the factions eases.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "リングの外でも睨み合いは続き、ロッカールームには疲れが見え始めた。",
+    "en": "The glaring goes on outside the ring too, and the locker room is starting to look worn out.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "両派閥とも、決着がつかないまま長くなりました。リーダーの二人が、社長の判断を待っています",
+    "en": "Neither side has settled it, and it has dragged on a long time. Both leaders are waiting for your call.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "和解させる",
+    "en": "Broker a truce",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "対立が何度も重なってきた二人に使える。慢性化する前に手を打てば、亀裂が修復可能になることもある。",
     "en": "For two wrestlers whose clashes keep piling up. Act before it turns chronic, and the rift can still be mended.",
     "files": [
@@ -13821,6 +13921,66 @@
     "source": [
       "DECISION_DOCS.relationship_repair.effectSummary"
     ]
+  },
+  {
+    "key": "抗争{n}週目",
+    "en": "Feud week {n}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "抗争が始まって、もう<span class=\"marker hostile\">{weeks}週</span>になる。どちらの派閥も、まだ決着に手が届いていない。",
+    "en": "This feud is now in <span class=\"marker hostile\">week {weeks}</span>. Neither faction has managed to close it out.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "抗争の幕引き",
+    "en": "Feud Closed",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "抗争続行",
+    "en": "Feud Continues",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "白紙に戻った",
+    "en": "Wiped clean",
+    "files": [
+      "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "続けさせる",
+    "en": "Let it continue",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "記事の反響で、ファンの間で名前が広まった",
