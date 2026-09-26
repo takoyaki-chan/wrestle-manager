@@ -199,6 +199,23 @@ section('B: 出番の手当て — 噂の状態の選手を通常興行に出す
   assert.strictEqual(hero2.lastWarning.relief, hero.lastWarning.relief, '2度目も応えた扱いになった');
 });
 
+section('B: その興行の試合で怪我をした噂の状態の選手も、カードに入れた手当ては成立(興行の信頼の更新はしない規則のまま、戻る分だけ)', () => {
+  const hero = mk(9, { trust: 16, trustStrain: { stage: 10 }, lastWarning: { cause: 'stage', week: 90, answered: false }, injury: { type: 'x', weeksLeft: 3 } });
+  const roster = [hero, mk(1), mk(2), mk(3)];
+  const state = mkState(roster);
+  const out = Engine.trust.applyShowTrust(roster, showResults([2, 3, 9, 1]), state.titles, state, { ledger: true });
+  const h = fOf(out.roster, 9);
+  assert.ok(near(h.trust, 16 + 4), `怪我をした選手: 信頼 ${h.trust} ≠ 16 + 帳簿の半分(10×0.8×0.5)`);
+  assert.strictEqual(h.lastWarning.answered, true);
+  assert.strictEqual(h.noAppearStreak, 0 + (hero.noAppearStreak || 0), '怪我をした選手の連続不出場を動かした');
+  // 出場していない怪我人・休暇中の選手には何も起きない(帳簿を薄めるだけ)
+  const idle = mk(8, { trust: 16, trustStrain: { stage: 10 }, lastWarning: { cause: 'stage', week: 90, answered: false }, injury: { type: 'x', weeksLeft: 3 } });
+  const out2 = Engine.trust.applyShowTrust([idle, mk(1), mk(2)], showResults([1, 2]), state.titles, mkState([idle, mk(1), mk(2)]), { ledger: true });
+  assert.strictEqual(fOf(out2.roster, 8).trust, 16);
+  assert.strictEqual(fOf(out2.roster, 8).lastWarning.answered, false);
+  assert.ok(near(fOf(out2.roster, 8).trustStrain.stage, 8), '怪我中の選手の帳簿が薄まっていない');
+});
+
 section('B: 合わない原因・応えた後・噂の状態が解けた(信頼30以上)・出場しなかった選手には何も起きない', () => {
   const cmp = (opts) => {
     const { out } = answerScenario(opts);

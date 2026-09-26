@@ -25014,22 +25014,22 @@ Engine.trust = {
   },
 
   // 帳簿に減りを積む(amount は失った信頼の実数・正の値)。戻り値: 新しい選手(0以下・非数なら同じ選手)
+  // (丸めない: 信頼と同じく内部の実数。丸めると戻る量が僅かにずれ、設計の計測器の仮の実装と軌道が一致しなくなる)
   addStrain(fighter, group, amount) {
     if (!fighter || !(amount > 0) || !Number.isFinite(amount)) return fighter;
     const cur = fighter.trustStrain || {};
-    const v = Math.round(((cur[group] || 0) + amount) * 1000) / 1000;
-    return { ...fighter, trustStrain: { ...cur, [group]: v } };
+    return { ...fighter, trustStrain: { ...cur, [group]: (cur[group] || 0) + amount } };
   },
 
-  // 通常興行の信頼更新の入口で帳簿を薄める(×strainDecay)。ごく小さくなったまとまりは消す
+  // 通常興行の信頼更新の入口で帳簿を薄める(×strainDecay)。ごく小さくなったまとまり(1e-6 以下)は消す
   decayStrain(fighter) {
     const cur = fighter && fighter.trustStrain;
     if (!cur) return fighter;
     const decay = Engine.trust.lastWarningConfig().strainDecay;
     const next = {};
     Object.keys(cur).forEach(k => {
-      const v = Math.round((cur[k] || 0) * decay * 1000) / 1000;
-      if (v > 0) next[k] = v;
+      const v = (cur[k] || 0) * decay;
+      if (v > 1e-6) next[k] = v;
     });
     return { ...fighter, trustStrain: next };
   },
@@ -25372,7 +25372,15 @@ Engine.trust = {
       if (ledgerTarget) fighter = Engine.trust.decayStrain(fighter);
       // 怪我中・休暇中は変動なし（noAppearStreakもリセットしない）
       // 休暇辞令で休ませた選手に不出場ペナルティを課すと、休暇の信頼収支が赤字になる
-      if (fighter.injury || fighter.onLeave) return fighter;
+      if (fighter.injury || fighter.onLeave) {
+        // 退団寸前の引き留め B: この興行の試合で怪我をした噂の状態の選手も、カードに入れた(=出番の手当て)ことは成立する。
+        // 興行の信頼の更新はしない(上の規則のまま)が、応えてもらえた分はすぐ戻る
+        if (ledgerTarget && participated.has(fighter.id) && fighter.lastWarning) {
+          const injCause = titleFighters.has(fighter.id) && fighter.lastWarning.cause === 'title' ? 'title' : 'stage';
+          return Engine.trust.answerWarning(fighter, injCause, injCause === 'title' ? 'titleMatch' : 'card', state).fighter;
+        }
+        return fighter;
+      }
 
       const mental = fighter.mn || 50;
       const oldTrust = fighter.trust != null ? fighter.trust : 50;

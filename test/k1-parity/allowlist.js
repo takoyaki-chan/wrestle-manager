@@ -126,6 +126,8 @@ module.exports = [
       // K-1 第2段(K1-A04 を両経路でそろえた後): 実プレイは引退を済ませた状態で新聞データを組むので、次回展望
       // (ファンの期待カード・王座戦の展望)から引退した選手が外れる。同じ週の号にも写る
       'currentNewspaper', 'weeklyNewspaper',
+      // 2026-09-26 退団寸前の引き留め: 上の信頼の差(仲の良い選手の引退による信頼の減り)は、退団寸前の帳簿の人間関係にも積まれる
+      'roster[*].trustStrain', 'roster[*].trustStrain.*',
     ],
     mustAppear: true, refs: 'app.js:9272-9344(finalize)・10867-10970(closeShowResult 前半) / エンジン側なし',
   },
