@@ -110,6 +110,8 @@ NPC は団体生成時にフィクションのキャリア事前史（プロデ�
 
 旧来の想定キー `injury_wear` / `injury_career_ending` / `age` は1件も記録されていなかったが、互換のため同じ注記で引く。
 
+**ログのタブの1行(2026-09-26 総点検 第4回裁定7)**: 実プレイで怪我による引退(`wearInjury` / `careerEnding`)が起きた興行は、`App._finalizeShowImpl` がログのタブに `{ type: 'injury_retirement', data: { name, age, variant: 'wear'|'careerEnding' } }` を積む。文は `GAMELOG_TEMPLATES.injury_retirement`(「🏁 ○○(26歳)が度重なる怪我により引退」/「🏁 ○○(24歳)が試合中の重傷により引退」。上の表の注記と同じ言い方。英訳つき)。分類はシーズン(既存の引退の行と同じ)。突然の退団(`suddenDeparture`)の1行は trust-system-spec §13.3。
+
 ### 2.2 タイトル・トーナメント
 
 | type | 主要フィールド | 年表テキスト例 |

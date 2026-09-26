@@ -16,10 +16,10 @@
 //    走破テストでも「文字が出ている」以上のことは分からない)ので機械で押さえる。
 //
 //  ■ 4つの検査
-//    1. プール網羅: 11閾値 × (7アーキタイプ × 7性格 の合成選手 + ALL_CHARS 実選手) で
+//    1. プール網羅: 12閾値(2026-09-26 に信頼15未満の噂を追加) × (7アーキタイプ × 7性格 の合成選手 + ALL_CHARS 実選手) で
 //       `getDialoguePool()`(= pickDialogueLine が引く実関数)が返す**全行**が
 //       EN辞書(src/lang-en-dialogue.js)に存在し、訳文にJAが残っていないこと
-//    2. ラベル: GLIMPSE_A_THRESHOLDS の label 11本が EN辞書(src/lang-en.js)にあること
+//    2. ラベル: GLIMPSE_A_THRESHOLDS の label 12本が EN辞書(src/lang-en.js)にあること
 //    3. チャンネル: `Engine.glimpse.checkALayer` を実際に呼び、返る glimpse の
 //       `dialogue` が**プレースホルダ置換済みの完成文ではなく辞書キーそのもの**であること
 //       (§13-2 型2/型5 の再発防止。完成文を保存すると t() が引けなくなる)
@@ -108,11 +108,13 @@ try {
   const roster = [];
   let id = 9000;
   // group A: bond↑ / rivalry↑ / trust↓、group B: bond↓ / rivalry↓ / trust↑
+  // group A の trust↓ は半分を 17(35 と 20 をまたぐ)、半分を 10(35・20・15 をまたぐ → 20 は 15 の噂に
+  // まとめられる。2026-09-26 第4回裁定8)にして、全閾値の発火を見る
   ['up', 'down'].forEach((dir) => {
-    speakers.forEach((s) => {
+    speakers.forEach((s, si) => {
       roster.push({
         id: id++, name: `T${id}`, archetype: s.archetype, personality: s.personality,
-        trust: dir === 'up' ? 15 : 80, injury: 0, isRental: false,
+        trust: dir === 'up' ? (si % 2 === 0 ? 17 : 10) : 80, injury: 0, isRental: false,
       });
     });
   });

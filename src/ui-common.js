@@ -2174,8 +2174,11 @@ const FLAG_MODAL_META = {
   'M-24': { title: '🌫️ ロッカールームの崩壊', tone: 'negative', priority: 4 },
 };
 
+// 関係性フラグの組み立て関数(下)専用。今は画面から呼ばれない(_drainFlagModalQueue 削除の注記を参照)。
+// 以前は window.G を見ていたが、G は app.js の let 宣言で window に載らず、実ページでは常に null を返していた。
+// 後日の再利用で同じ罠を踏まないよう、ほかの画面関数と同じく G を直接見る
 function _findFighterById(id) {
-  if (!id || !window.G) return null;
+  if (!id || typeof G === 'undefined' || !G) return null;
   const lists = [G.roster || [], G.freeAgents || [], G.retiredFighters || []];
   for (const list of lists) {
     const f = list.find(c => c && c.id === id);
@@ -2302,24 +2305,12 @@ function _flagBuildM13(modal, meta) {
   };
 }
 
-function _drainFlagModalQueue() {
-  if (!window.G || !Array.isArray(G._modalQueue) || G._modalQueue.length === 0) return;
-  // 仕様書 §4.1 優先順位（数字小さいほど先）
-  const queue = [...G._modalQueue].sort((a, b) => {
-    const pa = (FLAG_MODAL_META[a.type]?.priority) ?? 9;
-    const pb = (FLAG_MODAL_META[b.type]?.priority) ?? 9;
-    return pa - pb;
-  });
-  G._modalQueue = []; // 全て消費
-  for (const modal of queue) {
-    try {
-      const opts = _flagBuildPopupOpts(modal);
-      if (opts) showEventPopup(opts);
-    } catch (e) {
-      console.warn('[flag-modal] render error', modal.type, e);
-    }
-  }
-}
+// 関係性フラグのポップアップ(M-1〜M-24)を出す関数 _drainFlagModalQueue は 2026-09-26 に削除した
+// (第4回裁定5「出さないまま、たまり続ける列だけ直す」。8/13 裁定「関係性の変化は試合後にポップアップで
+// 知らせない」と合わせる)。旧関数は window.G を見ていて(G は app.js の let 宣言で window に載らない)
+// 2026-04-28 から一度も表示していなかった。出来事の列 G._modalQueue はエンジンが直近12週だけ持つ
+// (Engine.relationships.flags.pruneModalQueue)。上の FLAG_MODAL_META と組み立て関数(_flagBuildPopupOpts ほか)は、
+// 後日「世界の側」(新聞・相関図など)で見せる設計の材料として残す(呼び名の検査 call-name-dialogue-guard-test が使う)
 
 function showEventPopup(opts) {
   // opts: { type: 'fighter'|'coach', id, name, emoji?, speech?, message?, detail?, tone: 'positive'|'negative'|'gold',

@@ -367,8 +367,10 @@ Bond/Rivalryシステム（relationship-system-spec参照）からの信頼変�
 **実装(2026-09-26 K-1 第4段 4-B-7)**: `Engine.show.applySuddenDepartures(state)`。判定は `Engine.trust.checkSuddenDepartures`(乱数 0xDE7A・レンタル/統一王座のゲストは対象外・怪我人は対象)。通常興行の処理を全部終えた状態(信頼の更新=週次精算の前)で1回呼ぶ。エンジン(`Engine.executeShow`=auto-sim)と実プレイ(`App._finalizeShowImpl`)が同じ関数を通す。以前の実プレイには呼び出しが無く、表示コードだけが残っていた。
 - 去った選手へ残る全員の bond −8〜−15(O-08)と関係性ポップアップ M-23、王座の返上、仲の良い選手の信頼への波及(`applyDepartureTrustImpact`)
 - 経歴に `suddenDeparture`。人気40以上は他団体へ(スター争奪 `claimDepartedStar` → 無ければ乱数で1団体)、それ以外はフリー(枠が無ければ休眠プール)。行き先では信頼50から
-- 演出: `_pendingSuddenDepartures` を実プレイの closeShowResult(興行週)が tickWeek の後・週送りの前に取り出し、`App._showSuddenDepartureToasts` でトースト(D型・「🚪 ○○が荷物をまとめて団体を去った。誰も止められなかった。」+行き先)
+- 演出: `_pendingSuddenDepartures` を実プレイの closeShowResult(興行週)が tickWeek の後・週送りの前に取り出し、`App._showSuddenDepartureToasts` でトースト(D型・「🚪 ○○が荷物をまとめて団体を去った。誰も止められなかった。」+行き先)。行き先は実際に移った先で書く(他団体のロスターにいれば「他団体へ移籍した」、フリー/休眠プールなら「フリーとなった」。2026-09-26 に判定時の区分=人気40以上から変更。人気40未満でも総合力でスター争奪に拾われる選手がいて食い違っていた)
+- **ログ(2026-09-26 総点検 第4回裁定7)**: 実プレイの `_finalizeShowImpl` がログのタブに1行 `{ type: 'sudden_departure', data: { name, variant: 'org'|'free', orgName } }` を積む。文は `GAMELOG_TEMPLATES.sudden_departure`(「🚪 ○○が突然退団し、△△へ移籍した」/「🚪 ○○が突然退団し、フリーとなった」。英訳つき)。分類はイベント
 - **前兆(社長に見えるもの)**: 信頼40未満で所属タブのロスターカードと選手ポップアップに「💭よそよそしい」、選手ポップアップの「💬 声をかけに行く」がオレンジで脈打つ。信頼20を割った週に「退団を考えているという噂」(ログ1行+道場「休憩中の選手」の確定枠で本人の吹き出し。Glimpse A `trust_below_20`・確率100%・12週クールダウン・30を超えると再武装)。auto-sim 40季×2シードで信頼15未満に落ちた8人全員に、15未満になる1〜7週前に噂が出ていた
+- **臨界帯の前兆(2026-09-26 総点検 第4回裁定8)**: 信頼15を割った週(=突然の退団の判定が始まる帯に入った週)に「退団を決めかけているという噂」をもう一度出す。出し方は20の噂と同じ(ログ1行「💬 ○○が退団を決めかけているという噂がある」+道場の確定枠で本人の一言。一言はアーキタイプ第一×性格第二で実在の34セルを書き分けた `GLIMPSE_A_LINES.trust_below_15`)。Glimpse A `trust_below_15`・確率100%・12週クールダウン・25を超えると再武装。20と同じ週に両方をまたいだら15の噂1回にまとめる(20の発火の記録は残す)。率の抽選をせず、一言も専用の種で選ぶので、既存の噂・垣間見えの乱数の並び(共有の rng・Math.random)は変わらない。ログは両方とも `{ type: 'trust_departure_rumor', data: { name, variant: 'below20'|'below15' } }`(below20 は以前の文字列ログと同じ文。英訳つき)
 
 ---
 

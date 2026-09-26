@@ -27989,6 +27989,11 @@ const GLIMPSE_A_THRESHOLDS = [
   { id: 'trust_below_35', axis: 'trust', dir: 'down', value: 35, rate: 0.95, tone: 'warning',  cooldown: 12, label: '社長室を避ける気配' },
   { id: 'trust_below_20', axis: 'trust', dir: 'down', value: 20, rate: 1.00, tone: 'danger',   cooldown: 12, label: '退団を考えているという噂' },
   { id: 'trust_above_75', axis: 'trust', dir: 'up',   value: 75, rate: 0.85, tone: 'positive', cooldown: 12, label: '団体への愛着がにじむ' },
+  // 2026-09-26 総点検 第4回裁定8: 突然の退団の判定が始まる信頼15未満(臨界帯)に入った週に、退団の噂をもう一度
+  // (ログ1行+道場「休憩中の選手」の確定枠。20の噂と同じ出し方)。20と同じ週に両方をまたいだら、こちらの
+  // 1回にまとめる(supersedes。20の発火の記録は残るので、あとで20の噂が遅れて出ることはない)。
+  // roll:false = 率の抽選をしない(率1.00で必ず)。既存の閾値の乱数の並びを変えないため(relationships.js checkALayer)
+  { id: 'trust_below_15', axis: 'trust', dir: 'down', value: 15, rate: 1.00, tone: 'danger',   cooldown: 12, label: '退団を決めかけているという噂', roll: false, supersedes: 'trust_below_20' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28653,6 +28658,62 @@ GLIMPSE_A_LINES.trust_below_20 = {
     standard: ['信頼してたのに…もうここでは頑張れないかもしれない', '自分の全力を尽くしてきたつもりです。でも、もう…'],
     polite: ['大変申し訳ありませんが…退団を検討させていただきます'],
     composed: ['…全力を尽くしてきたつもりだ。…でも、もう'],
+  },
+};
+
+// 2026-09-26 総点検 第4回裁定8: 信頼15未満(臨界帯)に入った週の本人の一言(道場「休憩中の選手」)。
+// 20の噂(もう限界・他団体のことを考え始めた)より一歩先の「もう決めかけている/次で決める」。
+// 口調シート(specs/dialogue-tone-spec-v1.0.md)に沿って、アーキタイプ第一×性格第二で実在の34セルを書き分ける
+// (ほかの性格はアーキタイプを保ったままノーマルへ落ちる)。引き留める手は社長にある(声をかけに行く・書類)ので、
+// 絶望や脅しの一本調子にせず、決断の手前にいることを伝える
+GLIMPSE_A_LINES.trust_below_15 = {
+  standard: {
+    normal: ['もう、ほとんど決めてる。次に何かあったら、出ていくと思う'],
+    bold: ['次はないから。今度同じことをされたら、黙って出ていく'],
+    quiet: ['……もう、決めかけてる'],
+    shy: ['…わたし…出ていくって…ほとんど、決めちゃってて……'],
+    easygoing: ['いやー、そろそろ潮時かも。……笑って言ってるけど、本気だよ'],
+    earnest: ['よく考えた。……ここを離れる方向で、気持ちは固まりかけてる'],
+    emotional: ['もう無理…！ 次に何かあったら、ほんとに出ていくから…！'],
+  },
+  ojousama: {
+    normal: ['……身の振り方を、そろそろ決めなければならないわね'],
+    bold: ['わたくしの我慢にも限りがございます。次はございませんわ'],
+    easygoing: ['うふふ……笑って済ませるのも、そろそろおしまいですわね'],
+    earnest: ['熟慮いたしました。……ここを去る心づもりは、ほぼ固まっております'],
+  },
+  cool: {
+    normal: ['出ていく理由の方が、もう多い'],
+    quiet: ['……答えは、ほぼ出た'],
+  },
+  delinquent: {
+    normal: ['次なんかあったら、マジで出てくからな。脅しじゃねえぞ'],
+    bold: ['あと一回だ。あと一回ナメた真似したら、出てく'],
+    easygoing: ['いやー、さすがに笑えねえわ。次はもう、ねえかもな'],
+  },
+  polite: {
+    normal: ['申し訳ありません。……次に何かあれば、ここを離れるつもりです'],
+    bold: ['はっきり申し上げます。このままなら、私は出ていきます'],
+    quiet: ['……気持ちは、もうほとんど決まっています'],
+    shy: ['…あの…わたし…ここを離れることを、本気で考えていて……'],
+    easygoing: ['えへへ…さすがにもう、笑っていられないです。次は、たぶんないです'],
+    earnest: ['検討は、もう終わりに近づいています。……申し訳ありません'],
+  },
+  seductive: {
+    normal: ['次で最後にするわ。……引き留めたいなら、今のうちよ'],
+    bold: ['私を手放すつもり？ ……いいわ、それならこっちから出ていくだけ'],
+    quiet: ['……ここを出たあとのこと、考えてるの'],
+    easygoing: ['ふふ、そろそろお別れかしらね。……冗談だと思った？'],
+    emotional: ['……ええ、もう決めたも同然よ。止められるものなら、止めてみなさい'],
+    earnest: ['軽い気持ちで言ってないわ。……ここを出ることを、真剣に考えてるの'],
+  },
+  composed: {
+    normal: ['……ここを離れようかって、本気で思い始めてる'],
+    bold: ['次で決めるよ。残るか、出ていくか'],
+    quiet: ['……どうするかは、もうほぼ決めてある'],
+    easygoing: ['のんびり構えてたけど……そろそろ荷物をまとめる頃合いかな'],
+    emotional: ['……っ、もう、ここにいるのがつらいんだ。次は、たぶん出ていく'],
+    earnest: ['正直に言うと、ここを離れる方向で考えてる'],
   },
 };
 
@@ -32007,6 +32068,24 @@ const GAMELOG_TEMPLATES = {
   show_rating_org_pop_update_small_venue: '📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (会場が人気に対して小さく、伸びは控えめ) (現在: {curOrgPop})',
   heat_level_changed: '{emoji} Heat変動: {oldLabel} → {newLabel}（集客倍率 ×{mult}）',
   unified_title_result: { taken: '🌐 {name}が全国統一王座を奪取！', defended: '🌐 {name}が全国統一王座を防衛！' },
+  // 2026-09-26 総点検 第4回裁定7: 怪我による引退・突然の退団をログに1行(以前はポップアップとトーストだけで
+  // ログに残らなかった)。事実だけを書く。注記は経歴(career-history-spec の retire.reason)と同じ言い方
+  injury_retirement: {
+    wear: '🏁 {name}({age}歳)が度重なる怪我により引退',
+    careerEnding: '🏁 {name}({age}歳)が試合中の重傷により引退',
+  },
+  // 行き先は処理後の状態から引く(他団体の名前/フリー。フリー枠が無く休眠プールへ回った場合もフリーと書く)
+  sudden_departure: {
+    org: '🚪 {name}が突然退団し、{orgName}へ移籍した',
+    free: '🚪 {name}が突然退団し、フリーとなった',
+  },
+  // ── management.js tickWeek: 退団の噂(Glimpse A の信頼の閾値。社長の実務情報として週次レポートに1行) ──
+  // below20 は以前の文字列ログと同じ文。below15 は突然の退団の判定が始まる臨界帯に入った週
+  // (2026-09-26 第4回裁定8)。20と同じ週に両方をまたいだら below15 の1行にまとめる
+  trust_departure_rumor: {
+    below20: '💬 {name}が退団を考えているという噂がある',
+    below15: '💬 {name}が退団を決めかけているという噂がある',
+  },
 
   // ── app.js: 挑戦試合コーチ要約(_challengeRequestCoachLogLine・監査3-5と同法の6変種) ──
   challenge_request_coach_summary: {
@@ -32193,6 +32272,9 @@ const GAMELOG_TYPE_CATEGORY = {
   startup_draft_complete: ['finance'],
   startup_remaining_funds: ['finance'],
   startup_industry_rank: ['event'],
+  // 2026-09-26 第4回裁定7: 既存の引退の行(「引退」→シーズン)・移籍の行(「移籍」→イベント)にそろえる
+  injury_retirement: ['season'],
+  sudden_departure: ['event'],
 };
 
 /**

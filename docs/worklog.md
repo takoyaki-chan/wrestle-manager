@@ -1,5 +1,120 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 総点検 第4回の確認 5〜8 — 関係性ポップアップの列・別れを先に・引退/退団のログ・信頼15未満の噂(Claude/Opus 5.5・worktree)
+
+Keisuke 裁定(2026-09-26 第4回の確認、全ておすすめ)の 5〜8。K-1 第4段 4-B 後半の作業で見つかった点の後始末。**数値は不変**(auto-sim の指紋の差は列の長さと前兆の記録だけ。下の「検証」)。
+
+### 5. 関係性のポップアップは出さないまま、たまり続ける列だけ直す(662e4dfb)
+- `_modalQueue` を読む箇所(全部数えた):
+  | 箇所 | 読み方 |
+  |---|---|
+  | relationships.js `flags._ensureInit` | 無ければ空配列を作る |
+  | relationships.js `flags._enqueueModal`(`_enqueueModalWithCooldown` 経由も) | 共有の配列へ push(K-1 第1段の調査どおり、一時の relState からもこの push で本番に届く) |
+  | relationships.js `flags.gateModalQueue`(K-11) | 未判定の項目だけ判定し `scope` を付けた新しい配列で返す。件数の記録は `relModalWindow`(列ではない) |
+  | management.js `createInitialState` / `tickWeek` 末尾 | 初期値 [] / gate を呼ぶ |
+  | ui-common.js `_drainFlagModalQueue` | `window.G` を見て毎回すぐ戻っていた(唯一の消費者) |
+  | テスト | k1-stage1(enqueue)・k1-stage4b2(M-22/M-23 が積まれる)・relationship-modal-gate(gate)・k1-parity allowlist(`_modalQueue` の差を許容)・injury-retire-departure-check(M-22/M-23 の scope) |
+  | auto-sim | 読まない(指紋の JSON には G ごと入る) |
+- 方針: 出来事の生成と K-11 の判定は残し、**`Engine.relationships.flags.pruneModalQueue`** で直近12週(K-11 の窓 `MODAL_GATE.WINDOW_WEEKS` と同じ幅・今週を含む)の項目だけ残す。`tickWeek` 末尾(gate の直後)と `Storage.deserialize`(旧セーブの肥大した列)で呼ぶ。gate の判定は `relModalWindow` と未判定の項目しか見ないので、古い判定済みの項目を落としても判定は変わらない。関係値・クールダウン・乱数には触れない
+- `_drainFlagModalQueue` は削除し、app.js の呼び出し3か所(closeShowResult 2・processWeek 1)と、怪我引退の週に M-22 を本人の後に回す仕掛け(`deferFlagModalsAfterInjuryRetire`)も外した。組み立て関数(`FLAG_MODAL_META`・`_flagBuildPopupOpts`・M-12/M-13)と `flag-dialogue.js` は後日の「世界の側」の材料として残す(call-name-dialogue-guard-test が使う)
+- `window.G` を見ていた関数の洗い出し(src 全体): `_drainFlagModalQueue`(削除)と `_findFighterById`(ui-common.js)の2つだけ。`_findFighterById` の呼び出し元は上の組み立て関数だけで、画面からは届かない死んだ経路。表示しない方針なので動作には関係しないが、後日の再利用で同じ罠を踏まないよう `typeof G` を見る形に直した
+- 実測: headless 進行 seed 42 の3季3週の tickWeek 直後で列 5件(以前は3季目頭で 119件)。auto-sim 40季 seed 42 の最終状態で 4件(以前は 684件)
+
+### 6. 引退の週は、別れのポップアップを先に出す(678e2be5)
+- closeShowResult: ラストラン・怪我による引退がある週は、この閉じで始める表示(因縁の試合後コメント・ファンの反応・引退でない怪我・乱入・退団のトースト・雑誌取材・節目/王座の式典/成長/因縁/起用の約束/R3 の連鎖・派閥加入/アーキタイプ遷移・Glimpse・大ニュース・1.4秒後の派閥イベント/直訴)の**開始**を `whenFarewellDone` に預ける。引退の無い週はその場で始める(従来どおり)。状態の書き換えはその場のまま(1操作=1進行は不変)
+- `App._showFarewellsFirst(farewells, afterFarewell)`: 週送り(advanceFromWeekSummary → dismissAllPopups)の後の 0ms タイマーで別れのポップアップ(ラストラン→怪我の順)を開き、閉じ切ったら預けた開始を順に呼ぶ。§5-D 鉄則1: 二重起動防止(`released`)+時限の保険(別れの画面=mdlB/王者の一言の吹き出しが5秒続けて見当たらなければ、押し流されたとみなして始める。共有ゲートの待ち行列で順番待ちしているだけなら、預けた表示はその後ろに並ぶので順番は崩れない)
+- 経営の通知(`check*`: 経営安定化・資金危機・王座設立・契約枠)は状態をその場で消費し、表示は 200〜300ms のタイマーで共有ゲートを通るので、別れの後ろに並ぶ(その週は預けた怪我などのポップアップより先に出る)。`App._maybeShowBigNewsPopup(delay, defer)` に任意の defer を足し、既読の印はその場・鳴らすタイマーだけ預けた
+- 手動チェック `injury-retire-departure-check.js` にラストランの週を追加し、開いたオーバーレイの順番を 40ms ごとに記録して「最初が別れ」を検査。旧コードでは 怪我(全治1週)→契約枠→王座設立→契約枠→直訴 の後に別れ(ラストランの週は 怪我2件→…→派閥 F07)で NG 4件、新コードで全部 OK
+
+### 7. 怪我による引退と突然の退団をログに1行(英語つき)(7922125f)
+- `GAMELOG_TEMPLATES` に2型(下の全文)。実プレイの `_finalizeShowImpl` が怪我引退の判定の直後(エンジンと同じ位置)と突然の退団の処理の直後に `{type, data, s, w}` を積む。分類は既存の行にそろえた(引退=シーズン・退団=イベント)
+- 退団の行き先は処理後の状態から引く(`App._suddenDepartureDestination`: 他団体のロスターにいれば `Engine.contract._getOrgName`、それ以外はフリー。休眠プールへ回った場合もフリーと書く)
+- ついでに直したもの: 退団のトーストの行き先。以前は判定時の区分(人気40以上=他団体)で書いていたが、人気40未満でも総合力75以上・潜在の高い選手はスター争奪(`claimDepartedStar`)で他団体に移るので「フリーとなった」と食い違っていた。実際に移った先で書く
+- エンジン(executeShow)の文字列ログは auto-sim 専用のまま触っていない
+
+### 8. 信頼15未満の前兆(efc8f5b8)
+- `GLIMPSE_A_THRESHOLDS` に `trust_below_15`(danger・率1.00・クールダウン12週・再武装25超)。信頼15を割った週にログ1行+道場「休憩中の選手」の確定枠で本人の一言(20の噂と同じ出し方)
+- 20と同じ週に両方をまたいだら15の1回にまとめる(`supersedes`。20の発火の記録=クールダウン・再武装の印は残すので、あとで20の噂が遅れて出ない)
+- 乱数: `roll:false` で率の抽選をしない(共有の rng は同じ週のほかの選手の抽選にも使うため)。一言も季・週・選手・閾値の専用の種で選ぶ(`Engine.glimpse._pickLineWithOwnSeed`。auto-sim/JAゴールデンは Math.random に種を入れて回すので、引く回数を増やさない)。回帰テストで「共有の rng 2回・Math.random 2回(20 をまたいだ2人ぶん)」を固定
+- 噂のログを文字列から `{ type: 'trust_departure_rumor', data: { name, variant: 'below20'|'below15' } }` に(below20 は以前と同じ文。これで20の噂にも英訳が付いた)
+
+### 追加した文面の全文
+ログ(GAMELOG_TEMPLATES。JA → EN)
+- injury_retirement.wear: 🏁 {name}({age}歳)が度重なる怪我により引退 → 🏁 {name} ({age}) retired after repeated injuries
+- injury_retirement.careerEnding: 🏁 {name}({age}歳)が試合中の重傷により引退 → 🏁 {name} ({age}) retired after a serious injury in a match
+- sudden_departure.org: 🚪 {name}が突然退団し、{orgName}へ移籍した → 🚪 {name} abruptly left the promotion and joined {orgName}
+- sudden_departure.free: 🚪 {name}が突然退団し、フリーとなった → 🚪 {name} abruptly left the promotion and became a free agent
+- trust_departure_rumor.below20(文は以前と同じ・英訳を新規): 💬 {name}が退団を考えているという噂がある → 💬 There are rumors that {name} is thinking about leaving
+- trust_departure_rumor.below15: 💬 {name}が退団を決めかけているという噂がある → 💬 There are rumors that {name} has all but decided to leave
+
+ラベル(GLIMPSE_A_THRESHOLDS): 退団を決めかけているという噂 → Rumors she has all but decided to leave
+
+道場の本人の一言(GLIMPSE_A_LINES.trust_below_15。アーキタイプ×性格=実在の34セル)
+| セル | JA | EN |
+|---|---|---|
+| 標準×ノーマル | もう、ほとんど決めてる。次に何かあったら、出ていくと思う | I've more or less decided. If anything else happens, I think I'm leaving. |
+| 標準×強気 | 次はないから。今度同じことをされたら、黙って出ていく | There won't be a next time. Do that to me again and I'll walk out without a word. |
+| 標準×寡黙 | ……もう、決めかけてる | ...I've nearly made up my mind. |
+| 標準×内気 | …わたし…出ていくって…ほとんど、決めちゃってて…… | ...I... I've pretty much decided... that I'm leaving... |
+| 標準×お気楽 | いやー、そろそろ潮時かも。……笑って言ってるけど、本気だよ | Yeah, I think it's about time I moved on. ...I'm laughing, but I mean it. |
+| 標準×真面目 | よく考えた。……ここを離れる方向で、気持ちは固まりかけてる | I've thought it through. ...I'm close to deciding to leave here. |
+| 標準×感情的 | もう無理…！ 次に何かあったら、ほんとに出ていくから…！ | I can't take it anymore...! If anything else happens, I'm really leaving...! |
+| お嬢様×ノーマル | ……身の振り方を、そろそろ決めなければならないわね | ...It is nearly time I decided where I go from here. |
+| お嬢様×強気 | わたくしの我慢にも限りがございます。次はございませんわ | Even my patience has its limits. There will not be a next time. |
+| お嬢様×お気楽 | うふふ……笑って済ませるのも、そろそろおしまいですわね | I suppose I cannot keep laughing this off for much longer. |
+| お嬢様×真面目 | 熟慮いたしました。……ここを去る心づもりは、ほぼ固まっております | I have given it careful thought. ...I am all but resolved to leave. |
+| クール×ノーマル | 出ていく理由の方が、もう多い | There are more reasons to leave now than to stay. |
+| クール×寡黙 | ……答えは、ほぼ出た | ...I have my answer. Nearly. |
+| ヤンキー×ノーマル | 次なんかあったら、マジで出てくからな。脅しじゃねえぞ | Anything else happens, I'm out for real. I ain't bluffin'. |
+| ヤンキー×強気 | あと一回だ。あと一回ナメた真似したら、出てく | One more time. Disrespect me one more time and I'm gone. |
+| ヤンキー×お気楽 | いやー、さすがに笑えねえわ。次はもう、ねえかもな | Man, this ain't funny anymore. Might not be a next time. |
+| 丁寧×ノーマル | 申し訳ありません。……次に何かあれば、ここを離れるつもりです | I'm sorry. ...If anything else happens, I intend to leave. |
+| 丁寧×強気 | はっきり申し上げます。このままなら、私は出ていきます | I'll say it plainly. If things stay like this, I'm leaving. |
+| 丁寧×寡黙 | ……気持ちは、もうほとんど決まっています | ...My mind is almost made up. |
+| 丁寧×内気 | …あの…わたし…ここを離れることを、本気で考えていて…… | ...Um... I... I've been seriously thinking about leaving here... |
+| 丁寧×お気楽 | えへへ…さすがにもう、笑っていられないです。次は、たぶんないです | I really can't laugh this one off anymore. I don't think there'll be a next time. |
+| 丁寧×真面目 | 検討は、もう終わりに近づいています。……申し訳ありません | I've nearly finished weighing it. ...I'm sorry. |
+| 蠱惑×ノーマル | 次で最後にするわ。……引き留めたいなら、今のうちよ | The next one will be the last. ...If you want to keep me, now's the time. |
+| 蠱惑×強気 | 私を手放すつもり？ ……いいわ、それならこっちから出ていくだけ | Planning to let me go? ...Fine. Then I'll be the one to walk out. |
+| 蠱惑×寡黙 | ……ここを出たあとのこと、考えてるの | ...I've been thinking about what comes after I leave. |
+| 蠱惑×お気楽 | ふふ、そろそろお別れかしらね。……冗談だと思った？ | It may be almost time to say goodbye. ...Did you think I was joking? |
+| 蠱惑×感情的 | ……ええ、もう決めたも同然よ。止められるものなら、止めてみなさい | ...Yes, it's as good as decided. Stop me, if you think you can. |
+| 蠱惑×真面目 | 軽い気持ちで言ってないわ。……ここを出ることを、真剣に考えてるの | I'm not saying this lightly. ...I'm seriously thinking about leaving. |
+| 鷹揚×ノーマル | ……ここを離れようかって、本気で思い始めてる | ...I've started to seriously think about leaving here. |
+| 鷹揚×強気 | 次で決めるよ。残るか、出ていくか | I'll decide next time. Stay, or go. |
+| 鷹揚×寡黙 | ……どうするかは、もうほぼ決めてある | ...I've all but decided what to do. |
+| 鷹揚×お気楽 | のんびり構えてたけど……そろそろ荷物をまとめる頃合いかな | I've been taking it easy, but... it's about time I packed my things, I think. |
+| 鷹揚×感情的 | ……っ、もう、ここにいるのがつらいんだ。次は、たぶん出ていく | ...Nn. It hurts just being here now. Next time, I'll probably leave. |
+| 鷹揚×真面目 | 正直に言うと、ここを離れる方向で考えてる | To be honest, I'm leaning toward leaving. |
+
+### i18n
+- テンプレ台帳 +6行・セリフ台帳 +34行(抽出器の出力そのまま)・UI台帳 +1行(抽出器を回すと他の作業の古い差分=件数の更新や並べ替え 700行超が混ざるので、自分の1行だけ差し込んだ)。3本とも英訳を入れて `lang-en*.js` を再生成(未訳0・セル別検査を通過)
+- ラチェット: data.js +4(ログ4型)→ +37(噂2型・ラベル1・一言34)、management.js −1(噂の文字列ログを外した)で基準を更新
+
+### 検証
+- 新テスト `test/fun-audit-round4-test.js`(11項目)。作業前の src(d463c55e)では11項目すべて FAIL、作業後はすべて PASS
+- 既存テストの追従: k1-stage4b2(M-22 を後に回す仕掛け → 流さないことの検査・別れの一覧)/post-show-milestone-timing(切り出しの目印・whenFarewellDone)/industry-news-to-newspaper・new-year-issue(大ニュースの関数の引数)/glimpse-a-dojo-i18n(12閾値。trust↓の半分を 10 にして 15 も発火させる)
+- `npm test` **299/299 PASS**(作業前 298/298 + 新テスト1本)
+- `node test/auto-sim.js 40 42`: ALL CLEAR・違反0・台帳検査違反0。指紋 bdb5ffd4 → **68f7e5bd**。指紋の元の JSON を作業前(WM_SOURCE_REF=d463c55e)と構造で比べた差は37か所で、すべて `G._modalQueue`(684件 → 4件)と `G._glimpseACooldowns` / `G._glimpseAFired` の `trust_trust_below_15_*` のキー3つ(40季で2人が15を割った)。能力・人気・資金・関係値などの数値の差は0
+- `npm run test:k1:parity`: PASS(33件・未登録0・消えた0)
+- `npm run test:ui:walkthrough`: PASS(344手・Issues 0・2季1週まで)
+- 手動チェック `node test/ui-walkthrough/injury-retire-departure-check.js`: ALL CHECKS PASS(怪我引退の週・ラストランの週・突然の退団の週。別れが最初・M-22 は出ない・ログの1行・トーストとログの行き先の一致)
+- `node test/ui-baseline-guard-test.js` ok。ui-check 7項目: 画像・顔・吹き出し・隊列・勝敗は新しい描画なし(○)/待ちの保険 ○(`_showFarewellsFirst`)/1操作=1進行 ○(状態の書き換えはその場のまま)
+- `node test/ja-golden.js` は作業前から基準と不一致(基準は P7-54 の頃のまま。以後の数値の変更で S1W2 から違う)。作業前後の出力のハッシュは同じ(e3615124…)なので、この作業による差は無い
+- main(第4回裁定3・4 の派閥)取り込み後: `npm test` **300/300 PASS** / auto-sim 40季 seed42 ALL CLEAR(68f7e5bd。派閥は auto-sim の世界ではできないので指紋は同じ)/ `npm run test:k1:parity` PASS(33件・未登録0)/ 手動チェック ALL CHECKS PASS(45項目)。衝突は worklog・実機確認バックログ・roadmap(両方残す)と生成物(lang-en.js / lang-en-dialogue.js は合流した台帳から再生成、ラチェットの基準は再採取)
+
+### 触ったファイル
+- src/relationships.js(`flags.pruneModalQueue`・`glimpse._pickLineWithOwnSeed`・checkALayer の roll/supersedes)/ src/management.js(tickWeek: prune の呼び出し・噂のログ)/ src/app.js(closeShowResult・`_showFarewellsFirst`・`_maybeShowBigNewsPopup`・`_finalizeShowImpl` のログ・退団のトースト・`_suddenDepartureDestination`・deserialize)/ src/ui-common.js(`_drainFlagModalQueue` 削除・`_findFighterById`)/ src/data.js(GAMELOG_TEMPLATES・GAMELOG_TYPE_CATEGORY・GLIMPSE_A_THRESHOLDS・GLIMPSE_A_LINES.trust_below_15)/ src/lang-en.js・lang-en-dialogue.js・lang-en-templates.js(再生成)
+- i18n/ui-ledger.json・dialogue-ledger.json・template-ledger.json / test/fixtures/i18n-ratchet-baseline.json
+- test/fun-audit-round4-test.js(新規)/ test/k1-stage4b2-test.js / test/post-show-milestone-timing-test.js / test/industry-news-to-newspaper-test.js / test/new-year-issue-test.js / test/glimpse-a-dojo-i18n-test.js / test/ui-walkthrough/injury-retire-departure-check.js
+- specs: relationship-flags-spec-v1.0(§4 冒頭の注記・§4.3 の判定の場所・§4.4 新設・変更履歴)/ trust-system-spec-v2.1 §13.3(トーストの行き先・ログ・臨界帯の前兆)/ glimpse-cascade-spec-v1.0(置き換え先の表)/ career-history-spec-v1.0(怪我引退のログ)
+- docs/ui/03-screens/show-result-spec.md §7 / docs/fun-audit-v0.1/k1-parity-report.md(X12 と §8 の「分かったこと」に対応済みの注記)/ docs/実機確認バックログ.md / docs/game-system-roadmap.md
+- 並行作業の領分(K-4 の休眠プール・人生番号・転生の関所・関係値の退避、派閥のメイン補正・F06 の40週)には触れていない
+
+### 残課題
+- 関係性の出来事(列に残した直近12週ぶん)を新聞・相関図など「世界の側」で見せる設計は後日(裁定5の後半)
+- 別れの後に続く通知の順番: 経営の通知(契約枠・王座設立など)が、その週の怪我のポップアップより先に出る(共有ゲートで先に並ぶため)。裁定6は「別れを先に」なので残したが、気になれば直せる
+
 ## 2026-09-26 K-4 S1〜S3 — 休眠プールの入口・人生番号の土台・転生の関所(Claude/Opus 5.5・worktree)
 
 裁定 K-4「引退した選手の再デビューは同姓同名の別人(襲名しない)」の設計書 `docs/fun-audit-v0.1/k4-separate-lives-design.md` §8 のうち S1〜S3。確認8つは全て「はい」(2026-09-26)。画面には何も足していない(人生番号は内部の識別子。「二代目」等の呼び方もしない)。

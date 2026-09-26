@@ -3677,6 +3677,13 @@ const Storage = {
         G = { ...G, _migrated_strainDebt_v1: true };
       }
 
+      // 2026-09-26 第4回裁定5: 関係性ポップアップの待ち行列(_modalQueue)は直近12週だけ残す。
+      // 消費する画面が無く、旧セーブでは季をまたいで増え続けていた(tickWeek 末尾と同じ規則で縮める)
+      if (Engine.relationships && Engine.relationships.flags
+          && typeof Engine.relationships.flags.pruneModalQueue === 'function') {
+        G = Engine.relationships.flags.pruneModalQueue(G);
+      }
+
       {
         const repair = Engine.saveDoctor.repairOnLoad(G);
         if (repair.changed) {
@@ -8315,6 +8322,14 @@ const App = {
         roster = res.roster;
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = fighter.id;
         injuryResults.push(res.entry);
+        // 2026-09-26 総点検 第4回裁定7: 怪我による引退をログに1行(エンジンの executeShow と同じ位置)。
+        // 文は GAMELOG_TEMPLATES.injury_retirement(表示時に言語を引く)
+        if (res.retired) {
+          events.push({ type: 'injury_retirement', data: {
+            name: res.retired.name, age: res.retired.age,
+            variant: res.retired.retireType === 'careerEnding' ? 'careerEnding' : 'wear',
+          }, s: s.season, w: s.week });
+        }
       });
     });
     // 仲の良い選手の気落ち(O-04 と M-22)・信頼への波及・王座の返上(この興行の王座戦の結果も見る) — エンジンと同じ
@@ -9171,9 +9186,19 @@ const App = {
     // 1回呼ぶ。以前は呼び出しが無く、表示コードだけが残っていた。前兆は「💭よそよそしい」(信頼40未満)と、信頼20を
     // 割った週の「退団を考えているという噂」(ログ1行+道場の確定枠の吹き出し)。去った選手はトースト(closeShowResult)で見せる
     {
+      const pendingBefore = s._pendingSuddenDepartures;
       const sd = Engine.show.applySuddenDepartures(s);
       s = sd.state;
       if (sd.titleMsg) events.push(sd.titleMsg);
+      // 2026-09-26 総点検 第4回裁定7: 突然の退団をログに1行(行き先つき)。去った選手はこの呼び出しで
+      // 新しく積まれた _pendingSuddenDepartures。行き先は処理後の状態から引く(App._suddenDepartureDestination)
+      const departedNow = (s._pendingSuddenDepartures && s._pendingSuddenDepartures !== pendingBefore) ? s._pendingSuddenDepartures : [];
+      departedNow.forEach(d => {
+        const dest = App._suddenDepartureDestination(s, d.id);
+        events.push({ type: 'sudden_departure', data: dest
+          ? { name: d.name, variant: 'org', orgName: dest.orgName }
+          : { name: d.name, variant: 'free' }, s: s.season, w: s.week });
+      });
     }
     // K-1 4-B-6(K1-E03): 怪我による引退の演出データ(_pendingInjuryRetirements)。エンジンと同じ関数で組み、
     // closeShowResult が本人の引退ポップアップ(showRetirementPopups)で見せる。引退セリフは興行前の状態(G は
@@ -10760,11 +10785,9 @@ const App = {
     // advanceFromWeekSummary → dismissAllPopups まで進むため、ここで同期表示すると
     // ユーザーが目にする前にオーバーレイもキューも消される(=因縁コメントが出ない)。
     // タイマーに載せて同期本体(週送り+全消去)の後に開く。以降は _enqueuePopup ゲートが直列化する。
+    // 表示の開始は引退の取り出しの後(whenFarewellDone。引退の週は本人の別れを先に出す)
     const matchDialogues = [..._pendingMatchDialogues];
     _pendingMatchDialogues = [];
-    if (matchDialogues.length > 0) {
-      setTimeout(() => showPostMatchDialogues(matchDialogues), 0);
-    }
 
     // v1.3-3: Extract pending injury retirements before state changes
     let pendingInjuryRetirements = G._pendingInjuryRetirements || [];
@@ -10915,6 +10938,23 @@ const App = {
       G = archiveRetiredRivalryState(G, r.fighter || null);
     });
 
+    // 引退の週は、本人の別れのポップアップを先に出す(2026-09-26 総点検 第4回裁定6)。
+    // 以前は別れがイベントの待ち行列(怪我・通知)の空きを待ってから始まり、その間に開く派閥イベント・直訴・
+    // 王座設立などの通知の後になっていた。引退(ラストラン・怪我)がある週は、この興行の閉じで始める表示を
+    // すべて whenFarewellDone に預け、別れのポップアップ(App._showFarewellsFirst)が閉じ切ってから、
+    // いつもの順番で始める。引退の無い週は預けずにその場で始める(従来どおり)。
+    // 状態の書き換え(G)はここでその場で済ませ、預けるのは表示の開始だけ(1操作=1進行は変えない)
+    const farewells = [...pendingLastRunRetirements, ...pendingInjuryRetirements];
+    const holdForFarewell = farewells.length > 0;
+    const afterFarewell = [];
+    const whenFarewellDone = (start) => {
+      if (holdForFarewell) afterFarewell.push(start);
+      else start();
+    };
+    if (matchDialogues.length > 0) {
+      whenFarewellDone(() => setTimeout(() => showPostMatchDialogues(matchDialogues), 0));
+    }
+
     // R3: ファン期待カード試合後リアクション
     const fanExpectResults = (G.lastShowResults || []).filter(r => r.fanExpectMatch);
     let hasEventPopups = false;
@@ -10928,7 +10968,7 @@ const App = {
       const winnerFighter = (G.roster || []).find(c => c.id === winnerId) || ALL_CHARS.find(c => c.id === winnerId);
       const winnerLine = pickDialogueLine(winnerPool, winnerFighter);
       hasEventPopups = true;
-      setTimeout(() => showEventPopup({
+      whenFarewellDone(() => setTimeout(() => showEventPopup({
         type: 'fighter', id: winnerId, name: winnerName,
         tone: isGood ? 'gold' : 'neutral',
         speech: winnerLine,
@@ -10936,7 +10976,7 @@ const App = {
         // ここで先に1回訳してから差し込む(speech 側は _u3bSideHtml が訳すので生JAのままでよい)
         detail: WM_I18N.t('📣 {text}', { text: WM_I18N.t(crowdText) }),
         autoCloseMs: 2500,
-      }), i * 100);
+      }), i * 100));
     });
 
     // v0.96: Show injury popups (only non-retirement injuries)
@@ -10947,14 +10987,14 @@ const App = {
       const ch = G.roster.find(c => (ir.id != null && c.id === ir.id) || c.name === ir.name);
       if (!ch || !ir.injury) return;
       hasEventPopups = true;
-      setTimeout(() => {
+      whenFarewellDone(() => setTimeout(() => {
         showEventPopup({
           type: 'fighter', id: ch.id, name: ch.name, tone: 'negative',
           // P6-5配線修正: getTraitQuoteは内部でt()済み(_renderEventPopupAsC3側の二重t()回避)
           speech: getTraitQuote('injury', ch), speechTranslated: true,
           detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(ir.injury.type, WM_I18N.t), weeks: ir.injury.weeksLeft }),
         });
-      }, i * 100);
+      }, i * 100));
     });
     App._lastInjuries = [];
     // v1.2: 乱入マッチ結果ポップアップ
@@ -10966,13 +11006,13 @@ const App = {
       const popupDelay = injuries.length * 100 + 50;
       hasEventPopups = true;
       if (wasIntruderCrowned) {
-        setTimeout(() => showEventPopup({ type:'fighter', id:intruderId, name:id.intruder.name, tone:'negative',
+        whenFarewellDone(() => setTimeout(() => showEventPopup({ type:'fighter', id:intruderId, name:id.intruder.name, tone:'negative',
           message: WM_I18N.t('{org}の{name}に王座を奪われた…', { org: id.fromOrgName, name: id.intruder.name }),
-          detail: WM_I18N.t('王座は空位に。次のタイトルマッチで新王者を決定してください。') }), popupDelay);
+          detail: WM_I18N.t('王座は空位に。次のタイトルマッチで新王者を決定してください。') }), popupDelay));
       } else {
-        setTimeout(() => showEventPopup({ type:'fighter', id:G.titles.world.championId, name:id.champName, tone:'gold',
+        whenFarewellDone(() => setTimeout(() => showEventPopup({ type:'fighter', id:G.titles.world.championId, name:id.champName, tone:'gold',
           message: WM_I18N.t('乱入者を退けた！'),
-          detail: WM_I18N.t('👑 {champ}が{org}の{name}を撃破！ 団体人気+2', { champ: id.champName, org: id.fromOrgName, name: id.intruder.name }) }), popupDelay);
+          detail: WM_I18N.t('👑 {champ}が{org}の{name}を撃破！ 団体人気+2', { champ: id.champName, org: id.fromOrgName, name: id.intruder.name }) }), popupDelay));
       }
       App._intrusionData = null;
     }
@@ -11011,7 +11051,7 @@ const App = {
       G = cleanSdShow;
     }
     if (pendingSuddenDeparturesShow && pendingSuddenDeparturesShow.length > 0) {
-      App._showSuddenDepartureToasts(pendingSuddenDeparturesShow, injuries.length * 100 + 150);
+      whenFarewellDone(() => App._showSuddenDepartureToasts(pendingSuddenDeparturesShow, injuries.length * 100 + 150));
     }
 
     // v1.4w: 防衛マイルストーン検出
@@ -11033,14 +11073,18 @@ const App = {
       showFlavorEvents.forEach((ev, i) => {
         hasEventPopups = true;
         const detail = App._flavorEventDetail(ev);
-        setTimeout(() => showEventPopup({
+        whenFarewellDone(() => setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone: 'positive', message: ev.headline, detail
-        }), i * 100 + 50);
+        }), i * 100 + 50));
       });
       const { _flavorEvents, ...cleanG } = G;
       G = cleanG;
     }
+    // 下の check*(経営安定化・資金危機・王座設立・契約枠)は状態をその場で消費し、表示は 200〜300ms の
+    // タイマーで共有ゲート(_enqueuePopup)を通る。引退の週は別れのポップアップが先に開いている(下の
+    // App._showFarewellsFirst が 0ms で開く)ので、ゲートの待ち行列で別れの後ろに並ぶ
+    // (その週は、預けた怪我・通知のポップアップより先に出る)
     App.checkSurvivalUpdate();
     App.checkCrisisEnteredPopup();
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
@@ -11071,19 +11115,8 @@ const App = {
         else if (done) done();
       });
     });
-    if (pendingLastRunRetirements.length > 0) {
-      popupActions.push(done => showRetirementPopups(pendingLastRunRetirements, done));
-    }
-    // 怪我による引退(K-1 4-B-6)の週は、関係性フラグのポップアップ(M-22「引退の置き土産」=仲の良い選手の反応を含む)を
-    // 本人の引退ポップアップの後に出す。下の setTimeout(0) で先に流すと、本人の引退より先に周りの反応が出てしまう
-    const deferFlagModalsAfterInjuryRetire = pendingInjuryRetirements.length > 0;
-    if (pendingInjuryRetirements.length > 0) {
-      popupActions.push(done => showRetirementPopups(pendingInjuryRetirements, () => {
-        try { if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue(); }
-        catch (e) { console.error('[WM] flag modal drain after injury retirement failed:', e); }
-        if (done) done();
-      }));
-    }
+    // 本人の別れ(ラストラン・怪我による引退)はこの連鎖に入れず、週の表示の先頭で出す(App._showFarewellsFirst。
+    // 2026-09-26 第4回裁定6)。以前はここ(節目・王座の式典の後)で出していた
     if (pendingGrowthEventsShow.length > 0) {
       popupActions.push(done => showGrowthEventPopups(pendingGrowthEventsShow, done));
     }
@@ -11170,21 +11203,19 @@ const App = {
       // イベントキューへ積まれていても 200ms 後に盲目的に発火し、モーダルが重なっていた。
       // _chainEventPopupQueueEmpty はキューが空でも 200ms 後の再検証を挟むので、
       // 空のときの実効タイミングは旧実装と同じ(進行は止まらない)。
-      _chainEventPopupQueueEmpty(runPopupActions);
+      whenFarewellDone(() => _chainEventPopupQueueEmpty(runPopupActions));
     }
 
-    // relationship-flags-spec-v1.0 §4: 試合発火系の関係性フラグモーダル
     // Common-3 派閥加入通知（興行後に発生したものも消化）
     // §6 アーキタイプ遷移ナレーション（F02 完全敗北など興行後に発生する）
-    // **3系統とも同期で開かない(2026-08-13)。** この後の advanceFromWeekSummary →
-    // dismissAllPopups が同 tick で走り、同期表示した分(特にフラグモーダルの C3 キュー)は
-    // 表示前に消えていた。タイマーに載せて全消去の後で開き、共有ゲートで直列化させる。
-    setTimeout(() => {
-      // 怪我による引退の週は、本人の引退ポップアップの後(上の popupActions)で流す
-      if (!deferFlagModalsAfterInjuryRetire && typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
+    // **同期で開かない(2026-08-13)。** この後の advanceFromWeekSummary →
+    // dismissAllPopups が同 tick で走り、同期表示した分は表示前に消えていた。
+    // タイマーに載せて全消去の後で開き、共有ゲートで直列化させる。
+    // 関係性フラグのポップアップ(M-1〜M-24)は出さない(2026-09-26 第4回裁定5)
+    whenFarewellDone(() => setTimeout(() => {
       App._drainFactionJoinNotices();
       App._drainArchetypeTransitions();
-    }, 0);
+    }, 0));
 
     // スナップショット R3モーダルは popupActions チェーン内（本人引退ポップアップの後）に
     // 組み込み済みのため、ここでは別経路の setTimeout 発火はしない。
@@ -11206,16 +11237,17 @@ const App = {
         G = { ...G, weekLogFeed: [...(G.weekLogFeed || []), ...tier2] };
       }
       if (tier1.length > 0) {
-        setTimeout(() => {
+        whenFarewellDone(() => setTimeout(() => {
           if (App._glimpseCascadeShownThisShow) return;
           App._glimpseCascadeShownThisShow = true;
           showGlimpseCascade(tier1);
-        }, 900);
+        }, 900));
       }
     }
 
-    // MQ再設計P4 §5.3: 大ニュース週頭通知（他のポップアップの後に鳴らす）
-    App._maybeShowBigNewsPopup(1200);
+    // MQ再設計P4 §5.3: 大ニュース週頭通知（他のポップアップの後に鳴らす）。
+    // 既読の印はその場で付け、鳴らすタイマーだけ引退の週は別れの後に預ける
+    App._maybeShowBigNewsPopup(1200, whenFarewellDone);
 
     // P7-50: 派閥イベント(F01〜F08)と挑戦試合直訴(challengeRequest)は、大型/選択イベント
     // (management.js processManage の isShowWeek ガードで非興行週限定)と異なり興行週にも
@@ -11239,7 +11271,8 @@ const App = {
       // season/weekはこの時点の値からすぐ進んでしまうため比較対象にしない
       // (advanceWeek後の値を先読みできない)。weekPhaseだけを再確認すれば、
       // 天頂戦/秋対抗戦/PPV等の専用シーケンスに入っていないかは十分に判定できる。
-      setTimeout(() => {
+      // 引退の週は別れの後から数える(whenFarewellDone)
+      whenFarewellDone(() => setTimeout(() => {
         if (!G || G.weekPhase !== 'manage') return;
         if (G._pendingFactionEvent) {
           const pending = G._pendingFactionEvent;
@@ -11249,8 +11282,12 @@ const App = {
         } else if (G.challengeRequest && G.challengeRequest.pendingThisWeek) {
           App.handleChallengeRequest(G.challengeRequest.pendingThisWeek);
         }
-      }, 1400);
+      }, 1400));
     }
+
+    // 引退の週: 本人の別れのポップアップを、この週のほかの表示より先に開く(2026-09-26 第4回裁定6)。
+    // 週送り(下の advanceFromWeekSummary → dismissAllPopups)の後に開くよう、タイマー(0ms)に載せる
+    if (holdForFarewell) App._showFarewellsFirst(farewells, afterFarewell);
 
     // 週次処理と次週遷移は1クリック内で完結させる(processWeek と同じ形)。
     //
@@ -11321,7 +11358,9 @@ const App = {
   // weeklyNewspaper.isBigNews な週かつ同週内で未通知の場合のみ1回だけ発火する。
   // _isPopupActive/_popupQueue パターンに乗る showBigNewsPopup 側が他ポップアップとの
   // 順序調整を担うため、ここでは「その週にもう鳴らしたか」だけを見る。
-  _maybeShowBigNewsPopup(delay) {
+  // defer(任意): 鳴らすタイマーの開始を預ける関数(closeShowResult の whenFarewellDone。引退の週は別れの後)。
+  // 既読の印(_bigNewsNotifiedWeek)はその場で付ける
+  _maybeShowBigNewsPopup(delay, defer) {
     const wp = G && G.weeklyNewspaper;
     if (!wp || !wp.topStory) return;
     // シーズン開幕号（2026-07-27）。オフシーズン中は新聞が出ないので、引退・殿堂入り・
@@ -11333,7 +11372,8 @@ const App = {
     const weekKey = `${G.season}:${G.week}`;
     if (G._bigNewsNotifiedWeek === weekKey) return;
     G = { ...G, _bigNewsNotifiedWeek: weekKey, _bigNewsUnread: true };
-    setTimeout(() => {
+    const start = typeof defer === 'function' ? defer : (fn => fn());
+    start(() => setTimeout(() => {
       Audio.play('bignews');
       if (typeof showBigNewsPopup !== 'function') return;
       // 大ニュースの週は従来どおりその記事のリードを出す。大ニュースでない開幕号は
@@ -11342,7 +11382,7 @@ const App = {
       // 号に載っている大ニュース記事を generate が bigNewsStory で指しているのでそれを使う。
       // 旧号は持たないので topStory へ落ちる
       showBigNewsPopup(wp.bigNewsStory || wp.topStory, (!wp.isBigNews && isSeasonOpening) ? 'seasonOpening' : null);
-    }, delay != null ? delay : 200);
+    }, delay != null ? delay : 200));
   },
 
   // Common-3: 派閥加入通知キューを順次表示
@@ -11775,17 +11815,88 @@ const App = {
   // §13.4 突然の退団のトースト(K-1 4-B-7)。興行週(closeShowResult)と非興行週(processWeek)で同じものを出す。
   // 週送りの全消去(advanceFromWeekSummary → dismissAllPopups)の後に開くようタイマーに載せる。
   // showNotifEventToast は他のポップアップが開いていれば共有の待ち行列に並ぶ(待ちの保険は共有ゲート側)
+  // 行き先は実際に移った先で書く(2026-09-26)。以前は退団の判定時の区分(人気40以上=他団体)で書いていたが、
+  // 人気40未満でも総合力の高い選手はスター争奪で他団体に移ることがあり、「フリーとなった」と食い違っていた
   _showSuddenDepartureToasts(departures, baseDelay) {
     (departures || []).forEach((d, i) => {
       if (!d) return;
-      setTimeout(() => showNotifEventToast({
-        type: 'N_sudden_departure',
-        fighter: d.id,
-        name: d.name,
-        text: WM_I18N.t('🚪 {name}が荷物をまとめて団体を去った。誰も止められなかった。', { name: d.name }),
-        detail: d.destination === 'rival' ? WM_I18N.t('{name}は他団体へ移籍した。', { name: d.name }) : WM_I18N.t('{name}はフリーとなった。', { name: d.name }),
-      }), (baseDelay || 0) + i * 200);
+      setTimeout(() => {
+        // 他団体のロスターにいれば移籍、フリー/休眠プールにいればフリー。どちらにも見当たらなければ判定時の区分
+        const toRival = App._suddenDepartureDestination(G, d.id)
+          ? true
+          : (App._isFreeAgentOrDormant(G, d.id) ? false : d.destination === 'rival');
+        showNotifEventToast({
+          type: 'N_sudden_departure',
+          fighter: d.id,
+          name: d.name,
+          text: WM_I18N.t('🚪 {name}が荷物をまとめて団体を去った。誰も止められなかった。', { name: d.name }),
+          detail: toRival ? WM_I18N.t('{name}は他団体へ移籍した。', { name: d.name }) : WM_I18N.t('{name}はフリーとなった。', { name: d.name }),
+        });
+      }, (baseDelay || 0) + i * 200);
     });
+  },
+
+  // 突然の退団で去った選手の行き先(他団体なら { orgId, orgName }、それ以外は null)。state の他団体ロスターを引く
+  _suddenDepartureDestination(state, fighterId) {
+    const orgs = (state && state.aiOrgs) || {};
+    for (const [orgId, org] of Object.entries(orgs)) {
+      if (org && (org.roster || []).some(f => f && f.id === fighterId)) {
+        return { orgId, orgName: Engine.contract._getOrgName(orgId, state) };
+      }
+    }
+    return null;
+  },
+
+  _isFreeAgentOrDormant(state, fighterId) {
+    const inList = (list) => (list || []).some(f => f && f.id === fighterId);
+    return !!state && (inList(state.freeAgents) || inList(state.dormantPool));
+  },
+
+  // 引退の週(ラストラン・怪我による引退)は、本人の別れのポップアップをその週のほかの表示より先に出し、
+  // 閉じ切ってから afterFarewell(closeShowResult が預けた表示の開始)を順に呼ぶ(2026-09-26 総点検 第4回裁定6)。
+  // 週送り(advanceFromWeekSummary → dismissAllPopups)の後に開くよう、タイマー(0ms)に載せる。
+  // §5-D 鉄則1(待ちには時限の保険と二重起動防止をセットで):
+  //   ・預けた表示を始めるのは1回だけ(released)
+  //   ・別れのポップアップ(mdlBOverlay。王者の一言の吹き出しを含む)が画面に無い状態が
+  //     FAREWELL_LOST_MS 続いたら、別れが押し流された(全消去・専用シーケンス)とみなして始める。
+  //     別れが共有ゲートの待ち行列で順番を待っているだけなら、預けた表示はその後ろに並ぶので順番は崩れない
+  FAREWELL_POLL_MS: 1000,
+  FAREWELL_LOST_MS: 5000,
+  _showFarewellsFirst(farewells, afterFarewell) {
+    let released = false;
+    let watchTimer = null;
+    let closedMs = 0;
+    const release = () => {
+      if (released) return;
+      released = true;
+      clearTimeout(watchTimer);
+      (afterFarewell || []).forEach(start => {
+        try { start(); } catch (e) { console.error('[WM] farewell-first: deferred display failed:', e); }
+      });
+    };
+    const watch = () => {
+      if (released) return;
+      const overlay = document.getElementById('mdlBOverlay');
+      const open = !!(overlay && overlay.classList.contains('active'))
+        || !!document.querySelector('.champion-worry-toast');
+      closedMs = open ? 0 : closedMs + App.FAREWELL_POLL_MS;
+      if (closedMs >= App.FAREWELL_LOST_MS) {
+        console.warn('[WM] farewell-first: farewell popup not on screen; starting the deferred display');
+        release();
+        return;
+      }
+      watchTimer = setTimeout(watch, App.FAREWELL_POLL_MS);
+    };
+    setTimeout(() => {
+      try {
+        showRetirementPopups(farewells, release);
+      } catch (e) {
+        console.error('[WM] farewell-first: showRetirementPopups failed:', e);
+        release();
+        return;
+      }
+      if (!released) watchTimer = setTimeout(watch, App.FAREWELL_POLL_MS);
+    }, 0);
   },
 
   processWeek() {
@@ -11819,14 +11930,12 @@ const App = {
     // v1.5s25b: 週次バフ消費（weekly_funds適用含む）
     App._applyWeeklyBuffEffects();
     App._tickMilestoneBuffsWeekly();
-    // relationship-flags-spec-v1.0 §4: 関係性フラグモーダルを順次 popup に流す
     // Common-3 派閥加入通知 / §6 アーキタイプ遷移ナレーション（F07 rebuke 4 累積など）
     // care-rework v0.1 §3.4 P4: 招聘の過程イベント（中間報告/衝突/延長打診/卒業レポート）
-    // **4系統とも同期で開かない(2026-08-13)。** processWeek も末尾で
-    // advanceFromWeekSummary → dismissAllPopups が同 tick で走るため、同期表示分
-    // (特にフラグモーダルの C3 キュー)は表示前に消えていた。closeShowResult と同じ扱い。
+    // **同期で開かない(2026-08-13)。** processWeek も末尾で
+    // advanceFromWeekSummary → dismissAllPopups が同 tick で走るため、同期表示分は表示前に消えていた。
+    // closeShowResult と同じ扱い。関係性フラグのポップアップ(M-1〜M-24)は出さない(2026-09-26 第4回裁定5)
     setTimeout(() => {
-      if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
       App._drainFactionJoinNotices();
       App._drainArchetypeTransitions();
       App._drainInviteEvents();
