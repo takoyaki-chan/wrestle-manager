@@ -126,33 +126,30 @@ const ENC_PROBE = `(args) => {
   };
 }`;
 
-// (参考・NG にしない) 道場の吹き出し(.dojo-rest-bubble: 幅150px・2行で切る)に収まる本数を数える。
-// 切らない形で描いて行数を測り、3行以上=「…」で切れて最後まで読めない
+// 道場の吹き出し(.dojo-rest-bubble: 2026-09-26 案Aで幅200px・最大4行)で「…」で切れる本数を数える(0本であること)。
+// 打ち切り(line-clamp)は本文 .dojo-bubble-text に掛かっている。その行数を読み、切らない形の複製で行数を測る。
+// 道場に出る全表・全幅・被りの検査は dojo-rest-bubble-fit-check.js
 const FIT_PROBE = `() => {
   showScreen('roster');
   const header = document.querySelector('#rosterDojoHeader .dojo-header') || document.getElementById('rosterDojoHeader');
   const outer = document.createElement('div'); outer.className = 'dojo-rest-fighters'; header.appendChild(outer);
   const wrap = document.createElement('div'); wrap.className = 'dojo-rest-fighter'; outer.appendChild(wrap);
-  const lines = (raw) => {
-    const b = document.createElement('div');
-    b.className = 'dojo-rest-bubble';
-    b.textContent = _quoteLine(WM_I18N.t(raw));
-    b.style.animation = 'none'; b.style.display = 'block'; b.style.webkitLineClamp = 'unset'; b.style.overflow = 'visible';
-    wrap.appendChild(b);
-    const cs = getComputedStyle(b);
-    const n = Math.round((b.getBoundingClientRect().height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) / parseFloat(cs.lineHeight));
-    wrap.removeChild(b);
-    return n;
-  };
+  const b = document.createElement('div'); b.className = 'dojo-rest-bubble'; b.style.animation = 'none';
+  const s = document.createElement('span'); s.className = 'dojo-bubble-text';
+  b.appendChild(s); wrap.appendChild(b);
+  const clamp = Number(getComputedStyle(s).webkitLineClamp) || 0;
+  s.style.display = 'block'; s.style.webkitLineClamp = 'unset'; s.style.overflow = 'visible';
+  const lh = parseFloat(getComputedStyle(s).lineHeight);
+  const lines = (raw) => { s.textContent = _quoteLine(WM_I18N.t(raw)); return Math.round(s.getBoundingClientRect().height / lh); };
   const flat = (tbl) => [].concat(...Object.values(tbl).map(byP => [].concat(...Object.values(byP))));
   const out = {};
   [['噂・出番', LAST_WARNING_RUMOR_LINES.stage], ['噂・人間関係', LAST_WARNING_RUMOR_LINES.bonds],
    ['応えてもらえた', LAST_WARNING_ANSWERED_LINES.stage], ['(既存)信頼15割れ', GLIMPSE_A_LINES.trust_below_15]].forEach(([k, t]) => {
     const all = flat(t);
-    out[k] = all.filter(s => lines(s) > 2).length + '/' + all.length;
+    out[k] = { cut: all.filter(x => lines(x) > clamp).length, n: all.length };
   });
   outer.remove();
-  return out;
+  return { clamp, out };
 }`;
 
 (async () => {
@@ -204,11 +201,13 @@ const FIT_PROBE = `() => {
         await page.screenshot({ path: path.join(OUT, `encourage-${cause || 'none'}-${heroIndex}-${lang}.png`) }).catch(() => {});
         await context.close();
       }
-      // (参考) 道場の吹き出しで「…」で切れる本数
-      {
-        const { context, page } = await setupPage(browser, server, fixtureText, lang);
+      // 道場の吹き出しで「…」で切れる本数(1280px と 375px)
+      for (const viewport of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
+        const { context, page } = await setupPage(browser, server, fixtureText, lang, viewport);
         const fit = await page.evaluate(({ src }) => (0, eval)(src)(), { src: FIT_PROBE });
-        console.log(`\n  (参考) [${lang}] 道場の吹き出し(幅150px・2行)で切れる本数: ${JSON.stringify(fit)}`);
+        const cut = Object.values(fit.out).reduce((a, v) => a + v.cut, 0);
+        check(`[${lang} ${viewport.width}px] 道場の吹き出し(最大${fit.clamp}行)で切れる本数が0: `
+          + Object.entries(fit.out).map(([k, v]) => `${k} ${v.cut}/${v.n}`).join(' / '), fit.clamp === 4 && cut === 0, fit);
         await context.close();
       }
     }

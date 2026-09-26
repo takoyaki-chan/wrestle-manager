@@ -504,6 +504,7 @@ trust 40 → 割引0%、trust 100 → 割引8%（線形補間）。契約交渉�
 - 15割れの一言(`trust_below_15`)は原因を問わずそのまま
 - 回帰は `test/care-last-warning-test.js`(34セル×6表・全127人・checkALayer/声かけの実経路・tickWeek・EN 204本)、実UIの確認は `node test/ui-walkthrough/care-last-warning-lines-check.js`(道場の確定枠と声かけの結果モーダルを JA/EN で。手動実行)
 - **既知の制約(2026-09-26 流し込み時に計測)**: 道場の「休憩中の選手」の吹き出し(`.dojo-rest-bubble` 幅150px・2行で切る)と結果モーダルの本人の吹き出し(2行で切る)は、長い一言を「…」で切る。道場に出る102本のうち JA 89本・EN 92本が3行以上(既存の15割れの一言も 24/34 本が同じ)。吹き出しの大きさは UI の物差し(mockup-baseline §吹き出し・02-layouts「長文は2行程度で切る」)の側の判断として残している
+  - **道場の側は解消(2026-09-26 Keisuke 裁定・案A)**: 休憩中の吹き出しを幅200px・最大4行にした(mockup-baseline §3 の例外)。道場に出る一言は引き留めの102本・15割れの34本を含めて全行が JA/EN とも切れない(`test/ui-walkthrough/dojo-rest-bubble-fit-check.js`)。**結果モーダルの本人の吹き出し(2行)は据え置き**
 
 ### §17-6 計測(auto-sim --remedy)
 
