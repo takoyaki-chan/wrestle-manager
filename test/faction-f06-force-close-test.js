@@ -123,11 +123,14 @@ function twoEntryState() {
 section('裁定4: 40週の記録があっても同じ週のほかの記録の自然沈静化を判定する(以前は毎週そこで止まった)', () => {
   const s = twoEntryState();
   const r = Engine.factions.checkRivalryResolution(s, null);
-  assert.ok(r && r.forceClose && r.forceClose.pairKey === '1-2', `40週の記録が2択に回っていない: ${JSON.stringify(r)}`);
-  assert.strictEqual(r.reason, 'CALM', `後ろの記録の自然沈静化が判定されていない: ${JSON.stringify(r)}`);
-  assert.ok(!s.factionRivalryPoints['5-6'], '自然沈静化した記録が残っている');
-  assert.ok(s.factionRivalryPoints['1-2'], '2択の対象の記録を勝手に閉じた');
-  assert.strictEqual(s._pendingForceCloseRivalry, undefined, '拾う処理の無い旧い印を立てている');
+  const fields = r && { ...r, state: undefined };
+  assert.ok(r && r.forceClose && r.forceClose.pairKey === '1-2', `40週の記録が2択に回っていない: ${JSON.stringify(fields)}`);
+  assert.strictEqual(r.reason, 'CALM', `後ろの記録の自然沈静化が判定されていない: ${JSON.stringify(fields)}`);
+  // 2026-09-26: checkRivalryResolution は純関数(結果は返り値の state。入力は書き換えない)
+  assert.ok(!r.state.factionRivalryPoints['5-6'], '自然沈静化した記録が残っている');
+  assert.ok(r.state.factionRivalryPoints['1-2'], '2択の対象の記録を勝手に閉じた');
+  assert.ok(s.factionRivalryPoints['5-6'], '入力の state の記録を書き換えた');
+  assert.strictEqual(r.state._pendingForceCloseRivalry, undefined, '拾う処理の無い旧い印を立てている');
 });
 
 section('裁定4: 40週未満は2択を出さない / 2件が同時に40週でも1週に1件だけ', () => {

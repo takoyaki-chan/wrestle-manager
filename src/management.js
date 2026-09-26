@@ -15181,6 +15181,9 @@ const Engine = {
         if (Engine.factions && !s._pendingFactionEvent && typeof Engine.factions.checkRivalryResolution === 'function') {
           const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA1B));
           const resolution = Engine.factions.checkRivalryResolution(s, resRng);
+          // 決着の効果(§5: 勝者・敗者の勢い・信頼・絆・対立度ほか)・記録の削除・自然沈静化の週数は返した state にだけ入る
+          // (2026-09-26 まで state をその場で書き換える形で、決着の効果の戻り値を捨てていた)
+          if (resolution && resolution.state) s = resolution.state;
           // §4.3 40週の2択(F06_FORCE)。社長の判断を派閥イベントとして待つ(2026-09-26 裁定4)。
           // 画面は App.handleFactionEvent、auto-sim は autoHandleFactionEvent が Engine.factions.applyF06ForceChoice を呼ぶ
           if (resolution && resolution.forceClose && !s._pendingFactionEvent

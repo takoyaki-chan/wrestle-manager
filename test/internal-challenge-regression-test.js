@@ -159,9 +159,10 @@ function buildInternalChallengeState(overrides = {}) {
     factionRivalryPoints: structuredClone(rivalry),
     factionHostility: hostility,
   });
-  assert.strictEqual(
-    Engine.factions.checkRivalryResolution(before40Weeks, {}),
-    null,
+  // 2026-09-26: checkRivalryResolution は常に { state, resolved, reason, ..., forceClose } を返す(純関数)
+  const beforeResult = Engine.factions.checkRivalryResolution(before40Weeks, {});
+  assert.ok(
+    beforeResult && beforeResult.resolved === false && beforeResult.reason === null && beforeResult.forceClose === null,
     'cross-season rivalry must include four offseason weeks without closing before week 40'
   );
 
