@@ -161,8 +161,19 @@ test('S1〜S3 期のセーブ: 既存の lifeNo(全員1)を正としない・関
   const s = legacySave();
   s.lifeSerial = {};
   s.roster = s.roster.map(f => ({ ...f, lifeNo: 1 }));
+  // S3〜S6 の開発版の形式の lifeEnd の退避(関係値・要約つき)は、移行で読み手が必要とする形に詰める
+  s.relationshipHistory = { betrayalRecord: [], retiredRivalries: [
+    { id1: 3, id2: 60, reason: 'lifeEnd', retiredFighterId: 60, lives: { 3: 1, 60: 1 }, season: 9, week: 1, bond12: 70, bond21: 60,
+      rivalry12: 5, rivalry21: 2, rivalryMeta: null, h2h: { aId: 3, matches: 2, bySeason: { 8: 2 } } },
+    { id1: 4, id2: 60, reason: 'lifeEnd', retiredFighterId: 60, lives: { 4: 1, 60: 1 }, season: 9, week: 1, bond12: 80, h2h: null },
+  ] };
   const r1 = Engine.saveDoctor.repairOnLoad(clone(s)).state;
   assert.strictEqual(allLiving(r1).find(f => f.id === A).lifeNo, 3, '既存の lifeNo=1 を上書き');
+  assert.deepStrictEqual(r1.relationshipHistory.retiredRivalries.filter(e => e.retiredFighterId === 60),
+    [{ id1: 3, id2: 60, reason: 'lifeEnd', retiredFighterId: 60, lives: { 3: 1, 60: 1 }, season: 9, h2h: { bySeason: { 8: 2 } } }]);
+  // M6: 休眠プールの C の生きた記録(B との対戦)は、閉じるときに同じ形で退避される
+  const cEntry = r1.relationshipHistory.retiredRivalries.find(e => e.retiredFighterId === C);
+  assert.deepStrictEqual(cEntry && cEntry.h2h, { bySeason: { 7: 1, 8: 1 } });
   // 移行前に関所を通って lifeSerial が 4 になっていた(記録の無い人生があった)なら、4 を下げない
   const s2 = clone(s); s2.lifeSerial = { [A]: 4 }; s2.roster = s2.roster.map(f => (f.id === A ? { ...f, lifeNo: 4 } : f));
   const r2 = Engine.saveDoctor.repairOnLoad(s2).state;

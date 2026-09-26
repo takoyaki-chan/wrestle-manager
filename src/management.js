@@ -20890,8 +20890,18 @@ Engine.life = {
       }) };
     }
 
+    // 開発版(S3〜S6)の lifeEnd の退避を、読み手が必要とする形に詰める(セーブ容量)
+    let relationshipHistory = state.relationshipHistory;
+    if (relationshipHistory && Array.isArray(relationshipHistory.retiredRivalries)
+      && relationshipHistory.retiredRivalries.some(e => e && e.reason === 'lifeEnd')) {
+      const before = relationshipHistory.retiredRivalries.length;
+      const rr = relationshipHistory.retiredRivalries.map(e => Engine.life._compactLifeEndEntry(e)).filter(Boolean);
+      relationshipHistory = { ...relationshipHistory, retiredRivalries: rr };
+      report.lifeEndCompacted = before - rr.length;
+    }
     // 元の state に無かった欄は足さない
     let s = { ...state, lifeSerial: serial };
+    if (relationshipHistory !== state.relationshipHistory) s.relationshipHistory = relationshipHistory;
     const put = (key, val) => { if (Object.prototype.hasOwnProperty.call(state, key)) s[key] = val; };
     put('roster', roster); put('aiOrgs', aiOrgs); put('freeAgents', freeAgents);
     put('scoutCandidates', scoutCandidates); put('retiredFighters', retiredFighters);
@@ -21032,64 +21042,45 @@ Engine.life = {
       firstSeason: first, lastSeason: lm != null ? Math.max(lm, last != null ? last : lm) : last, bySeason,
     };
   },
-  /** 退避する組(意味のある関係だけ)。関係値・因縁・対戦成績を消す前の状態から作る */
+  /**
+   * 退避する組。関係値・因縁・対戦成績を消す前の状態から作る。
+   * セーブ容量(2026-09-26): 退避は転生のたびに約10組増えるので、実際に読む箇所が必要とする情報だけを持つ。
+   * 読み手は年代記の2か所(エース・同世代の宿敵。Engine.chronicle._archivedPairCountsInWindow)だけで、
+   * 読むのは id1・id2・h2h.bySeason(季ごとの試合数)。相関図の「過去の線」は lives が表示中の2人の
+   * 今の人生と一致するときだけ引く(S6)ので、転生した側の人生が進んだ lifeEnd の組は描かれない。
+   * そこで対戦のあった組だけを {id1, id2, reason, retiredFighterId, lives, season, h2h: {bySeason}} で残す
+   * (関係値・因縁の欄・勝敗などの要約は読み手が無いので持たない)。
+   */
   _lifeEndArchive(state, id) {
-    const rels = state.relationships || {};
-    const rivalries = state.rivalries || {};
     const h2h = state.h2h || {};
-    const partners = new Set();
-    const collect = (obj, sep) => Object.keys(obj).forEach(k => {
-      const [a, b] = Engine.life._pairOf(k, sep);
-      if (a === id && b != null) partners.add(b);
-      else if (b === id && a != null) partners.add(a);
-    });
-    collect(rels, '>'); collect(rivalries, '-'); collect(h2h, '>');
-    partners.delete(id);
-    if (partners.size === 0) return [];
-    const ageOf = pid => {
-      const pools = [state.roster, state.freeAgents, state.retiredFighters,
-        ...Object.values(state.aiOrgs || {}).map(o => o && o.roster)];
-      for (const list of pools) {
-        const f = Array.isArray(list) ? list.find(x => x && Number(x.id) === pid) : null;
-        if (f) return f.age != null ? f.age : null;
-      }
-      return null;
-    };
-    const num = (v, dflt) => (Number.isFinite(Number(v)) ? Number(v) : dflt);
     const season = state.season || 1;
-    const week = state.week || 1;
     const out = [];
-    [...partners].sort((a, b) => a - b).forEach(p => {
-      const id1 = Math.min(id, p);
-      const id2 = Math.max(id, p);
-      const r12 = rels[`${id1}>${id2}`] || null;
-      const r21 = rels[`${id2}>${id1}`] || null;
-      const rv = rivalries[Engine.title.getRivalryKey(id1, id2)] || null;
-      const hr = h2h[`${id1}>${id2}`] || null;
-      const bond12 = num(r12 && r12.bond, 50);
-      const bond21 = num(r21 && r21.bond, 50);
-      const rivalry12 = num(r12 && r12.rivalry, 0);
-      const rivalry21 = num(r21 && r21.rivalry, 0);
-      const played = !!(hr && (hr.matches || 0) >= 1);
-      const meaningful = played
-        || Math.max(rivalry12, rivalry21) >= 20
-        || Math.abs(bond12 - 50) >= 10 || Math.abs(bond21 - 50) >= 10
-        || !!(rv && ((rv.lastBand || 0) > 0 || (rv.resolutionCount || 0) > 0 || rv.resolved));
-      if (!meaningful) return;
-      // 退避は転生のたびに約10組増える(40季で約2,800件)ので、セーブの肥大を抑える:
-      // 関係値は小数1桁に丸め、中身の無い因縁の欄(対戦0・段位0・決着0の初期値)は持たない
-      const r1 = v => Math.round(v * 10) / 10;
-      const rvHasContent = !!(rv && ((rv.matches || 0) > 0 || (rv.lastBand || 0) > 0 || (rv.resolutionCount || 0) > 0 || rv.resolved));
+    Object.keys(h2h).forEach(k => {
+      const [a, b] = Engine.life._pairOf(k, '>');
+      if (a == null || b == null || a === b || (a !== id && b !== id)) return;
+      const hr = h2h[k];
+      if (!hr || (hr.matches || 0) < 1) return;
+      const bySeason = Engine.life._summarizeH2h(hr, Math.min(a, b)).bySeason;
+      if (!bySeason || Object.keys(bySeason).length === 0) return;
+      const id1 = Math.min(a, b);
+      const id2 = Math.max(a, b);
       out.push({
         id1, id2, reason: 'lifeEnd', retiredFighterId: id,
         lives: { [id1]: Engine.life.current(state, id1), [id2]: Engine.life.current(state, id2) },
-        season, week, age1: ageOf(id1), age2: ageOf(id2),
-        bond12: r1(bond12), bond21: r1(bond21), rivalry12: r1(rivalry12), rivalry21: r1(rivalry21),
-        rivalryMeta: rvHasContent ? { ...rv } : null,
-        h2h: played ? Engine.life._summarizeH2h(hr, id1) : null,
+        season, h2h: { bySeason },
       });
     });
+    out.sort((x, y) => (x.id1 - y.id1) || (x.id2 - y.id2));
     return out;
+  },
+  /** 旧形式(S3〜S6 の開発版)の lifeEnd の退避を、読み手が必要とする形に詰める(移行で1回)。
+   *  対戦の無い組は捨て、h2h は bySeason だけ残す */
+  _compactLifeEndEntry(e) {
+    if (!e || e.reason !== 'lifeEnd') return e;
+    const bySeason = e.h2h && e.h2h.bySeason;
+    if (!bySeason || Object.keys(bySeason).length === 0) return null;
+    return { id1: e.id1, id2: e.id2, reason: 'lifeEnd', retiredFighterId: e.retiredFighterId,
+      ...(e.lives ? { lives: e.lives } : {}), season: e.season, h2h: { bySeason } };
   },
   /**
    * 生きた記録の保存先(設計書 §3-A の19 + 実装時に見つけた2つ)。1項目が1つの保存先。
