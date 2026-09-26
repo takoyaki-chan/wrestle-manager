@@ -7623,11 +7623,10 @@ const App = {
       alert(WM_I18N.t('試合結果の確定に失敗しました。カードに不整合がある可能性があります。'));
       return;
     }
-    // K-1 第3段 3-2: 試合後の処理はエンジン(Engine.executeShow)と同じ Engine.show.beginShow / Engine.show.finalize で行う。
-    // 経路ごとの違いは ctx の指定で残し(第4段 4-A で寄せる)、まだエンジンへ移していない実プレイだけの処理は hooks
-    // (App._finalizeHook*)に置いた。この関数に残るのは、密着取材・ラストランの即引退・新聞・画面の段取り。
-    // 以前ここに書き写してあった王座・集客・評価の確定・記録・因縁・人気・★・熱・怪我・関係値・派閥ポイント・成長・
-    // 対戦成績・開眼・突然の退団は、すべて finalize の中(両経路で1本)
+    // K-1 第3段 3-2・第4段 4-A: 試合後の処理はエンジン(Engine.executeShow)と同じ Engine.show.beginShow / Engine.show.finalize
+    // で行う。経路ごとの違いは ctx のログの型(logStyle)・評価の名札(mqPath)・画面の言語の辞書(dict)だけで、実プレイだけの
+    // 処理は試合の前の注入ごと画面側にある奪還挑戦・直訴・挑戦状 B3 の清算(hooks)だけ。この関数に残るのは画面の段取り
+    // (演出データを一時キーに載せる・結果画面の前のモーダル)。
     const begun = Engine.show.beginShow(G, validMatches);
     const fin = Engine.show.finalize(begun.state, validMatches, results, {
       roster: begun.roster,
@@ -7635,13 +7634,7 @@ const App = {
       preShowState: G,
       logStyle: 'structured',
       mqPath: 'App._finalizeShowImpl',
-      rivalryBeforeTitles: true,
       intrusion: App._intrusionData || null,
-      f08AttendanceMark: true,
-      nextMatchBuffCard: G.showCard || [],
-      markDomeSellout: true,
-      crossOrgRelationshipContext: true,
-      resolveUnifiedTitle: false,
       dict: WM_I18N.t,
       hooks: {
         afterTitles: w => App._finalizeHookSpecialBouts(w),
@@ -7886,8 +7879,10 @@ const App = {
   //   injuryRetirements  → _pendingInjuryRetirements(怪我による引退の本人のポップアップ。closeShowResult が取り出す)
   //   lastRunRetirements → _pendingLastRunRetirements(ラストランの引退の本人のポップアップ。同上)
   //   mediaSpotlightEnded → 密着取材の終了のトースト
+  //   domeSellout   → _pendingDomeSelloutCeremony(超満員のドームの式典。節目の印は finalize が状態に立て済み)
   _applyShowPresentations(presentations) {
     const p = presentations || {};
+    if (p.domeSellout) G = { ...G, _pendingDomeSelloutCeremony: true };
     if (Array.isArray(p.injuryRetirements) && p.injuryRetirements.length > 0) G = { ...G, _pendingInjuryRetirements: p.injuryRetirements };
     if (Array.isArray(p.lastRunRetirements) && p.lastRunRetirements.length > 0) G = { ...G, _pendingLastRunRetirements: p.lastRunRetirements };
     if (p.mediaSpotlightEnded) {
@@ -7912,52 +7907,16 @@ const App = {
     }
   },
 
-  // hooks.afterWriteback(書き戻しの直後、記録更新の刻印・突然の退団の前): 全国統一王座戦の清算(§7 X06)・
-  // 挑戦状 B3 の清算・直訴のゲストを所属団体へ戻す(成長の演出データは第4段 4-A から finalize が載せる)
+  // hooks.afterWriteback(書き戻し・統一王座の清算の直後、記録更新の刻印・突然の退団の前): 挑戦状 B3 の清算・
+  // 直訴のゲストを所属団体へ戻す(成長の演出データ・統一王座の清算は第4段 4-A から finalize の中)
   _finalizeHookGuests(w) {
     let s = w.s;
     let roster = w.roster;
-    const titles = w.titles;
     const { events, validMatches, results } = w;
 
-    // 全国統一王座戦: 通常興行の共通処理後、ゲストを本来のAI団体へ戻して王座を清算する。
-    if (App._unifiedTitleShowData) {
-      const unified = App._unifiedTitleShowData;
-      const matchIdx = validMatches.findIndex(m => m && m._unifiedTitleMatch);
-      const matchResult = matchIdx >= 0 ? results[matchIdx] : null;
-      const guestIds = new Set(unified.guestIds || []);
-      const updatedGuest = roster.find(f => guestIds.has(f.id));
-      const aiOrgs = { ...(s.aiOrgs || {}) };
-      const guestOrg = aiOrgs[unified.challengerOrgId];
-      if (updatedGuest && guestOrg?.roster) {
-        const cleanGuest = { ...updatedGuest };
-        delete cleanGuest.isUnifiedTitleGuest;
-        delete cleanGuest._unifiedGuestOrgId;
-        aiOrgs[unified.challengerOrgId] = {
-          ...guestOrg,
-          roster: guestOrg.roster.map(f => f.id === cleanGuest.id ? cleanGuest : f),
-        };
-      }
-      roster = roster.filter(f => !guestIds.has(f.id));
-      s = { ...s, aiOrgs, roster, titles };
-      if (matchResult) {
-        const slot = validMatches[matchIdx];
-        const winnerId = matchResult.winner === 'left' ? slot.left
-          : matchResult.winner === 'right' ? slot.right : null;
-        s = Engine.unifiedTitle.resolveMatch(s, {
-          championId: unified.championId,
-          challengerId: unified.challengerId,
-          winnerId,
-        });
-        roster = s.roster;
-        events.push({
-          type: 'unified_title_result',
-          data: { variant: winnerId === unified.challengerId ? 'taken' : 'defended', name: winnerId === unified.challengerId ? unified.challenger.name : unified.champion.name },
-          s: s.season, w: s.week,
-        });
-      }
-      App._unifiedTitleShowData = null;
-    }
+    // 全国統一王座戦の清算(ゲストを本来の AI 団体へ戻して王座を清算する)は第4段 4-A から Engine.show.finalize の中
+    // (書き戻しの直後。この hook の直前)。予約の控えだけ片付ける
+    App._unifiedTitleShowData = null;
 
     // 単発の挑戦状(B3)は通常興行のメインとして解決する。
     // 試合そのものの消耗・怪我・成長・関係変化は上の共通処理済みなので、

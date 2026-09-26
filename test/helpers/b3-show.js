@@ -109,9 +109,7 @@ function runB3Show(G0, booking, { guestMode = 'game', extraCard = [] } = {}) {
   let guestPost = null;
   const fin = Engine.show.finalize(begun.state, validMatches, results, {
     roster: begun.roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: G,
-    logStyle: 'structured', mqPath: 'App._finalizeShowImpl', rivalryBeforeTitles: true, intrusion: null,
-    f08AttendanceMark: true, nextMatchBuffCard: G.showCard || [], markDomeSellout: true, crossOrgRelationshipContext: true,
-    resolveUnifiedTitle: false, dict: WM_I18N.t,
+    logStyle: 'structured', mqPath: 'App._finalizeShowImpl', intrusion: null, dict: WM_I18N.t,
     hooks: {
       afterWriteback: w => {
         guestPost = clone(w.roster.find(c => c.id === guestId) || null);

@@ -39,13 +39,9 @@ module.exports = [
   // K1-A14(王座戦への乱入が実プレイだけ)と、その tickWeek 後の受け皿 K1-A14B は K-1 第4段 4-A で解消したので外した
   // (2026-09-26)。両経路が試合の前に Engine.show.rollIntrusion(乱数 8888)で判定・差し替えし、Engine.show.finalize が
   // ctx.intrusion を Engine.show.resolveIntrusion で清算する。
-  {
-    id: 'K1-X15', title: '因縁の記録の時期(ctx.rivalryBeforeTitles。実プレイは王座戦・乱入の前に記録し、ロスターにいる乱入者のライバル体質が効く)',
-    category: 'formula', side: 'app', impact: '数値', scenarios: ['intrusion'], checkpoints: ['A', 'B'],
-    patterns: ['rivalries.*.matches', 'currentNewspaper', 'weeklyNewspaper'],
-    mustAppear: false, refs: 'management.js Engine.show.finalize(ctx.rivalryBeforeTitles)',
-    note: 'K1-A14(乱入)をそろえて見えた。第4段 4-A の ctx の統一でエンジンも王座戦の前に記録するようにして消す。',
-  },
+  // K1-X15(因縁の記録の時期 ctx.rivalryBeforeTitles。乱入をそろえて見えた差)は同じ第4段 4-A で ctx を統一して消した。
+  // 4-A で両経路にそろえた ctx の指定: rivalryBeforeTitles・f08AttendanceMark(§7 X04)・nextMatchBuffCard・markDomeSellout(§7 X10)・
+  // crossOrgRelationshipContext / resolveUnifiedTitle(§7 X06 の統一王座)・buildNewspaper・intruderId。
   // K1-E03(怪我による引退の処理一式が実プレイに無い)は K-1 第4段 4-B-6 で解消したので外した(2026-09-26)。
   // 両経路が Engine.show.resolveMatchInjury / applyInjuryRetirementAftermath / buildInjuryRetirementPresentations を通す。
   // 実プレイで引退が起きるようになって見えた、画面側だけの後始末を次の2項目に数える

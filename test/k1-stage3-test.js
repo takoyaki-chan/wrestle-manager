@@ -81,11 +81,17 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
   const impl = app.slice(implStart, app.indexOf('\n  },\n', implStart));
   assert.ok(/const begun = Engine\.show\.beginShow\(G, validMatches\);/.test(impl), '_finalizeShowImpl が Engine.show.beginShow を呼んでいない');
   assert.ok(/const fin = Engine\.show\.finalize\(begun\.state, validMatches, results, \{/.test(impl), '_finalizeShowImpl が Engine.show.finalize を呼んでいない');
-  // 経路ごとの違い(第4段 4-A・第5段で寄せるまで残す指定)
-  ["logStyle: 'structured'", "mqPath: 'App._finalizeShowImpl'", 'intrusion: App._intrusionData || null', 'rivalryBeforeTitles: true', 'f08AttendanceMark: true',
-    'markDomeSellout: true', 'crossOrgRelationshipContext: true', 'resolveUnifiedTitle: false',
+  // 経路ごとの違い(第4段 4-A の後に残るのはログの型・評価の名札と、乱入・辞書のデータだけ)
+  ["logStyle: 'structured'", "mqPath: 'App._finalizeShowImpl'", 'intrusion: App._intrusionData || null',
     'dict: WM_I18N.t', 'preShowState: G'].forEach(opt => {
     assert.ok(impl.includes(opt), `_finalizeShowImpl が ${opt} を渡していない`);
+  });
+  // 第4段 4-A で両経路にそろえた指定は、実プレイからも finalize からも消えている
+  const fb = finalizeBody();
+  ['rivalryBeforeTitles', 'f08AttendanceMark', 'nextMatchBuffCard', 'markDomeSellout', 'crossOrgRelationshipContext',
+    'resolveUnifiedTitle', 'buildNewspaper', 'injuryPresentationDict', 'intruderId'].forEach(opt => {
+    assert.ok(!impl.includes(opt), `_finalizeShowImpl に 4-A で寄せた指定 ${opt} が残っている`);
+    assert.ok(!new RegExp(`ctx\\.${opt}\\b`).test(fb.replace(/^\s*\/\/.*$/mg, '')), `finalize に 4-A で寄せた指定 ctx.${opt} が残っている`);
   });
   const hookNames = ['afterTitles: w => App._finalizeHookSpecialBouts(w)',
     'afterWriteback: w => App._finalizeHookGuests(w)'];
