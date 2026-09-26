@@ -75,7 +75,7 @@
 | `afterRelationships` | `App._finalizeHookFactionBookings` | 直訴の結果モーダルへ関係値の変化・派閥の予約の清算(Common-1・F08・F07・F09・派閥内序列戦)。`w.common1MatchIdx` を返す(K1-A12・K1-A13・§7 X05) |
 | `afterGrowth` | `App._finalizeHookGrowthEvents` | ブレークスルー・キャリア最高評価と信頼ボーナス・敗戦スランプ・モメンタム(K1-A01・K1-A02)。`w.writeback()` でその時点の書き戻しを作れる |
 | `beforeKaigan` | `App._finalizeHookCareerMarks` | MVP 用の大試合の経歴・ドームの経歴とドーム回数(§7 X07・K1-A10) |
-| `afterWriteback` | `App._finalizeHookGuests` | 成長の演出データ・統一王座戦の清算・挑戦状 B3・直訴のゲストの返却 |
+| `afterWriteback` | `App._finalizeHookGuests` | 成長の演出データ・統一王座戦の清算・挑戦状 B3・直訴のゲストの返却(B3 は `Engine.challengeRequest.mergeReturningGuest` で興行で起きたことだけを本物へ反映し、一時印を外す。large-event-spec §4.3b) |
 
 **派閥の予約の清算は、作業中のロスターを状態に載せて渡す**(`{ ...w.s, roster: w.roster }`)。変わったロスターを作業中のロスターとして受け取り、状態の roster は興行前のロスターに戻して返す。以前は興行前のロスターの上で信頼・人気を動かしていて、書き戻しで消えていた(§7 X05、2026-09-26 に解消)。効くようになったもの: F07 メイン推薦(メンバー +1/リーダー −2)、Common-1(勝者の信頼 +3〜5・人気 +1〜3、敗者の信頼 −1〜3、下克上の追撃)、派閥内序列戦(信頼 ±3〜8・人気 +2〜5)、F08 の試合後(負けた派閥の末端の信頼 −2〜4)。信頼はどれも `trustSensitivity` つき。
 
