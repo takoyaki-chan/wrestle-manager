@@ -531,6 +531,50 @@ function _pickFactionBooking(G, kind) {
   return { state: { ...built.state, [IGNITE_TRANSIENTS]: { _pendingFactionEvent: pending } }, reason: null };
 }
 
+// 宣戦布告(rivalry-confrontation): 停止週の週送りを試走し、翌週の通常興行のカード(停止週の showCard をそのまま使う)で
+// 最初にフォーカスされるシングル(カードの末尾から)の2人の因縁を両方向とも95にする。試走し直して、翌週もその組が
+// カードに残り(2人とも出られる)、因縁が宣戦布告の帯(50以上・好敵手/宿怨でない)にあることを確かめる
+function _pickConfrontation(G0) {
+  // headless は直訴・果たし状に答えないので、前に届いた打診が残っている。答えた(取り下げた)ことにして週次の枠を空ける
+  // (残すと週送りの後に直訴が出て、受けると遠征がカードの選手を使い、興行のカードが組み直される)
+  const G = (G0.challengeRequest && G0.challengeRequest.pendingThisWeek)
+    ? { ...G0, challengeRequest: { ...G0.challengeRequest, pendingThisWeek: null } }
+    : G0;
+  const first = _dryRunWeek(G);
+  const blocked = _nextWeekBlocker(first.next);
+  if (blocked) return { state: null, reason: blocked };
+  const ok = f => !!(f && !f.injury && !f.forcedRest && !f.isRental);
+  // 興行の開催(App.executeShow)と同じく会場の試合数で切り詰めたカード
+  // 興行は1試合ずつスキップして進める(boost)ので、どの試合にもフォーカスが来る。会場の試合数で末尾から
+  // 切り詰められても残るよう、カードの先頭のシングル(メイン)の2人を因縁にする(フォーカスは最後=前座をスキップした後)
+  const cardOf = n => (n.showCard || []).filter(m => m && m.matchType !== 'tag' && m.left > 0 && m.right > 0);
+  const singles = cardOf(first.next).slice(0, 1).filter(m => !m._f08Locked);
+  for (let i = singles.length - 1; i >= 0; i -= 1) {
+    const m = singles[i];
+    const find = id => (first.next.roster || []).find(f => f.id === id);
+    if (!ok(find(m.left)) || !ok(find(m.right))) continue;
+    const rels = { ...(G.relationships || {}) };
+    for (const key of [`${m.left}>${m.right}`, `${m.right}>${m.left}`]) {
+      rels[key] = { ...(rels[key] || { bond: 50 }), rivalry: 95 };
+    }
+    const placed = { ...G, relationships: rels };
+    const again = _dryRunWeek(placed);
+    if (again.tick._pendingLargeEvent || again.tick._pendingFactionEvent || _nextWeekBlocker(again.next)) continue;
+    // 週送りで直訴・果たし状が届く週は避ける(受けると遠征・迎撃がカードの選手を使い、興行のカードが組み直される)
+    const n = again.next;
+    if ((n.challengeRequest && n.challengeRequest.pendingThisWeek) || n._pendingAwayChallengeMatch || n._pendingIncomingChallengeMatch
+        || n._pendingIncomingB3Match || n._pendingUnifiedIncomingMatch || n._pendingUnifiedAwayMatch) continue;
+    const head = cardOf(n)[0];
+    if (!head || head.left !== m.left || head.right !== m.right) continue;
+    const findNext = id => (n.roster || []).find(f => f.id === id);
+    if (!ok(findNext(m.left)) || !ok(findNext(m.right))) continue;
+    const lvl = Engine.title.getRivalryLevel(again.next, m.left, m.right);
+    if (!lvl || lvl.isGoodRival || lvl.isBitterRival || lvl.isOneSided || (lvl.rivalry || 0) < 50) continue;
+    return { state: placed, pair: [m.left, m.right], reason: null };
+  }
+  return { state: null, reason: '翌週の興行の最初のシングルに因縁を置ける組が無い' };
+}
+
 // 派閥の予約の清算を手ごとに読む。信頼・帳簿の「派閥」・感度は全員分(12人)、ほかは予約の中身
 const FACTION_STEP_PROBE = `(() => {
   if (typeof G === 'undefined' || !G) return null;
@@ -1914,6 +1958,93 @@ module.exports = {
     ],
     finalProbe: `(() => ({ f08: (typeof G !== 'undefined' && G._pendingF08Directive) || null }))()`,
     finalAssert: (probe, lang, steps) => _assertF08(probe, lang, steps),
+  },
+
+  // faction-f08 のスキップ版(2026-09-26 Keisuke 裁定「派閥の試合前の画面はスキップしていても常に出す」)。
+  // 同じ停止週・同じ F08 で、興行は1試合ずつスキップする(観戦も「残り全試合をスキップ」もしない)。
+  // メイン(直接対決)は最後の試合なので、前座をスキップした後にフォーカスが来る。以前は一度スキップすると
+  // sp._suppressFlavor で F08 の試合前の画面(#fevtF08PreOverlay)が出なかった
+  'faction-f08-skip': {
+    description: '派閥 F08(スキップ版): A(直接対決をメインに)→翌週の興行で前座を1試合ずつスキップ→メインのフォーカスで F08 の試合前の画面→清算',
+    fixture: {
+      seed: 42,
+      until: G => {
+        if (G.season > 2) throw new Error('S2 のうちに F08 を置ける週が見つからない');
+        return _isPlainStopWeek(G) && !!_pickFactionBooking(G, 'F08').state;
+      },
+      engineer: G => {
+        const picked = _pickFactionBooking(G, 'F08');
+        if (!picked.state) throw new Error(`F08 を置けない: ${picked.reason}`);
+        return picked.state;
+      },
+      engineerSave: _moveIgniteTransients,
+    },
+    walk: { seasons: 1, maxSteps: 200 },
+    makeUntil: _untilWeeksAfterFixture(3),
+    stepProbe: FACTION_STEP_PROBE,
+    boost: _watchMatchBoost([]),
+    ignition: [
+      { name: 'f08-modal', required: true, match: s => overlayHit(s, 'fevtF08Overlay') },
+      // 前座をスキップした後のメインのフォーカスで出る試合前の画面(試合一覧の殻の上)
+      { name: 'f08-pre-after-skip', required: true, match: s => overlayHit(s, 'fevtF08PreOverlay') && overlayHit(s, 'showResultOverlay') },
+      { name: 'f08-aftermath', required: true, match: s => overlayHit(s, 'fevtF08PostOverlay') },
+    ],
+    finalProbe: `(() => ({ f08: (typeof G !== 'undefined' && G._pendingF08Directive) || null }))()`,
+    finalAssert: (probe, lang, steps) => _assertF08(probe, lang, steps),
+  },
+
+  // 因縁の宣戦布告(2026-09-26 Keisuke 裁定「出す」)。停止週を処理した翌週の通常興行で、メイン(カードの先頭の
+  // シングル)の2人の因縁を95にしておき、前座を1試合ずつスキップした後のメインのフォーカスで宣戦布告
+  // (#notifModalOverlay の .tone-confront)が試合一覧の殻の上に出て、「見届ける」で閉じた後に興行が最後まで進むことを見る
+  // (節目の演出なのでスキップの後も出る)。以前は殻の後ろの待ち行列に積まれて一度も出ていなかった
+  'rivalry-confrontation': {
+    description: '因縁の宣戦布告: 週を処理→翌週の興行で前座を1試合ずつスキップ→メイン(因縁95の2人)にフォーカス→殻の上に宣戦布告→見届ける→興行の結果',
+    fixture: {
+      seed: 42,
+      until: G => {
+        if (G.season > 2) throw new Error('S2 のうちに宣戦布告を置ける週が見つからない');
+        return _isPlainStopWeek(G) && !!_pickConfrontation(G).state;
+      },
+      engineer: G => {
+        const picked = _pickConfrontation(G);
+        if (!picked.state) throw new Error(`宣戦布告を置けない: ${picked.reason}`);
+        return picked.state;
+      },
+    },
+    walk: { seasons: 1, maxSteps: 160 },
+    makeUntil: _untilWeeksAfterFixture(2),
+    boost: _watchMatchBoost([]),
+    stepProbe: `(() => {
+      const sp = (typeof App !== 'undefined' && App._showPreview) || null;
+      if (!sp) return { sp: false };
+      return {
+        sp: true, n: (sp.validMatches || []).length,
+        conf: Object.keys(sp.confrontationMap || {}),
+        shown: [...(sp._shownConfrontations || [])], inflight: [...(sp._confrontationInFlight || [])],
+        results: (sp.results || []).map(r => !!r),
+        last: (sp.validMatches || []).slice(-1).map(m => [m.left, m.right]),
+        notif: (document.getElementById('notifModalBox') || {}).className || '',
+        queue: typeof _popupQueue !== 'undefined' ? _popupQueue.length : -1,
+      };
+    })()`,
+    ignition: [
+      { name: 'confrontation-over-shell', required: true, match: s => overlayHit(s, 'tone-confront') && overlayHit(s, 'showResultOverlay') },
+    ],
+    finalProbe: `(() => ({
+      week: (typeof G !== 'undefined') ? G.week : null,
+      showCount: (typeof G !== 'undefined') ? (G.totalShows || 0) : null,
+    }))()`,
+    finalAssert: (probe, lang, steps, fixture) => {
+      const fails = [];
+      const values = (steps || []).filter(e => e.value && e.value.sp);
+      const firstSeen = values.find(e => /tone-confront/.test(e.value.notif || ''));
+      console.log(`宣戦布告: ${firstSeen ? `step ${firstSeen.step} で出た(その時の結果 ${JSON.stringify(firstSeen.value.results)}・待ち行列 ${firstSeen.value.queue})` : '出ていない'}`
+        + ` / 最後の手の完了待ち ${JSON.stringify((values[values.length - 1] || {}).value?.inflight || [])}`);
+      if (firstSeen && !firstSeen.value.results.some(Boolean)) fails.push('前座をスキップする前に宣戦布告が出た(フォーカスの順が想定と違う)');
+      if (values.length && (values[values.length - 1].value.inflight || []).length > 0) fails.push('宣戦布告の完了待ちが残った(派閥の試合前の画面へ進んでいない)');
+      if (!probe || probe.showCount == null || probe.showCount <= (fixture.totalShows || 0)) fails.push('宣戦布告の後に興行が最後まで進んでいない(totalShows が増えていない)');
+      return fails;
+    },
   },
 
   'unified-player-turn': {
