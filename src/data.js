@@ -32454,6 +32454,18 @@ const GAMELOG_TEMPLATES = {
     points: '⚔ 派閥抗争に決着: {winFaction}が{loseFaction}を制した',
     consolation: '⚔ {factionName}の抗争は、相手の派閥の消滅で終わった',
   },
+  // ── management.js tickWeek / commitRetirements: 派閥が消えた(2026-09-26 Keisuke 承認。Engine.factions.buildDissolutionLogs) ──
+  // ほかに表示の無い経路だけ(人数割れ・一派閥の独占・後継の立たないリーダー不在)。F03 と社長の解散命令は出さない。記事なし。
+  // 派閥名は保存値が「{surname}派」の生JA(表示時に gameLogEntryText が言語別に引き直す)。事実だけを書く(数値・格言なし)
+  faction_dissolved: {
+    members_last: '🎭 {factionName}が解散した。メンバーが抜けていき、{leaderName}のもとに残ったのは{remainName}だけだった',
+    members_alone: '🎭 {factionName}が解散した。メンバーが抜けていき、{leaderName}のもとには誰も残らなかった',
+    members: '🎭 {factionName}が解散した。メンバーが抜けていき、派閥の形を保てなくなった',
+    leader: '🎭 {factionName}が解散した。まとめ役を失い、メンバーは散り散りになった',
+    leader_alone: '🎭 {factionName}が解散した。まとめ役がいなくなり、あとに残る者もいなかった',
+    dominance: '🎭 {factionName}が解散した。団体のほぼ全員が加わり、派閥の区切りそのものがなくなった',
+    dominance_other: '🎭 {factionName}が解散した。団体のほぼ全員がひとつの派閥に集まり、派閥の区切りそのものがなくなった',
+  },
 
   // ── app.js: 挑戦試合コーチ要約(_challengeRequestCoachLogLine・監査3-5と同法の6変種) ──
   challenge_request_coach_summary: {
@@ -32654,6 +32666,8 @@ const GAMELOG_TYPE_CATEGORY = {
   sudden_departure: ['event'],
   // 2026-09-26 第5回 問11: 派閥抗争の決着はイベント
   faction_rivalry_decided: ['event'],
+  // 2026-09-26 Keisuke 承認: 派閥が消えた1行もイベント
+  faction_dissolved: ['event'],
 };
 
 /**

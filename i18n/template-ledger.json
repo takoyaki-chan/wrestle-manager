@@ -34148,6 +34148,76 @@
     "hasProperNoun": false
   },
   {
+    "key": "🎭 {factionName}が解散した。まとめ役がいなくなり、あとに残る者もいなかった",
+    "en": "🎭 {factionName} has disbanded. Its leader was gone, and no one was left to carry on.",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎭 {factionName}が解散した。まとめ役を失い、メンバーは散り散りになった",
+    "en": "🎭 {factionName} has disbanded. With its leader gone, the members went their separate ways.",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎭 {factionName}が解散した。メンバーが抜けていき、{leaderName}のもとには誰も残らなかった",
+    "en": "🎭 {factionName} has disbanded. Its members drifted away until no one was left with {leaderName}.",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎭 {factionName}が解散した。メンバーが抜けていき、{leaderName}のもとに残ったのは{remainName}だけだった",
+    "en": "🎭 {factionName} has disbanded. Its members drifted away until only {remainName} was left with {leaderName}.",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎭 {factionName}が解散した。メンバーが抜けていき、派閥の形を保てなくなった",
+    "en": "🎭 {factionName} has disbanded. Its members drifted away until it could no longer hold together as a faction.",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎭 {factionName}が解散した。団体のほぼ全員がひとつの派閥に集まり、派閥の区切りそのものがなくなった",
+    "en": "🎭 {factionName} has disbanded. Nearly the whole roster had gathered in a single faction, and the lines between factions disappeared.",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎭 {factionName}が解散した。団体のほぼ全員が加わり、派閥の区切りそのものがなくなった",
+    "en": "🎭 {factionName} has disbanded. Nearly the whole roster had joined it, and the lines between factions disappeared.",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🎯 {name}が技の精度を上げてきた",
     "en": "🎯 {name} has sharpened her execution",
     "files": [
