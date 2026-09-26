@@ -12,7 +12,8 @@ const resolvePoach = source.slice(start, end);
 assert.ok(start >= 0, 'resolvePoach should exist');
 assert.match(resolvePoach, /const liveFighter = \(s\.roster \|\| \[\]\)\.find\(c => c\.id === fighterIdToRelease\) \|\| poach\.fighter;/,
   'poach should capture the latest roster fighter before removal');
-assert.strictEqual((resolvePoach.match(/applyTransferReset\(\{ \.\.\.liveFighter, orgId: targetId \}\)/g) || []).length, 2,
+// 2026-09-26: 移籍先へは自団体の休養の印を外した写しを渡す(Engine.util.stripRestMarkers。test/rest-marker-leak-test.js)
+assert.strictEqual((resolvePoach.match(/applyTransferReset\(\{ \.\.\.Engine\.util\.stripRestMarkers\(liveFighter\), orgId: targetId \}\)/g) || []).length, 2,
   'both accepted and failed-defense transfers should reset the live fighter');
 
 console.log('poach-live-fighter-test: ok');
