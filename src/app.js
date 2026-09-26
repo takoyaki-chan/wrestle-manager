@@ -8866,41 +8866,10 @@ const App = {
       });
     });
 
-    // h2h記録: ペア別対戦履歴（タッグ: 対角4ペア + 味方ペア記録）
-    let h2h = { ...(s.h2h || {}) };
-    results.forEach((r, idx) => {
-      const m = validMatches[idx];
-      if (m.matchType === 'tag') {
-        // タッグ: 対角4ペア（A1vsB1, A1vsB2, A2vsB1, A2vsB2）を記録
-        const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
-        const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
-        for (const aId of teamAIds) {
-          for (const bId of teamBIds) {
-            const tagWinner = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
-            h2h = Engine.h2h.update(h2h, aId, bId, tagWinner, r.mq, false, false, s.season, s.week, 'show', 'player', 'player');
-          }
-        }
-      } else if (m.isCRMatch) {
-        // challenge-request-spec-v0.1 Phase 3: 直訴試合はh2h/betrayal通知を専用処理
-        // (_applyChallengeRequestResult内、正しいorg IDで)済みのためここでは二重記録しない
-      } else {
-        const meta = App._buildMatchMeta(s, m.left, m.right, !!m.isReclaim);
-        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player', meta);
-        // 業界ニュース: B-3 元同僚 離脱後初対面（試合カード=単発のみ）
-        if (meta.betrayal) {
-          const fA = (s.roster || []).find(c => c.id === m.left);
-          const fB = (s.roster || []).find(c => c.id === m.right);
-          if (fA && fB) {
-            s = Engine.industryNews.push(s, {
-              type: 'firstMeetSinceDeparture',
-              characterId: m.left,
-              data: { nameA: fA.name, nameB: fB.name },
-            });
-          }
-        }
-      }
-    });
-    s = { ...s, h2h };
+    // h2h記録: ペア別対戦履歴(タッグ: 対角4ペア)。K-1 第2段(K1-A06): エンジンの executeShow と同じ
+    // Engine.show.recordShowH2h を通す(シングルの履歴の印=元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦、
+    // 元同僚の初対面の業界ニュース)。直訴試合は _applyChallengeRequestResult が正しい団体IDで記録済みなので飛ばす
+    s = Engine.show.recordShowH2h(s, validMatches, results);
 
     // recentMatches記録（直近5戦FIFO）
     results.forEach((r, idx) => {
@@ -11625,32 +11594,8 @@ const App = {
     return s;
   },
 
-  // h2h.history に積む meta フラグを構築（B-3 / 派閥抗争 / ロッカー荒廃 / 奪還）
-  _buildMatchMeta(state, idA, idB, isReclaim) {
-    const meta = {};
-    // betrayal: B-3 元同僚 離脱後初対面
-    if (Engine.orgTimeline && typeof Engine.orgTimeline.checkFirstMeetSinceDeparture === 'function') {
-      try { if (Engine.orgTimeline.checkFirstMeetSinceDeparture(state, idA, idB)) meta.betrayal = true; } catch (_) {}
-    }
-    // factionWar: 同団体内で別派閥所属、両派閥が hostility 状態
-    if (Engine.factions && typeof Engine.factions.getFactionByFighterId === 'function') {
-      try {
-        const fA = Engine.factions.getFactionByFighterId(state, idA);
-        const fB = Engine.factions.getFactionByFighterId(state, idB);
-        if (fA && fB && fA.id !== fB.id && (fA.inHostility || fB.inHostility)) {
-          meta.factionWar = true;
-        }
-      } catch (_) {}
-    }
-    // lockerStress: _lockerCrisisWeek が直近4週以内
-    if (state._lockerCrisisWeek != null && Engine.util && typeof Engine.util.absWeek === 'function') {
-      const aw = Engine.util.absWeek(state.season, state.week);
-      if (aw - state._lockerCrisisWeek <= 4) meta.lockerStress = true;
-    }
-    // reclaim: 奪還挑戦試合
-    if (isReclaim) meta.reclaim = true;
-    return meta;
-  },
+  // h2h.history に積む meta フラグ(B-3 / 派閥抗争 / ロッカー荒廃 / 奪還)は Engine.show.buildMatchMeta で組む
+  // (K-1 第2段 K1-A06。以前はここ App._buildMatchMeta にあり、エンジンの通常興行は印を刻んでいなかった)
 
   // 業界ニュースはポップアップで見せずに新聞へ流す（2026-07-27）。
   // ここでは何も表示しない。溜まった記事は次に発行される号（オフシーズン中は新聞が
@@ -15875,7 +15820,7 @@ const App = {
     let warH2h = { ...(G.h2h || {}) };
     wp.results.forEach(r => {
       const winner = r.playerWon ? 'left' : 'right';
-      const warMeta = App._buildMatchMeta(G, r.playerFighter.id, r.aiFighter.id, false);
+      const warMeta = Engine.show.buildMatchMeta(G, r.playerFighter.id, r.aiFighter.id, false);
       warH2h = Engine.h2h.update(warH2h, r.playerFighter.id, r.aiFighter.id, winner, r.mq, false, false, G.season, G.week, 'war', 'player', ev.opponentOrgId, warMeta);
       // firing-grudge-spec-v0.1 タスクc(2026-07-17): 対抗戦は元同僚(B-3)が最も出会いやすいクロス団体戦のため firedReturn を接続
       G = App._maybeEmitFiredReturn(G, r.playerFighter, ev.opponentOrgId, 'player');
@@ -16390,7 +16335,7 @@ App.finalizePPV = function() {
     const match = pp.card[idx];
     const lOrg = _findOrgKey(match.left.id);
     const rOrg = _findOrgKey(match.right.id);
-    const ppvMeta = App._buildMatchMeta(s, match.left.id, match.right.id, false);
+    const ppvMeta = Engine.show.buildMatchMeta(s, match.left.id, match.right.id, false);
     ppvH2h = Engine.h2h.update(ppvH2h, match.left.id, match.right.id, r.winner, r.mq, false, true, s.season, s.week, 'ppv', lOrg, rOrg, ppvMeta);
     // firing-grudge-spec-v0.1 タスクc(2026-07-17): PPVは合同興行=元同僚(B-3)の再会が起きやすいクロス団体戦のためfiredReturnを接続
     if (lOrg && rOrg && lOrg !== rOrg) {

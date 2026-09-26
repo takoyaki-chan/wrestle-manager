@@ -195,12 +195,8 @@ module.exports = [
       '_industryNewsEvents'],
     mustAppear: true, refs: 'app.js:9355-9363 / エンジン側なし(auto-sim の新聞には自団体の興行記事が載らない)',
   },
-  {
-    id: 'K1-A06', title: '対戦成績の履歴メタ(裏切り初対面・派閥抗争・ロッカー荒廃)と元同僚初対面ニュース',
-    category: 'processing', side: 'app', impact: '表示', checkpoints: ['A', 'B'],
-    patterns: ['h2h.*.history[*].lc', 'h2h.*.history[*].bt', 'h2h.*.history[*].fc', 'h2h.*.history[*].rc'],
-    mustAppear: true, refs: 'app.js:8957-8975, 11620-11644 / management.js:15445(meta なし)',
-  },
+  // K1-A06(対戦成績の履歴メタ=元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦と、元同僚初対面の記事)は
+  // K-1 第2段で解消したので外した(2026-09-26)。両経路が Engine.show.recordShowH2h(印は Engine.show.buildMatchMeta)を通す。
   // K1-P01(結果画面の先読み tickWeek が G を直接書き換える)は K-1 第1段で解消したので外した(2026-09-26)。
   // エンジン側で逓減カウンター・W-1 回数・伝染のクールダウン・関係フラグのクールダウン・他団体の経歴の区切り・
   // ブレークスルー記録の台詞を「写してから書く」形にし、先読みには G の複製を渡す(app.js prepareShowResultInlinePopups)。

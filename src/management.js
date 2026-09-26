@@ -15970,6 +15970,69 @@ const Engine = {
         ...(resolution.resolved === 'bitter' ? { bitterResolutionWinnerId: winnerId } : {}),
       };
     },
+
+    // 対戦成績の履歴に残す印(K-1 第2段 / K1-A06。以前は実プレイの App._buildMatchMeta だけにあった)。
+    // betrayal: 元同僚の離脱後の初対面 / factionWar: 別々の派閥で、どちらかが抗争中 / lockerStress: ロッカールームの
+    // 荒廃(_lockerCrisisWeek)から4週以内 / reclaim: 奪還挑戦。Engine.h2h.update が history に bt/fc/lc/rc として刻み、
+    // 相関図の対戦史の見出し(ui-render.js)が読む。数値には効かない。戻り値: { betrayal?, factionWar?, lockerStress?, reclaim? }
+    buildMatchMeta(state, idA, idB, isReclaim) {
+      const meta = {};
+      if (Engine.orgTimeline && typeof Engine.orgTimeline.checkFirstMeetSinceDeparture === 'function') {
+        try { if (Engine.orgTimeline.checkFirstMeetSinceDeparture(state, idA, idB)) meta.betrayal = true; } catch (_) {}
+      }
+      if (Engine.factions && typeof Engine.factions.getFactionByFighterId === 'function') {
+        try {
+          const fA = Engine.factions.getFactionByFighterId(state, idA);
+          const fB = Engine.factions.getFactionByFighterId(state, idB);
+          if (fA && fB && fA.id !== fB.id && (fA.inHostility || fB.inHostility)) meta.factionWar = true;
+        } catch (_) {}
+      }
+      if (state._lockerCrisisWeek != null && Engine.util && typeof Engine.util.absWeek === 'function') {
+        const aw = Engine.util.absWeek(state.season, state.week);
+        if (aw - state._lockerCrisisWeek <= 4) meta.lockerStress = true;
+      }
+      if (isReclaim) meta.reclaim = true;
+      return meta;
+    },
+
+    // 通常興行の対戦成績(h2h)の記録(K-1 第2段 / K1-A06)。シングルは履歴の印(buildMatchMeta)つきで記録し、
+    // 元同僚の離脱後の初対面なら業界ニュース(firstMeetSinceDeparture)を積む。タッグは対角の4組を記録する(印なし)。
+    // 直訴試合(isCRMatch)は実プレイの _applyChallengeRequestResult が正しい団体IDで記録済みなので飛ばす。
+    // 印とニュースは、この興行の記録を足す前の state(h2h・ロスター)で判定する。戻り値: 新しい state(h2h と業界ニュース)
+    recordShowH2h(state, validMatches, results) {
+      let s = state;
+      let h2h = { ...(s.h2h || {}) };
+      results.forEach((r, idx) => {
+        const m = validMatches[idx];
+        if (!r || !m) return;
+        if (r.matchType === 'tag') {
+          const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
+          const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
+          const tagWinner = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
+          for (const aId of teamAIds) {
+            for (const bId of teamBIds) {
+              h2h = Engine.h2h.update(h2h, aId, bId, tagWinner, r.mq, false, false, s.season, s.week, 'show', 'player', 'player');
+            }
+          }
+          return;
+        }
+        if (m.isCRMatch) return;
+        const meta = Engine.show.buildMatchMeta(s, m.left, m.right, !!m.isReclaim);
+        h2h = Engine.h2h.update(h2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player', meta);
+        if (meta.betrayal) {
+          const fA = (s.roster || []).find(c => c.id === m.left);
+          const fB = (s.roster || []).find(c => c.id === m.right);
+          if (fA && fB) {
+            s = Engine.industryNews.push(s, {
+              type: 'firstMeetSinceDeparture',
+              characterId: m.left,
+              data: { nameA: fA.name, nameB: fB.name },
+            });
+          }
+        }
+      });
+      return { ...s, h2h };
+    },
   },
 
   // ══════════════════════════════════════════════════════════
@@ -16558,26 +16621,10 @@ const Engine = {
       ? Engine.title.getAbsWeek(s)
       : (s.lastTitleMatchWeek ?? null);
 
-    // h2h記録: プレイヤー団体興行（auto-sim用パス）
-    let exH2h = { ...(s.h2h || {}) };
-    results.forEach((r, idx) => {
-      const m = validMatches[idx];
-      if (r.matchType === 'tag') {
-        // タッグ: 4つの対戦相手ペアをそれぞれ記録
-        const pairs = [
-          [m.teamA.fighter1, m.teamB.fighter1], [m.teamA.fighter1, m.teamB.fighter2],
-          [m.teamA.fighter2, m.teamB.fighter1], [m.teamA.fighter2, m.teamB.fighter2],
-        ];
-        pairs.forEach(([lId, rId]) => {
-          const isLTeamA = lId === m.teamA.fighter1 || lId === m.teamA.fighter2;
-          const pairWinner = r.winner === 'draw' ? 'draw' : (isLTeamA ? (r.winner === 'teamA' ? 'left' : 'right') : (r.winner === 'teamB' ? 'left' : 'right'));
-          exH2h = Engine.h2h.update(exH2h, lId, rId, pairWinner, r.mq, false, false, s.season, s.week, 'show', 'player', 'player');
-        });
-      } else {
-        exH2h = Engine.h2h.update(exH2h, m.left, m.right, r.winner, r.mq, !!r.isTitleMatch, false, s.season, s.week, 'show', 'player', 'player');
-      }
-    });
-    s = { ...s, h2h: exH2h };
+    // h2h記録 — K-1 第2段(K1-A06): 実プレイ(app.js)と同じ Engine.show.recordShowH2h を通す。
+    // シングルの履歴に印(元同僚の初対面・派閥抗争中・ロッカー荒廃中)を刻み、元同僚の初対面は業界ニュースに積む。
+    // 以前のエンジンは印を渡さず、ニュースも出さなかった。ロスターはこの興行の処理後のもの(実プレイと同じ)
+    s = Engine.show.recordShowH2h({ ...s, roster }, validMatches, results);
 
     // recentMatches記録（直近5戦FIFO）— タッグ試合はスキップ
     results.forEach((r, idx) => {
