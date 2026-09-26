@@ -50,6 +50,7 @@
 ### テスト
 - 新規 `test/care-last-warning-test.js`(21節)。変更前の src(ba47b665)で回すと 17節が失敗(通る4節は「変えない」側の不変条件の節)
 - `npm test` 310/310 PASS、`node test/auto-sim.js 40 42` / `--care` / `--remedy` ALL CLEAR、`npm run test:k1:parity` PASS(K1-A09 の差が帳簿にも写るので `roster[*].trustStrain` を許容リストに追加)、`npm run test:ui:walkthrough` PASS(Issues 0)、`node test/ja-golden.js` 基準と完全一致、`npm run test:save-regression` ALL CLEAR、ui-baseline-guard ok
+- main 取り込み後(派閥の決着の新聞・セリフ下書き入り。辞書2本は台帳から再生成して衝突を解いた): `npm test` 311/311 PASS、`npm run test:k1:parity` PASS、`node test/auto-sim.js 40 42` ALL CLEAR(意味の指紋 db9b0841。main 側の変更も含む)
 - i18n: ui-ledger に3行(手追加)・template-ledger に10行 → 辞書を再生成。`test/i18n-ratchet.js` は変更前の main の時点で基準超過(management.js 1351→1365・ui-render.js 974→975)。今回の増分は management.js +5(結果モーダルの地の文・validateGameState の警告2本など)・data.js +10(噂の文)・ui-common.js +1・relationships.js +1。基準は更新していない
 
 ### 残り
