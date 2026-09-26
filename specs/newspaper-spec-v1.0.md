@@ -139,7 +139,13 @@ MVPレース順位は**トップ10しか無く、1週古い**（recalc は advan
 自団体の `retirementDeclare` は引退した季 `retiredSeason` を持ち、殿堂入り・引退特別号へ合流するときは
 **その季に殿堂入りした記録だけ**を引く(`_findHallOfFameEntry(state, id, { retiredSeason })`、
 紙面側 `_npV3HofEntry(id, inductionSeason)`)。同じIDの再登場は別人(裁定K-4)なので、前の人生の
-殿堂入り(異名・防衛数)で今の人生の引退を特別号にしない。`retiredSeason` を持たない記事(AI・旧号)は従来どおりIDで引く。`aiInjuryRetirement`(怪我引退)は本文を独自の負傷フレーバーのまま
+殿堂入り(異名・防衛数)で今の人生の引退を特別号にしない。`retiredSeason` を持たない記事(AI・旧号)は従来どおりIDで引く。
+**K-4 S4(2026-09-26)以降は「ID+人生番号」で引く**: AI引退のキュー(`_newsRetirements`)は `lifeNo`・`retiredSeason` を持ち、
+業界ニュース(`Engine.industryNews.push`)は積んだ時点の人物の人生番号 `characterLives = {id: n}` を持つ。
+`_findHallOfFameEntry(state, id, { lifeNo, retiredSeason })` はその人生の殿堂入りだけを引く(番号の無い旧エントリは引退した季で照合)。
+紙面の記事にも `characterLives` を刻み(業界ニュースは積んだ時点の番号を引き継ぐ)、名前・写真を押したときは
+今の人生なら選手詳細、前の人生ならその人生の殿堂詳細(殿堂入りしていなければ押せない)。前の人生の一面では、
+今そのIDで生きている同名の別人の所属を出さない。詳細は specs/life-identity-spec-v1.0.md。`aiInjuryRetirement`(怪我引退)は本文を独自の負傷フレーバーのまま
 維持し、強度補正のみ格スコアを効かせる。peakOVR は `careerRecord.peakOVR`(衰え前のピーク)を使い、
 現在OVR(衰え後)では代用しない。reigns は `careerRecord.totalTitleWins`。
 

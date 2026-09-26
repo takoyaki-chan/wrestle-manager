@@ -265,4 +265,5 @@ NPC は団体生成時にフィクションのキャリア事前史（プロデ�
 - **Phase C** (2026-04-27): 対戦相手名フィールドを追加(タイトル戦/対抗戦/ドーム/JT)、防衛閾値を 3/5/7/10/15/20... に細分化
 - **Phase D** (2026-04-27): PPV 出場履歴に対戦相手名と勝敗、サミット 2分岐 + 非サミット 2分岐 計4パターン
 - **Phase E** (2026-04-27): 退団・再契約経緯 6 type 追加(`release` / `contractEnd` / `suddenDeparture` / `retireRetracted` / `rentalIn` / `rentalOut`)
+- **2026-09-26(K-4 同姓同名の別人。specs/life-identity-spec-v1.0.md)**: 経歴年表・受賞・ピーク(`careerRecord`)と在籍履歴(`orgTimeline`)は選手オブジェクトに付くので、同じIDの再登場(テンプレートからの作り直し)で自動的に人生ごとに分かれる。直したのは2点: (1) `makeAIFighter` の在籍履歴の最初の項目を「作られた季」にする(以前は常に S1。呼び出し側が `opts.season/week` を渡す)、(2) 殿堂エントリの在籍の始まり `activeSeasonsStart` は、デビュー記録(自団体の入団)の無いAI選手ではその人生のデビューの季 `debutSeason`(以前は常に1 → 殿堂の在籍年が「S1〜」)。殿堂エントリと年代記アーカイブには人生番号 `lifeNo` を刻む。旧データのAI殿堂(始まり S1)は移行で `startUnknown` を付け、在籍年を「〜S9」と表示する
 - **2026-09-25(面白さ総点検 06-①/03-⑦)**: 読み捨てていた7種(`ppvTournament`/`unifiedTitle`/`autumnWar`/`mqAllTimeRecord`/`tenchosenBestBout`/`juniorTournamentBestBout`/`feud`)と開眼(`kaigan`、履歴への記録も新設)の行を追加。引退理由を実キーで引く。「特記事項なし」を記録の有無で判定(§3.5)。殿堂の実績欄・年代記・引退セレモニーの経歴欄(§3.6/§3.7)
