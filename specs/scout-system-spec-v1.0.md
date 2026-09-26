@@ -416,7 +416,7 @@ function checkVoluntaryRetirement(fighter) {
 |------|------|
 | 供給元 | ALL_CHARS の既存キャラクター（initRandomRosterで初期配分） |
 | 初期人数 | ROSTER_CFG.fa（=12名） |
-| 補充 | 引退枠(retiredIds) → 5シーズンCD後に dormant 復帰(年8人まで) → ドラフト/FA循環。**dormantPool で age 21 を超えた子は引退枠を経ずその場で 17〜19 歳に戻る**(K-4 R6。dormant の子は全員未デビューなので別人にならない) |
+| 補充 | 引退枠(retiredIds) → **5シーズン(注目の人生 = その人生で殿堂入り・王座獲得・自団体在籍は15シーズン。K-4 S5)**CD後に dormant 復帰(年8人まで。戻るIDは必ず転生の関所 `Engine.life.beginNewLife` を通り、前の人生の生きた記録を消して人生番号を進める) → ドラフト/FA循環。ロード時修復の「重症」の非常補充で CD を無視するのは通常の人生だけ。**dormantPool で age 21 を超えた子は引退枠を経ずその場で 17〜19 歳に戻る**(K-4 R6。dormant の子は全員未デビューなので別人にならない) |
 
 > **K-4(2026-09-26)の前提**: 休眠プール(dormantPool)に入ってよいのは、**今の人生でまだデビューしていない見込み選手**(`careerStage==='prospect'` で `debutSeason` が無い)だけ(R1)。休眠プールから出るときは毎回テンプレートから作り直されるため、デビュー済みの選手が入ると同じIDが引退を経ずに別人として作り直されていた。詳細は docs/fun-audit-v0.1/k4-separate-lives-design.md §6。
 
@@ -600,6 +600,7 @@ function checkVoluntaryRetirement(fighter) {
 |------|------|
 | 2026-02-19 | v1.0 初版作成。構造確定、数値は調整可能パラメータとしてマーク |
 | 2026-04-11 | §3 全面改訂: ランダムキャラ生成(generateCandidate)を廃止。dormantPool循環方式に統一。§9.2/§11/§12/§14も整合 |
+| 2026-09-26 | K-4 S5: 注目の人生(殿堂入り・王座獲得・自団体在籍)は戻るまで15季(`DORMANT_POOL_CFG.retiredCooldownNotable`)、非常補充でも短縮しない。S7: CLI(tools/save-doctor.js)の補充はロード時修復に一本化。全体は specs/life-identity-spec-v1.0.md |
 | 2026-09-26 | K-4 S1(同姓同名の別人): §9.2〜§9.5 改訂。休眠プールは未デビューの子だけ(R1)、手放す経路を releaseToMarket に一本化しデビュー済みは FA 上限なし(R2)、フリーのまま引退(R3)、月次入れ替え・FA若返りは見込み選手だけ(R4/R5)、休眠プールの21歳超はその場で若返り(R6) |
 
 <!-- 再同期: 2026-04-05, 指示書: docs/specs-resync-instruction.md -->

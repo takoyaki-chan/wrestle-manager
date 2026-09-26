@@ -1,8 +1,8 @@
 # 画面：データベース「📜 記録」タブ
 
 **ファイル**：`docs/ui/03-screens/records.md`  
-**最終更新**：2026-07-31  
-**実装状況**：完了（実装済み。実機確認待ち）  
+**最終更新**：2026-09-26(K-4 S6: 元データの人生単位の重複除去・前の人生の押下・在籍年)  
+**実装状況**：完了（実装済み。実機確認待ち。K-4 S6 の追加分も実機確認待ち）  
 **確定モックアップ**：`docs/ui/mockups/hof-records-and-peak-ovr-v0.4.html`（Keisuke採用）
 
 ---
@@ -154,8 +154,10 @@
 | 記録タブのNEW | `G.mqRecord`／`G.mqRecordTag` の `season`・`week` と現在の `G.season`・`G.week` の一致 |
 | MQシングル／タッグ | `G.mqRecord`／`G.mqRecordTag` の `value`、`holderIds`、`orgId`、`season`、`week`、`stage`。初期値は各々90／94 |
 | MQ選手名・顔 | `Engine.mq._fighterName(G, id)`、`getPortraitUrl(id)` |
-| 天頂戦・PPVの候補 | プレイヤー、AI、FA、引退、年代記アーカイブ、全殿堂、旧殿堂をID重複除去した選手群の `careerRecord.history`。天頂戦は `ppvTournament` / `champion`、PPVは `ppvMainEvent` + `isSummit` + `won` |
-| アッパーと詳細導線 | `getUpperUrl(id, _recordBookPeak(source))`。ピークは `careerRecord.peakOVR` → `fighter.peakOVR` → 現OVR の順で解決。`canOpenFighterPopup(id)` が真の場合だけ詳細を開く |
+| 天頂戦・PPVの候補 | プレイヤー、AI、FA、引退、年代記アーカイブ、全殿堂、旧殿堂を**「ID+人生番号」で重複除去**した選手群の `careerRecord.history`(K-4 2026-09-26。同じIDでも人生が違えば別の元データ。以前はIDだけで除去し、前の人生の天頂戦優勝・防衛記録が消えていた)。天頂戦は `ppvTournament` / `champion`、PPVは `ppvMainEvent` + `isSummit` + `won` |
+| アッパーと詳細導線 | `getUpperUrl(id, _recordBookPeak(source))`。ピークは `careerRecord.peakOVR` → `fighter.peakOVR` → 現OVR の順で解決。`canOpenFighterPopup(id, 人生番号)` が真の場合だけ押せる。今の人生なら選手詳細、前の人生なら**その人生の殿堂詳細**(殿堂入りしていなければ押せない) |
+| 在籍年(K-4) | 同じIDの別の人生がこの画面に2人以上並ぶときだけ、名前帯の所属行・統一王座の王者名・防衛帯の名前に「S3〜S9」(現役は「S3〜」)を添える。人生番号や「二代目」は出さない |
+| 統一王座の歴代表(K-4) | 履歴の各項目の `lives`(人物の人生番号)で元データを引く。`lives` の無い旧履歴は、今そのIDで生きている選手のデビューより前の戴冠なら前の人生の元データ |
 | 最多連続防衛 | 各選手の `careerRecord.history` の `titleLoss.defenses`、および `G.titles.world`／各 `G.aiOrgs[*].titles.world` の現防衛数 |
 | 称号バッジ | 全所属・FA・引退者の `careerRecord.history`、各団体の `titles.world.championId`、`Engine.springTagLeague.getActiveBestTagTeam(G)` |
 | ピークOVR | `fighter.careerRecord.peakOVR` と `fighter.careerRecord.peakOVRSeason` |

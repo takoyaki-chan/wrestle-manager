@@ -31,6 +31,7 @@ specs/ = 確定仕様(現在の真実)。新規specを作成したら**必ずこ
 | salary-decline-spec-v1.0.md | **給与の下り坂(契約査定)確定仕様**(offWeek3再固定/昇給吸収/下り交渉カード/セリフ7フェーズ/P2較正値) |
 | rival-org-spec-v1.0.md | AI団体の行動ロジック |
 | scout-system-spec-v1.0.md | スカウト/新人獲得 |
+| life-identity-spec-v1.0.md | **選手の人生(同姓同名の別人。裁定K-4)**: 人生番号 lifeSerial/lifeNo/debutSeason・転生の関所(生きた記録を閉じる・対戦の退避)・注目の人生は戻るまで15季・殿堂/年代記/序章/統一王座/新聞を「ID+人生番号」で書いて引く・在籍年は同じ名前が並ぶところだけ・前の人生の顔は殿堂詳細へ・既存セーブの移行(1回)・CLI修復の一本化 |
 | snapshot-notification-spec-v1.0.md | スナップショット通知(G/R系列/テキスト生成) |
 | title-system-spec-v1.0.md | タイトル3階級/防衛/挑戦権 |
 | trust-system-spec-v2.1.md | 信頼度(出場/ケア/士気/待遇不満) |

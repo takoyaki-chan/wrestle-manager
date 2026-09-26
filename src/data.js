@@ -8491,6 +8491,9 @@ const DORMANT_POOL_CFG = {
   refillOrder: [17, 18, 16, 19, 20],
   annualRefillCap: 8,
   retiredCooldown: 5,
+  // K-4(docs/fun-audit-v0.1/k4-separate-lives-design.md §5): 「注目の人生」(その人生で殿堂入りした・
+  // 王座を獲った・自団体に在籍した)が別人として戻ってくるまでの休み。ロード時の非常補充でも短縮しない
+  retiredCooldownNotable: 15,
 };
 
 // Mutable org roster assignment — populated by initRandomRoster() at game start

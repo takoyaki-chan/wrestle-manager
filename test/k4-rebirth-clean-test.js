@@ -174,34 +174,38 @@ test('合成状態: 21の保存先から転生したIDの記録が消え、他ID
   assert.deepStrictEqual(out.relationshipHistory.betrayalRecord, before.relationshipHistory.betrayalRecord);
 });
 
-test('合成状態: 意味のある関係だけを retiredRivalries に1組1件で退避(lifeEnd・lives・h2h の要約)', () => {
+// 2026-09-26 セーブ容量: 退避は読み手(年代記の宿敵の2か所)が必要とする情報だけ —
+// 対戦のあった組を {id1, id2, reason, retiredFighterId, lives, season, h2h: {bySeason}} で1組1件
+test('合成状態: 対戦のあった組だけを retiredRivalries に1組1件で退避(lifeEnd・lives・季ごとの試合数)', () => {
   const out = Engine.life.beginNewLife(syntheticState(), X);
   const rr = out.relationshipHistory.retiredRivalries;
   assert.deepStrictEqual(rr[0], { id1: 3, id2: 7, reason: 'retirement', retiredFighterId: 7 }, '既存の退避は無傷');
   const life = rr.filter(e => e.reason === 'lifeEnd');
   const pairs = life.map(e => [e.id1, e.id2].join('-')).sort();
-  assert.deepStrictEqual(pairs, [`12-${X}`, `3-${X}`, `${X}-90`], '絆70の3・対戦1回の12・因縁の段位の90。7(ほぼ初期値)は退避しない');
+  assert.deepStrictEqual(pairs, [`12-${X}`, `3-${X}`], '対戦のあった3・12。対戦の無い組(因縁の段位だけの90・絆だけの7)は読み手が無いので退避しない');
   life.forEach(e => {
     assert.strictEqual(e.retiredFighterId, X);
     assert.strictEqual(e.lives[X], 1, '終わった人生の番号');
     assert.ok(e.season === 10, '退避した季');
+    assert.deepStrictEqual(Object.keys(e).sort(), ['h2h', 'id1', 'id2', 'lives', 'reason', 'retiredFighterId', 'season'],
+      '読み手の無い欄(関係値・因縁・勝敗の要約・年齢・週)は持たない');
+    assert.deepStrictEqual(Object.keys(e.h2h), ['bySeason']);
   });
   const e3 = life.find(e => e.id1 === 3);
   assert.strictEqual(e3.lives[3], 2, '相手の今の人生の番号');
-  assert.strictEqual(e3.bond12, 45); assert.strictEqual(e3.bond21, 70);
-  assert.strictEqual(e3.rivalry12, 25); assert.strictEqual(e3.rivalry21, 10);
-  assert.deepStrictEqual(e3.rivalryMeta, { matches: 3, lastBand: 1, resolutionCount: 0 });
-  const h = e3.h2h;
-  assert.ok(h, 'h2h の要約');
-  assert.strictEqual(h.aId, 3);
-  assert.strictEqual(h.matches, 4); assert.strictEqual(h.winsA, 2); assert.strictEqual(h.winsB, 1); assert.strictEqual(h.draws, 1);
-  assert.strictEqual(h.bestMQ, 62); assert.strictEqual(h.hadTitleMatch, true); assert.strictEqual(h.hadPPV, true);
-  assert.strictEqual(h.firstSeason, 2); assert.strictEqual(h.lastSeason, 5);
-  assert.deepStrictEqual(h.bySeason, { 2: 2, 3: 1, 5: 1 });
-  assert.strictEqual(h.history, undefined, '全履歴は持たない(セーブの肥大を防ぐ)');
-  const e90 = life.find(e => e.id2 === 90);
-  assert.strictEqual(e90.h2h, null, '対戦の無い組は h2h の要約なし');
-  assert.strictEqual(e90.rivalryMeta.lastBand, 2);
+  assert.deepStrictEqual(e3.h2h.bySeason, { 2: 2, 3: 1, 5: 1 });
+  assert.deepStrictEqual(life.find(e => e.id1 === 12).h2h.bySeason, { 6: 1 });
+});
+
+test('旧形式(開発版)の lifeEnd の退避は移行で詰める', () => {
+  const old = { id1: 3, id2: X, reason: 'lifeEnd', retiredFighterId: X, lives: { 3: 2, [X]: 1 }, season: 10, week: 1, age1: 20, age2: 22,
+    bond12: 45, bond21: 70, rivalry12: 25, rivalry21: 10, rivalryMeta: { matches: 3 }, h2h: { aId: 3, matches: 4, bySeason: { 2: 2 } } };
+  const noMatch = { ...old, id1: 7, h2h: null };
+  assert.deepStrictEqual(Engine.life._compactLifeEndEntry(old),
+    { id1: 3, id2: X, reason: 'lifeEnd', retiredFighterId: X, lives: { 3: 2, [X]: 1 }, season: 10, h2h: { bySeason: { 2: 2 } } });
+  assert.strictEqual(Engine.life._compactLifeEndEntry(noMatch), null, '対戦の無い組は捨てる');
+  const keep = { id1: 3, id2: 7, reason: 'retirement', retiredFighterId: 7, bond12: 60 };
+  assert.strictEqual(Engine.life._compactLifeEndEntry(keep), keep, '引退の退避(相関図が読む)はそのまま');
 });
 
 test('関所を2度通しても記録が増えない(2度目は何も残っていない)', () => {

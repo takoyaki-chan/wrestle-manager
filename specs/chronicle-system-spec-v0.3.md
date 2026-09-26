@@ -250,3 +250,19 @@ ace meta (PEAK OVR / PEAK POP / STYLE / ERA RUN / TITLES) は `grid-template-col
 ## §J. 実装状況
 
 Phase A〜D 全実装完了 (2026-05-04)。auto-sim 100 シーズン × seed 42 で violations 0 / errors 0 / weeks 5300 ALL CLEAR ✓。
+
+---
+
+## §K. 同じIDの別の人生(K-4 2026-09-26。specs/life-identity-spec-v1.0.md)
+
+同じIDが引退から戻ってくると同姓同名の別人(別の人生)。年代記は「ID+人生番号」で扱う。
+
+- **fighterArchive**: 各項目に `lifeNo`・`debutSeason`。重複登録の判定は (id, lifeNo)(以前はIDだけで、2度目の自団体OGが登録されなかった)
+- **候補 `_collectCandidates`**: 前の人生のアーカイブと、今の人生の現役は別の候補(以前は同じIDの現役を捨てていた)。候補・章のエース/同世代は `lifeNo`・`careerSeasonsStart/End`・`active` を持つ
+- **`_resolveFullFighter`**: 候補の人生番号で、現役(同じ人生のときだけ)かアーカイブを引く(以前は過去の章のエースが現役の同名を指し、章の防衛数が0になった)
+- **3章上限(spec A-8)**: 同じ選手の数え方は (id, 人生)
+- **宿敵の数え上げ(エース・同世代の2か所)**: 生きた h2h に加え、転生の関所で退避した対戦(`retiredRivalries` の `reason:'lifeEnd'` の `h2h.bySeason`)を章の季の窓で数える(`_archivedPairCountsInWindow`)。退避は対戦のあった組だけ・季ごとの試合数だけを持つ
+- **表示**: 殿堂バッジ・殿堂リンク・顔の押下は「ID+人生番号」。前の人生のエース/同世代の顔は、殿堂入りしていればその人生の殿堂詳細、していなければ押せない。同じ章に同じIDの別の人生が並ぶときだけ名前に在籍年(S3〜S9)を添える
+- **殿堂⇔年代記の相互リンク**: `openHofDetailById(id, lifeNo)` / `openChronicleForFighter(id, lifeNo)`
+- **_getDepartures(シーズン総括の退団者)**: 今季引退した人生のアーカイブで在籍年数を出す
+- 既存セーブは移行(life-identity §8)でアーカイブに番号を刻み、章を作り直す。2度目の自団体OGで登録されなかった人生は戻せない(現状維持)
