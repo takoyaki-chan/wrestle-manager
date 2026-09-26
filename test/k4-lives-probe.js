@@ -240,6 +240,12 @@ function report() {
   const firstWhere = {};
   rb.forEach(r => { firstWhere[r.firstWhere] = (firstWhere[r.firstWhere] || 0) + 1; });
   lines.push(`    初見の場所: ${Object.entries(firstWhere).map(([k, n]) => `${k} ${n}`).join(' / ') || '-'}`);
+  const carriedWhere = {};
+  rb.filter(r => r.carried).forEach(r => { carriedWhere[r.firstWhere] = (carriedWhere[r.firstWhere] || 0) + 1; });
+  if (Object.keys(carriedWhere).length) {
+    lines.push(`    参照が残っていた転生の初見の場所: ${Object.entries(carriedWhere).map(([k, n]) => `${k} ${n}`).join(' / ')}`
+      + '(団体ロスターで初見 = 関所の後、初見までの間に新しい人生で書かれた記録を含む)');
+  }
   lines.push(`[引退を経ない作り直しの入口] デビュー済み→休眠プール直行: ${P.leaks.length}件`);
   if (P.leaks.length) {
     const from = {};
@@ -266,7 +272,14 @@ function report() {
   if (finalG) {
     const rr = ((finalG.relationshipHistory || {}).retiredRivalries || []);
     const lifeEnd = rr.filter(e => e && e.reason === 'lifeEnd');
-    lines.push(`[最終状態] S${finalG.season} retiredRivalries ${rr.length}件(うち lifeEnd ${lifeEnd.length}件・${Math.round(JSON.stringify(lifeEnd).length / 1024)}KB)`
+    let lzKB = '-';
+    let saveKB = '-';
+    try {
+      const LZ = require('lz-string');
+      lzKB = Math.round(LZ.compressToUTF16(JSON.stringify(lifeEnd)).length * 2 / 1024);
+      saveKB = Math.round(LZ.compressToUTF16(JSON.stringify(finalG)).length * 2 / 1024);
+    } catch (e) { /* lz-string が無ければ省く */ }
+    lines.push(`[最終状態] S${finalG.season} retiredRivalries ${rr.length}件(うち lifeEnd ${lifeEnd.length}件・JSON ${Math.round(JSON.stringify(lifeEnd).length / 1024)}KB・圧縮後 ${lzKB}KB / 状態全体の圧縮後 ${saveKB}KB)`
       + ` / lifeSerial の2以上 ${Object.values(finalG.lifeSerial || {}).filter(n => n >= 2).length}ID`);
   }
   console.log(lines.join('\n'));
