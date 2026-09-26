@@ -18,6 +18,7 @@
 - `node test/ui-walkthrough/dojo-rest-bubble-fit-check.js`(新規・手動): JA/EN × 1920/1280/1024/761/760/414/375/360px × 3場面(コーチ+練習の列+熱量の吹き出し/コーチ不在/練習の列なし)で、全1,370本が切れない・吹き出しと顔がバナーからはみ出さない・コーチの吹き出し/顔/名前・雰囲気の地の文・練習中の顔・熱量の吹き出し・掛け声に被らない・ほかの要素もバナーに収まる・3つの尻尾が切られていない・尻尾が顔の水平中心・例外0。ALL CHECKS PASS
 - `node test/ui-walkthrough/care-last-warning-lines-check.js`・`node test/ui-walkthrough/dojo-heat-self-bubble-check.js` ALL CHECKS PASS
 - `node test/ui-baseline-guard-test.js` ok・`npm test` 312/312 PASS・UI 走破1本 `npm run test:ui:walkthrough` PASS(1季・345操作・Issues 0)
+- main(4e5c0a11 コーチの能力名の英訳ほか)を取り込み後: `npm test` 312/312 PASS・`dojo-rest-bubble-fit-check.js` ALL CHECKS PASS
 
 ## 2026-09-26 コーチの能力名などが英語で日本語のまま出ていた4画面(Claude/Opus 5.5・worktree)
 
