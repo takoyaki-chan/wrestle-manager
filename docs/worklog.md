@@ -1,5 +1,51 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 K-1 第4段 4-B 後半 — プロモ蓄積のリセット・怪我による引退・突然の退団を実プレイにも(Claude/Opus 5.5・worktree)
+
+裁定 K-1 第4段 4-B の後半3件(Keisuke 承認済み・2026-09-25 第3回の確認)。前半と同じく `Engine.executeShow` の該当部分を `Engine.show.*` の純関数に切り出し、切り出しだけの段階で auto-sim の指紋が不変であることを確かめてから、実プレイ(`App._finalizeShowImpl`)を呼び替えた。**エンジン経路(auto-sim)の数値は3件とも不変**(10季 seed42 ac048164 / 40季 seed42 bdb5ffd4 / 40季 seed7919 d9dbafed。作業前と同じ)。
+
+### 1. K1-E01 プロモ蓄積のリセット(82859a12)— `Engine.show.resetPromoStacks(roster, results)`
+- 出場者(シングルの左右・タッグの perFighter 4人)の promoStack を0に。実プレイは人気処理の直後(エンジンと同じ位置)で呼ぶ
+- 実プレイで変わる(差分テスト・1興行): 週の収入 +298〜+631(約+50%。プロモ収入・プロモ連動グッズ・プロモ連動メディア)、プロモに回った3〜6人の人気 計+4.6〜+9.6、練習しなくなった2〜4人の能力 計−2〜−6。次の興行の時点の蓄積が 3 → 1(集客の加点 −16/人)
+- 1季の見込み(auto-sim 40季を「リセットあり/なし」で seed 42・7919 の2本ずつ。全員「バランス」): 興行週のバランス出場者の行動 プロモ15%→78%・練習61%→0%、プロモ由来の収入 +18,784 / +17,920 /季(ゲーム内の単位=万円。旧の約8〜9倍)、チケットは +3,918 / −5,201(方向が定まらない)、季末の平均人気 +18.3 / +16.8、平均OVR −1.5 / −5.6。fixture の規模(12人・人気15〜55)なら +4,800〜10,000/季
+
+### 2. K1-E03 怪我による引退(65bbc35c)— `resolveMatchInjury` / `retireInjuredFighter` / `applyInjuryRetirementAftermath` / `buildInjuryRetirementPresentations`
+- 判定と引退(経歴・引退者の記録・コーチ担当・レンタル・年代記・関係値の凍結)→ 全試合の後に O-04(仲の良い選手の気落ちと M-22)・信頼への波及・王座の返上 → 引退ポップアップのデータ。実プレイも同じ順で呼ぶ。以前の実プレイは retireType を記録するだけで、重傷で消耗が上限を越えた選手が長期離脱のままロスターに残っていた
+- ついでに直したもの(エンジンの数値は不変): ①王座の返上が「この興行の王座戦の結果(ローカルの titles)」も見る(以前は興行前の王者だけ見て、防衛・戴冠した直後の試合で引退すると書き戻しで引退者が王者のまま残りえた。auto-sim には王座が無いので表に出なかった)②演出データに幕切れの型(farewellKind)が載る(以前のエンジンは落としていた)
+- 画面: 結果画面の怪我の欄は引退者に全治の週数を出さない(ui-common.js `_pbInjuryBlock`)。怪我引退の週は関係性フラグのポップアップを本人の引退ポップアップの後に回す(app.js closeShowResult。ただし下の既存の不具合で今は効果なし)
+- 実プレイで変わる(injury シナリオ): 選手83(消耗62で重傷)が引退しロスター 12→11、週の収支 +19、士気 0→0.62、残った選手の信頼 −0.13〜+0.65。ほかの15本は変化なし
+- 頻度(auto-sim・自団体・ケアなし): 40季で4件(seed 42)・1件(seed 7919)。すべて消耗55超の重傷、24〜28歳。壮絶な幕切れは0件
+
+### 3. K1-E04 突然の退団(eadf5687)— `Engine.show.applySuddenDepartures(state)`
+- **前兆を先に確かめた(裁定の条件)**: 信頼40未満で所属タブのロスターカードと選手ポップアップに「💭よそよそしい」、ポップアップの「💬 声をかけに行く」がオレンジで脈打つ。信頼20を割った週に「退団を考えているという噂」(ログ1行+所属タブ上部の道場「休憩中の選手」の確定枠で本人の吹き出し。確率100%)。auto-sim 40季×2シードで信頼15未満に落ちた8人全員に、15未満になる1〜7週前に噂が出ていた → 見えると判断して有効化。足りない点(15未満そのものを示す段が無い)は報告のみ
+- 退団の処理一式(O-08 と M-23・士気−4.59・王座の返上・信頼への波及・経歴・行き先・演出データ)を切り出し。他団体へ移すときに入力の団体オブジェクトの roster をその場で差し替えていたのを「写してから書く」に(指紋不変)
+- 実プレイは興行の処理を全部終えた状態で1回呼ぶ。closeShowResult が tickWeek の後・週送りの前に `_pendingSuddenDepartures` を取り出し、processWeek と共通の `App._showSuddenDepartureToasts` でトースト(残すと翌週の processWeek が1週遅れで出していた)。王座を返上したときの一文だけログに積む
+- 実プレイで変わる(departure シナリオ): 選手84(信頼6)がフリーへ、週の収入 −97、残った選手の信頼 −0.39〜−1.56。ほかの15本は変化なし
+- 頻度(auto-sim・ケアなし): 信頼15未満に落ちた選手 2人 / 6人、退団 1件 / 2件(40季・seed 42 / 7919)
+
+### 見つけた既存の不具合(未修正・裁定待ち)
+- **関係性フラグのポップアップ(M-1〜M-24)が実プレイで一度も出ていない**: ui-common.js `_drainFlagModalQueue` が `window.G` を見ているが、G は app.js の `let` 宣言で window に載らない(実ページで確認。2026-04-28 の Phase 7 から)。キューは消費されずセーブに積もる(headless 進行 seed 42: 4季目頭で127件・約1.7万バイト)。直すと全フラグのポップアップが出始めるので、出す量ごと裁定が要る(k1-parity-report.md §7 X12)
+- 本人の引退ポップアップは closeShowResult の既存の順番で、同じ週の通知(引退でない怪我・契約枠・王座設立)と1.4秒後に割り込む直訴・派閥イベントの後になる(ラストランの引退・王座の式典も同じ)
+
+### 許容リスト(経路差分テスト)
+- 33 → **33**。外した: K1-E01・K1-E03・K1-E04。登録: K1-T04(怪我引退の演出データを実プレイは closeShowResult の前半で消化)・K1-A16(引退者の関係値・因縁の整理 archiveRetiredRivalryState は画面側だけ)・K1-A01B(去った選手が持ち出す K1-A01 の差)。K1-C06 に `_pendingSuddenDepartures` の消化を追加。E01 が消えて多くのシナリオで B の収支・乱数ずれの差(K1-B01/B04)も消えた
+
+### 検証
+- 新テスト `test/k1-stage4b2-test.js`(10項目): 項目ごとに直前のコミットの src で該当項目が全部 FAIL することを確認(E01 2件・E03 5件・E04 3件)
+- 既存テストの文面検査を新しい形に追従: k1-stage4b-test(X03)・retirement-drama-test(C-6)・rental-retirement-consistency-test
+- 画面の流れの手動チェック(新規) `node test/ui-walkthrough/injury-retire-departure-check.js`: 合成 fixture(seed 42 S2W14+injury/departure シナリオ+乱数シード探索)から実UIの本物のボタンで、怪我引退の週・突然の退団の週の結果画面→週送り→本人の引退ポップアップ/退団のトースト→次の週まで。ALL CHECKS PASS
+- `npm test` **298/298 PASS** / `npm run test:k1:parity` **PASS(33件・未登録0・消えた0)** / `node test/auto-sim.js 40 42` ALL CLEAR(bdb5ffd4)/ `node test/balance-baseline.js` 逸脱なし / `npm run test:ui:walkthrough` PASS(1季・次の季の第1週まで)/ `node test/ui-baseline-guard-test.js` ok
+
+### 触ったファイル
+- src/management.js(`Engine.show` に6関数・executeShow の3か所を呼び出しに)/ src/app.js(`_finalizeShowImpl`・`closeShowResult`・`processWeek`・`_showSuddenDepartureToasts` 新設)/ src/ui-common.js(`_pbInjuryBlock`)
+- test/k1-stage4b2-test.js(新規)/ test/ui-walkthrough/injury-retire-departure-check.js(新規)/ test/k1-parity/allowlist.js / test/k1-stage4b-test.js / test/retirement-drama-test.js / test/rental-retirement-consistency-test.js
+- specs: promo-system-spec-v1.0 §3.1 / trust-system-spec-v2.1 §13.3 / career-history-spec-v1.0(retire.reason の表)。docs/ui/03-screens/show-result-spec.md §7
+- docs/fun-audit-v0.1/k1-parity-report.md(改訂注記その4・§4.1 の3行・§7 X12・§8 4-B 後半の実施結果)/ docs/実機確認バックログ.md / docs/game-system-roadmap.md
+
+### 残課題
+- 裁定待ち: 関係性フラグのポップアップ(X12)を出すか・どれだけ出すか/引退がある週は本人の引退ポップアップを先に出すか/突然の退団の15未満の段の前兆を足すか
+- 第4段 4-A(実プレイにある処理をエンジンへ)と第5段は未着手
+
 ## 2026-09-26 K-1 第4段 4-B 前半 — タッグの勝敗と人気・派閥ポイント・怪我判定の情報・試合成長の式を実プレイにも(Claude/Opus 5.5・worktree)
 
 裁定 K-1「興行後の処理を一本化する(A・段階的)」第4段 4-B(エンジンにあるのに実プレイで起きていない処理を実プレイにも)の前半4件。Keisuke 承認済み(2026-09-25 第3回の確認)。書き写さず、`Engine.executeShow` の該当部分を名前の付いた純関数 `Engine.show.*`(management.js、executeShow の直前)に切り出し、エンジンと実プレイ(`App._finalizeShowImpl`)の両方がそれを呼ぶ形にした(=第3段 3-1 の部分実施)。切り出しだけの段階で auto-sim の指紋が不変であることを確かめてから実プレイを呼び替えた。

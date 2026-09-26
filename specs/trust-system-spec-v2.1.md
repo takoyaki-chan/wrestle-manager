@@ -364,6 +364,12 @@ Bond/Rivalryシステム（relationship-system-spec参照）からの信頼変�
 
 退団時: 全体士気 -4.59 🔧
 
+**実装(2026-09-26 K-1 第4段 4-B-7)**: `Engine.show.applySuddenDepartures(state)`。判定は `Engine.trust.checkSuddenDepartures`(乱数 0xDE7A・レンタル/統一王座のゲストは対象外・怪我人は対象)。通常興行の処理を全部終えた状態(信頼の更新=週次精算の前)で1回呼ぶ。エンジン(`Engine.executeShow`=auto-sim)と実プレイ(`App._finalizeShowImpl`)が同じ関数を通す。以前の実プレイには呼び出しが無く、表示コードだけが残っていた。
+- 去った選手へ残る全員の bond −8〜−15(O-08)と関係性ポップアップ M-23、王座の返上、仲の良い選手の信頼への波及(`applyDepartureTrustImpact`)
+- 経歴に `suddenDeparture`。人気40以上は他団体へ(スター争奪 `claimDepartedStar` → 無ければ乱数で1団体)、それ以外はフリー(枠が無ければ休眠プール)。行き先では信頼50から
+- 演出: `_pendingSuddenDepartures` を実プレイの closeShowResult(興行週)が tickWeek の後・週送りの前に取り出し、`App._showSuddenDepartureToasts` でトースト(D型・「🚪 ○○が荷物をまとめて団体を去った。誰も止められなかった。」+行き先)
+- **前兆(社長に見えるもの)**: 信頼40未満で所属タブのロスターカードと選手ポップアップに「💭よそよそしい」、選手ポップアップの「💬 声をかけに行く」がオレンジで脈打つ。信頼20を割った週に「退団を考えているという噂」(ログ1行+道場「休憩中の選手」の確定枠で本人の吹き出し。Glimpse A `trust_below_20`・確率100%・12週クールダウン・30を超えると再武装)。auto-sim 40季×2シードで信頼15未満に落ちた8人全員に、15未満になる1〜7週前に噂が出ていた
+
 ---
 
 ## §14 適用順序（applyShowTrust内）
