@@ -5062,15 +5062,16 @@ Engine.h2h = {
 };
 
 // ── recentMatches ヘルパー: 直近5戦FIFO ──────────
-/** rosterの対象2選手にrecentMatchesエントリを追加し、新rosterを返す */
-Engine.pushRecentMatch = function(roster, leftId, rightId, winner, season, week) {
+/** rosterの対象2選手にrecentMatchesエントリを追加し、新rosterを返す
+ *  extra: エントリに足す印(K-1 第3段 K1-A07: タッグは { tag: true }。選手ポップアップの「直近」が「(タッグ)」と出す) */
+Engine.pushRecentMatch = function(roster, leftId, rightId, winner, season, week, extra) {
   const result = (side, id) => winner === 'draw' ? 'draw' : (winner === side ? 'win' : 'loss');
   return roster.map(c => {
     if (c.id !== leftId && c.id !== rightId) return c;
     const isLeft = c.id === leftId;
     const opponentId = isLeft ? rightId : leftId;
     const res = isLeft ? result('left', c.id) : result('right', c.id);
-    const rm = [...(c.recentMatches || []), { opponentId, result: res, season, week }];
+    const rm = [...(c.recentMatches || []), extra ? { opponentId, result: res, season, week, ...extra } : { opponentId, result: res, season, week }];
     if (rm.length > 5) rm.shift();
     return { ...c, recentMatches: rm };
   });

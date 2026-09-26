@@ -7742,7 +7742,6 @@ const App = {
       nextMatchBuffCard: G.showCard || [],
       markDomeSellout: true,
       crossOrgRelationshipContext: true,
-      recentMatchesTagDiagonal: true,
       resolveUnifiedTitle: false,
       injuryPresentationDict: WM_I18N.t,
       buildNewspaper: false,

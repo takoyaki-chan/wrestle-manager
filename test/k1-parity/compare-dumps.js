@@ -9,6 +9,7 @@
 //
 // 使い方: node test/k1-parity/compare-dumps.js <beforeDir> <afterDir> [--limit N] [--ignore <欄のパターン>]...
 //   --ignore は '.' 区切りのパス(例: 'lastShowResults.*.mqInventory.path')。'*' は1段の任意の欄
+//   --ignore-key <欄名> はどの深さでもその名前の欄を比べない(例: recentMatches)
 // 終了コード: 差が無ければ 0、あれば 1
 
 const fs = require('fs');
@@ -18,11 +19,12 @@ const path = require('path');
 const DEFAULT_IGNORE = ['app.notes.*', 'app.previewTicks.*.caller'];
 
 function parseArgs(argv) {
-  const opts = { dirs: [], limit: 30, ignore: [...DEFAULT_IGNORE] };
+  const opts = { dirs: [], limit: 30, ignore: [...DEFAULT_IGNORE], ignoreKeys: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--limit') opts.limit = Number(argv[++i]);
     else if (a === '--ignore') opts.ignore.push(argv[++i]);
+    else if (a === '--ignore-key') opts.ignoreKeys.push(argv[++i]);
     else opts.dirs.push(a);
   }
   if (opts.dirs.length !== 2) throw new Error('usage: compare-dumps.js <beforeDir> <afterDir> [--limit N] [--ignore pattern]');
@@ -39,6 +41,7 @@ function ignoredBy(patterns, pathSegs) {
 
 function deepDiff(a, b, segs, out, opts) {
   if (ignoredBy(opts.ignore, segs)) return;
+  if (segs.length && opts.ignoreKeys.includes(segs[segs.length - 1])) return;
   if (a === b) return;
   if (typeof a === 'number' && typeof b === 'number' && Number.isNaN(a) && Number.isNaN(b)) return;
   const ta = a === null ? 'null' : Array.isArray(a) ? 'array' : typeof a;

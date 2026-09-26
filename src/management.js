@@ -16573,7 +16573,6 @@ const Engine = {
     //   ctx.markDomeSellout: 超満員のドームの節目の予約(§7 X10。実プレイだけ)
     //   ctx.crossOrgRelationshipContext: 試合の関係値の文脈に、統一王座戦の王者・他団体戦・挑戦試合の印を渡す
     //                 (§7 X06。実プレイだけ)
-    //   ctx.recentMatchesTagDiagonal: タッグの直近戦績を対角の4組で記録する(K1-A07。実プレイだけ)
     //   ctx.resolveUnifiedTitle: false で、ロスターに混ぜた統一王座の挑戦者の清算をここでしない
     //                 (実プレイは hooks.afterWriteback で自前の清算をする。§7 X06)
     //   ctx.injuryPresentationDict: 怪我引退の演出データの経歴の要約を訳す辞書(実プレイは WM_I18N.t。団体名も入れる)
@@ -17198,19 +17197,16 @@ const Engine = {
       s = Engine.show.recordShowH2h({ ...s, roster }, validMatches, results);
 
       // recentMatches記録（直近5戦FIFO）
+      // タッグは1試合1枠(K-1 第3段 K1-A07。2026-09-26 報告書の推奨③): 相手はタッグの人気と同じ A1↔B1・A2↔B2 の組で、
+      // タッグの印(tag: true)を付ける(選手ポップアップの「直近」が「(タッグ)」と出す)。以前はエンジンがタッグを記録せず、
+      // 実プレイが対角の4組を記録していた(1試合で各選手の直近5戦の枠を2つ使っていた)
       results.forEach((r, idx) => {
         const m = validMatches[idx];
         if (r.matchType === 'tag') {
-          if (!ctx.recentMatchesTagDiagonal) return; // エンジン: タッグ試合はスキップ
-          // 実プレイ: 対角ペアで記録(K1-A07)
-          const teamAIds = [m.teamA.fighter1, m.teamA.fighter2];
-          const teamBIds = [m.teamB.fighter1, m.teamB.fighter2];
-          for (const aId of teamAIds) {
-            for (const bId of teamBIds) {
-              const tagWinner = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
-              roster = Engine.pushRecentMatch(roster, aId, bId, tagWinner, s.season, s.week);
-            }
-          }
+          const tagWinner = r.winner === 'teamA' ? 'left' : r.winner === 'teamB' ? 'right' : 'draw';
+          [[m.teamA.fighter1, m.teamB.fighter1], [m.teamA.fighter2, m.teamB.fighter2]].forEach(([aId, bId]) => {
+            roster = Engine.pushRecentMatch(roster, aId, bId, tagWinner, s.season, s.week, { tag: true });
+          });
           return;
         }
         roster = Engine.pushRecentMatch(roster, m.left, m.right, r.winner, s.season, s.week);

@@ -158,12 +158,8 @@ module.exports = [
   // K1-F01(タッグの人気・連敗・勝敗の付け方。実プレイは敗者も勝者扱い)は K-1 第4段 4-B-1 で解消したので外した
   // (2026-09-26)。両経路が Engine.show.applyMatchPopularity を通す。タッグにもメイン低評価の人気減と
   // ヒール適性の加点が掛かる(裁定)。以後この場所に差が出ると「未登録」で落ちる。
-  {
-    id: 'K1-A07', title: 'タッグ試合の直近戦績(recentMatches・対角4ペア)',
-    category: 'processing', side: 'app', impact: '表示', scenarios: ['tag-mixed', 'mq-record', 'tag-lowbond'], checkpoints: ['A', 'B'],
-    patterns: ['roster[*].recentMatches'],
-    mustAppear: true, refs: 'app.js:8979-8995 / management.js:15450-15455(タッグは飛ばす)',
-  },
+  // K1-A07(タッグ試合の直近戦績。実プレイは対角4組・エンジンは記録なし)は K-1 第3段で解消したので外した(2026-09-26)。
+  // 両経路が Engine.show.finalize で1試合1枠(A1↔B1・A2↔B2、tag: true の印)を記録する(報告書の推奨③)。
   // K1-E08(因縁決着エントリの記録欄。エンジン=lastShowNumber / 実プレイ=宿怨の勝者ID)は K-1 第2段で解消したので
   // 外した(2026-09-26)。両経路が Engine.show.resolvedRivalryEntry で作り、両方の欄を持つ。
 

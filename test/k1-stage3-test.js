@@ -230,6 +230,35 @@ section('finalize: hooks が作業中の値を差し替えると、その後の�
   assert.strictEqual(run.fin.state._stage3AfterWriteback, true, 'afterWriteback の状態が引き継がれていない');
 });
 
+section('K1-A07: タッグの直近戦績は1試合1枠(A1↔B1・A2↔B2、タッグの印つき)。両経路とも同じ', () => {
+  const run = runFinalize();
+  const idx = run.validMatches.findIndex(m => m.matchType === 'tag');
+  const m = run.validMatches[idx];
+  const r = run.results[idx];
+  const pairs = [[m.teamA.fighter1, m.teamB.fighter1], [m.teamA.fighter2, m.teamB.fighter2]];
+  const expectResult = (id) => {
+    if (r.winner === 'draw') return 'draw';
+    const inA = id === m.teamA.fighter1 || id === m.teamA.fighter2;
+    return (r.winner === 'teamA') === inA ? 'win' : 'loss';
+  };
+  pairs.forEach(([a, b]) => {
+    [[a, b], [b, a]].forEach(([self, opp]) => {
+      const before = (run.input.roster.find(c => c.id === self).recentMatches || []);
+      const after = run.fin.state.roster.find(c => c.id === self).recentMatches || [];
+      const added = after.filter(e => e.season === run.input.season && e.week === run.input.week);
+      assert.strictEqual(added.length, 1, `選手${self}のこの興行の直近戦績が ${added.length} 枠(1試合1枠のはず)`);
+      assert.deepStrictEqual(added[0], { opponentId: opp, result: expectResult(self), season: run.input.season, week: run.input.week, tag: true });
+      assert.ok(after.length <= 5 && after.length >= Math.min(5, before.length), '直近5戦の枠');
+    });
+  });
+  // 実プレイも同じ(対角4組の指定は無い)
+  const app = readSource('src', 'app.js');
+  assert.ok(!/recentMatchesTagDiagonal/.test(app) && !/recentMatchesTagDiagonal/.test(finalizeBody()), '対角4組の記録が残っている');
+  // 表示: タッグの印
+  const ui = readSource('src', 'ui-common.js');
+  assert.ok(/m\.tag \? `<span style="color:var\(--text-dim\)">\(\$\{WM_I18N\.t\('タッグ'\)\}\)<\/span>` : ''/.test(ui), '選手ポップアップの直近にタッグの印が無い');
+});
+
 section('finalize: ctx.logStyle — 省略時は文字列、structured は実プレイの gameLog の型', () => {
   const text = runFinalize().fin.events;
   const structured = runFinalize({ logStyle: 'structured' }).fin.events;
