@@ -1935,6 +1935,8 @@ const DOJO_REST_B_TYPES = new Set(['GL-01', 'GL-02', 'GL-03', 'GL-04', 'GL-05', 
 const DOJO_REST_A_AXES = new Set(['bond', 'rivalry', 'trust']);
 const DOJO_REST_PROB = 0.18; // 控えめ: 対象1件につき18%抽選。該当ゼロなら何も出さない
 // 出すのは1人だけ。2人だと縦に並んでしまい、セリフも合わせると窮屈になるため(2026-07-26 Keisuke)
+// 2026-09-26 に吹き出しを最大4行(幅200px)へ広げたので、1人でも高さ約108px。2人を縦に積むとバナー
+// (最大200px)に収まらない — 増やすなら並べ方から作り直すこと
 const DOJO_REST_MAX = 1;
 /** 休憩中の選手候補として使える Glimpse か判定する。
  *  本人の心の状態・人間関係・試合や勝ち負けを受けた気持ちを映すもの:
@@ -2015,7 +2017,7 @@ function _renderRosterDojoHeader() {
           .replace('{name}', callNameText(null, heatFighter, '') || WM_I18N.t('この子'));
         coachHeatFighterId = heatFighter.id;
       }
-      html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble">${_quoteLine(speechText)}</div></div>
+      html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble"><span class="dojo-bubble-text">${_quoteLine(speechText)}</span></div></div>
         <div class="dojo-scene-coach-avatar" onclick="showCoachTooltip(${coachForBubble.id})" style="cursor:pointer">
           ${coachPortraitImg(coachForBubble, 48)}
         </div>
@@ -2109,7 +2111,7 @@ function _renderRosterDojoHeader() {
         const isHeatSelf = !!(heatSelfFighter && heatSelfLineText && c.id === heatSelfFighter.id);
         html += `<div class="dojo-scene-fighter-wrap${isHeatSelf ? ' has-heat-bubble' : ''}" style="margin-bottom:${offsetY}px" title="${WM_I18N.pn(c.name)}" onclick="showFighterPopup(${c.id},'roster')">`;
         if (isHeatSelf) {
-          html += `<div class="dojo-heat-bubble">${_quoteLine(heatSelfLineText)}</div>`;
+          html += `<div class="dojo-heat-bubble"><span class="dojo-bubble-text">${_quoteLine(heatSelfLineText)}</span></div>`;
         } else {
           html += `<div class="dojo-scene-shout" style="--shout-cycle:${cycle}s;--shout-delay:${delay}s"></div>`;
         }
@@ -2149,7 +2151,7 @@ function _renderRosterDojoHeader() {
         // i18n Stage B P5-1: g.dialogue はrelationships.jsのGLIMPSE_A/B_LINES選択(pickDialogueLine)
         // で得た生JA行(relationships.jsは並行エージェントの領分のため選択ロジックには触れず、
         // ここ=表示直前でt()を通す)。
-        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">${_quoteLine((g.dialogueTpl ? WM_I18N.t(g.dialogueTpl, g.dialogueVars || {}) : WM_I18N.t(g.dialogue)) || WM_I18N.t(g.label) || '')}</div>`;
+        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s"><span class="dojo-bubble-text">${_quoteLine((g.dialogueTpl ? WM_I18N.t(g.dialogueTpl, g.dialogueVars || {}) : WM_I18N.t(g.dialogue)) || WM_I18N.t(g.label) || '')}</span></div>`;
         html += `<div class="dojo-rest-avatar">${portraitImg(g.speakerId, 34)}</div>`;
         html += '</div>';
       });
@@ -2382,7 +2384,7 @@ function _renderRosterDetailPanel(c, hired) {
     // care-rework2 P3-2: 頼んだ重点は期間中ずっと見えるようにする(何を頼んだか忘れさせない)
     const _focus = c._inviteBuff.focusStat;
     if (_focus && typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[_focus]) {
-      tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('重点')}</span><span class="rd-meta-val">${WM_I18N.t('{stat}を重点に指導中', { stat: STAT_LABELS_JP[_focus] })}</span></div>`;
+      tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('重点')}</span><span class="rd-meta-val">${WM_I18N.t('{stat}を重点に指導中', { stat: WM_I18N.t(STAT_LABELS_JP[_focus]) })}</span></div>`;
     }
   } else if (hired.length > 0) {
     let opts = `<option value="0"${!coach?' selected':''}>${WM_I18N.t('--- なし ---')}</option>`;
@@ -2404,7 +2406,8 @@ function _renderRosterDetailPanel(c, hired) {
     const mult = coach.gMult || 1.0;
     const sm = getCoachStyleMatch(coach, c);
     const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : `<span style="color:#7a7466">${WM_I18N.t('不一致')}</span>`;
-    const abilitiesText = (coach.abilities||[]).join('・');
+    // i18n: 能力名を各々 t() し、区切りは言語で分ける(EN は ", "。道場のコーチ能力 P7-60 と同じ)
+    const abilitiesText = (coach.abilities||[]).map(a => WM_I18N.t(a)).join(WM_I18N.lang === 'ja' ? '・' : ', ');
     tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('コーチ効果')}</span><span class="rd-meta-val" style="font-size:12px">${WM_I18N.t('成長×{mult}', { mult })} <span class="badge badge-${coach.style}" style="font-size:9px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${abilitiesText}</span></div>`;
   }
   // Growth tendency
@@ -2416,7 +2419,7 @@ function _renderRosterDetailPanel(c, hired) {
   // Development rate
   const potPct = getPotentialPct(c);
   const potLabel = getPotentialLabel(c);
-  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('開発率')}</span><span class="rd-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="width:${potPct}%;height:100%;background:${potLabel.color};border-radius:3px"></div></div><span style="font-size:12px;color:${potLabel.color};font-weight:700">${potLabel.label}</span></div></span></div>`;
+  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('開発率')}</span><span class="rd-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="width:${potPct}%;height:100%;background:${potLabel.color};border-radius:3px"></div></div><span style="font-size:12px;color:${potLabel.color};font-weight:700">${WM_I18N.t(potLabel.label)}</span></div></span></div>`;
   // Physical decline
   const stageLabel = {none:WM_I18N.t('良好'),early:WM_I18N.t('わずかに衰えの兆候'),major:WM_I18N.t('衰退期'),terminal:WM_I18N.t('限界')};
   const stageColor = {none:'#1a8a4a',early:'#a07010',major:'#a06000',terminal:'#a03030'};
@@ -10545,13 +10548,13 @@ function _renderDbCoaches() {
     html += `<tr class="clickable" onclick="showCoachTooltip(${c.id})">
       <td>${coachPortraitImg(c, 36)}</td>
       <td style="font-weight:600">${WM_I18N.pn(c.name)}</td>
-      <td><span class="coach-grade coach-grade-${c.grade}" style="font-size:12px">${c.grade}級</span></td>
+      <td><span class="coach-grade coach-grade-${c.grade}" style="font-size:12px">${WM_I18N.t('{tier}級', { tier: c.grade })}</span></td>
       <td class="num" style="font-weight:700;color:${gc}">×${c.gMult||1.0}</td>
       <td class="num" style="color:${gc}">${c.observation}</td>
       <td><span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span></td>
-      <td style="font-size:11px;color:var(--text-sub)">${(c.abilities||[]).join('・')}${c.flavor ? ` <span style="color:var(--text-dim)">[${WM_I18N.t(c.flavor)}]</span>` : ''}</td>
-      <td class="num" style="font-size:12px">${c.salary}${WM_I18N.t('万')}</td>
-      <td class="num" style="font-size:12px">${c.hireFee}${WM_I18N.t('万')}</td>
+      <td style="font-size:11px;color:var(--text-sub)">${(c.abilities||[]).map(a => WM_I18N.t(a)).join(WM_I18N.lang === 'ja' ? '・' : ', ')}${c.flavor ? ` <span style="color:var(--text-dim)">[${WM_I18N.t(c.flavor)}]</span>` : ''}</td>
+      <td class="num" style="font-size:12px">${WM_I18N.t('{v}万', { v: c.salary })}</td>
+      <td class="num" style="font-size:12px">${WM_I18N.t('{v}万', { v: c.hireFee })}</td>
       <td>${isHired ? `<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">${WM_I18N.t('雇用中')}</span>` : '<span style="font-size:11px;color:var(--text-dim)">—</span>'}</td>
     </tr>`;
   });
