@@ -509,9 +509,11 @@ G.relationships.history.betrayalRecord = [
 | M-13 | 師弟 | 師弟確定 | F-3 確定時 | 師・弟子それぞれの性格 |
 | M-14 | ライバル同期 | ライバル同期昇格 | F-5 確定時 | 双方の性格 |
 
+> **2026-09-26 総点検 第4回裁定5: M-1〜M-24 はポップアップとして出さない。** 8/13 の裁定「関係性の変化は試合後にポップアップで知らせない(新聞・相関図など世界の側で見せる)」と合わせる。出来事の判定とデータ(`state._modalQueue` への enqueue、K-11 の間引き)は残し、後日の「世界の側」の表示の材料にする。画面側の消費関数 `_drainFlagModalQueue` は削除した(`window.G` を見ていて 2026-04-28 から一度も表示しておらず、列はセーブの中で増え続けていた: headless 進行 seed 42 で3季目頭 119件、auto-sim 40季で 684件)。列の長さは §4.4 で保つ。以下 §4.1 の順序はポップアップを出していた当時の設計として残す。
+
 ### §4.1 モーダル発火順序
 
-同一週に複数モーダルが発火した場合、`state._modalQueue: [{type, payload}, ...]` に enqueue し、UI 側で1つずつ表示する。
+同一週に複数モーダルが発火した場合、`state._modalQueue: [{type, payload}, ...]` に enqueue し、UI 側で1つずつ表示する(**2026-09-26 から表示しない**。上の注記)。
 
 優先順位（先に表示）:
 1. F-2 出戻り（M-12）
@@ -530,7 +532,7 @@ CLAUDE.md 原則に従い、テンプレ表現を避け、性格・アーキタ�
 
 `_modalQueue` には AI 団体の控室の出来事(M-19 BF/Heel 衝突・M-18 価値観の決裂・AI 団体の試合の M-15 番狂わせ)も積まれる。社長が知りえない他団体の話で埋まらないよう、他団体の分は自団体の件数に比例させる。
 
-- **判定の場所**: `tickWeek` 末尾の `Engine.relationships.flags.gateModalQueue`(週1回、全ての enqueue の後・UI の drain の前)。UI(`_drainFlagModalQueue`)は渡されたキューを出すだけ
+- **判定の場所**: `tickWeek` 末尾の `Engine.relationships.flags.gateModalQueue`(週1回、全ての enqueue の後)。2026-09-26 からポップアップとしては出さない(§4 冒頭の注記)。判定は「世界の側」で見せるときの材料の選別として残す
 - **自団体/他団体**: payload に登場する選手 id(`fromId` `toId` `fighterId` `targetId` `departerId` `masterId` `discipleId` `idA` `idB` `returnerId` `byIds` `affectedIds` `reactions[].byId`)のうち1人でもプレイヤー団体のロスターにいれば自団体。id を1つも持たない項目(M-24 など)も自団体として扱う
 - **自団体の項目**: 全件そのまま通す(中身・順序は不変)
 - **他団体の項目**: 判定時点で「直近12週(今週を含む。`absWeekTotal` 基準)に出した他団体の件数」が `max(自団体の件数 × 2, 1)` を超えない分だけ出す。自団体が0件でも12週に1件までは出す(世界の広がり)
@@ -541,6 +543,16 @@ CLAUDE.md 原則に従い、テンプレ表現を避け、性格・アーキタ�
 - **記録**: `state.relModalWindow = [{ w: absWeekTotal, own, other }]`(直近12週分だけ保持)。無い・壊れている → 空として扱う(旧セーブ互換)。入力の配列・項目・記録は書き換えない
 - 🔧 パラメータ: `Engine.relationships.flags.MODAL_GATE`(`WINDOW_WEEKS` 12 / `OTHER_PER_OWN` 2 / `MIN_OTHER_PER_WINDOW` 1 / `POP_TOP_N` 10 / `LINK_RIVALRY_MIN` 50)
 - 計測(auto-sim の複製に実ゲーム同等の関係値初期化、seed 42・30季): 他団体 70.0 → 22.1 件/季、自団体 11.3 件/季(不変)。回帰テストは `test/relationship-modal-gate-test.js`
+
+### §4.4 待ち行列の長さ(2026-09-26 総点検 第4回裁定5)
+
+列を消費する画面が無いので、エンジンが直近の窓の分だけ持つ。
+
+- **関数**: `Engine.relationships.flags.pruneModalQueue(state)`。`tickWeek` 末尾(`gateModalQueue` の直後)と、セーブの読み込み時(`Storage.deserialize`。旧セーブの肥大した列を同じ規則で縮める)に呼ぶ
+- **規則**: 項目の週(`absWeekTotal(season, week)`)が「今の週 − `MODAL_GATE.WINDOW_WEEKS`(12)」より後のものだけ残す(今週を含む直近12週。K-11 の窓と同じ幅)。季・週が読めない項目・オブジェクトでない項目は落とす
+- 関係値・クールダウン・件数の記録(`relModalWindow`)・乱数には触れない。入力の配列は書き換えない(新しい配列で返す。落とすものが無ければ同じ状態を返す)。列が無い・配列でない旧セーブはそのまま(`_ensureInit` が作る)
+- 実測: headless 進行 seed 42 の3季3週の tickWeek 直後で 5件(以前は3季目頭で 119件)。auto-sim 40季 seed 42 の最終状態で 4件(以前は 684件)。数値は不変(auto-sim の指紋の差は、この列と、同時に入れた信頼15未満の噂の発火の記録だけ。worklog 2026-09-26 参照)
+- 回帰テスト: `test/fun-audit-round4-test.js` §5
 
 ---
 
@@ -758,4 +770,5 @@ v2.2 で使用済みの 0xBE71〜0xBE73 と衝突しない範囲で確保。
 | 2026-04-28 | v1.0 実装完了 | Phase 1-8 完了。`src/relationships.js` の `Engine.relationships.flags` ネームスペース、`src/flag-dialogue.js` の14モーダル×7性格×3パターン、`src/ui-common.js` の `_drainFlagModalQueue` を実装。データ構造は `state.relationshipFlags` / `relationshipFlagLockouts` / `relationshipFlagCounters` / `relationshipHistory` に変更（state.relationships は pair-key 専用 namespace のため分離）。実装メモ: spec §3.4 の archetype `earnest` は `composed` (+1) にマッピング、`emotional`(archetype) は実コードに無いため personality 側で吸収。spec §3.3 に無い `shy` は -1 に割り当て。詳細セリフ仕様書 (§4.2 / §7-3) は別ファイル化せず本実装に内包。|
 | 2026-04-28 | 頻度検証 | auto-sim 100×3 seed (12345/67890/99999) で頻度測定。**全項目で目標値を大幅に下回る**: F-1 0.06/シーズン (目標 0.5-1.5)、F-2 0/シーズン、F-3 0.003/シーズン、F-5 0/シーズン、F-6 0/シーズン、F-7 0/シーズン。原因仮説: bond 帯シフト未達 (実測 1.2-2.5、目標 8-12) により bond≥60/70 の関係が稀。F-4 cohort も 0 だが auto-sim の入団簡易化のため実機での確認が必要。Keisuke の指示でパラメータ調整は本タスクでは行わず、次タスクで bond 上昇イベント追加 OR 相性軸の更なるチューニング OR 閾値再検討を要する。|
 | 2026-09-25 | K-11 | §4.3 追加: 他団体の関係性ポップアップを「直近12週の自団体の件数×2(自団体0件でも12週に1件)」までに制限。`tickWeek` 末尾の `gateModalQueue` で判定し、UI は出すだけ。記録は `state.relModalWindow`。自団体の出方・関係値は不変 |
+| 2026-09-26 | 第4回裁定5 | §4 冒頭の注記・§4.4 追加: M-1〜M-24 はポップアップとして出さない(8/13 裁定に合わせる。`_drainFlagModalQueue` は `window.G` を見て一度も表示していなかったので削除)。出来事の判定・データは残す。`_modalQueue` は `pruneModalQueue` で直近12週だけ持つ(tickWeek 末尾+セーブ読み込み時) |
 
