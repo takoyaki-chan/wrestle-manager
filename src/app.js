@@ -7292,6 +7292,12 @@ const App = {
       App._afterMatchSettle(idx);
       return;
     }
+    // 観戦を選んだ試合の前に「✨ 初対決」(本当に初めて当たる2人だけ・1試合1回)。閉じてから観戦を始める。
+    // 出ている間は試合一覧が覆われて押せず、閉じた後の再入は _shownFirstMeet で素通り・結果が入っていれば上で止まる(1操作=1進行)
+    if (!(sp._shownFirstMeet && sp._shownFirstMeet.has(idx))) {
+      App._runFirstMeetBeforeWatch(idx, () => App.watchMatch(idx));
+      return;
+    }
     // エンジン実行（recordFrames=true）— Replay 方式: シミュレート結果＋フレーム列を iframe へ渡して再生
     const matchTier = App._normalShowMatchTier(idx, m);
     const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, m.left, m.right));
@@ -8813,12 +8819,18 @@ const App = {
     const rightFighter = (G.roster || []).find(c => c.id === rightId) || ALL_CHARS.find(c => c.id === rightId);
     if (!leftFighter || !rightFighter) return popups;
 
-    // ── 初顔合わせ（matchupLog に過去対戦が無いかで判定）──
+    // ── 初対決(本当に初めて当たる2人だけ。2026-09-26 Keisuke 裁定「判定を直して出す」)──
+    // matchupLog の項目は { leftId, rightId, showCount }。以前は e.left / e.right で見ていて一度も一致せず、
+    // 毎試合「初対決」と判定していた。matchupLog は自団体が関わった試合だけ(カードの鮮度用。保存で切り詰めた分は
+    // _everFoughtPairs からロード時に戻る)なので、他団体の興行・開始前の経歴の対戦も持つ対戦成績(h2h)も見る。
+    // 台詞は「初めまして」の類いなので、どちらかに1試合でも記録があれば出さない
     const log = G.matchupLog || [];
-    const hasPriorMatch = log.some(e =>
-      (e.left === leftId && e.right === rightId) || (e.left === rightId && e.right === leftId)
-    );
-    if (!hasPriorMatch) {
+    const lId = Number(leftId), rId = Number(rightId);
+    const pairIs = (a, b) => (Number(a) === lId && Number(b) === rId) || (Number(a) === rId && Number(b) === lId);
+    const metInLog = log.some(e => e && pairIs(e.leftId, e.rightId));
+    const h2hRec = (Engine.h2h && typeof Engine.h2h.getRecord === 'function') ? Engine.h2h.getRecord(G, lId, rId) : null;
+    const metInH2h = !!(h2hRec && (h2hRec.matches || 0) > 0);
+    if (!metInLog && !metInH2h) {
       const leftLine  = pickDialogueLine(FIRST_MEET_LINES, leftFighter);
       const rightLine = pickDialogueLine(FIRST_MEET_LINES, rightFighter);
       popups.push({
@@ -8858,8 +8870,9 @@ const App = {
     return popups;
   },
 
-  // pre-match popup シーケンスを 1試合分流す。renderMatchPreview のフォーカスフックから呼ばれる。
-  // 既存の confrontation modal が表示中なら、それが閉じてからフレーバー popup を流す。
+  // 試合前の画面を 1試合分流す。renderMatchPreview のフォーカスフック(宣戦布告の後)から呼ばれる。
+  // ここで出すのは派閥の試合前の画面(派閥内序列戦・F08・F09)だけ。「✨ 初対決」は観戦を選んだ試合の前に
+  // 出す(App._runFirstMeetBeforeWatch。2026-09-26 — 敗者の心と同じく観戦した試合だけ)
   _runPreMatchFlavorForMatch(idx) {
     const sp = App._showPreview;
     if (!sp) return;
@@ -8931,9 +8944,44 @@ const App = {
       }
     }
 
+  },
+
+  // 「✨ 初対決」(specs/match-flavor-popup-spec-v0.1.md §4.2.1。2026-09-26 Keisuke 裁定「判定を直して出す」)。
+  // 観戦を選んだ試合(「🎬 試合を観る」を押した後・観戦の画面を開く前)に、本当に初めて当たる2人の一言を試合一覧の
+  // 殻の上に1人ずつ短く出し、閉じてから proceed() を1回だけ呼ぶ(出すものが無ければすぐ)。
+  // ・以前はフォーカスの時点(観るかスキップかを選ぶ前)に showEventPopup で出そうとして殻の後ろに積まれ、一度も出ていなかった。
+  //   興行は前座から順に進むので、フォーカスの時点で出すと「一度スキップしたら以降は出さない」規則でメインの初対決がまず出ない。
+  //   敗者の心(観戦した試合の後)と対にして、観戦した試合の前だけに出す。スキップは省略の意思表示なので出さない
+  // ・派閥の試合前の画面がある試合(派閥内序列戦・F08・F09)とタッグは出さない(従来どおり)
+  // ・待ちには時限の保険(件数×2200+1500ms)。殻以外の画面が開いていて出られなければ取り下げて観戦へ進む。1試合1回だけ
+  _runFirstMeetBeforeWatch(idx, proceed) {
+    const sp = App._showPreview;
+    if (!sp) { proceed(); return; }
+    // 先に「この試合は済み」と記してから進む(呼び出し側 watchMatch の再入が必ずここを素通りする)
+    if (!sp._shownFirstMeet) sp._shownFirstMeet = new Set();
+    if (sp._shownFirstMeet.has(idx)) { proceed(); return; }
+    sp._shownFirstMeet.add(idx);
+    const m = Array.isArray(sp.validMatches) ? sp.validMatches[idx] : null;
+    if (!m || m.matchType === 'tag' || m._internalChallengeLocked || m._f08Locked || m._f09Locked) { proceed(); return; }
     const popups = App._collectPreMatchPopupsForMatch(idx);
-    if (popups.length === 0) return;
-    popups.forEach(p => showEventPopup(p));
+    if (popups.length === 0) { proceed(); return; }
+    let started = false;
+    let safetyTimer = null;
+    const go = () => {
+      if (started) return;
+      started = true;
+      clearTimeout(safetyTimer);
+      proceed();
+    };
+    // 1枚ごとに出す直前に、この興行のこの試合がまだ始まっていないかを確かめる(遅れて観戦の上に出ない)
+    const flavor = showPreMatchFlavorPopups(popups, go,
+      () => App._showPreview === sp && Array.isArray(sp.results) && sp.results[idx] === null);
+    safetyTimer = setTimeout(() => {
+      if (started) return;
+      console.warn('[WM] firstMeet safety net fired');
+      if (flavor && typeof flavor.cancel === 'function') flavor.cancel();
+      go();
+    }, popups.length * 2200 + 1500);
   },
 
   // post-match popup シーケンスを 1試合分流し、then() を呼ぶ。

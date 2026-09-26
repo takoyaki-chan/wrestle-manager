@@ -213,7 +213,7 @@
 | PPV メインイベント | 勝者 | `BT_HINT_LINES` + コーチ称賛バブル |
 | 対抗戦 勝者 | 勝者 | `WAR_VICTORY_LINES[personality][archetype]` |
 | JT 優勝 | 優勝者 | `getJuniorTournamentLine('champion', ...)` |
-| 初顔合わせ | 両者（試合前ポップアップで発動、試合後は基本なし） | `FIRST_MEET_LINES`（試合結果画面では非表示） |
+| 初顔合わせ | 両者（試合前ポップアップ「✨ 初対決」で発動、試合後は基本なし。2026-09-26〜: 観戦を選んだ試合の「🎬 試合を観る」の後・観戦の前に、本当に初めて当たる2人だけ。specs/match-flavor-popup-spec-v0.1.md §4.2.1） | `FIRST_MEET_LINES`（試合結果画面では非表示） |
 
 **発動しない試合**：セリフ条件を満たさない通常の試合では `.pb-portrait-wrap` 内に `.pb-dialogue` を出力しない（`.pb-mrow.has-dialogue` クラスも付けない → padding-top 拡張なし）。
 

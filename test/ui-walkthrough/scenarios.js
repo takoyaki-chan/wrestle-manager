@@ -223,29 +223,35 @@ const _watchMatchBoost = indexes => candidate => {
 // 中身に .post-match-flavor が入るたびに window.__wmFlavorSeen へ控える(画面の G には触らない)。
 // 2026-09-26 以前は試合一覧の殻(showResultOverlay)の後ろに積まれて一度も出ず、保険のタイマーの警告
 // ([WM] postMatchFlavor safety net fired)を既知扱いにしていた。いまは警告が出れば D1 で落ちる
+// 試合前の「✨ 初対決」(.pre-match-flavor。2026-09-26 裁定「判定を直して出す」)も同じ見張りで window.__wmPreFlavorSeen へ控える
 const WATCH_FLAVOR_OBSERVER = `(() => {
   if (window.__wmFlavorObserver) return;
   const card = document.getElementById('mdlCCard');
   if (!card || typeof MutationObserver !== 'function') return;
   window.__wmFlavorSeen = window.__wmFlavorSeen || [];
+  window.__wmPreFlavorSeen = window.__wmPreFlavorSeen || [];
   window.__wmFlavorObserver = new MutationObserver(() => {
-    const body = card.querySelector('.post-match-flavor');
-    if (!body || body.__wmSeen) return;
-    body.__wmSeen = true;
-    window.__wmFlavorSeen.push((body.textContent || '').replace(/\\s+/g, ' ').trim());
+    [['.post-match-flavor', window.__wmFlavorSeen], ['.pre-match-flavor', window.__wmPreFlavorSeen]].forEach(([sel, list]) => {
+      const body = card.querySelector(sel);
+      if (!body || body.__wmSeen) return;
+      body.__wmSeen = true;
+      list.push((body.textContent || '').replace(/\\s+/g, ' ').trim());
+    });
   });
   window.__wmFlavorObserver.observe(card, { childList: true });
 })()`;
-// 手ごとの読取り(probe)に見張りを足し、読んだ値に flavorSeen(出た敗者の心の文面)を添える。probe が null なら null のまま
+// 手ごとの読取り(probe)に見張りを足し、読んだ値に flavorSeen(出た敗者の心の文面)と preFlavorSeen(出た初対決の文面)を添える。
+// probe が null なら null のまま
 const _withFlavorObserver = probe => `(() => {
   ${WATCH_FLAVOR_OBSERVER};
   const value = ${probe};
-  return value === null ? null : { ...value, flavorSeen: (window.__wmFlavorSeen || []).slice() };
+  return value === null ? null : { ...value, flavorSeen: (window.__wmFlavorSeen || []).slice(), preFlavorSeen: (window.__wmPreFlavorSeen || []).slice() };
 })()`;
 function _assertFlavorSeen(steps) {
   const values = (steps || []).map(entry => entry.value).filter(v => v && !v.probeError && Array.isArray(v.flavorSeen));
   const seen = values.length ? values[values.length - 1].flavorSeen : [];
-  console.log(`敗者の心: ${seen.length}回 ${JSON.stringify(seen)}`);
+  const pre = values.length && Array.isArray(values[values.length - 1].preFlavorSeen) ? values[values.length - 1].preFlavorSeen : [];
+  console.log(`敗者の心: ${seen.length}回 ${JSON.stringify(seen)} / 初対決: ${pre.length}枚 ${JSON.stringify(pre)}`);
   return seen.length > 0 ? [] : ['観戦した試合の後に「敗者の心」(.post-match-flavor)が一度も出ていない'];
 }
 
@@ -331,6 +337,14 @@ const B3_STEP_PROBE = `(() => {
   const markers = ['isB3ChallengeGuest', '_b3GuestOrgId', 'isCRGuest', '_crGuestOrgId', 'isAwayChallengeGuest', 'isUnifiedTitleGuest', '_unifiedGuestOrgId'];
   // 興行中の挑戦者のゲスト(2026-09-26 裁定: 開催の時点の本物から作る = 体調・年齢を持ち、同じ時点の本物と同じ値)
   const guest = memo.challengerId != null ? (G.roster || []).find(f => f.id === memo.challengerId && f.isB3ChallengeGuest) : null;
+  // 挑戦状の試合(メイン)が始まる前に、2人が初めて当たるか(「✨ 初対決」が出るべきか。app.js の判定と同じ記録を見る)
+  if (sp && main && main._b3ChallengeMatch && Array.isArray(sp.results) && sp.results[0] === null && memo.firstMeet == null) {
+    const pairIs = e => e && ((Number(e.leftId) === main.left && Number(e.rightId) === main.right) || (Number(e.leftId) === main.right && Number(e.rightId) === main.left));
+    const h2hRec = Engine.h2h.getRecord(G, main.left, main.right);
+    memo.firstMeet = !(G.matchupLog || []).some(pairIs) && !(h2hRec && h2hRec.matches > 0);
+    const nameOf = id => ((G.roster || []).find(f => f.id === id) || {}).name || null;
+    memo.pairNames = [nameOf(main.left), nameOf(main.right)];
+  }
   return {
     season: G.season, week: G.week, phase: G.weekPhase, totalShows: G.totalShows,
     booked: !!booking, fighterId: memo.fighterId == null ? null : memo.fighterId,
@@ -352,6 +366,8 @@ const B3_STEP_PROBE = `(() => {
       age: guest.age == null ? null : guest.age,
       sameAsReal: !!real && ['condition', 'age', 'pw', 'sp', 'te', 'st', 'mn', 'popularity', 'careerBestMQ'].every(k => guest[k] === real[k]),
     } : null,
+    firstMeet: memo.firstMeet == null ? null : memo.firstMeet,
+    pairNames: memo.pairNames || null,
   };
 })()`;
 
@@ -396,6 +412,24 @@ function _assertB3Resolved(steps) {
     if (!guestSeen.guest.sameAsReal) fails.push('ゲストの値が同じ時点の所属団体の本物と違う(届いた時点の写しのまま?)');
   }
   return fails;
+}
+
+// 挑戦状の試合(メイン)の前の「✨ 初対決」: 観戦を選んだとき、2人が初めて当たるなら2人とも出て、当たったことがあれば出ない。
+// スキップ(全試合スキップ)では出ない(2026-09-26 裁定「判定を直して出す」。観戦した試合の前だけ=敗者の心と対)。
+// 1.8秒で閉じるので手ごとの見張り(_withFlavorObserver)で数える
+function _assertB3FirstMeet(steps, { watched = true } = {}) {
+  const values = (steps || []).map(entry => entry.value).filter(v => v && !v.probeError);
+  const judged = values.find(v => v.firstMeet != null);
+  const last = values.filter(v => Array.isArray(v.preFlavorSeen)).pop();
+  const seen = last ? last.preFlavorSeen : [];
+  if (!judged) return ['挑戦状の試合の前に2人が初めて当たるかを読めていない'];
+  const names = judged.pairNames || [];
+  const ofPair = seen.filter(text => names.some(n => n && text.includes(n)));
+  console.log(`初対決: 挑戦状の2人 ${JSON.stringify(names)} は ${judged.firstMeet ? '初めて当たる' : '当たったことがある'}・${watched ? '観戦' : 'スキップ'} / 2人の初対決 ${ofPair.length}枚 / 興行中の初対決 ${seen.length}枚 ${JSON.stringify(seen)}`);
+  if (!watched) return seen.length > 0 ? ['観戦していない興行で「✨ 初対決」を出した(スキップは省略の意思表示)'] : [];
+  if (judged.firstMeet && ofPair.length !== 2) return [`初めて当たる2人の「✨ 初対決」が ${ofPair.length} 枚(2枚のはず)`];
+  if (!judged.firstMeet && ofPair.length > 0) return ['当たったことのある2人に「✨ 初対決」を出した'];
+  return [];
 }
 
 // ── 派閥の予約(F07 メイン推薦 / Common-1 / F08 直接対決)──
@@ -1681,14 +1715,15 @@ module.exports = {
     walk: { seasons: 1, maxSteps: 160 },
     makeUntil: _untilWeeksAfterFixture(3),
     boost: _b3AcceptBoost,
-    stepProbe: B3_STEP_PROBE,
+    // 試合前の「✨ 初対決」は観戦を選んだ試合の前だけ。スキップ版では出ないことを見張りで確かめる
+    stepProbe: _withFlavorObserver(B3_STEP_PROBE),
     ignition: [
       // 決断トレイつきの暗い A 型は直訴(CH-1)とも同じ形なので、受けた証跡は stepProbe(予約)で見る
       { name: 'b3-offer', required: false, match: s => (s.overlays || []).some(o => /mdlAOverlay:.*mdl-a-decision-tray/.test(String(o)) && /danger/.test(String(o))) },
       { name: 'b3-pick', required: true, match: s => overlayHit(s, 'mdl-a-candidate-stage') },
     ],
     finalProbe: `(() => ({ booked: !!(typeof G !== 'undefined' && G._pendingIncomingB3Match) }))()`,
-    finalAssert: (probe, lang, steps) => _assertB3Resolved(steps),
+    finalAssert: (probe, lang, steps) => [..._assertB3Resolved(steps), ..._assertB3FirstMeet(steps, { watched: false })],
   },
 
   'b3-challenge-watch': {
@@ -1721,7 +1756,7 @@ module.exports = {
       { name: 'watch-iframe', required: true, match: s => overlayHit(s, 'battleOverlay') },
     ],
     finalProbe: `(() => ({ booked: !!(typeof G !== 'undefined' && G._pendingIncomingB3Match) }))()`,
-    finalAssert: (probe, lang, steps) => [..._assertB3Resolved(steps), ..._assertFlavorSeen(steps)],
+    finalAssert: (probe, lang, steps) => [..._assertB3Resolved(steps), ..._assertFlavorSeen(steps), ..._assertB3FirstMeet(steps)],
   },
 
   // 派閥の予約の清算(K-1 第3段 3-3・§7 X05 で信頼・人気が効くようになった処理)。停止週の週送りの後に
