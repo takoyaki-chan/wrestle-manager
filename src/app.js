@@ -5472,12 +5472,12 @@ const App = {
     if (claimResult.claimed) {
       log.push({ type: 'fighter_released_claimed', data: { name: target.name, destOrg: claimResult.orgName, ejectedSuffix: claimResult.ejected ? ` / out: ${claimResult.ejected.name}` : '' }, s: G.season, w: G.week });
       G = { ...claimResult.state, gameLog: log };
-    } else if (Engine.util.canAddToFA(G)) {
-      const releasedFighter = Engine.orgTimeline.transfer(target, 'fa', G.season, G.week);
-      G = { ...G, roster: newRoster, showCard: newShowCard, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
     } else {
+      // K-4 R2: 行き先は releaseToMarket に一本化(デビュー済みはFA上限に関係なくFA)
+      const toFA = Engine.util.marketDestination(G, target) === 'fa';
+      const releasedFighter = toFA ? Engine.orgTimeline.transfer(target, 'fa', G.season, G.week) : target;
       G = { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log };
-      G = Engine.util.redirectToDormantPool(G, target);
+      G = Engine.util.releaseToMarket(G, releasedFighter, 'player');
     }
     return target;
   },
@@ -6310,12 +6310,12 @@ const App = {
     if (claimResult.claimed) {
       log.push({ type: 'fighter_released_claimed', data: { name: c.name, destOrg: claimResult.orgName, ejectedSuffix: claimResult.ejected ? ` / out: ${claimResult.ejected.name}` : '' }, s: G.season, w: G.week });
       G = { ...claimResult.state, gameLog: log };
-    } else if (Engine.util.canAddToFA(G)) {
-      const releasedFighter = Engine.orgTimeline.transfer(cWithRelease, 'fa', G.season, G.week);
-      G = { ...G, roster: newRoster, showCard: newShowCard, freeAgents: [...G.freeAgents, releasedFighter], coachAssign: newCoachAssign, titles, gameLog: log };
     } else {
+      // K-4 R2: 行き先は releaseToMarket に一本化(デビュー済みはFA上限に関係なくFA。遺恨を持ったまま市場に残る)
+      const toFA = Engine.util.marketDestination(G, cWithRelease) === 'fa';
+      const releasedFighter = toFA ? Engine.orgTimeline.transfer(cWithRelease, 'fa', G.season, G.week) : cWithRelease;
       G = { ...G, roster: newRoster, showCard: newShowCard, coachAssign: newCoachAssign, titles, gameLog: log };
-      G = Engine.util.redirectToDormantPool(G, cWithRelease);
+      G = Engine.util.releaseToMarket(G, releasedFighter, 'player');
     }
     closeFighterPopup();
     refreshAll();
@@ -13265,11 +13265,8 @@ const App = {
           ...G,
           roster: Engine.trust.applyDepartureTrustImpact(G.roster, departed.id, G.relationships, { name: departed.name, reason: '退団' }),
         };
-        if (Engine.util.canAddToFA(G)) {
-          G = { ...G, freeAgents: [...(G.freeAgents || []), tracked] };
-        } else {
-          G = Engine.util.redirectToDormantPool(G, tracked);
-        }
+        // K-4 R2: 行き先は releaseToMarket に一本化(デビュー済みはFA上限に関係なくFA)
+        G = Engine.util.releaseToMarket(G, tracked, 'player');
       }
       // 王者が放出/退団した場合は王座を空位にする
       const vcCE = Engine.title.validateChampion(G);

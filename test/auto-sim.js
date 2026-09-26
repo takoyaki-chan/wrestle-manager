@@ -112,6 +112,15 @@ loadAsGlobal('flag-dialogue.js');
 loadAsGlobal('factions.js');
 loadAsGlobal('draft-negotiation.js');
 
+// K-4(2026-09-26): 外部の計測スクリプト(test/k4-lives-probe.js)用の差し込み口。
+// global.__WM_AUTOSIM_HOOKS が無ければ何もしない(通常の実行は1バイトも変わらない)。
+//   afterLoad()        : ソース読み込み直後(Engine を包むため)
+//   observe(G) -> G?   : メインループの各周の先頭(状態の観測。G を返せば差し替え = ロード時修復の変種用)
+//   final(G)           : シミュレーション終了時(最終状態)
+const AUTO_SIM_HOOKS = (global.__WM_AUTOSIM_HOOKS && typeof global.__WM_AUTOSIM_HOOKS === 'object')
+  ? global.__WM_AUTOSIM_HOOKS : null;
+if (AUTO_SIM_HOOKS && typeof AUTO_SIM_HOOKS.afterLoad === 'function') AUTO_SIM_HOOKS.afterLoad();
+
 // task-92 I-6: 年末表彰データが作られる瞬間のMVPと統一王者を横計測する。
 // sourceRefで旧HEADを読む場合も同じ物差しを使えるよう、ゲーム実装の外側で包む。
 const unifiedRecordsI6Probe = { annualMvps: 0, unifiedChampionMvps: 0 };
@@ -1206,7 +1215,10 @@ function autoHandleScoutEvent(G, simRng) {
         playerPicks++;
       } else {
         // 取れなかった→フリー市場
-        newFA.push(normFighter(clean));
+        // K-4(2026-09-26): どことも契約していないので、見込み選手(prospect)のまま置く。
+        // normFighter は所属入り用に active 化するため、そのままだと「デビュー済みのFA」になり、
+        // 1季後に「フリーのまま引退」してしまう(実プレイでは流札は休眠プールへ戻る)
+        newFA.push({ ...normFighter(clean), careerStage: 'prospect' });
       }
     } else if (r.winner && r.winner !== 'player') {
       // AI団体が落札
@@ -1216,8 +1228,8 @@ function autoHandleScoutEvent(G, simRng) {
         Engine.rival.pushUniqueFighter(orgData.roster, recruited);
       }
     } else {
-      // 流札 → フリー市場
-      newFA.push(normFighter(clean));
+      // 流札 → フリー市場(K-4: 見込み選手のまま。上の「取れなかった」と同じ)
+      newFA.push({ ...normFighter(clean), careerStage: 'prospect' });
     }
   }
 
@@ -1925,6 +1937,10 @@ function runSimulation(seed, seasons) {
       });
     }
     try {
+      if (AUTO_SIM_HOOKS && typeof AUTO_SIM_HOOKS.observe === 'function' && G) {
+        const observed = AUTO_SIM_HOOKS.observe(G);
+        if (observed) G = observed;
+      }
       injuryProbe.contextKey = String(currentSeed);
       observeFighterSeasons(G);
       // ── ゲームオーバー判定 ──
@@ -2397,6 +2413,7 @@ function runSimulation(seed, seasons) {
   if (iter >= MAX_ITER) {
     errors.push({ season: G.season, week: G.week, seed: currentSeed, error: `MAX_ITER (${MAX_ITER}) に到達。無限ループの可能性` });
   }
+  if (AUTO_SIM_HOOKS && typeof AUTO_SIM_HOOKS.final === 'function') AUTO_SIM_HOOKS.final(G);
 
   // relationship-flags-spec-v1.0 §7-4: フラグ発火頻度集計
   const flagStats = {

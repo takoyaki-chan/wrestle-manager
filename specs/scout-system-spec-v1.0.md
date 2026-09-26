@@ -416,15 +416,18 @@ function checkVoluntaryRetirement(fighter) {
 |------|------|
 | 供給元 | ALL_CHARS の既存キャラクター（initRandomRosterで初期配分） |
 | 初期人数 | ROSTER_CFG.fa（=12名） |
-| 補充 | dormantPool age 21超過 → retired → 5シーズンCD後 age 17 で dormant 復帰 → ドラフト/FA循環 |
+| 補充 | 引退枠(retiredIds) → 5シーズンCD後に dormant 復帰(年8人まで) → ドラフト/FA循環。**dormantPool で age 21 を超えた子は引退枠を経ずその場で 17〜19 歳に戻る**(K-4 R6。dormant の子は全員未デビューなので別人にならない) |
+
+> **K-4(2026-09-26)の前提**: 休眠プール(dormantPool)に入ってよいのは、**今の人生でまだデビューしていない見込み選手**(`careerStage==='prospect'` で `debutSeason` が無い)だけ(R1)。休眠プールから出るときは毎回テンプレートから作り直されるため、デビュー済みの選手が入ると同じIDが引退を経ずに別人として作り直されていた。詳細は docs/fun-audit-v0.1/k4-separate-lives-design.md §6。
 
 ### §9.3 フリー選手の加齢
 
 | 項目 | 仕様 |
 |------|------|
 | 加齢 | 毎シーズン+1歳 |
-| 成長 | なし（weekly-gameloop-spec §5.2 準拠） |
-| 引退 | 30歳以上のフリー選手はオフシーズンに引退候補（確率50%/年） 🔧 |
+| 成長 | なし（weekly-gameloop-spec §5.2 準拠）。見込み選手は成熟曲線に沿って現在値だけ上がる(syncProspectMaturity) |
+| 若返り | **見込み選手だけ**: age 22 超で dormantPool へ(17〜19歳)。デビュー済みの選手は年齢のまま FA に残る(K-4 R5) |
+| 引退(フリーのまま引退) | **デビュー済みの選手**は、FA に入った季(`faSince`)が今季より前 = 丸1季どこにも拾われなかったら、**年齢に関係なく**オフ第1週に引退する(K-4 R3。`Engine.util.retireUnsignedFreeAgents`)。引退の記録(retire・reason `'freeAgent'`、retiredIds/retiredSeasons)、殿堂判定(最後に所属した団体の欄。自団体なら player)、新聞(AI団体の引退と同じ格付け記事。所属欄は前所属)を行う。`faSince` の無い旧データは今季を刻んで今回は残す。旧「30歳以上のFAは年50%で引退」(未実装)と「FA 22歳超→引退枠」はこれに置き換えた |
 | 補充 | retiredIds からの復帰による自然循環（§3.2 参照） |
 
 ### §9.4 ドラフト/FA年齢棲み分け (draft-value-rebalance 2026-04-10)
@@ -438,8 +441,9 @@ function checkVoluntaryRetirement(fighter) {
 | 初期dormantPool | 20人（age 17×5, 18×5, 19×5, 20×5）。残りはretiredIdsスタート |
 | 初期retiredIds分散 | retiredSeasons -4〜+5に均等分配 → 年6人ずつ復帰可能 |
 | 初期FA年齢 | 19-20歳固定（ドラフト17-18との棲み分け） |
-| FA上限キャップ | ROSTER_CFG.fa(=10)を超える場合、新規流入はdormantPoolに退避 |
-| FA上限適用箇所 | AI契約退団/プレイヤー契約退団/突然離脱/レンタル帰還/解雇/オーバーフロー解雇（全6箇所） |
+| FA上限キャップ | ROSTER_CFG.fa(=12)は**見込み選手にだけ**掛ける。超える場合、見込み選手の新規流入は dormantPool に退避。**デビュー済みの選手は上限に関係なく FA へ**(K-4 R2) |
+| 手放すときの行き先 | `Engine.util.releaseToMarket(state, fighter, fromOrgId)` に一本化(K-4 R2)。デビュー済みは FA へ入れて `faSince`(FA入りの季)と `faFromOrgId`(手放した団体)を刻む。適用箇所: AI週次イベント退団/AI契約退団/AI世代交代の放出/AIの戦力外(シーズン中FA獲得時)/引き取り時の押し出し/レンタル帰還/自団体の突然の退団/自団体の契約退団/自団体の放出・解雇・イベント退団(app.js 3経路) |
+| FA月次入れ替え | 4週ごとに FA から休眠プールへ戻すのは**見込み選手だけ**(最大2人。K-4 R4)。休眠プールから19-20歳を最大2人 FA へ |
 | scoutEventFinish | 見送り候補は100% dormantPool返却（旧30% FA流入を廃止） |
 
 ### §9.5 AI団体のシーズン中FA獲得 (draft-value-rebalance 2026-04-10)
@@ -450,7 +454,7 @@ function checkVoluntaryRetirement(fighter) {
 | 実行確率 | S級: 35%, A級: 25%, B級: 15% |
 | 獲得条件 | ロスター不足 or FA最良のOVRが自軍最弱よりS:+8/A:+6/B:+4以上 |
 | 年間上限 | シーズン中1人/団体（`_midseasonFAGrabs`で管理） |
-| ロスター上限時 | 最弱選手を戦力外→dormantPool末尾に返却 |
+| ロスター上限時 | 最弱選手を戦力外→**FA へ**(遺恨 `grudge` を持ったまま同じ人物として市場に残る。K-4 R2。旧: dormantPool末尾に返却) |
 | ティア制限 | AI_TIER_LIMITSのprodigy/promising制限を遵守 |
 
 ### §9.6 ドラフト指名ボーナス (draft-value-rebalance 2026-04-10)
@@ -596,5 +600,6 @@ function checkVoluntaryRetirement(fighter) {
 |------|------|
 | 2026-02-19 | v1.0 初版作成。構造確定、数値は調整可能パラメータとしてマーク |
 | 2026-04-11 | §3 全面改訂: ランダムキャラ生成(generateCandidate)を廃止。dormantPool循環方式に統一。§9.2/§11/§12/§14も整合 |
+| 2026-09-26 | K-4 S1(同姓同名の別人): §9.2〜§9.5 改訂。休眠プールは未デビューの子だけ(R1)、手放す経路を releaseToMarket に一本化しデビュー済みは FA 上限なし(R2)、フリーのまま引退(R3)、月次入れ替え・FA若返りは見込み選手だけ(R4/R5)、休眠プールの21歳超はその場で若返り(R6) |
 
 <!-- 再同期: 2026-04-05, 指示書: docs/specs-resync-instruction.md -->
