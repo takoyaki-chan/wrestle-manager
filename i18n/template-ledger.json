@@ -34568,6 +34568,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "💬 {name}が退団を決めかけているという噂がある",
+    "en": "💬 There are rumors that {name} has all but decided to leave",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を考えているという噂がある",
+    "en": "💬 There are rumors that {name} is thinking about leaving",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "💬 {name}と{name2}が何か話し込んでいた",
     "en": "💬 {name} and {name2} were deep in some conversation",
     "files": [

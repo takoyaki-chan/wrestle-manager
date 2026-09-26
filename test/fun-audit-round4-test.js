@@ -186,6 +186,93 @@ section('7: 実プレイ(_finalizeShowImpl)が怪我による引退・突然の�
   assert.ok(/App\._suddenDepartureDestination\(G, d\.id\)/.test(toast), '退団のトーストが実際の行き先を見ていない');
 });
 
+// ── 8. 信頼15未満の前兆 ──
+function trustState(pairs, extra) {
+  // pairs: [[id, prevTrust, curTrust], ...]
+  const roster = pairs.map(([id, , cur], i) => ({ id, name: `S${id}`, archetype: ['standard', 'cool', 'ojousama', 'delinquent'][i % 4], personality: 'normal', trust: cur, injury: null }));
+  const prev = {};
+  pairs.forEach(([id, p]) => { prev[id] = p; });
+  return { season: 2, week: 10, rngSeed: 4242, roster, relationships: {}, aiOrgs: {}, _glimpseAPrevValues: {}, _glimpseAPrevTrust: prev, ...(extra || {}) };
+}
+function countingRng(seed) {
+  const r = Engine.rng.create(seed);
+  let calls = 0;
+  const realFloat = Engine.rng.float;
+  return {
+    rng: r,
+    run(fn) {
+      Engine.rng.float = (x) => { if (x === r) calls++; return realFloat(x); };
+      const realRandom = Math.random;
+      let mr = 0;
+      Math.random = () => { mr++; return realRandom(); };
+      try { return { out: fn(), calls, mathRandom: mr }; }
+      finally { Engine.rng.float = realFloat; Math.random = realRandom; }
+    },
+  };
+}
+
+section('8: 信頼15を割った週に「退団を決めかけている」噂。20と同じ週に両方をまたいだら1回にまとめる', () => {
+  const th = GLIMPSE_A_THRESHOLDS.find(t => t.id === 'trust_below_15');
+  assert.ok(th, 'GLIMPSE_A_THRESHOLDS に trust_below_15 が無い');
+  assert.strictEqual(th.tone, 'danger', '道場の確定枠・ログの1行は danger 級だけ');
+  // 18 → 13: 15 だけをまたぐ(20 は前にまたぎ済み)/ 25 → 12: 20 と 15 を同じ週に / 25 → 17: 20 だけ
+  const s = trustState([[1, 18, 13], [2, 25, 12], [3, 25, 17]]);
+  const c = countingRng(99);
+  const { out, calls, mathRandom } = c.run(() => Engine.glimpse.checkALayer(s, c.rng));
+  const of = (id) => out.glimpses.filter(g => g.speakerId === id).map(g => g.type).sort();
+  assert.deepStrictEqual(of(1), ['trust_below_15'], '15 だけをまたいだ選手に噂が出ない');
+  assert.deepStrictEqual(of(2), ['trust_below_15'], '同じ週に 20 と 15 をまたいだら 15 の噂1回にまとめる');
+  assert.deepStrictEqual(of(3), ['trust_below_20'], '20 だけをまたいだ選手の噂が変わった');
+  // まとめた 20 の発火の記録は残す(あとで 20 の噂が遅れて出ない)
+  assert.ok(out.state._glimpseAFired['trust_trust_below_20_2'] && out.state._glimpseAFired['trust_trust_below_15_2'], '発火の記録が残っていない');
+  // 乱数: 15 は抽選しない(率1.00)。引くのは 20 をまたいだ2人の2回だけ(以前と同じ回数)
+  assert.strictEqual(calls, 2, `共有の乱数を引いた回数が変わった(${calls})`);
+  // 15 のセリフの文選びは Math.random を使わない(20 の2人ぶんの2回だけ)
+  assert.strictEqual(mathRandom, 2, `Math.random を引いた回数が変わった(${mathRandom})`);
+  // 同じ状態なら同じ一言(専用の種)
+  const again = Engine.glimpse.checkALayer(s, Engine.rng.create(99)).glimpses.find(g => g.speakerId === 1);
+  assert.strictEqual(again.dialogue, out.glimpses.find(g => g.speakerId === 1).dialogue, '同じ状態で一言が変わる');
+  // 翌週: 13 → 11(もう 15 の下)なら出直さない。26 まで戻ってから 14 に落ちたら出直す(再武装は 15+10 を超えたら)
+  const next = { ...out.state, week: 11, roster: out.state.roster.map(f => (f.id === 1 ? { ...f, trust: 11 } : f)) };
+  assert.strictEqual(Engine.glimpse.checkALayer(next, Engine.rng.create(1)).glimpses.filter(g => g.speakerId === 1).length, 0, '15 の下のまま噂が出直した');
+});
+
+section('8: 道場の一言はアーキタイプごとに書き分け(実在の34セル)。全選手がアーキタイプを保ったまま引ける', () => {
+  const table = GLIMPSE_A_LINES.trust_below_15;
+  assert.ok(table, 'GLIMPSE_A_LINES.trust_below_15 が無い');
+  const ARCH = ['standard', 'ojousama', 'cool', 'delinquent', 'polite', 'composed', 'seductive'];
+  ARCH.forEach(a => assert.ok(table[a] && Array.isArray(table[a].normal) && table[a].normal.length, `${a} のノーマルが無い`));
+  let cells = 0;
+  ARCH.forEach(a => { cells += Object.keys(table[a]).length; });
+  assert.strictEqual(cells, 34, `実在の34セルぶん書いていない(${cells})`);
+  const lines20 = new Set();
+  const walk = (n) => { if (typeof n === 'string') lines20.add(n); else if (n && typeof n === 'object') Object.values(n).forEach(walk); };
+  walk(GLIMPSE_A_LINES.trust_below_20);
+  ALL_CHARS.forEach(f => {
+    const pool = getDialoguePool(table, f);
+    const own = Object.values(table[f.archetype || 'standard'] || {}).flat();
+    pool.forEach(l => {
+      assert.ok(own.includes(l), `#${f.id} ${f.name}(${f.archetype})がほかのアーキタイプの一言を引く: ${l}`);
+      assert.ok(!lines20.has(l), `20 の噂と同じ一言: ${l}`);
+    });
+  });
+});
+
+section('8: ログの1行 — 20 は以前と同じ文、15 は「決めかけている」。英訳・ラベルの英訳がある', () => {
+  const text = (variant) => gameLogEntryText({ type: 'trust_departure_rumor', data: { name: 'C', variant }, s: 2, w: 10 });
+  assert.strictEqual(text('below20'), '💬 Cが退団を考えているという噂がある', '20 の噂の文が以前と変わった');
+  assert.strictEqual(text('below15'), '💬 Cが退団を決めかけているという噂がある');
+  const T = GAMELOG_TEMPLATES.trust_departure_rumor;
+  [T.below20, T.below15].forEach(ja => {
+    const en = EN_TEMPLATES[ja];
+    assert.ok(typeof en === 'string' && en && !/[぀-ヿ一-鿿]/.test(en), `英訳が無い/日本語が残る: ${ja}`);
+  });
+  // エンジン(tickWeek)は噂を {type,data} で積み、15 の噂は below15
+  const mgmt = readSource('src', 'management.js');
+  assert.ok(/type: 'trust_departure_rumor'/.test(mgmt) && /g\.type === 'trust_below_15' \? 'below15' : 'below20'/.test(mgmt), 'tickWeek が噂の行を積んでいない');
+  assert.ok(!/退団を考えているという噂がある`\)/.test(mgmt), '文字列の噂のログが残っている');
+});
+
 if (failed > 0) {
   console.log(`\nfun-audit-round4-test: ${failed} 件の FAIL`);
   process.exit(1);

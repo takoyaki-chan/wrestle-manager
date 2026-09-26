@@ -5305,6 +5305,16 @@ Engine.glimpse = {
     return result;
   },
 
+  // セリフ表(アーキタイプ×性格)から、共有の乱数を使わずに1行選ぶ(季・週・選手・閾値から作る専用の種)。
+  // roll:false の閾値(信頼15未満の噂)用。表示専用の文選びで、数値には関与しない
+  _pickLineWithOwnSeed(lineObj, fighter, state, salt) {
+    const pool = getDialoguePool(lineObj, fighter);
+    if (pool.length <= 1) return pool[0];
+    const saltNum = String(salt || '').split('').reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season || 1, state.week || 1, fighter.id || 0, saltNum));
+    return pool[Engine.rng.int(lineRng, 0, pool.length - 1)];
+  },
+
   // ══════════════════════════════════════════════════════════
   //  P4: A層 Glimpse — 重要イベント（bond/rivalry/trust閾値跨ぎ）
   // ══════════════════════════════════════════════════════════
@@ -5410,6 +5420,7 @@ Engine.glimpse = {
       const prevTrust = prevTrustSnap[f.id];
       const curTrust = f.trust ?? 50;
       if (prevTrust === undefined) return;
+      const firedHere = []; // この選手で今週積んだ glimpse(supersedes のまとめに使う)
 
       GLIMPSE_A_THRESHOLDS.forEach(th => {
         if (th.axis !== 'trust') return;
@@ -5428,17 +5439,37 @@ Engine.glimpse = {
         const cdKey = `trust_${th.id}_${f.id}`;
         if (fired[cdKey]) return;
         if (cooldowns[cdKey] && absWeek - cooldowns[cdKey] < th.cooldown) return;
-        if (Engine.rng.float(rng) >= th.rate) return;
+        // roll:false(信頼15未満の噂。2026-09-26 第4回裁定8)は率の抽選をしない=乱数を引かない。
+        // この rng は同じ週のほかの選手の閾値の抽選にも使うので、引く回数を変えると既存の噂の出方が変わる
+        if (th.roll !== false && Engine.rng.float(rng) >= th.rate) return;
 
         cooldowns[cdKey] = absWeek;
         fired[cdKey] = true;
-        const line = pickDialogueLine(GLIMPSE_A_LINES[th.id], f);
-        glimpses.push({
+        // セリフの文選びも、roll:false の閾値は共有の乱数(Math.random・この rng)に触れない専用の種で選ぶ
+        // (表示専用の文選びなので Math.random でもよいが、auto-sim/JAゴールデンは Math.random に種を入れて
+        // 回しているため、引く回数が増えると後ろの文選びがずれる)
+        const line = th.roll === false
+          ? this._pickLineWithOwnSeed(GLIMPSE_A_LINES[th.id], f, state, th.id)
+          : pickDialogueLine(GLIMPSE_A_LINES[th.id], f);
+        const g = {
           layer: 'A', type: th.id, tone: th.tone, label: th.label,
           speakerId: f.id, speakerName: f.name,
           targetId: null, targetName: null,
           dialogue: line, axis: 'trust', value: curTrust,
-        });
+        };
+        glimpses.push(g);
+        firedHere.push(g);
+      });
+
+      // supersedes: 同じ週に上の段(例: 信頼15未満)と下の段(20未満)の両方をまたいだら、上の段の1回にまとめる。
+      // 下の段の発火の記録(クールダウン・再武装)はそのまま残す(あとで下の段の噂が遅れて出ないように)
+      firedHere.forEach(g => {
+        const th = GLIMPSE_A_THRESHOLDS.find(t => t.id === g.type);
+        if (!th || !th.supersedes) return;
+        const covered = firedHere.find(o => o.type === th.supersedes);
+        if (!covered) return;
+        const at = glimpses.indexOf(covered);
+        if (at >= 0) glimpses.splice(at, 1);
       });
     });
 

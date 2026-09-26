@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3582件、訳文あり3582件)
+//  生成元: i18n/template-ledger.json (総キー3584件、訳文あり3584件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3470,6 +3470,8 @@
     "💪 逆境がチームを強くしている": "💪 Hard times are making this team stronger",
     "💬 {name}が{name2}に技のコツを教えていた": "💬 {name} was walking {name2} through a move",
     "💬 {name}が一人で帰る姿を見かけた": "💬 {name} was seen leaving on her own",
+    "💬 {name}が退団を決めかけているという噂がある": "💬 There are rumors that {name} has all but decided to leave",
+    "💬 {name}が退団を考えているという噂がある": "💬 There are rumors that {name} is thinking about leaving",
     "💬 {name}と{name2}が何か話し込んでいた": "💬 {name} and {name2} were deep in some conversation",
     "💬 {name}の機嫌が明らかに悪い": "💬 {name} is plainly in a bad mood",
     "💬 {name}の表情が最近硬い": "💬 {name} has looked tight in the face lately",

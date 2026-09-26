@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4753件、訳文あり4753件)
+//  生成元: i18n/ui-ledger.json (総キー4754件、訳文あり4754件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -4102,6 +4102,7 @@
     "追走中": "Chasing",
     "退団": "Departure",
     "退団を考えているという噂": "Rumors she's thinking about leaving",
+    "退団を決めかけているという噂": "Rumors she has all but decided to leave",
     "送り出す": "Let Her Go",
     "逃げも隠れもしない。次の興行で迎え撃つ": "No running, no hiding. We answer on the next show",
     "逃げられるか！？ 極め技に捕らえた！": "Can she get out of it?! She's caught in the hold!",

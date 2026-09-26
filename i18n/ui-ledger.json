@@ -43424,6 +43424,19 @@
     ]
   },
   {
+    "key": "退団を決めかけているという噂",
+    "en": "Rumors she has all but decided to leave",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "GLIMPSE_A_THRESHOLDS[11:trust_below_15].label"
+    ]
+  },
+  {
     "key": "送り出す",
     "en": "Let Her Go",
     "files": [
