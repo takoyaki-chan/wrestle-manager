@@ -117,18 +117,17 @@ section('9. 王座移動は積み忘れようがない形にする', () => {
   // crownChampion の呼び出し元は2箇所ある。片方だけ直すと、その経路では載らない
   assert.ok(/return \{ titles: newTitles, roster: newRoster, msg, newsEvent \};/.test(mgmt),
     'crownChampion が記事を返していない。呼び出し元ごとに組むと必ず片方を忘れる');
-  // 呼び出しは2箇所（エンジンの週次処理 と UI の興行実行）。増えたら積み忘れを疑う
+  // 呼び出しは1箇所: 通常興行の試合後の処理 Engine.show.finalize(K-1 第3段。エンジンの executeShow と
+  // 実プレイの _finalizeShowImpl の両方がここを通る)。増えたら積み忘れを疑う
   const callers = [...mgmt.matchAll(/Engine\.title\.crownChampion\(/g)].length
                 + [...app.matchAll(/Engine\.title\.crownChampion\(/g)].length;
-  assert.strictEqual(callers, 2,
+  assert.strictEqual(callers, 1,
     `crownChampion の呼び出しが ${callers} 箇所。増えたなら、その経路でも記事を積むこと`);
-  // K-1 第3段: エンジンの呼び出しは Engine.show.finalize の中(乱入者が奪った王座は記事にしない。乱入は実プレイだけ)
+  // 作業中の状態 s に積む(G に積むと最後の書き戻しで消える。K-1 第1段 K1-E07)。乱入者が奪った王座は記事にしない
   assert.ok(/if \(crown\.newsEvent && !intruderTook\) s = Engine\.industryNews\.push\(s, crown\.newsEvent\);/.test(mgmt),
-    'エンジン側の呼び出しで積んでいない');
-  // UI 側は G ではなく s(_finalizeShowImpl の作業中の状態)に積む。G に積むと関数の最後の
-  // G = { ...s } で上書きされて記事が消える(K-1 第1段 K1-E07・2026-09-26)。乱入者が奪った王座は除く
-  assert.ok(/if \(crown\.newsEvent && !intruderTook\) s = Engine\.industryNews\.push\(s, crown\.newsEvent\);/.test(app),
-    'UI側の呼び出しで s に積んでいない');
+    '共通の処理で積んでいない');
+  assert.ok(/intruderId: App\._intrusionData && App\._intrusionData\.intruder \? App\._intrusionData\.intruder\.id : null,/.test(app),
+    '実プレイが乱入者を finalize に渡していない');
   assert.ok(!/App\._pushIndustryNews\(crown\.newsEvent\)/.test(app),
     'UI側が王座移動の記事を G に積んでいる(_finalizeShowImpl の最後の G = { ...s } で消える)');
 });

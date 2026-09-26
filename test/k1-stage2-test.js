@@ -23,7 +23,7 @@
 
 const assert = require('assert');
 const { readSource } = require('./helpers/source.js');
-const { engineShowBody } = require('./helpers/show-paths.js');
+const { engineShowBody, appShowBody } = require('./helpers/show-paths.js');
 const { loadEngines } = require('./ui-walkthrough/fixtures/headless-sim');
 
 loadEngines();
@@ -42,7 +42,8 @@ function methodBody(file, signature) {
   const end = src.indexOf('\n  },\n', start);
   return src.slice(start, end);
 }
-const finalizeBody = () => methodBody('app.js', '  _finalizeShowImpl() {');
+// K-1 第3段: 実プレイの試合後の処理は App._finalizeShowImpl → Engine.show.finalize(実プレイだけの処理は App._finalizeHook*)
+const finalizeBody = () => appShowBody();
 // K-1 第3段: エンジンの試合後の処理は Engine.show.finalize に切り出した(executeShow はそれを呼ぶ)
 const executeShowBody = () => engineShowBody();
 
@@ -157,7 +158,7 @@ section('A06: 通常興行の対戦成績 — シングルは印つき・元同�
 section('A06: 両経路が Engine.show.recordShowH2h を呼ぶ(App._buildMatchMeta は無い)', () => {
   const fin = finalizeBody();
   const exe = executeShowBody();
-  assert.ok(fin.includes('s = Engine.show.recordShowH2h(s, validMatches, results);'), 'app.js が共通の関数を呼んでいない');
+  assert.ok(fin.includes('s = Engine.show.recordShowH2h({ ...s, roster }, validMatches, results);'), 'app.js が共通の関数を呼んでいない');
   assert.ok(exe.includes('s = Engine.show.recordShowH2h({ ...s, roster }, validMatches, results);'), 'management.js が共通の関数を呼んでいない');
   // B3(単発の挑戦状)の専用の記録(Engine.h2h.update(s.h2h || {}, b3.fighterId, …))は別枠なので残ってよい
   assert.ok(!/h2h = Engine\.h2h\.update\(h2h, (m\.left|aId)/.test(fin), 'app.js の通常興行に自前の h2h 記録が残っている');
@@ -210,7 +211,7 @@ section('A03: 季節の統計に通常興行1回分を足す(興行数・決着�
 section('A03: 両経路が Engine.show.accumulateSeasonStats を呼ぶ', () => {
   const fin = finalizeBody();
   const exe = executeShowBody();
-  assert.ok(fin.includes('const stats = Engine.show.accumulateSeasonStats(G.seasonStats, validMatches, results, roster);'), 'app.js が共通の関数を呼んでいない');
+  assert.ok(fin.includes('seasonStats: Engine.show.accumulateSeasonStats(s.seasonStats, validMatches, results, roster)'), 'app.js が共通の関数を呼んでいない');
   assert.ok(exe.includes('seasonStats: Engine.show.accumulateSeasonStats(s.seasonStats, validMatches, results, roster)'), 'management.js が共通の関数を呼んでいない');
   assert.ok(!/stats\.showCount\+\+/.test(fin), 'app.js に自前の集計が残っている');
 });

@@ -70,6 +70,40 @@ section('3-1: executeShow は beginShow → 試合のシミュレーション �
   });
 });
 
+// ── 3-2 実プレイの経路の形 ──
+section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実プレイの指定と hooks つき)を呼ぶ', () => {
+  const app = readSource('src', 'app.js');
+  const implStart = app.indexOf('  _finalizeShowImpl() {');
+  const impl = app.slice(implStart, app.indexOf('\n  },\n', implStart));
+  assert.ok(/const begun = Engine\.show\.beginShow\(G, validMatches\);/.test(impl), '_finalizeShowImpl が Engine.show.beginShow を呼んでいない');
+  assert.ok(/const fin = Engine\.show\.finalize\(begun\.state, validMatches, results, \{/.test(impl), '_finalizeShowImpl が Engine.show.finalize を呼んでいない');
+  // 経路ごとの違い(第4段 4-A・第5段で寄せるまで残す指定)
+  ["logStyle: 'structured'", "mqPath: 'App._finalizeShowImpl'", 'rivalryBeforeTitles: true', 'f08AttendanceMark: true',
+    'markDomeSellout: true', 'crossOrgRelationshipContext: true', 'resolveUnifiedTitle: false', 'buildNewspaper: false',
+    'injuryPresentationDict: WM_I18N.t', 'preShowState: G'].forEach(opt => {
+    assert.ok(impl.includes(opt), `_finalizeShowImpl が ${opt} を渡していない`);
+  });
+  const hookNames = ['afterTitles: w => App._finalizeHookSpecialBouts(w)', 'afterRelationships: w => App._finalizeHookFactionBookings(w)',
+    'afterGrowth: w => App._finalizeHookGrowthEvents(w, pendingGrowthEvents)', 'beforeKaigan: w => App._finalizeHookCareerMarks(w)',
+    'afterWriteback: w => App._finalizeHookGuests(w, pendingGrowthEvents)'];
+  hookNames.forEach(h => assert.ok(impl.includes(h), `hooks に ${h} が無い`));
+  // 共通の処理を実プレイ側に書き直していない(_finalizeShowImpl と hooks のどこにも無い)
+  const hooks = ['_finalizeHookSpecialBouts', '_finalizeHookFactionBookings', '_finalizeHookGrowthEvents', '_finalizeHookCareerMarks', '_finalizeHookGuests']
+    .map(name => {
+      const st = app.indexOf(`\n  ${name}(`);
+      assert.ok(st >= 0, `App.${name} が無い`);
+      return app.slice(st, app.indexOf('\n  },\n', st));
+    }).join('\n');
+  ['Engine.mq.finalize(', 'Engine.mq.updateRecord(', 'Engine.attendanceV2.calcAttendanceV2(', 'Engine.applyShowPopularity(',
+    'Engine.title.crownChampion(', 'Engine.title.recordRivalry(', 'Engine.show.resolveMatchInjury(', 'Engine.relationships.applyMatchResult(',
+    'Engine.relationships.applyShowContextEffects(', 'Engine.show.accrueFactionPoints(', 'Engine.show.applyMatchGrowth(',
+    'Engine.show.recordShowH2h(', 'Engine.pushRecentMatch(', 'Engine.kaigan.processMatchResults(', 'Engine.show.applySuddenDepartures(']
+    .forEach(call => {
+      assert.ok(!impl.includes(call), `_finalizeShowImpl に共通の処理(${call})が残っている`);
+      assert.ok(!hooks.includes(call), `実プレイの hooks に共通の処理(${call})が入っている`);
+    });
+});
+
 // ── finalize の中身 ──
 function runFinalize(ctx = {}) {
   const input = clone(showState);
