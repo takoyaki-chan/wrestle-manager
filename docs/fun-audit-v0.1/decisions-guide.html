@@ -107,6 +107,7 @@ textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px
 #answer-out{min-height:300px}
 #answer2-out{min-height:200px}
 #answer3-out{min-height:320px}
+#answer4-out{min-height:300px}
 .reply{border:2px solid var(--gold);border-radius:10px;padding:22px;background:var(--panel);display:flex;flex-direction:column;gap:18px}
 .status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px}
 .status-grid div{display:flex;gap:10px;align-items:baseline;border:1px solid var(--line);border-radius:6px;padding:8px 12px;background:var(--panel-2);font-size:14px}
@@ -170,9 +171,239 @@ textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px
   <h1>決めてほしい16件</h1>
   <p class="lead">総点検で「Keisukeさんの判断が要る」とした項目を、図と具体例で説明し直しました。各項目の最後に、はい/いいえで答えられる質問を1つずつ置いています。いちばん下の回答シートで選んでコピーすれば、そのままチャットに貼れます。1件ずつの返事でも構いません。</p>
   <nav class="toc" aria-label="項目へ移動">
-    <a href="#round3">実装中に出た確認(第3回)</a><a href="#reply">回答を受けて(9/25)</a><a href="#k1">K-1</a><a href="#k2">K-2</a><a href="#k3">K-3</a><a href="#k4">K-4</a><a href="#k5">K-5</a><a href="#k6">K-6</a><a href="#k7">K-7</a><a href="#k8">K-8</a><a href="#k9">K-9</a><a href="#k10">K-10</a><a href="#k11">K-11</a><a href="#k12">K-12</a><a href="#k13">K-13</a><a href="#k14">K-14</a><a href="#k15">K-15</a><a href="#k16">K-16</a><a href="#sheet">回答シート</a>
+    <a href="#round4">確認(第4回)</a><a href="#round3">実装中に出た確認(第3回)</a><a href="#reply">回答を受けて(9/25)</a><a href="#k1">K-1</a><a href="#k2">K-2</a><a href="#k3">K-3</a><a href="#k4">K-4</a><a href="#k5">K-5</a><a href="#k6">K-6</a><a href="#k7">K-7</a><a href="#k8">K-8</a><a href="#k9">K-9</a><a href="#k10">K-10</a><a href="#k11">K-11</a><a href="#k12">K-12</a><a href="#k13">K-13</a><a href="#k14">K-14</a><a href="#k15">K-15</a><a href="#k16">K-16</a><a href="#sheet">回答シート</a>
   </nav>
 </header>
+
+<section class="reply" id="round4" aria-labelledby="round4-title">
+  <div class="stack">
+    <div class="eyebrow">第4回の確認 ・ 2026-09-26</div>
+    <h2 id="round4-title">実装が進んで出てきた確認8つ</h2>
+    <p class="lead">決まった項目の実装と取り込みがひと通り進み、その途中で判断が要る点が8つ出ました。どれもおすすめを付けています。「全部おすすめで」でも、違うものだけ番号で教えてもらっても大丈夫です。いちばん下に、この回の回答シートがあります。</p>
+  </div>
+
+  <div class="status-grid" aria-label="取り込みの状態">
+    <div><span class="k">K-2/3/16</span><span>★と団体人気</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-7</span><span>ニアフォール</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-6</span><span>大一番・タッグの演出</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-12</span><span>不仲タッグの追加3項目</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">呼び名</span><span>名字⇔下の名前</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-14</span><span>タッグ勝利セリフ98本</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-1</span><span>第1段・第4段(承認の7項目)</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-9/16</span><span>AI団体の人気の対称化</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">断線</span><span>記録と新聞/通知とログ</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">0</span><span>0を値なし扱いする既定値</span><span class="st done">取り込み済み</span></div>
+    <div><span class="k">K-4</span><span>同姓同名の別人</span><span class="st run">実装中</span></div>
+    <div><span class="k">K-1</span><span>残りの段(共通化の仕上げ)</span><span class="st keep">これから</span></div>
+  </div>
+
+  <!-- 1 超過レイヤー -->
+  <article class="card" id="r4-1">
+    <div class="card-head"><div class="num">1</div><div class="ttl">
+      <h2>「奇跡の名勝負」が出やすくなった</h2>
+      <div class="badges"><span class="pill sure">計測済み</span><span class="pill size">K-7 から</span></div>
+    </div></div>
+    <p class="oneline">評価の天井を超える試合(超過レイヤー)が、仕様で決めた範囲より少し多く出るようになりました。</p>
+    <div class="sub">いま起きていること</div>
+    <ul>
+      <li>「奇跡の名勝負」は、試合中の返し合いや逆転が燃料です。K-7 でカウント2の返し合いが増えたので、燃料も増えました。</li>
+      <li>増えた分の多くは大一番(王座戦・PPV・大会)です。</li>
+      <li>自団体の試合に直すと、「3季に1回くらい」が「2季に1回くらい」になる目安です。平均の試合評価はほぼ動きません(+0.03)。</li>
+    </ul>
+    <figure class="fig">
+      <svg viewBox="0 0 560 200" role="img" aria-label="1試合あたりの奇跡の名勝負の出やすさ。通常戦は0.25%から0.37%、大一番は1.1%から3.0%に増えた。シングル全体では0.30%から0.51%で、仕様の範囲0.1から0.3%を超えた。">
+        <text x="20" y="18" class="t-bold">1試合あたりの「奇跡の名勝負」の出やすさ</text>
+        <text x="20" y="62" class="t-bold">通常戦</text>
+        <rect x="150" y="38" width="30" height="14" class="f-neu2"/><text x="186" y="50" class="t-small t-muted">0.25%</text>
+        <rect x="150" y="56" width="44" height="14" class="f-new"/><text x="200" y="68" class="t-small t-new t-bold">0.37%</text>
+        <text x="20" y="120" class="t-bold">大一番</text>
+        <rect x="150" y="96" width="132" height="14" class="f-neu2"/><text x="288" y="108" class="t-small t-muted">1.1%</text>
+        <rect x="150" y="114" width="360" height="14" class="f-new"/><text x="504" y="126" text-anchor="end" class="t-small t-on t-bold">3.0%</text>
+        <rect x="150" y="146" width="14" height="14" class="f-neu2"/><text x="170" y="158" class="t-small">K-7 の前</text>
+        <rect x="250" y="146" width="14" height="14" class="f-new"/><text x="270" y="158" class="t-small">K-7 の後</text>
+        <text x="20" y="190" class="t-small t-muted">シングル全体: 0.30% → 0.51%(仕様で決めた範囲は 0.1〜0.3%)</text>
+      </svg>
+    </figure>
+    <div class="sub">選択肢</div>
+    <div class="opts">
+      <div class="opt is-rec"><div class="letter">A</div><h3>据え置き(仕様の範囲を今の実測に書き換える) <small>おすすめ</small></h3>
+        <p>燃料は実際に起きた返し合いで、数字を曲げていません。増えたのは奇跡が起きてほしい大一番が中心です。</p></div>
+      <div class="opt"><div class="letter">B</div><h3>絞る(発火の条件を少し厳しくして、範囲に戻す)</h3>
+        <p class="meta">稀少さを優先する場合。平均の試合評価はどちらでもほぼ同じです。</p></div>
+    </div>
+  </article>
+
+  <!-- 2 ★の基準 -->
+  <article class="card" id="r4-2">
+    <div class="card-head"><div class="num">2</div><div class="ttl">
+      <h2>★の基準(84/68)をこのまま確定してよいか</h2>
+      <div class="badges"><span class="pill sure">計測済み</span><span class="pill size">K-2 から</span></div>
+    </div></div>
+    <p class="oneline">★の物語ボーナスを効かせたうえで、★5・★4の基準を上げ直しました。40季では目標の分布に収まっています。</p>
+    <div class="sub">いま起きていること</div>
+    <ul>
+      <li>100季で見ると、後半は★5が減ります。人気が上がって大ホール以上で興行するようになり、そこは★の甘さが0だからです。</li>
+      <li>この傾向は変更前からあり、今回の変更が原因ではありません。変更後はどの時期も変更前より★5が出やすくなっています。</li>
+    </ul>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>★5の割合</th><th>1〜20季</th><th>21〜50季</th><th>51〜100季</th><th>全体</th></tr></thead>
+        <tbody>
+          <tr><td>変更前</td><td>10.5%</td><td>14.2%</td><td>6.1%</td><td>9.4%</td></tr>
+          <tr><td>変更後</td><td>25.3%</td><td>15.0%</td><td>7.6%</td><td>13.3%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="sub">選択肢</div>
+    <div class="opts">
+      <div class="opt is-rec"><div class="letter">A</div><h3>このまま確定。後半の大会場で★5が出にくい件は別の話として後で <small>おすすめ</small></h3></div>
+      <div class="opt"><div class="letter">B</div><h3>今すぐ大会場の★の甘さを見直す</h3>
+        <p class="meta">K-3 では「大会場の甘さは触らない」と約束した値です。見直すなら新しい計測から始めます。</p></div>
+    </div>
+  </article>
+
+  <!-- 3 派閥 メイン補正 -->
+  <article class="card" id="r4-3">
+    <div class="card-head"><div class="num">3</div><div class="ttl">
+      <h2>派閥: 通常興行のメインでの勝利にも上乗せを掛けるか</h2>
+      <div class="badges"><span class="pill sure">コードで確認</span><span class="pill size">K-1 第4段から</span></div>
+    </div></div>
+    <p class="oneline">派閥ポイントは、K-1 第4段で実プレイでも試合ごとに貯まるようになりました。そこで仕様との食い違いが見つかりました。</p>
+    <div class="sub">いま起きていること</div>
+    <ul>
+      <li>仕様では、メインで勝つと派閥抗争のポイントが3割増し、派閥内のポイントが+2になります。</li>
+      <li>実装は「PPV の頂上決戦」の印だけを見ているので、通常興行のメインでは一度も掛かりません。</li>
+    </ul>
+    <div class="sub">選択肢</div>
+    <div class="opts">
+      <div class="opt is-rec"><div class="letter">A</div><h3>通常興行のメインにも掛ける(仕様どおり) <small>おすすめ</small></h3>
+        <p>派閥の選手をメインに立てる意味が出ます。抗争の決着は少し早まります。</p></div>
+      <div class="opt"><div class="letter">B</div><h3>今のまま(PPV の頂上決戦だけ)</h3></div>
+    </div>
+  </article>
+
+  <!-- 4 派閥 40週 -->
+  <article class="card" id="r4-4">
+    <div class="card-head"><div class="num">4</div><div class="ttl">
+      <h2>派閥: 抗争が40週続いたときの「和解させる/続けさせる」</h2>
+      <div class="badges"><span class="pill sure">コードで確認</span><span class="pill size">画面づくり 中</span></div>
+    </div></div>
+    <p class="oneline">仕様にある社長の2択が作られておらず、しかも印のせいで、ほかの抗争の判定まで止まっていました。</p>
+    <div class="sub">いま起きていること</div>
+    <ul>
+      <li>仕様では、抗争が40週続いて先取100に届かなければ、社長に「和解させる/続けさせる(+20週)」の2択が出ます。</li>
+      <li>実装は印を立てるだけで、画面がありません。その印で、同じ週のほかの抗争の自然な沈静化の判定も止まっていました(不具合)。</li>
+      <li>派閥ポイントが実プレイで貯まるようになり、先取100の決着は中央値で約2年(104週)かかります。これからは、ほとんどの抗争が40週に届きます。</li>
+    </ul>
+    <figure class="fig">
+      <svg viewBox="0 0 560 205" role="img" aria-label="派閥抗争の時間の流れ。0週で始まり、40週で社長の2択が出る仕様だが、今は画面が無い。続けさせると60週で次の区切り。先取100の決着は中央値で約104週。">
+        <text x="20" y="18" class="t-bold">派閥抗争の時間の流れ(週)</text>
+        <line x1="30" y1="76" x2="530" y2="76" class="ln"/>
+        <text x="30" y="60" class="t-small t-muted">0</text>
+        <text x="210" y="60" text-anchor="middle" class="t-small t-gold t-bold">40</text>
+        <text x="300" y="60" text-anchor="middle" class="t-small t-muted">60</text>
+        <text x="498" y="60" text-anchor="middle" class="t-small t-muted">約104</text>
+        <circle cx="30" cy="76" r="5" class="f-neu"/>
+        <circle cx="210" cy="76" r="7" class="f-gold"/>
+        <circle cx="300" cy="76" r="5" class="f-neu"/>
+        <circle cx="498" cy="76" r="5" class="f-neu"/>
+        <text x="30" y="100" class="t-small">抗争の始まり</text>
+        <text x="300" y="100" text-anchor="middle" class="t-small t-muted">続けたら次の区切り</text>
+        <text x="530" y="100" text-anchor="end" class="t-small">先取100で決着(中央値)</text>
+        <rect x="120" y="114" width="220" height="42" rx="6" class="box-new"/>
+        <text x="230" y="132" text-anchor="middle" class="t-small t-bold">40週: 社長の2択(仕様)</text>
+        <text x="230" y="148" text-anchor="middle" class="t-small">和解させる / 続けさせる(+20週)</text>
+        <text x="20" y="188" class="t-small t-now t-bold">今: 印が立つだけで画面は出ない。ほかの抗争の判定まで止まる</text>
+      </svg>
+    </figure>
+    <div class="sub">選択肢</div>
+    <div class="opts">
+      <div class="opt is-rec"><div class="letter">A</div><h3>仕様どおり2択の画面を作る。判定が止まる不具合も直す <small>おすすめ</small></h3>
+        <p>抗争の行方を社長が決める場面になります。いつものモーダルの大きさで出します(節目の全画面演出にはしない)。</p></div>
+      <div class="opt"><div class="letter">B</div><h3>画面は作らず、40週で自動的に和解させる</h3></div>
+      <div class="opt"><div class="letter">C</div><h3>判定が止まる不具合だけ直す(40週の区切りは無しにする)</h3></div>
+    </div>
+  </article>
+
+  <!-- 5 関係性ポップアップ -->
+  <article class="card" id="r4-5">
+    <div class="card-head"><div class="num">5</div><div class="ttl">
+      <h2>関係性のポップアップ(24種)をどうするか</h2>
+      <div class="badges"><span class="pill sure">コードで確認</span><span class="pill size">大きな発見</span></div>
+    </div></div>
+    <p class="oneline">憧れ・嫉妬・裏切り・出戻り・師弟・引退の置き土産などのポップアップは、4月28日から実プレイで一度も出ていませんでした。</p>
+    <div class="sub">いま起きていること</div>
+    <ul>
+      <li>ポップアップを出す関数が、実際には存在しない場所を見ていて、毎回何もせずに抜けていました。</li>
+      <li>出来事そのものは起きていて、表示待ちの列に積まれています。列は消費されず、セーブの中で増え続けています(3季で127件)。</li>
+      <li>全部出すと、1季に約40回(ほぼ毎週1回)になります。</li>
+      <li>8月13日の裁定は「関係性の変化は、試合後にポップアップで知らせない。新聞・ティッカー・相関図などの世界の側で見せる」でした。</li>
+    </ul>
+    <figure class="fig">
+      <svg viewBox="0 0 560 170" role="img" aria-label="選手の間の出来事24種は表示待ちの列に積まれるが、表示の関数が止まっていて画面には一度も出ていない。列は3季で127件にたまる。">
+        <rect x="16" y="34" width="150" height="62" rx="6" class="box"/>
+        <text x="91" y="60" text-anchor="middle" class="t-small t-bold">選手の間の出来事</text>
+        <text x="91" y="78" text-anchor="middle" class="t-small">憧れ・嫉妬など24種</text>
+        <line x1="170" y1="65" x2="200" y2="65" class="ln"/><path d="M200 60 L208 65 L200 70 Z" class="ah"/>
+        <rect x="210" y="34" width="150" height="62" rx="6" class="box-now"/>
+        <text x="285" y="60" text-anchor="middle" class="t-small t-bold">表示待ちの列</text>
+        <text x="285" y="78" text-anchor="middle" class="t-small">3季で127件たまる</text>
+        <line x1="364" y1="65" x2="420" y2="65" class="ln ln-dash"/>
+        <line x1="384" y1="55" x2="400" y2="75" class="ln-now"/><line x1="400" y1="55" x2="384" y2="75" class="ln-now"/>
+        <rect x="424" y="34" width="120" height="62" rx="6" class="ghost"/>
+        <text x="484" y="60" text-anchor="middle" class="t-small t-bold">画面</text>
+        <text x="484" y="78" text-anchor="middle" class="t-small">一度も出ていない</text>
+        <text x="20" y="130" class="t-small">出す関数が、存在しない場所を見て止まっていた(4月28日から)。</text>
+        <text x="20" y="152" class="t-small t-muted">「引退の置き土産」「突然離脱の波紋」も、この列に積まれていた。</text>
+      </svg>
+    </figure>
+    <div class="sub">選択肢</div>
+    <div class="opts">
+      <div class="opt is-rec"><div class="letter">A</div><h3>出さないまま、たまり続ける列だけ直す <small>おすすめ</small></h3>
+        <p>8月13日の裁定と合います。中身は選手のドラマとして良いものが多いので、後日、新聞・相関図などの世界の側で見せる形を設計します。</p></div>
+      <div class="opt"><div class="letter">B</div><h3>選んだ数種類だけポップアップで出す</h3>
+        <p class="meta">例: 引退の置き土産・裏切り・出戻り・師弟など、節目の出来事だけ。どれを出すかは別途相談します。</p></div>
+      <div class="opt"><div class="letter">C</div><h3>全部出す(1季に約40回)</h3></div>
+    </div>
+  </article>
+
+  <!-- 6〜8 小さい3つ -->
+  <article class="card" id="r4-6">
+    <div class="card-head"><div class="num">6〜8</div><div class="ttl">
+      <h2>怪我による引退・突然の退団まわりの小さい3つ</h2>
+      <div class="badges"><span class="pill size">K-1 第4段の後半から</span></div>
+    </div></div>
+    <p class="oneline">怪我による引退と突然の退団が、実プレイでも起きるようになりました(承認済み)。その見せ方の細部です。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>いま起きていること</th><th>おすすめ</th></tr></thead>
+        <tbody>
+          <tr><td class="k">6</td><td>引退した週(怪我・ラストラン)は、本人の別れのポップアップが、その週のほかの通知や直訴の画面の後に出る</td><td class="rec">引退の週は、別れを先に出す</td></tr>
+          <tr><td class="k">7</td><td>怪我による引退と突然の退団は、ポップアップとお知らせだけで、ログのタブに1行も残らない</td><td class="rec">ログに1行残す(英語つき)</td></tr>
+          <tr><td class="k">8</td><td>前兆は、信頼40以下の「💭よそよそしい」と、20を割った週の退団の噂(ログ・道場)。退団の判定が始まる15未満に入っても、見た目は39以下と同じ</td><td class="rec">15を割った週に、退団の噂をもう一度出す</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <!-- お知らせ(回答不要) -->
+  <article class="card" id="r4-note">
+    <div class="card-head"><div class="num">参考</div><div class="ttl"><h2>資金の手触りが変わります(回答は不要)</h2></div></div>
+    <p>K-1 第4段で、試合に出た選手のプロモ蓄積がリセットされるようになりました(承認済み)。「バランス」方針の選手が季を通してプロモに回るので、興行週の収入は約5割増え、12人規模の団体で1季あたり約4,800万〜1億円の増収になります。そのぶん練習の伸びは減ります。実機で遊んで「お金が甘すぎる」と感じたら教えてください。プロモ収入の率で調整できます。</p>
+  </article>
+
+  <form class="sheet" id="answer4-form" autocomplete="off">
+    <div class="sub">第4回の回答シート</div>
+    <div id="sheet4-rows"></div>
+    <div class="btns">
+      <button type="button" id="fill4-rec">おすすめで埋める</button>
+      <button type="button" class="primary" id="copy4-out">選んだ内容をコピー</button>
+    </div>
+    <p id="copy4-status" role="status" aria-live="polite"></p>
+    <label for="answer4-out" class="sub">チャットに貼る文面</label>
+    <textarea id="answer4-out" readonly></textarea>
+  </form>
+</section>
 
 <section class="reply" id="round3" aria-labelledby="round3-title">
   <div class="stack">
@@ -1449,6 +1680,93 @@ textarea{width:100%;min-height:110px;font-family:var(--font-body);font-size:14px
     statusEl.textContent = 'おすすめで埋めました。';
   });
   document.getElementById('copy3-out').addEventListener('click', function(){
+    render();
+    var text = outEl.value;
+    function fallback(){ outEl.focus(); outEl.select(); statusEl.textContent = '文面を選択しました。Ctrl+C(スマホは長押し)でコピーしてください。'; }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ statusEl.textContent = 'コピーしました。チャットに貼ってください。'; }, fallback);
+      } else { fallback(); }
+    } catch (e) { fallback(); }
+  });
+  load();
+  render();
+})();
+(function(){
+  var ITEMS4 = [
+    {k:'1', q:'「奇跡の名勝負」が出やすくなった', opts:[['KEEP','据え置き(仕様の範囲を実測に書き換える)'],['TIGHT','絞る(範囲に戻す)']], rec:'KEEP'},
+    {k:'2', q:'★の基準(84/68)の確定', opts:[['OK','このまま確定(大会場の件は後で)'],['NOW','今すぐ大会場の甘さを見直す']], rec:'OK'},
+    {k:'3', q:'派閥: 通常興行のメインでの上乗せ', opts:[['YES','通常興行のメインにも掛ける'],['KEEP','今のまま(PPVだけ)']], rec:'YES'},
+    {k:'4', q:'派閥: 40週の「和解させる/続けさせる」', opts:[['BUILD','2択の画面を作る+止まる不具合を直す'],['AUTO','40週で自動的に和解'],['FIXONLY','止まる不具合だけ直す(区切り無し)']], rec:'BUILD'},
+    {k:'5', q:'関係性のポップアップ(24種)', opts:[['OFF','出さないまま、たまる列だけ直す'],['SOME','選んだ数種類だけ出す'],['ALL','全部出す']], rec:'OFF'},
+    {k:'6', q:'引退の週のポップアップの順番', opts:[['FIRST','別れを先に出す'],['KEEP','今のまま']], rec:'FIRST'},
+    {k:'7', q:'怪我引退・突然の退団をログに残す', opts:[['YES','1行残す(英語つき)'],['NO','残さない']], rec:'YES'},
+    {k:'8', q:'信頼15未満の前兆', opts:[['YES','15を割った週に噂をもう一度'],['KEEP','今のまま']], rec:'YES'}
+  ];
+  var KEY4 = 'wm-audit-decisions-v4';
+  var rowsEl = document.getElementById('sheet4-rows');
+  var outEl = document.getElementById('answer4-out');
+  var statusEl = document.getElementById('copy4-status');
+  if (!rowsEl || !outEl) return;
+  function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]/g,'x'); }
+  ITEMS4.forEach(function(it){
+    var row = document.createElement('div'); row.className = 'sheet-row';
+    var k = document.createElement('div'); k.className = 'k'; k.textContent = it.k;
+    var q = document.createElement('div'); q.className = 'q'; q.textContent = it.q;
+    var ch = document.createElement('div'); ch.className = 'choices';
+    it.opts.forEach(function(o){
+      var id = 'ans4-' + slug(it.k) + '-' + slug(o[0]);
+      var lab = document.createElement('label'); lab.setAttribute('for', id);
+      var inp = document.createElement('input'); inp.type = 'radio'; inp.name = 'ans4-' + slug(it.k); inp.id = id; inp.value = o[0];
+      lab.appendChild(inp); lab.appendChild(document.createTextNode(o[1]));
+      if (it.rec === o[0]) { var m = document.createElement('span'); m.className = 'recmark'; m.textContent = 'おすすめ'; lab.appendChild(m); }
+      ch.appendChild(lab);
+    });
+    row.appendChild(k); row.appendChild(q); row.appendChild(ch);
+    rowsEl.appendChild(row);
+  });
+  function current(){
+    var res = {};
+    ITEMS4.forEach(function(it){
+      var sel = document.querySelector('input[name="ans4-' + slug(it.k) + '"]:checked');
+      res[it.k] = sel ? sel.value : null;
+    });
+    return res;
+  }
+  function render(){
+    var res = current();
+    var lines = ['総点検 第4回の回答'];
+    ITEMS4.forEach(function(it){
+      var v = res[it.k];
+      if (!v) { lines.push(it.k + '(' + it.q + '): 保留'); return; }
+      var label = '';
+      it.opts.forEach(function(o){ if (o[0] === v) label = o[1]; });
+      lines.push(it.k + '(' + it.q + '): ' + label);
+    });
+    outEl.value = lines.join('\n');
+  }
+  function save(){ try { localStorage.setItem(KEY4, JSON.stringify(current())); } catch (e) {} }
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY4); if (!raw) return;
+      var data = JSON.parse(raw);
+      Object.keys(data || {}).forEach(function(k){
+        var v = data[k]; if (!v) return;
+        var el = document.getElementById('ans4-' + slug(k) + '-' + slug(v));
+        if (el) el.checked = true;
+      });
+    } catch (e) {}
+  }
+  document.getElementById('answer4-form').addEventListener('change', function(){ render(); save(); });
+  document.getElementById('fill4-rec').addEventListener('click', function(){
+    ITEMS4.forEach(function(it){
+      var el = document.getElementById('ans4-' + slug(it.k) + '-' + slug(it.rec));
+      if (el) el.checked = true;
+    });
+    render(); save();
+    statusEl.textContent = 'おすすめで埋めました。';
+  });
+  document.getElementById('copy4-out').addEventListener('click', function(){
     render();
     var text = outEl.value;
     function fallback(){ outEl.focus(); outEl.select(); statusEl.textContent = '文面を選択しました。Ctrl+C(スマホは長押し)でコピーしてください。'; }
