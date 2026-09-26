@@ -31,7 +31,7 @@ Keisuke 裁定(2026-09-26)「派閥の決着の効果は仕様どおり効かせ
 | 敗者の F04/F05 倍率 | 読む処理なし | ×1.5 |
 
 ### headless 進行(6シード×30季。seed 42/7/1234/7919/2024/31337。K-1 第4段・派閥の作業者と同じ方法)
-- headless-sim のスタブ(pn 無し)の修正は main にまだ無いので、計測スクリプトが pn 付きのスタブを先に置いて読み込んだ(直した版と同じ扱い)。F04/F05 の抽選と興行を包んで記録
+- 最初は headless-sim のスタブ(pn 無し)の修正が main に無かったので pn 付きのスタブを先に置いて計測。main 取り込み後に**直った版(src/i18n.js の 'ja')で前後とも取り直し、数値は全件一致**。F04/F05 の抽選と興行を包んで記録(計測スクリプトは scratchpad。リポジトリには置いていない)
 - 40週の2択の自動応答: 等確率(AB)と「続けさせる」固定(B)の2通り。先取100の無いシード(42/7/1234/31337)は前後で決着の件数・F04/F05 が完全に一致(先取100までは軌道が同じ)
 - B(先取100 3件)の決着週の前後:
 
@@ -54,6 +54,7 @@ Keisuke 裁定(2026-09-26)「派閥の決着の効果は仕様どおり効かせ
 - 新テスト `test/faction-rivalry-victory-effects-test.js`(8項目: 勝者・敗者の効果/§5.3/純関数/CALM/CONSOLATION/集客の持ち越し(12週・下限・結成し直し・calcMatchAppeal に入る)/F04・F05 ×1.5(pickWeeklyEvent)/tickWeek の配線): **変更前の src で 8 FAIL**、変更後 ALL PASS
 - 既存テスト3本を新しい返り値に合わせた: faction-f06-force-close-test(自然沈静化の確認を `r.state` で・入力が書き換わらないことも)・internal-challenge-regression-test(`null` → `resolved:false`)・faction-f09-cooldown-test(返り値を受け取る)
 - `npm test` **308/308 PASS** / `node test/auto-sim.js 40 42` ALL CLEAR・違反0・指紋 **d8ef55c5(main c53ac9be と同じ。auto-sim の世界は派閥ができない)** / `npm run test:k1:parity` **PASS(登録33・未登録0・消えた0)**
+- main(テスト用の仕組みの修正 a5aff204 ほか)取り込み後: `npm test` **308/308 PASS** / `npm run test:k1:parity` **PASS(登録33・未登録0・消えた0・fixture の握りつぶし0)** / `node test/ja-golden.js` 新しい基準と完全一致(99ce4637)/ `node test/save-regression.js` ALL CLEAR。基準ファイルには触っていない(自分の変更で出た差は無し)
 - i18n-ratchet は NG(management.js +7・ui-render.js +1)だが **main 時点から同じ本数**(main の src を同じ走査に掛けて 1358 / 975 で一致)。今回の変更は日本語のコメントだけで本数は増えていない。基準ファイルには触っていない
 
 ### 触ったファイル
