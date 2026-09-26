@@ -4,8 +4,9 @@
 //  test/b3-guest-return-test.js — 挑戦状(B3)のゲストを所属団体へ戻すときの回帰ガード(2026-09-26)
 //
 //  ■ 何を守るか
-//    挑戦状のゲスト(他団体の選手)は、挑戦状が届いた時点の写し event.challenger(能力・人気・特性など
-//    試合に要る欄だけ)から作られる。以前の返却(App._finalizeHookGuests)はその写しを本物の選手へ
+//    挑戦状のゲスト(他団体の選手)は、2026-09-26 まで挑戦状が届いた時点の写し event.challenger(能力・人気・
+//    特性など試合に要る欄だけ)から作られていた(同日の裁定で開催の時点の本物から作る形へ。
+//    test/b3-guest-from-real-fighter-test.js)。以前の返却(App._finalizeHookGuests)はその写しを本物の選手へ
 //    { ...本物, ...ゲスト } で丸ごと被せていたため、ゲストが怪我をすると本物の体調が NaN になり、
 //    自己最高評価が今回の評価に下がり、今季の伸びが0に戻り、直近戦績が1戦だけになり、一時印
 //    (isB3ChallengeGuest / _b3GuestOrgId)と信頼の即時ボーナスが残っていた。
@@ -119,7 +120,7 @@ function runB3Show({ repIndex = 0, challengerExtra = {} } = {}) {
   assert.ok(guestPost, 'ゲストが返却の前にロスターから消えている');
   const realAfter = fin.state.aiOrgs[scheduled.orgId].roster.find(f => f.id === guest.id);
   assert.ok(realAfter, '所属団体のロスターから本物の選手が消えた');
-  return { fin, rep, guestId: guest.id, orgId: scheduled.orgId, guestPre: clone(challenger), guestPost, realBefore, realAfter, main: results[0] };
+  return { fin, rep, guestId: guest.id, orgId: scheduled.orgId, guestPre: clone(scheduled.challenger), guestPost, realBefore, realAfter, main: results[0] };
 }
 
 function assertReturned(run) {
@@ -175,18 +176,18 @@ function assertReturned(run) {
   assert.ok(!warnings.some(w => /NaN/.test(w)), `NaN の違反: ${warnings.filter(w => /NaN/.test(w)).join(' / ')}`);
 }
 
-section('ゲームと同じ入れ方(写しの挑戦者): 返却で本物の選手の記録が壊れない・一時印が残らない', () => {
+section('ゲームと同じ入れ方(開催の時点の本物から作った挑戦者): 返却で本物の選手の記録が壊れない・一時印が残らない', () => {
   const run = runB3Show();
   assertReturned(run);
   console.log(`        (挑戦者 ${run.guestId}: 怪我 ${run.guestPost.injury ? run.guestPost.injury.type : 'なし'} / 体調 ${run.realBefore.condition}→${run.realAfter.condition} / 自己最高評価 ${run.realBefore.careerBestMQ}→${run.realAfter.careerBestMQ} / 今回 ${run.main.mq})`);
 });
 
 section('怪我をしなかった場合: 体調・怪我・成長の減速は本物のまま、試合の記録だけ増える', () => {
-  // 写しに体調を持たせると怪我の判定が通常の確率になる(写しのままだと体調が無く、判定が常に成立する —
-  // 返却とは別の件。報告済み)。代表を替えて怪我をしなかった試合を探す
+  // 挑戦者は開催の時点の本物(体調を持つ)なので怪我の判定は通常の確率。代表を替えて怪我をしなかった試合を探す
+  // (怪我をした試合の返却は test/b3-guest-from-real-fighter-test.js が本物の興行で確かめる)
   let run = null;
   for (let i = 0; i < 8 && !run; i += 1) {
-    const r = runB3Show({ repIndex: i, challengerExtra: { condition: 100 } });
+    const r = runB3Show({ repIndex: i });
     if (!r.guestPost.injury) run = r;
   }
   assert.ok(run, '怪我をしなかった挑戦状の試合が作れない');

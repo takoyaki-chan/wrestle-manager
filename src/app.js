@@ -6841,6 +6841,8 @@ const App = {
     if (eligibleChallengeShow && weeklyChallengeSide !== 'away' && !Engine.challengeRequest?.getScheduledCard?.(G) && !App._unifiedTitleShowData && G._pendingIncomingB3Match && Engine.challengeRequest?.reserveScheduledSingleMatch) {
       const reservedB3 = Engine.challengeRequest.reserveScheduledSingleMatch(G, G.showCard);
       if (reservedB3) {
+        // scheduled.challenger は今の時点の本物の選手(挑戦してきた団体の最新のロスター。getScheduledSingleChallenge。
+        // 2026-09-26 裁定で挑戦状が届いた時点の写しから変更)。本人が怪我・引退・移籍などで出られなければ予約は解除(下の else)
         const scheduled = reservedB3.scheduled;
         const existingIds = new Set((G.roster || []).map(f => f.id));
         const guest = existingIds.has(scheduled.challenger.id)
@@ -8739,9 +8741,9 @@ const App = {
         const aiOrgs = { ...(s.aiOrgs || {}) };
         const guestOrg = aiOrgs[b3.orgId];
         if (updatedGuest && guestOrg?.roster) {
-          // ゲストは挑戦状が届いた時点の写し(b3.challenger)から作っていて体調・自己最高評価などを持たない。
-          // 写しを本物へ被せず、この興行で起きたこと(怪我・試合の記録・人気・成長)だけを本物に反映し、
-          // 一時印を外す(Engine.challengeRequest.mergeReturningGuest。2026-09-26 体調 NaN の修正)
+          // ゲストは興行の開催の時点の本物の写し(b3.challenger = 興行に入れたときの値)。写しを本物へ被せず、
+          // その差 = この興行で起きたこと(怪我・試合の記録・人気・成長・調子の波)だけを本物に反映し、
+          // 一時印を外す(Engine.challengeRequest.mergeReturningGuest。2026-09-26)
           aiOrgs[b3.orgId] = {
             ...guestOrg,
             roster: guestOrg.roster.map(f => (f.id === updatedGuest.id

@@ -329,6 +329,8 @@ const B3_STEP_PROBE = `(() => {
   const org = memo.orgId != null && G.aiOrgs ? G.aiOrgs[memo.orgId] : null;
   const real = org && memo.challengerId != null ? (org.roster || []).find(f => f.id === memo.challengerId) : null;
   const markers = ['isB3ChallengeGuest', '_b3GuestOrgId', 'isCRGuest', '_crGuestOrgId', 'isAwayChallengeGuest', 'isUnifiedTitleGuest', '_unifiedGuestOrgId'];
+  // 興行中の挑戦者のゲスト(2026-09-26 裁定: 開催の時点の本物から作る = 体調・年齢を持ち、同じ時点の本物と同じ値)
+  const guest = memo.challengerId != null ? (G.roster || []).find(f => f.id === memo.challengerId && f.isB3ChallengeGuest) : null;
   return {
     season: G.season, week: G.week, phase: G.weekPhase, totalShows: G.totalShows,
     booked: !!booking, fighterId: memo.fighterId == null ? null : memo.fighterId,
@@ -344,6 +346,11 @@ const B3_STEP_PROBE = `(() => {
       injury: real.injury ? real.injury.type : null,
       recentMatches: (real.recentMatches || []).length,
       markers: markers.filter(k => k in real),
+    } : null,
+    guest: guest ? {
+      condition: typeof guest.condition === 'number' && Number.isFinite(guest.condition) ? guest.condition : String(guest.condition),
+      age: guest.age == null ? null : guest.age,
+      sameAsReal: !!real && ['condition', 'age', 'pw', 'sp', 'te', 'st', 'mn', 'popularity', 'careerBestMQ'].every(k => guest[k] === real[k]),
     } : null,
   };
 })()`;
@@ -377,6 +384,16 @@ function _assertB3Resolved(steps) {
     if (realBefore && realAfter.recentMatches < Math.min(5, realBefore.recentMatches + 1)) {
       fails.push(`返却で本物の直近戦績が減った(${realBefore.recentMatches}→${realAfter.recentMatches})`);
     }
+  }
+  // 興行中のゲスト(2026-09-26 裁定: 挑戦状が届いた時点の写しではなく、開催の時点の本物から作る)
+  const guestSeen = values.find(v => v.guest);
+  console.log(`B3 興行中のゲスト: ${guestSeen ? `体調 ${guestSeen.guest.condition} / 年齢 ${guestSeen.guest.age} / 同じ時点の本物と同じ ${guestSeen.guest.sameAsReal}` : '読めない'} / 返却後の怪我 ${realAfter && realAfter.injury}`);
+  if (!guestSeen) fails.push('興行中の挑戦者のゲストが読めない');
+  else {
+    if (typeof guestSeen.guest.condition !== 'number' || typeof guestSeen.guest.age !== 'number') {
+      fails.push(`ゲストが本物から作られていない(体調 ${guestSeen.guest.condition} / 年齢 ${guestSeen.guest.age})`);
+    }
+    if (!guestSeen.guest.sameAsReal) fails.push('ゲストの値が同じ時点の所属団体の本物と違う(届いた時点の写しのまま?)');
   }
   return fails;
 }
