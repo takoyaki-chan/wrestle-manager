@@ -48,7 +48,7 @@ Keisuke 承認の2件。数値は変えていない(表示とログだけ)。
 - 回帰: `test/faction-dissolution-log-test.js`(9節: 純関数の7通り/checkDissolutionConditions を通した人数割れと独占/JA の文面/EN の文面(日本語なし・Group・選手名の英語)/tickWeek で1行・抗争の決着より前・記事なし/ログの有無で tickWeek の state が1ビットも変わらない/引退の確定で引退の行の後に leader/解散命令と F03 の週では出ない)
 
 ### 検証
-- `npm test` 312/312 PASS・`node test/auto-sim.js 40 42` ALL CLEAR・意味の指紋 db9b0841(変更前と一致。auto-sim の世界は派閥ができない)・`npm run test:k1:parity` PASS(未登録の差分0)・`node test/ja-golden.js` 基準と完全一致・`node test/i18n-ratchet.js` OK(基準更新後)・UI 走破1本 `npm run test:ui:walkthrough` PASS(1季・345操作・S2W1 着地)
+- `npm test` 312/312 PASS・`node test/auto-sim.js 40 42` ALL CLEAR・意味の指紋 db9b0841(変更前と一致。auto-sim の世界は派閥ができない)・`npm run test:k1:parity` PASS(未登録の差分0)・`node test/ja-golden.js` 基準と完全一致・`node test/i18n-ratchet.js` OK(基準更新後)・UI 走破1本 `npm run test:ui:walkthrough` PASS(1季・345操作・S2W1 着地)。最後に main(c36ed0a1 新聞1面の次回展望ほか)を取り込み、`npm test` 312/312 PASS・ratchet OK
 - specs: `trust-system-spec-v2.1.md` §13.3・§17-5(表の本文・既知の制約)、`faction-system-spec-v0.1.md` §2.4・§2.5・§2.6。実機確認は `docs/実機確認バックログ.md` の先頭の節
 
 ## 2026-09-26 新聞1面に「次回展望」の欄を戻した — 案B・黒田コラムの上に3行(Claude/Opus 5.5・worktree)
