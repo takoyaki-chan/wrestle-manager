@@ -311,6 +311,10 @@ const NEWSPAPER_PAGE1_PROBE = `(() => {
     textLength: norm(root).length,
     hasOlderBtn: !!root.querySelector('[data-walk-role="np-archive-older"]'),
     hasLatestResetBtn: !!root.querySelector('[data-walk-role="np-archive-latest"]'),
+    // 2026-09-26 第5回 問11: newspaper-lang-switch が最新号へ差し込む派閥抗争の決着の記事(factionRivalryDecided)の目印。
+    // text は先頭400字しか持たないので、紙面全体で見る
+    factionDecidedJa: /の派閥抗争に決着——|」が抗争を制す——/.test(norm(root)),
+    factionDecidedEn: /feud settled — | take the feud — /.test(norm(root)),
   };
 })()`;
 
@@ -775,7 +779,27 @@ module.exports = {
           // フォールバックへ委ねる。§P7-58で「メインイベント」の生成時焼き込みを撤去した)。
           matchLabel: null, attendance: 3200,
         };
-        const newWp = { ...wp, topStory: playerShowStory, playerShowData };
+        // 2026-09-26 第5回 問11: 派閥抗争の決着の記事(factionRivalryDecided)を最新号のサブ記事の先頭へ。
+        // 記事は本物の経路で組む(決着の知らせ → 業界ニュースのキュー → Engine.newspaper.generate)。
+        // 一言は原文で積まれ、表示時に言語別に組み直される(EN では一言・派閥名・団体名まで英語になること)
+        const leadA = (G.roster || [])[2];
+        const leadB = (G.roster || [])[3];
+        if (!leadA || !leadB) throw new Error('自団体ロスターが4名未満。別シード/停止週で生成し直すこと');
+        const facName = c => `${c.surname || c.name}派`;
+        const notice = Engine.factions.buildRivalryResolutionNotice(
+          { ...G, factions: [
+            { id: 1, name: facName(leadA), leaderId: leadA.id, memberIds: [leadA.id] },
+            { id: 2, name: facName(leadB), leaderId: leadB.id, memberIds: [leadB.id] },
+          ] },
+          { resolved: true, reason: 'POINTS', winnerFactionId: 1, loserFactionId: 2 },
+          Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season, G.week, 0xFA2A)));
+        if (!notice.news) throw new Error('派閥抗争の決着の記事が組めない(buildRivalryResolutionNotice)');
+        const factionPaper = Engine.newspaper.generate({ ...G, _industryNewsEvents: [notice.news] },
+          Engine.rng.create(Engine.rng.derive(G.rngSeed || 1, G.season, G.week, 0x5EED)));
+        const factionStory = [factionPaper.topStory, ...(factionPaper.subStories || [])]
+          .find(st => st && st.type === 'factionRivalryDecided');
+        if (!factionStory) throw new Error('派閥抗争の決着の記事が紙面に載らない(Engine.newspaper.generate)');
+        const newWp = { ...wp, topStory: playerShowStory, playerShowData, subStories: [factionStory, ...(wp.subStories || [])] };
         const newArchive = archive.length
           ? [{ ...archive[0], topStory: playerShowStory, playerShowData }, ...archive.slice(1)]
           : archive;
@@ -786,6 +810,9 @@ module.exports = {
         if (!G.weeklyNewspaper || G.weeklyNewspaper.layout !== 'v3') fails.push('weeklyNewspaper.layout が v3 でない(旧レイアウトは検査対象外)');
         if (!G.weeklyNewspaper.topStory || G.weeklyNewspaper.topStory.type !== 'playerShowNormal') {
           fails.push('engineerの差し込みが効いていない(weeklyNewspaper.topStory)');
+        }
+        if (!(G.weeklyNewspaper.subStories || []).some(st => st && st.type === 'factionRivalryDecided')) {
+          fails.push('engineerの差し込みが効いていない(weeklyNewspaper.subStories の factionRivalryDecided)');
         }
         const archive = G.newspaperArchive || [];
         if (archive.length < 3) fails.push(`newspaperArchiveが${archive.length}件(3件以上必要 — バックナンバー巡回を検査するため)`);
@@ -819,6 +846,16 @@ module.exports = {
         if (!p || p.probeError) { fails.push(`${label}: probe失敗 ${p && p.probeError}`); continue; }
         if (!p.present) { fails.push(`${label}: .np-paper が描画されていない(不発)`); continue; }
         if (!p.textLength || p.textLength < 50) fails.push(`${label}: 紙面のテキストが${p.textLength || 0}字しかない(不発の疑い)`);
+      }
+      // 最新号: 派閥抗争の決着の記事(engineerの差し込み)が出ていること。JAでは原文、ENでは訳文
+      const latest = probes['新聞を開く(最新号)'];
+      if (latest && !latest.probeError && latest.present) {
+        if (lang === 'en') {
+          if (!latest.factionDecidedEn) fails.push('最新号: 派閥抗争の決着の記事のEN見出し(feud settled / take the feud)が出ていない');
+          if (latest.factionDecidedJa) fails.push('最新号: ENなのに派閥抗争の決着の記事のJA見出しが残っている');
+        } else if (!latest.factionDecidedJa) {
+          fails.push('最新号: 派閥抗争の決着の記事(の派閥抗争に決着 / が抗争を制す)が出ていない');
+        }
       }
       const backnumber1 = probes['バックナンバー1(engineerの差し込み号)'];
       if (backnumber1 && !backnumber1.probeError) {

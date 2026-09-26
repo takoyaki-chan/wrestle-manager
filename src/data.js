@@ -17870,6 +17870,15 @@ const NEWS_HEADLINE_TEMPLATES = {
     { headline: '抗争に終止符——{winFaction}の勝利で{org}に静寂が戻る',
       body: '長く続いた{org}内の対立は、{winFaction}と{loseFaction}の決着戦で一旦の幕引きとなった。完全な和解ではないが、これ以上の消耗を避けるという意味では、双方にとっての落とし所だったのかもしれない。' },
   ],
+  // 抗争ポイントの先取で決着した週(faction-rivalry-points-spec §5 / 2026-09-26 第5回 問11)。push は tickWeek
+  // (Engine.factions.buildRivalryResolutionNotice)。{quote} は勝った派閥のリーダーの一言(FACTION_RIVALRY_VICTORY_LINES)を
+  // 「」ごと載る瞬間に組んだもの(_wmResolvePreformattedIndustryData)。事実だけを書き、数値は出さない
+  factionRivalryDecided: [
+    { headline: '{org}の派閥抗争に決着——「{winFaction}」が「{loseFaction}」を退ける',
+      body: '{org}で続いていた「{winFaction}」と「{loseFaction}」の抗争は、リングで白星を重ねた「{winFaction}」が制した。リーダーの{winLeader}は{quote}と話した。敗れた「{loseFaction}」は、{loseLeader}の下で立て直しを迫られる。' },
+    { headline: '「{winFaction}」が抗争を制す——{org}、「{loseFaction}」との派閥争いに決着',
+      body: '{org}の控室を二つに分けていた派閥抗争に、勝ち負けがついた。派閥どうしの試合で星を積み上げた「{winFaction}」が、「{loseFaction}」を上回った。{winLeader}は{quote}と語った。「{loseFaction}」では、率いる{loseLeader}の求心力が問われることになる。' },
+  ],
   factionDissolution: [
     { headline: '{org}の派閥「{factionName}」が消滅——{leaderName}の喪失で求心力失う',
       body: '{org}内に存在した「{factionName}」が、リーダー{leaderName}の不在を埋めきれず消滅した。残されたメンバーたちは新たな居場所を探すことになる。派閥が消えても、その間に積み重ねた感情はそう簡単には消えない。' },
@@ -32143,6 +32152,13 @@ const GAMELOG_TEMPLATES = {
     below20_title: '💬 {name}が退団を考えているという噂がある。ベルトに挑む機会が回ってこないことに焦れているらしい',
     below15_title: '💬 {name}が退団を決めかけているという噂がある。ベルトに挑む機会が回ってこないことに焦れているらしい',
   },
+  // ── management.js tickWeek: 派閥抗争の決着(2026-09-26 第5回 問11。Engine.factions.buildRivalryResolutionNotice) ──
+  // points=抗争ポイントの先取(新聞にも記事が載る)/ consolation=相手の派閥が消えて終わった(記事なし)。
+  // 派閥名は保存値が「{surname}派」の生JA。表示時に gameLogEntryText が _wmResolveFactionNameFields で言語別に引き直す
+  faction_rivalry_decided: {
+    points: '⚔ 派閥抗争に決着: {winFaction}が{loseFaction}を制した',
+    consolation: '⚔ {factionName}の抗争は、相手の派閥の消滅で終わった',
+  },
 
   // ── app.js: 挑戦試合コーチ要約(_challengeRequestCoachLogLine・監査3-5と同法の6変種) ──
   challenge_request_coach_summary: {
@@ -32300,6 +32316,9 @@ function gameLogEntryText(entry) {
   // fillTemplateVarsと同一契約(同じ正規表現・String(raw)・同じフィルタ)なのでja出力は不変、
   // EN時はパラメータ値の名前辞書変換(選手名のローマ字化)が無配線で効く。WM_I18N不在(Node単体)は従来経路
   if (typeof WM_I18N !== 'undefined' && WM_I18N && typeof WM_I18N.t === 'function') {
+    // 2026-09-26 第5回 問11: 派閥名(「{surname}派」の生JA。faction_rivalry_decided ほか)は名前辞書の完全一致に
+    // 掛からないので、新聞と同じ management.js の _wmResolveFactionNameFields で言語別に引き直す(jaは1字も変わらない)
+    if (data && typeof _wmResolveFactionNameFields === 'function') data = _wmResolveFactionNameFields(data);
     return WM_I18N.t(resolved, data || {});
   }
   return fillTemplateVars(resolved, data || {});
@@ -32338,6 +32357,8 @@ const GAMELOG_TYPE_CATEGORY = {
   // 2026-09-26 第4回裁定7: 既存の引退の行(「引退」→シーズン)・移籍の行(「移籍」→イベント)にそろえる
   injury_retirement: ['season'],
   sudden_departure: ['event'],
+  // 2026-09-26 第5回 問11: 派閥抗争の決着はイベント
+  faction_rivalry_decided: ['event'],
 };
 
 /**

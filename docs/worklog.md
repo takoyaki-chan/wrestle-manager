@@ -55,6 +55,81 @@
 ### 残り
 - セリフ204本(道場の一言68・声かけの反応102・応えてもらえた一言34)は下書きの承認後に3つの表へ流し込む(英訳は既存の流れで)
 - 実機確認は `docs/実機確認バックログ.md`「退団寸前の引き留め A+B」
+## 2026-09-26 派閥抗争の決着を新聞とログに1行で(第5回 問11)・年表の決着の内部名・次回展望の因縁ペア(Claude/Opus 5.5・worktree)
+
+Keisuke 裁定(第5回 問11)「派閥の抗争の決着は、新聞とログに1行で見せる」(モーダルは出さない)と、関連する表示の不具合2つ。**ゲームの数値は変えていない**(下の検証)。仕様: `specs/faction-rivalry-points-spec-v0.1.md` §5.6(新設)・`specs/newspaper-spec-v1.0.md` §3-6/§3-7(新設)。
+
+### 1. 先取100の決着を新聞とログに1行
+- 置き場所を調べた: 派閥の記事(factionReconcile・factionResolution ほか約20種)はすべて**業界ニュース**(`_industryNewsEvents` → `NEWS_HEADLINE_TEMPLATES`)。自団体の派閥専用の欄は無い → 業界ニュースにそろえた
+- `Engine.factions.buildRivalryResolutionNotice(state, resolution, rng)`(factions.js・純関数・表示専用)を新設。tickWeek が `checkRivalryResolution` の直後に呼び、記事は `Engine.industryNews.push`、ログは週のイベントへ積む(実プレイと auto-sim が同じ経路。一言の抽選は専用の乱数系列 季・週・0xFA2A)
+- 新聞: 新しい型 `factionRivalryDecided`(基礎点122=F02 の決着 factionResolution と同じ格。写真は勝った派閥のリーダー)。見出し・本文2通り。本文に勝ったリーダーの一言を「」つきで引く。一言はキューへ原文(辞書のキー `quoteLine`)で積み、載る瞬間に `_wmResolvePreformattedIndustryData` が「」ごと言語別に組む(PPV の `_quoted` と同じ作り。言語を切り替えたバックナンバーも組み直される)
+- 一言: `FACTION_RIVALRY_VICTORY_LINES`(data-faction-dialogue.js)。粒度は F06_FORCE と同じ(標準は7性格、ほかの6口調は normal+性格1つ、各1行。計19本)。欠けた性格は同じ口調の normal
+- ログ: `GAMELOG_TEMPLATES.faction_rivalry_decided`(points / consolation。カテゴリはイベント)。派閥名は保存値が「{姓}派」の生JAなので、`gameLogEntryText` が表示時に `_wmResolveFactionNameFields`(新聞と同じ関数)で引き直す(ja は1字も変わらない)
+- **派閥消滅(CONSOLATION)の扱い(決めた)**: 記事と一言は出さず、ログ1行だけ(残った側の名前。消えた派閥の名前はもう引けない)。§5.4 で勝者なしの終わり方で、勝ち名乗りの記事は数値の事実(効果が入らない)と合わない。先取100の時点で片方がすでに消えていた POINTS(効果は入らない)も同じ扱い。`checkRivalryResolution` がこの2つに `survivorFactionId` を返すようにした
+- **自然沈静化(CALM)は従来どおり**(確かめた): 記事・ログ・モーダルとも元から無く、派閥画面の抗争欄が消え、年表(3派閥以上のときの別の組の年表)に印が残るだけ。そのまま。40週の和解(F06_RECONCILE)は画面側の factionReconcile(従来どおり)
+- 記事は両リーダーが所属していて一言が引けたときだけ(欠けていればログだけ)
+
+### 2. 年表の決着の印に内部名
+- `_dfcRenderFeudTimeline` の `t('決着 ・ {reason}')` をやめ、`_dfcRivalryClosedLabel` で言葉に: POINTS「ポイント先取で決着」/ F06_RECONCILE「抗争の幕引き」(既訳)/ CALM「自然沈静化」/ CONSOLATION「派閥消滅で終結」/ 不明「決着」(既訳)。UI 3キーは ui-ledger へ手で足した(抽出器を回すと既存の行の並べ替え486行が出るため。意味の差分は3行の追加だけ)
+
+### 3. 次回展望の因縁ペアが常に空
+- K-1 第2段の報告の「'>' で割って文字列のまま比べる」に加えて、**段を記録に無い `riv.tier` から読んでいた**(因縁の記録は `matches`/`lastBand` しか持たない)。キーの区切りも `'>'` ではなく `getRivalryKey` の `'-'`。3つとも直さないと出ない
+- `Engine.newspaper.pickPreviewRivalry(state)` に一本化(週刊新聞の `buildPreview` と興行結果の新聞データ `buildShowNewspaperData` の2か所が同じコードの写しだった)。キーを `'-'` で割って数値に、段は `Engine.title.getRivalryPairCore` の band.tier(決着済みの組は除く)、同じ段は対戦回数の多い組
+- **出るようになった文面**: 紙面には次回展望の欄が無い(2026-04-26 の新聞 v3.1 で1面から外した。黒田の `KURODA_PREVIEW` も未配線)。データとして揃っただけで見た目は変わらない。auto-sim 40季 seed 42 で `preview.rivalry` が入る週 0 → 2,104/2,120 週。headless seed 2024 の例: S1W8 蔵前静 vs 榊原菜摘
+
+### 追加した文面(全文)
+- 新聞 `factionRivalryDecided`(JA / EN):
+  1. 見出し「{org}の派閥抗争に決着——「{winFaction}」が「{loseFaction}」を退ける」/ `{org} feud settled — {winFaction} see off {loseFaction}`
+     本文「{org}で続いていた「{winFaction}」と「{loseFaction}」の抗争は、リングで白星を重ねた「{winFaction}」が制した。リーダーの{winLeader}は{quote}と話した。敗れた「{loseFaction}」は、{loseLeader}の下で立て直しを迫られる。」/ `The feud between {winFaction} and {loseFaction} at {org} has gone to {winFaction}, who kept stacking up wins in the ring. Their leader, {winLeader}, put it this way: {quote} The beaten {loseFaction} now have to rebuild under {loseLeader}.`
+  2. 見出し「「{winFaction}」が抗争を制す——{org}、「{loseFaction}」との派閥争いに決着」/ `{winFaction} take the feud — {org} faction fight with {loseFaction} settled`
+     本文「{org}の控室を二つに分けていた派閥抗争に、勝ち負けがついた。派閥どうしの試合で星を積み上げた「{winFaction}」が、「{loseFaction}」を上回った。{winLeader}は{quote}と語った。「{loseFaction}」では、率いる{loseLeader}の求心力が問われることになる。」/ `The faction feud that split the {org} locker room in two has a winner. {winFaction}, who piled up wins in the matches between the factions, finished ahead of {loseFaction}. {winLeader} said: {quote} Over in {loseFaction}, {loseLeader}'s hold on the group will now be tested.`
+- ログ: points「⚔ 派閥抗争に決着: {winFaction}が{loseFaction}を制した」/ `⚔ Faction feud settled: {winFaction} beat {loseFaction}`、consolation「⚔ {factionName}の抗争は、相手の派閥の消滅で終わった」/ `⚔ The {factionName} feud is over: the rival faction dissolved`
+- 年表: ポイント先取で決着 / Settled on points、自然沈静化 / Cooled off、派閥消滅で終結 / Ended by dissolution
+- 一言 19本(口調×性格 / JA / EN):
+  - 標準×ノーマル「一試合ずつ取ってきた結果だと思う。みんな、よくやってくれた。」/ I think we got here by taking it one match at a time. Everyone did great.
+  - 標準×強気「どっちが上か、これではっきりしたでしょ。文句があるなら、リングで言いに来なよ。」/ That settles who's on top, doesn't it? If they've got complaints, they can come say it in the ring.
+  - 標準×寡黙「……終わったわね。勝ったのは、こっち。」/ ...So it's over. And we're the ones who won.
+  - 標準×内気「わたしたちが勝った、んですよね……まだ、ちょっと信じられないです。」/ We... won, didn't we...? I still can't quite believe it.
+  - 標準×お気楽「いやー、長かったね。でも最後に勝ったのはこっちじゃん♪　今夜はみんなで打ち上げしよ。」/ Phew, that went on forever. But we're the ones who won in the end ♪ Let's all go out and celebrate tonight.
+  - 標準×真面目「最後まで誰も投げ出さなかった。この結果は、派閥の全員で取ったものです。」/ Nobody gave up, right to the end. Every one of us in the faction earned this result together.
+  - 標準×感情的「勝った……ほんとに勝ったんだ……！　ついてきてくれたみんなに、早く言いたい。」/ We won... we really won...! I want to tell everyone who stuck with me, right now.
+  - お嬢様×ノーマル「決着はつきました。……けれど、これで終わりではないわ。まだ上があるもの。」/ It is settled. ...But this is not the end. There is still higher to go.
+  - お嬢様×真面目「皆さまが最後まで力を尽くしてくださった結果ですわ！　この勝利に恥じない戦いを、これからも続けてまいります。」/ This is what everyone's all-out effort earned! We shall keep fighting in a way worthy of this victory.
+  - クール×ノーマル「決着はついた。次に行く。」/ It's settled. On to the next.
+  - クール×寡黙「……片はついた。」/ ...That's that.
+  - ヤンキー×ノーマル「見たかよ、勝ったのはこっちだ。まっすぐぶつかって、まっすぐ勝った。それだけだろ。」/ You see that? We won. Went straight at 'em and won straight up. That's all there is to it.
+  - ヤンキー×強気「ほらな、強え方が勝つんだよ。向こうの連中、しばらく大人しくしてな。」/ Told ya. The stronger side wins. That lot over there can keep quiet for a while.
+  - 丁寧×ノーマル「皆さんが一試合ずつ積み重ねてくれた結果です。本当に、ありがとうございました。」/ This came from everyone building it up one match at a time. Thank you, truly.
+  - 丁寧×真面目「勝って終われたことを、誇りに思います。敗れた側の悔しさも忘れずに、次の試合へ向かいます。」/ I'm proud we could finish as the winners. I'll take the other side's frustration into the next match, too.
+  - 蠱惑×ノーマル「ふふ、思ったより時間がかかったわね。でも、最後に笑うのはやっぱりこっちだったでしょ？」/ Mm, that took longer than I expected. But we were always going to be the ones smiling at the end, weren't we?
+  - 蠱惑×感情的「散々突っかかってきたんだもの、当然の結末よ。……次に噛みついてきたら、容赦しないわ。」/ After all the times they came at us, this was the only ending. ...If they snap at us again, I won't go easy.
+  - 鷹揚×ノーマル「いい抗争だったよ。向こうも最後まで手を抜かなかった。だから、この勝ちには値打ちがある。」/ A good feud. They never eased up, right to the end. That's what makes this win worth something.
+  - 鷹揚×強気「勝つのはこっちだって、最初から言ってたんだ。まあ、思ったより粘られたけどね。」/ I said from the start we'd be the ones to win. Though, sure, they hung on longer than I expected.
+
+### 実際の出方(headless seed 2024・自動応答は従来どおり)
+- S3W42 ログ「⚔ 松下派の抗争は、相手の派閥の消滅で終わった」
+- S8W40 ログ「⚔ 派閥抗争に決着: 相田派が榊原派を制した」+同じ週の号の準トップ(合成点142)に「プレイヤー団体の派閥抗争に決着——「相田派」が「榊原派」を退ける」。本文の一言は相田萌(蠱惑×ノーマル)の「ふふ、思ったより時間がかかったわね。…」
+- CALM 7件は記事・ログとも無し(従来どおり)
+
+### 数値が変わらないことの確認
+- auto-sim 40季 seed 42: ALL CLEAR・違反0。意味指紋 ce22d902 → 5cfa54d6。差は最終状態の新聞の `preview.rivalry`(常に null だったものが入る)だけ: 一時プローブ(auto-sim の差し込み口 observe で毎週の G をハッシュ、`preview` と表示専用の欄を除く)で変更前後の **2,120週の状態のハッシュが完全一致**(649489df)。auto-sim の世界は派閥ができないので決着の知らせは出ない
+- `node test/ja-golden.js`: 基準と完全一致(新聞の差なし。取り直し不要)
+- `npm run test:k1:parity`: PASS(登録28・未登録0・消えた0・握りつぶし0)
+
+### テスト
+- 新 `test/faction-rivalry-resolution-notice-test.js`(8節: 記事とログの組み立て/一言の口調×性格と粒度/消滅・沈静化・和解・リーダー欠け/JA の紙面(数値・内部名なし)/EN の紙面・ログ・一言19本・年表の言葉(実物の i18n.js+lang-en 4本)/tickWeek の配線(モーダルの待ちを立てない)/年表の言葉/次回展望の因縁ペア): **変更前の src で 8/8 FAIL**、変更後 ALL PASS
+- `test/newspaper-priority-test.js` の「派閥の諍いは一般試合より上」に factionRivalryDecided を追加
+- main(bf934665 退団寸前の引き留めのセリフ下書き。docs だけ)取り込み後: `npm test` 310/310 PASS
+- `npm test` 310/310 PASS / i18n: 台帳に UI 3・テンプレ 6・セリフ 19 行を足して3つの辞書を再生成(未訳0・セル別検査は吹き出し110字超の4本を短くして通過)。ratchet の基準は自分の増分だけ更新(data-faction-dialogue.js +19・data.js +6・ui-render.js +4)。management.js +14・ui-render.js +1 は main 時点からある他の作業の分で、触っていない
+- UI 走破1季 PASS(Issues 0)。点火 `newspaper-lang-switch` を拡張: engineer が最新号に本物の経路(決着の知らせ → 業界ニュース → `Engine.newspaper.generate`)で組んだ factionRivalryDecided の記事を差し込み、tourAssert が JA は原文の見出し・EN は訳文の見出し(JA 見出しが残らないこと)を見る(目印を壊すと FAIL することを確認)。JA PASS / EN PASS(新聞の JA 露出0・i18n-miss 0)。`newspaper-mvprace` PASS(同じ probe に目印の欄を足しただけ)
+
+### 触ったファイル
+- src/factions.js(buildRivalryResolutionNotice 新設・checkRivalryResolution の survivorFactionId)/ src/management.js(tickWeek 8行・PRIORITY・_wmResolvePreformattedIndustryData の1ケース・pickPreviewRivalry 新設と2か所の置き換え)/ src/data.js(NEWS_HEADLINE_TEMPLATES・GAMELOG_TEMPLATES・カテゴリ・gameLogEntryText)/ src/data-faction-dialogue.js(FACTION_RIVALRY_VICTORY_LINES)/ src/ui-render.js(_dfcRivalryClosedLabel)/ src/lang-en*.js(生成物)/ i18n/*.json
+- specs: faction-rivalry-points-spec §5.5・§5.6・変更履歴 / newspaper-spec §3-6・§3-7 / docs/ui/03-screens/factions.md(年表の印)/ docs/実機確認バックログ.md / docs/game-system-roadmap.md
+
+### 残課題
+- 次回展望をどこかに出すか(新聞 v3.1 で外した欄。KURODA_PREVIEW も死蔵)は未決。今回はデータを直しただけ
+- 派閥が人数割れで消えること自体は元から無音(ログも記事も無い)。今回の consolation の1行が間接的に伝えるだけ
 
 ## 2026-09-26 K-1 第2段 — 表示・記録だけの差を統一する(E08・A06・T01・A03・A04。許容リスト 33 → 28)(Claude/Opus 5.5・worktree)
 

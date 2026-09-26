@@ -35119,6 +35119,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "ポイント先取で決着",
+    "en": "Settled on points",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "自然沈静化",
+    "en": "Cooled off",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "派閥消滅で終結",
+    "en": "Ended by dissolution",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "決着。{winner}が{loser}を下した――しかし、戦いは終わらない。",
     "en": "Settled. {winner} put {loser} down — but the fight is not over.",
     "files": [

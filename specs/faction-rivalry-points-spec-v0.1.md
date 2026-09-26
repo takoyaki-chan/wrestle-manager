@@ -281,8 +281,31 @@ v0.3 で C 棚上げ削除。シンプル2択化。
   - 期間: 決着の週の翌週から12週後の週まで(12週)。派閥IDは解散後に使い回されるので、結成の週が違う同じ番号の派閥には効かない
 - **§5.2 寝返り・亀裂 ×1.5**: `_factionDefectionBoost[敗者ID] = { ..., mult: 1.5, untilAbs, 結成の週 }`。`pickWeeklyEvent` の F04 は抜けられる側(`fromFactionId`)、F05 は亀裂の派閥が敗者なら確率 ×1.5(上限1)。期間・照合は §5.1 と同じ。乱数の引き数は変わらない(閾値だけが変わる)
 - **勢い**は抗争中の派閥(`type: 'rivalrous'` か `inHostility`)だけが持つ(`applyMomentumChange`・週の減衰は忠誠型を0に戻す。既存の設計)。忠誠型の派閥どうしの決着では勢いは動かず、信頼・絆・対立度・集客・F05 だけが効く
-- 画面: 決着専用の記事・モーダルは無い(派閥画面の抗争欄が消え、勢いの言葉・権威型の札が変わる。年表に RIVALRY_CLOSED)
+- 画面: 決着のモーダルは無い(派閥画面の抗争欄が消え、勢いの言葉・権威型の札が変わる。年表に RIVALRY_CLOSED)。新聞とログの1行は §5.6(2026-09-26 第5回 問11)
 - 測定(headless 進行 6シード×30季。seed 42/7/1234/7919/2024/31337・pn 付きのスタブ。docs/worklog.md 2026-09-26): 40週の2択の自動応答を「続けさせる」に固定して先取100は3件。変更前は勢い・信頼・絆・対立度がすべて週の揺れの範囲(例 勝者の勢い 0→0・対立度 47.6→47.3)、変更後は勝者の勢い 0→40・敗者 0→-25・勝者の信頼平均 +3.5〜+4.1・敗者リーダー -5.6〜-6.1・対立度 → 0〜7。決着後12週の勝者の顔役の他派閥戦は全試合が派閥抗争マッチ(appeal 5)。F04/F05 は前後とも6シードで0回(条件が成立しない)
+
+### §5.6 決着の見せ方(2026-09-26 第5回 問11「派閥の抗争の決着は、新聞とログに1行で見せる」)
+
+モーダルは出さない。tickWeek が `checkRivalryResolution` の直後に `Engine.factions.buildRivalryResolutionNotice(state, resolution, rng)`
+(純関数・表示専用。一言の抽選は専用の乱数系列 季・週・0xFA2A)で知らせを組み、業界ニュースは `Engine.industryNews.push`、
+ログは週のイベント(`events`)へ積む。実プレイと auto-sim が同じ経路。数値(ポイント)は文面に出さない。
+
+| 終わり方 | 新聞 | 週のログ |
+|---|---|---|
+| POINTS(先取100・両派閥が存命) | 業界ニュース `factionRivalryDecided`(基礎点122・写真は勝った派閥のリーダー・本文に勝ったリーダーの一言。newspaper-spec §3-6) | `faction_rivalry_decided.points`「⚔ 派閥抗争に決着: {winFaction}が{loseFaction}を制した」 |
+| CONSOLATION(相手の派閥の消滅)/ 先取100の時点で片方が消えていた POINTS | なし(勝ち名乗りのない終わり方。§5.4 勝者なし・後者も効果は入らない) | `faction_rivalry_decided.consolation`「⚔ {factionName}の抗争は、相手の派閥の消滅で終わった」(残った側の名前。消えた派閥の名前はもう引けない) |
+| CALM(自然沈静化) | なし(従来どおり) | なし(従来どおり。派閥画面の抗争欄が消え、年表に印が残るだけ) |
+| F06_RECONCILE(40週の和解 A) | 画面側の `factionReconcile`(従来どおり) | なし |
+
+- 一言: `FACTION_RIVALRY_VICTORY_LINES`(`src/data-faction-dialogue.js`)。口調×性格で、粒度は F06_FORCE と同じ(標準は7性格、
+  ほかの6口調は normal+性格1つ、各1行。計19本)。欠けた性格は同じ口調の normal(`getFactionLine`)。記者に向けた言葉で、
+  社長への呼びかけ・固有名詞・数値を入れない
+- 記事は両リーダーが所属していて一言が引けたときだけ(欠けていればログだけ)
+- 返り値: `checkRivalryResolution` は CONSOLATION と「片方が消えていた POINTS」に `survivorFactionId`(残った側)を足した
+- 派閥画面の抗争の年表(`_dfcRenderFeudTimeline`)の RIVALRY_CLOSED は reason を言葉にする(`_dfcRivalryClosedLabel`):
+  POINTS「ポイント先取で決着」/ F06_RECONCILE「抗争の幕引き」/ CALM「自然沈静化」/ CONSOLATION「派閥消滅で終結」/ 不明「決着」。
+  以前は `t('決着 ・ {reason}')` で内部名がそのまま出ていた(自分の組の決着は抗争欄ごと消えるので、見えるのは3派閥以上の別の組の印)
+- 回帰: `test/faction-rivalry-resolution-notice-test.js`
 
 ---
 
@@ -411,3 +434,4 @@ forceCloseHostilityDecayOnA: -30,  // A 和解選択時の hostility 減衰
 | v0.3 | 2026-05-01 | 決着優先順位確定（先取100最優先）。F09 hostility 70→65、後半補正1年目 1.0→1.1。F06 を A/B 2択化（C 削除）。敗者ペナルティ緩和（momentum -30→-25、trust リーダー-8/末端-3、F04・F05 ×2→×1.5）。F09 接近バッジ閾値 65→60。「抗争○週目」表示は出すと明記 |
 | 実装 | 2026-09-26 | 総点検 第4回の確認3・4(Keisuke 裁定): §2.7 メイン=興行カードの先頭(PPV の isSummit も従来どおり)。§4.3 40週の2択を派閥イベント F06_FORCE として実装(A 和解 F06_RECONCILE / B +20週)、40週の記録で判定が止まる不具合を修正。§5.4 の前に applyRivalryVictory の既知の不具合を記録 |
 | 実装 | 2026-09-26 | Keisuke 裁定「派閥の決着の効果は仕様どおり効かせる」: checkRivalryResolution / applyRivalryVictory を返却値で更新する純関数に。§5.1〜§5.3 の効果と CONSOLATION の -40 が入るように。§5.1 の集客の持ち越しと §5.2 の F04/F05 ×1.5 を読む処理を追加(§5.5 実装メモ) |
+| 実装 | 2026-09-26 | 第5回 問11「派閥の抗争の決着は、新聞とログに1行で見せる」: §5.6 を新設(先取100=業界ニュース factionRivalryDecided+勝ったリーダーの一言+ログ1行 / 派閥の消滅=ログ1行 / 自然沈静化=従来どおり)。年表の決着の印の内部名の露出を修正 |

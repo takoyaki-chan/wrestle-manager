@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4773件、訳文あり4773件)
+//  生成元: i18n/ui-ledger.json (総キー4776件、訳文あり4776件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3324,6 +3324,9 @@
     "決戦のスペシャリスト": "The Big-Match Specialist",
     "決着": "Settled",
     "決着 ・ {reason}": "Settled · {reason}",
+    "ポイント先取で決着": "Settled on points",
+    "自然沈静化": "Cooled off",
+    "派閥消滅で終結": "Ended by dissolution",
     "決着。{winner}が{loser}を下した――しかし、戦いは終わらない。": "Settled. {winner} put {loser} down — but the fight is not over.",
     "決着。新たなリーダーが立った。": "Settled. A new leader stands.",
     "決着つかず": "No decision",

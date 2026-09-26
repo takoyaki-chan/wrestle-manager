@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3594件、訳文あり3594件)
+//  生成元: i18n/template-ledger.json (総キー3600件、訳文あり3600件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -810,6 +810,7 @@
     "{org}では、関係が冷え込んだ選手同士が{count}組に増えている。対立を放置すれば、試合の連携や興行全体の雰囲気にも影響が出かねない。": "At {org} the number of wrestler pairs who have gone cold on each other has risen to {count}. Leave the trouble alone and it can reach how they work together in matches, and the feel of the whole show.",
     "{org}で大量退団——{count}名が離脱": "Exodus at {org} — {count} out the door",
     "{org}で組まれた派閥対抗戦は、{score}で「{winFaction}」に軍配が上がった。率いた{winLeader}の株は上がり、敗れた「{loseFaction}」の{loseLeader}は言葉少なにリングを降りた。序列はリングの上で決まる——その原則が、また一つ証明された。": "The faction war booked at {org} went {score} to {winFaction}. {winLeader}, who led them, is worth more today; {loseLeader} of the beaten {loseFaction} left the ring with little to say. The order is decided in the ring. That principle got one more proof.",
+    "{org}で続いていた「{winFaction}」と「{loseFaction}」の抗争は、リングで白星を重ねた「{winFaction}」が制した。リーダーの{winLeader}は{quote}と話した。敗れた「{loseFaction}」は、{loseLeader}の下で立て直しを迫られる。": "The feud between {winFaction} and {loseFaction} at {org} has gone to {winFaction}, who kept stacking up wins in the ring. Their leader, {winLeader}, put it this way: {quote} The beaten {loseFaction} now have to rebuild under {loseLeader}.",
     "{org}との対外戦{record}も、この章の彼女の重みを物語る。": " An interpromotional record of {record} against {org} says as much about her weight in this chapter.",
     "{org}に{seasons}シーズン。ベルトの数で語られる選手ではなかったが、対戦相手の格を引き上げる役を長く担い続けてきた。同じ場所に誰を置いても、しばらくは前任者の輪郭が透けて見えるだろう。空いた分の大きさが正確に測れるのは、来季の興行を何本か見てからになる。": "The {seasons}-season run at {org}. She was never a wrestler you described by the number of belts, but for years she did the work of raising whoever stood across from her. Put anyone in that same spot and, for a while, the outline of the one before will show through. How large the gap really is can only be measured after a few shows next season.",
     "{org}に広がる不和——{carrier}が{enemy}と距離": "{carrier} away from {enemy}, {org}",
@@ -864,10 +865,12 @@
     "{org}の基本路線に{axis}の要素が少し加わった。": "A little {axis} was added to {org}'s basic line.",
     "{org}の指名は{count}名。{names}が新たに名簿に加わった。": "{org} called {count} in the draft. New on the roster: {names}.",
     "{org}の控室で、関係が悪化した選手同士が増えている。険悪な組み合わせは{count}組。団体は試合への影響が広がる前に、関係の修復へ動けるか。": "The number of wrestlers on bad terms with each other is rising in the {org} locker room. Pairings gone sour: {count}. Whether the promotion moves to repair them before it reaches the matches is the question.",
+    "{org}の控室を二つに分けていた派閥抗争に、勝ち負けがついた。派閥どうしの試合で星を積み上げた「{winFaction}」が、「{loseFaction}」を上回った。{winLeader}は{quote}と語った。「{loseFaction}」では、率いる{loseLeader}の求心力が問われることになる。": "The faction feud that split the {org} locker room in two has a winner. {winFaction}, who piled up wins in the matches between the factions, finished ahead of {loseFaction}. {winLeader} said: {quote} Over in {loseFaction}, {loseLeader}'s hold on the group will now be tested.",
     "{org}の派閥「{factionName}」が消滅——{leaderName}の喪失で求心力失う": "{factionName} folds: {leaderName}, {org}",
     "{org}の派閥地図が塗り替わった。{targetName}が「{fromFaction}」を離れ、抗争相手である「{toFaction}」の門を叩いたのだ。残された側の心中は穏やかではあるまい。裏切りと呼ぶか、決断と呼ぶか——それを決めるのは、これからの試合だ。": "The faction map at {org} has been redrawn. {targetName} left {fromFaction} and knocked on the door of {toFaction}, the group they were feuding with. The side she left will not be taking it calmly. Betrayal or decision — the matches from here decide which word it gets.",
     "{org}の派閥抗争が、ついに両リーダーの一騎打ちという形で決着の場を得た。次期興行のメインに据えられるこの一戦、負けた側の派閥が失うものは星ひとつでは済まない。控室の全員にとって、この試合だけは他人事ではない。": "The faction feud at {org} has finally found its settling place: the two leaders, one against one. The match goes in the main event of the next show, and what the losing faction gives up will be more than a single result. For everyone in that locker room, this is not somebody else's match.",
     "{org}の派閥抗争が沈静化——「{factionAName}」と「{factionBName}」に停戦の空気": "{org} cools: {factionAName}, {factionBName}",
+    "{org}の派閥抗争に決着——「{winFaction}」が「{loseFaction}」を退ける": "{org} feud settled — {winFaction} see off {loseFaction}",
     "{org}の王座が動いた。{name}が{prevChamp}を下し、ベルトはこの日を境に持ち主を変えた。": "The {org} title has moved. {name} beat {prevChamp}, and from this day the belt has a different owner.",
     "{org}の王座が動いた。{name}が{prevChamp}を下し、新たな頂点に立った。": "The {org} title has changed hands. {name} beat {prevChamp} and now holds the belt.",
     "{org}の王座が動く——{name}が新王者に": "{org} title changes hands — {name}",
@@ -1462,8 +1465,10 @@
     "★★ゴールド殿堂": "★★ Gold Hall of Fame",
     "⚔ {challengerOrg} vs {defenderOrg} 対抗戦——{winnerOrg}の{winnerName}が勝利": "⚔ {challengerOrg} vs {defenderOrg} — {winnerName} of {winnerOrg} takes it",
     "⚔ {challengerOrg} vs {defenderOrg} 対抗戦は決着つかず": "⚔ {challengerOrg} vs {defenderOrg} — no decision in the interpromotional",
+    "⚔ {factionName}の抗争は、相手の派閥の消滅で終わった": "⚔ The {factionName} feud is over: the rival faction dissolved",
     "⚔ {opponentName}との対抗戦を辞退": "⚔ Declined the interpromotional match with {opponentName}",
     "⚔ 対抗戦 vs {opponent} — {playerWins}勝{aiWins}敗で{result}": "⚔ Interpromotional series vs {opponent} — {playerWins}-{aiWins}, {result}",
+    "⚔ 派閥抗争に決着: {winFaction}が{loseFaction}を制した": "⚔ Faction feud settled: {winFaction} beat {loseFaction}",
     "⚔️ {orgName}から挑戦状": "⚔️ A challenge from {orgName}",
     "⚔️ {orgName}から果たし状が届いた": "⚔️ A written challenge has arrived from {orgName}",
     "⚔️ {orgName}が宣戦布告": "⚔️ {orgName} declares war",
@@ -1502,6 +1507,7 @@
     "「{name}が最近、試合後も練習後もすぐに帰ってしまうんです。前は自主練していたのに。何か不満があるのかもしれません」とコーチ{coach}が心配そうに報告した。": "\"{name} goes straight home now, after matches and after practice. She used to stay and work. Something may be bothering her,\" Coach {coach} reported, plainly worried.",
     "「{name}とは最近あまり話せていないんです。こちらから声をかけても素っ気ない返事しか返ってこなくて。何か手を打った方がいいかもしれません」": "\"I have not been able to talk with {name} much lately. When I go to her, all I get back is a flat answer. It may be time to do something about it.\"",
     "「{winFaction}」が対抗戦を制圧——{loseLeader}の派閥に重い星": "{winFaction} take the war — {loseLeader} beaten",
+    "「{winFaction}」が抗争を制す——{org}、「{loseFaction}」との派閥争いに決着": "{winFaction} take the feud — {org} faction fight with {loseFaction} settled",
     "「…ずっと我慢してた…けど…もう限界です…」——{nameB}の声は小さいけど、震えていなかった": "\"...I kept quiet about it... but... I can't anymore...\" — {nameB}'s voice was small, but it did not shake",
     "「あいつがいるから、自分は強くなれる」——両者が同じことを言える関係は、業界でもそう多くはない。{matches}度の対戦が、それを裏付けている。": "\"I can get stronger because she is there\" — a relationship where both can say the same sentence is not common in this business. A {matches}-match record bears it out.",
     "「あいつがいるから、自分も成長できる」——どちらかが言ったとされる言葉。本紙はそう書いておく。数字は嘘をつかない、関係性の質も同様だ。": "\"I can grow because she is there\" — one of them is said to have put it that way. This paper will leave it in print. The numbers do not lie. Neither, in this case, does what passes between them.",
