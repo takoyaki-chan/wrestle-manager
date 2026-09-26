@@ -1694,6 +1694,79 @@ module.exports = {
     },
   },
 
+  // 出す直前の見直し(2026-09-26): 大型イベント・派閥イベントとぶつかって持ち越している間に発起人が怪我をした果たし状。
+  // incoming-challenge と同じ停止週・同じ果たし状を置き、発起人(他団体の選手)だけ6週の怪我にする(持ち越した週に
+  // 怪我をしたのと同じ形)。週を処理した後に果たし状が出ず(App.handleChallengeRequest / processWeek の
+  // dropUnplayablePending で取り下げ)、受けて予約→次の興行で解除、にならないことを見る。
+  // 変更前は果たし状が出て、受けると次の興行で「出場条件が整わないため予約を解除」のトーストが出ていた
+  'incoming-challenge-injured': {
+    description: '果たし状の発起人が持ち越しの間に怪我: 週を処理しても果たし状が出ず、取り下げられ、予約も解除のトーストも無い',
+    fixture: {
+      ..._challengeFixture(true),
+      engineer: G => {
+        const picked = _pickChallenge(G, true);
+        if (!picked.state) throw new Error(`果たし状を置ける組が無い: ${picked.reasons.join(' / ')}`);
+        const s = picked.state;
+        const p = s.challengeRequest.pendingThisWeek;
+        const injury = { type: '中程度の負傷', weeksLeft: 6, totalWeeks: 6, severity: 'mid', color: '#f39c12' };
+        const org = s.aiOrgs[p.requesterOrgId];
+        return {
+          ...s,
+          aiOrgs: { ...s.aiOrgs, [p.requesterOrgId]: { ...org, roster: org.roster.map(f => (f.id === p.selfId ? { ...f, injury } : f)) } },
+        };
+      },
+      assert: G => {
+        const fails = _assertChallengePending(G);
+        const p = G.challengeRequest && G.challengeRequest.pendingThisWeek;
+        const req = p && ((G.aiOrgs[p.requesterOrgId] || {}).roster || []).find(f => f.id === p.selfId);
+        if (!req || !req.injury) fails.push('果たし状の発起人が怪我をしていない');
+        return fails;
+      },
+    },
+    walk: { seasons: 1, maxSteps: 120 },
+    // 停止週を処理→翌週(通常興行)→その次の週の頭で止める。発起人は6週の怪我なので、この間に同じ組が抽選し直されることは無い
+    makeUntil: _untilWeeksAfterFixture(2),
+    // 置いた果たし状(停止週に発行)を key で追う。W8 は直訴の抽選週なので、取り下げた後に別の組の直訴が新しく届くことはある(それは正常)
+    stepProbe: `(() => {
+      if (typeof G === 'undefined' || !G) return { loaded: false };
+      const p = G.challengeRequest && G.challengeRequest.pendingThisWeek;
+      const key = p ? (p._inverse ? 'inv:' : 'fwd:') + p.selfId + '>' + p.otherId + '@S' + p.issuedSeason + 'W' + p.issuedWeek : null;
+      const b = G._pendingIncomingChallengeMatch;
+      return {
+        loaded: true, week: G.week, key,
+        gauntlet: !!document.querySelector('.hostile-arrival-overlay'),
+        booking: b ? 'inv:' + b.requesterId + '>' + b.opponentId : null,
+      };
+    })()`,
+    ignition: [],
+    finalProbe: `(() => {
+      const p = typeof G !== 'undefined' && G.challengeRequest && G.challengeRequest.pendingThisWeek;
+      return {
+        key: p ? (p._inverse ? 'inv:' : 'fwd:') + p.selfId + '>' + p.otherId + '@S' + p.issuedSeason + 'W' + p.issuedWeek : null,
+        booking: !!(typeof G !== 'undefined' && G._pendingIncomingChallengeMatch),
+        accepted: (typeof G !== 'undefined' && G.challengeRequest) ? (G.challengeRequest.acceptedThisSeason || 0) : 0,
+        week: (typeof G !== 'undefined') ? G.week : null,
+      };
+    })()`,
+    finalAssert: (probe, lang, steps, fixture) => {
+      const fails = [];
+      const fp = fixture && fixture.challengeRequest && fixture.challengeRequest.pendingThisWeek;
+      if (!fp) return ['fixture に果たし状が置けていない'];
+      const placedKey = `inv:${fp.selfId}>${fp.otherId}@S${fp.issuedSeason}W${fp.issuedWeek}`;
+      const values = (steps || []).map(e => e.value).filter(v => v && !v.probeError && v.loaded);
+      const withPlaced = values.filter(v => v.key === placedKey);
+      const seen = withPlaced.filter(v => v.gauntlet).length;
+      const booked = values.filter(v => v.booking === `inv:${fp.selfId}>${fp.otherId}`).length;
+      console.log(`果たし状(怪我の発起人 ${placedKey}): 残っていた手 ${withPlaced.length} / 出た手 ${seen} / 予約のあった手 ${booked} / 終わり ${JSON.stringify(probe)}`);
+      if (seen > 0) fails.push(`怪我をした発起人の果たし状が画面に出た(${seen}手)`);
+      if (booked > 0 || (probe && probe.booking)) fails.push('怪我をした発起人の果たし状が予約された(次の興行で解除される)');
+      if (!probe || probe.key === placedKey) fails.push('出せない果たし状が取り下げられずに残っている');
+      if (probe && probe.accepted > 0) fails.push(`果たし状を受けた扱いになっている(acceptedThisSeason=${probe.accepted})`);
+      if (probe && probe.week != null && probe.week <= fixture.week) fails.push('停止週を処理していない(週が進んでいない)');
+      return fails;
+    },
+  },
+
   // 挑戦状(B3)を受けて「次の通常興行のメインイベント」に組み、その興行で清算する(K-1 第3段の hooks.afterWriteback)。
   // 停止週の週送りで挑戦状が立った形を合成(_pickB3Challenge)。スキップ版と観戦版
   'b3-challenge': {

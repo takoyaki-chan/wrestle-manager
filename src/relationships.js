@@ -3822,6 +3822,30 @@ Engine.challengeRequest = {
     return { ...s, challengeRequest: { ...s.challengeRequest, pendingThisWeek: null } };
   },
 
+  /** 出す直前の見直し(2026-09-26)。app.js が直訴・果たし状のモーダルを**出す直前にだけ**呼ぶ(週次処理は呼ばない)。
+   *  発起人・相手のどちらかがいま出られない(怪我・休養・謹慎。予約を消化する getScheduledCard と同じ基準)打診は、
+   *  受けても次の興行で予約が解除されるだけなので取り下げる。大型イベント・派閥イベントに週次のモーダル枠を取られて
+   *  持ち越している間に怪我・休養をしたときに起きる(抽選の時点では _passesPrereq が出られる2人だけを選ぶ)。
+   *  扱いは、発起人・相手が不在になった打診を取り下げる dropStalePending と同じ: CD・クォータは付けず(治って熱が
+   *  残っていれば次の抽選でまた届きうる)、取り下げの通知は出さない。持ち越し(出られるまで待つ)にしないのは、
+   *  持ち越している打診が新しい直訴の抽選と統一王座「こちらの番」の表示を堰き止め続けるため(dropStalePending と同じ理由) */
+  dropUnplayablePending(state) {
+    const s = this.dropStalePending(state);
+    const p = s.challengeRequest.pendingThisWeek;
+    if (!p) return s;
+    const healthy = f => !!f && !f.injury && !f.forcedRest && !f.suspended;
+    const aiOrgs = s.aiOrgs || {};
+    const inOrg = (orgId, id) => {
+      const org = aiOrgs[orgId];
+      return org && Array.isArray(org.roster) ? org.roster.find(f => f && f.id === id) : null;
+    };
+    const inRoster = id => (s.roster || []).find(f => f && f.id === id);
+    const requester = p._inverse ? inOrg(p.requesterOrgId, p.selfId) : inRoster(p.selfId);
+    const opponent = p._inverse ? inRoster(p.otherId) : inOrg(p.otherOrgId, p.otherId);
+    if (healthy(requester) && healthy(opponent)) return s;
+    return { ...s, challengeRequest: { ...s.challengeRequest, pendingThisWeek: null } };
+  },
+
   /** heat = rivalry + max(0, 50-bond)*0.8 + max(0, bond-75)*0.6 + (rivalry≥70 ? +10 : 0) */
   computeHeat(rivalry, bond) {
     const r = rivalry || 0;

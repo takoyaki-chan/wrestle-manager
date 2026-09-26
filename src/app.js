@@ -11412,6 +11412,13 @@ const App = {
 
     // challenge-request-spec-v0.1 Phase 2: 挑戦試合直訴モーダル表示
     // 大型イベント・派閥イベントと衝突した場合は持ち越し（pendingThisWeek を残す）
+    // 出す週は、出す直前に発起人・相手がいま出られるかを見直し、出られない打診は取り下げる(2026-09-26。
+    // handleChallengeRequest と同じ dropUnplayablePending。ここで先に済ませ、取り下げた週は下の「こちらの番」を塞がない)
+    if (!pendingLargeEvent && !pendingFactionEvent && G.challengeRequest && G.challengeRequest.pendingThisWeek) {
+      const crBefore = G.challengeRequest.pendingThisWeek;
+      G = Engine.challengeRequest.dropUnplayablePending(G);
+      if (crBefore && !G.challengeRequest.pendingThisWeek) Storage.autoSave();
+    }
     const crPending = (G.challengeRequest && G.challengeRequest.pendingThisWeek) || null;
     if (crPending && !pendingLargeEvent && !pendingFactionEvent) {
       const crDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 700;
@@ -12596,6 +12603,19 @@ const App = {
   // NO  → CD延長 + 打診者 condition 一時悪化 + ティッカーセリフ
   handleChallengeRequest(payload) {
     if (!payload) return;
+    // 出す直前に、発起人・相手がいま出られるかを見直す(2026-09-26)。大型イベント・派閥イベントとぶつかって持ち越している
+    // 間に怪我・休養をした打診は、受けても次の興行で予約が解除されるだけなので出さずに取り下げる
+    // (Engine.challengeRequest.dropUnplayablePending。不在の打診の取り下げと同じ扱いで、通知は出さない)
+    {
+      const current = G.challengeRequest && G.challengeRequest.pendingThisWeek;
+      if (current && Engine.challengeRequest && typeof Engine.challengeRequest.dropUnplayablePending === 'function') {
+        G = Engine.challengeRequest.dropUnplayablePending(G);
+        if (!(G.challengeRequest && G.challengeRequest.pendingThisWeek)) {
+          Storage.autoSave();
+          return;
+        }
+      }
+    }
     if (typeof showChallengeRequestModal !== 'function') {
       // フォールバック: モーダル未読込時はクリアだけ
       G = Engine.challengeRequest.rejectPending(G);
