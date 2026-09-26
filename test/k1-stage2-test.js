@@ -162,5 +162,19 @@ section('A06: 両経路が Engine.show.recordShowH2h を呼ぶ(App._buildMatchMe
   assert.ok(app.includes('Engine.show.buildMatchMeta(s, match.left.id, match.right.id, false)'), 'PPV の印');
 });
 
+// ── 3. K1-T01 奪還挑戦の予約の欄 ──
+section('T01: 進行の修復は、奪還挑戦の予約が無い状態に null の欄を作らない', () => {
+  const base = { season: 2, week: 14, weekPhase: 'manage', roster: [{ id: 1 }], showCard: [], coachAssign: {} };
+  const none = Engine.saveDoctor.repairProgressionState(base).state;
+  assert.ok(!Object.prototype.hasOwnProperty.call(none, '_pendingReclaim'), '予約が無いのに _pendingReclaim の欄ができた');
+  const kept = Engine.saveDoctor.repairProgressionState({ ...base, _pendingReclaim: null }).state;
+  assert.strictEqual(kept._pendingReclaim, null, 'もとから null の欄は null のまま');
+  const valid = Engine.saveDoctor.repairProgressionState({ ...base, _pendingReclaim: { titleType: 'world', challengerId: 1 } }).state;
+  assert.deepStrictEqual(valid._pendingReclaim, { titleType: 'world', challengerId: 1 }, '有効な予約は残す');
+  const stale = Engine.saveDoctor.repairProgressionState({ ...base, _pendingReclaim: { titleType: 'world', challengerId: 99 } });
+  assert.strictEqual(stale.state._pendingReclaim, null, '居ない挑戦者の予約は null にする(従来どおり)');
+  assert.ok(stale.changes.includes('pendingReclaim_stale_ref_removed'));
+});
+
 console.log(failed === 0 ? 'ALL PASS' : `${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);

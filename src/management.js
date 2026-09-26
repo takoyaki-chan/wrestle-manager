@@ -301,7 +301,10 @@ const Engine = {
         weekPhase: nextPhase,
         showCard,
         coachAssign,
-        _pendingReclaim: pendingReclaim,
+        // K-1 第2段(K1-T01): 奪還挑戦の予約が無い状態に null の欄を作らない(読む側はどこも真偽で見るので意味は同じ)。
+        // 以前はエンジンの executeShow(毎回この修復を通す)だけが興行のたびに null を書き、実プレイ(修復があった
+        // ときだけ採用)と状態の形が分かれていた
+        ...(state._pendingReclaim !== undefined ? { _pendingReclaim: pendingReclaim } : {}),
         lastShowResults: Array.isArray(state.lastShowResults) ? state.lastShowResults : [],
         weeklyFinance: state.weeklyFinance || { income: 0, expense: 0, details: [] },
       };

@@ -201,11 +201,8 @@ module.exports = [
   // エンジン側で逓減カウンター・W-1 回数・伝染のクールダウン・関係フラグのクールダウン・他団体の経歴の区切り・
   // ブレークスルー記録の台詞を「写してから書く」形にし、先読みには G の複製を渡す(app.js prepareShowResultInlinePopups)。
   // 以後、先読み(P)で G が変わると「未登録」で落ちる。
-  {
-    id: 'K1-T01', title: '_pendingReclaim の null 正規化(エンジンだけ saveDoctor の戻り値を常に採用)',
-    category: 'transient', side: 'engine', impact: '一時', checkpoints: ['A', 'B'],
-    patterns: ['_pendingReclaim'], mustAppear: true, refs: 'management.js:14588-14590, 275-298',
-  },
+  // K1-T01(_pendingReclaim の null 正規化。エンジンだけ saveDoctor の戻り値を常に採用)は K-1 第2段で解消したので
+  // 外した(2026-09-26)。Engine.saveDoctor.repairProgressionState が、予約の無い状態に null の欄を作らない。
   {
     id: 'K1-T02', title: '宣戦布告ポップアップ既読(_rivalryPopupSeen)',
     category: 'transient', side: 'app', impact: '一時', checkpoints: ['A', 'B'],
