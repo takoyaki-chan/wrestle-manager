@@ -67,7 +67,7 @@ section('3-1: executeShow は beginShow → 試合のシミュレーション �
     'accrueFactionPoints', 'applyMatchGrowth', 'accumulateSeasonStats', 'recordShowH2h', 'applySuddenDepartures',
     'buildInjuryRetirementPresentations', 'buildShowNewspaperData',
     // 第4段 4-A(実プレイだけにあった処理をエンジンへ)
-    'applyGrowthEvents'].forEach(fn => {
+    'applyGrowthEvents', 'recordCareerMarks'].forEach(fn => {
     assert.ok(body.includes(`Engine.show.${fn}(`), `エンジンの経路が Engine.show.${fn} を通っていない`);
   });
 });
@@ -86,13 +86,13 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
     assert.ok(impl.includes(opt), `_finalizeShowImpl が ${opt} を渡していない`);
   });
   const hookNames = ['afterTitles: w => App._finalizeHookSpecialBouts(w)', 'afterRelationships: w => App._finalizeHookFactionBookings(w)',
-    'beforeKaigan: w => App._finalizeHookCareerMarks(w)',
     'afterWriteback: w => App._finalizeHookGuests(w)'];
   hookNames.forEach(h => assert.ok(impl.includes(h), `hooks に ${h} が無い`));
   // 第4段 4-A でエンジンへ移した処理の hooks は残っていない
   assert.ok(!/afterGrowth:/.test(impl) && !/_finalizeHookGrowthEvents/.test(app), '成長イベントの hook(第4段 4-A でエンジンへ移した)が残っている');
+  assert.ok(!/beforeKaigan:/.test(impl) && !/_finalizeHookCareerMarks/.test(app), '経歴の刻印の hook(第4段 4-A でエンジンへ移した)が残っている');
   // 共通の処理を実プレイ側に書き直していない(_finalizeShowImpl と hooks のどこにも無い)
-  const hooks = ['_finalizeHookSpecialBouts', '_finalizeHookFactionBookings', '_finalizeHookCareerMarks', '_finalizeHookGuests']
+  const hooks = ['_finalizeHookSpecialBouts', '_finalizeHookFactionBookings', '_finalizeHookGuests']
     .map(name => {
       const st = app.indexOf(`\n  ${name}(`);
       assert.ok(st >= 0, `App.${name} が無い`);
@@ -209,7 +209,7 @@ section('finalize: hooks は決まった順に1回ずつ、作業中の値の入
     calls.push(name);
     ['s', 'roster', 'titles', 'rivalries', 'events', 'titleMatchOutcomes', 'validMatches', 'results'].forEach(k => assert.ok(w[k], `${name}: w.${k} が無い`));
   };
-  const names = ['afterTitles', 'afterRelationships', 'beforeKaigan', 'afterWriteback'];
+  const names = ['afterTitles', 'afterRelationships', 'afterWriteback'];
   const hooks = Object.fromEntries(names.map(n => [n, mk(n)]));
   const plain = runFinalize().fin;
   const hooked = runFinalize({ hooks }).fin;
@@ -314,6 +314,22 @@ section('4-A K1-A02: ブレークスルー・スランプの判定は finalize �
     events += ge.length;
   }
   assert.ok(events > 0, '12本回してブレークスルー・スランプが一度も起きない(エンジンの経路で判定していない疑い)');
+});
+
+section('4-A K1-A10・§7 X07: ドーム興行の経歴・ドーム回数・初ドームの節目と MVP 用の大試合が finalize で付く', () => {
+  const dome = Engine.show.recordCareerMarks(
+    { ...clone(showState), showVenue: 9, domeShowsThisSeason: 0, milestones: {} },
+    clone(showState.roster),
+    [{ left: showState.showCard[0].left, right: showState.showCard[0].right }, { left: showState.showCard[1].left, right: showState.showCard[1].right }],
+    [{ winner: 'left', mq: 90 }, { winner: 'right', mq: 40 }]);
+  assert.strictEqual(dome.state.domeShowsThisSeason, 1, 'ドーム回数が増えていない');
+  assert.strictEqual(dome.state.milestones.first_dome_show, true, '初ドームの節目が立っていない');
+  const main = dome.roster.find(c => c.id === showState.showCard[0].left);
+  const hist = main.careerRecord.history.filter(e => e.season === showState.season && e.week === showState.week);
+  assert.ok(hist.some(e => e.type === 'domeMain' && e.result === 'win' && e.matchType === 'main'), 'メインの勝者に domeMain が無い');
+  assert.ok(hist.some(e => e.type === 'bigMatch' && e.mq === 90), '評価85以上の試合に bigMatch が無い');
+  const second = dome.roster.find(c => c.id === showState.showCard[1].left);
+  assert.ok(!(second.careerRecord?.history || []).some(e => e.season === showState.season && e.week === showState.week), 'メインでも王座戦でもない試合に経歴を刻んだ');
 });
 
 if (failed > 0) {

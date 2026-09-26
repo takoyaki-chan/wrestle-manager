@@ -17448,7 +17448,13 @@ const Engine = {
         tagExp = Engine.tagExp.increment(tagExp, m.teamA.fighter1, m.teamA.fighter2);
         tagExp = Engine.tagExp.increment(tagExp, m.teamB.fighter1, m.teamB.fighter2);
       });
-      callHook('beforeKaigan');
+      // 経歴の刻印(MVP 用の大試合・ドームの経歴とドーム回数。K-1 第4段 4-A / §7 X07・K1-A10。以前は実プレイの
+      // hooks.beforeKaigan だけにあった)
+      {
+        const marks = Engine.show.recordCareerMarks(s, roster, validMatches, results);
+        s = marks.state;
+        roster = marks.roster;
+      }
 
       // 開眼 Phase 1: 試合後処理を終えたシングル戦だけを共通判定へ渡す。専用モーダルは作らず、週次ログと新聞キューだけを使う
       const kaiganResult = Engine.kaigan.processMatchResults(

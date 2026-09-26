@@ -7755,7 +7755,6 @@ const App = {
       hooks: {
         afterTitles: w => App._finalizeHookSpecialBouts(w),
         afterRelationships: w => App._finalizeHookFactionBookings(w),
-        beforeKaigan: w => App._finalizeHookCareerMarks(w),
         afterWriteback: w => App._finalizeHookGuests(w),
       },
     });
@@ -8447,79 +8446,6 @@ const App = {
     w.roster = s.roster;
     w.s = { ...s, roster: preShowRoster };
     w.common1MatchIdx = common1ResolvedIdx;
-  },
-
-  // hooks.beforeKaigan(対戦成績・直近戦績・対戦記録の後、開眼の前): MVP 用の大試合の経歴(§7 X07)・
-  // ドーム興行の経歴とドーム回数(K1-A10)
-  _finalizeHookCareerMarks(w) {
-    let s = w.s;
-    let roster = w.roster;
-    const { validMatches, results } = w;
-
-    // MVPレース v2: MQ85超試合の bigMatch 履歴記録（プレイヤー興行）
-    {
-      let bigMatchAdded = false;
-      validMatches.forEach((m, idx) => {
-        const r = results[idx];
-        if (!r || typeof r.mq !== 'number' || r.mq < 85) return;
-        const participants = m.matchType === 'tag'
-          ? [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2]
-          : [m.left, m.right];
-        participants.forEach(charId => {
-          if (charId == null) return;
-          roster = roster.map(c => {
-            if (c.id !== charId || c.isIntrusion) return c;
-            bigMatchAdded = true;
-            return Engine.career.addEvent(c, {
-              type: 'bigMatch', season: s.season, week: s.week, mq: r.mq
-            });
-          });
-        });
-      });
-      if (bigMatchAdded) s = { ...s, roster };
-    }
-
-    // orgPop リバランス v1.1 §4: ドーム興行 domeMain キャリア記録
-    // メインイベント枠(idx=0) or タイトルマッチに出場した選手を記録
-    if (s.showVenue === 9) {
-      roster = roster.map(c => c); // コピーを維持
-      validMatches.forEach((m, idx) => {
-        const isMain = idx === 0; // メインイベント枠
-        const isTitle = !!m.isTitle;
-        if (!isMain && !isTitle) return;
-        const r = results[idx];
-        if (!r) return;
-        const matchType = isTitle ? 'title' : 'main';
-        let domeEntries;
-        if (m.matchType === 'tag') {
-          const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
-          const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
-            : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
-          domeEntries = allIds.map(charId => ({ charId, result: winTeamIds.includes(charId) ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose'), opponentName: undefined }));
-        } else {
-          const leftName  = roster.find(c => c.id === m.left)?.name;
-          const rightName = roster.find(c => c.id === m.right)?.name;
-          domeEntries = [
-            { charId: m.left,  result: r.winner === 'left'  ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose'), opponentName: rightName },
-            { charId: m.right, result: r.winner === 'right' ? 'win' : (r.winner === 'draw' ? 'draw' : 'lose'), opponentName: leftName },
-          ];
-        }
-        domeEntries.forEach(({ charId, result, opponentName }) => {
-          roster = roster.map(c => {
-            if (c.id !== charId || c.isIntrusion) return c;
-            const ev = { type: 'domeMain', season: s.season, week: s.week, result, matchType };
-            if (opponentName) ev.opponentName = opponentName;
-            const cr = c.careerRecord || { history: [] };
-            return { ...c, careerRecord: { ...cr, history: [...(cr.history || []), ev] } };
-          });
-        });
-      });
-      // orgPop リバランス v1.1 §5: ドーム興行カウント更新
-      s = { ...s, roster, domeShowsThisSeason: (s.domeShowsThisSeason || 0) + 1 };
-    }
-
-    w.s = s;
-    w.roster = roster;
   },
 
   // hooks.afterWriteback(書き戻しの直後、記録更新の刻印・突然の退団の前): 全国統一王座戦の清算(§7 X06)・

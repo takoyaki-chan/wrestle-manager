@@ -120,12 +120,8 @@ module.exports = [
     ],
     mustAppear: true, refs: 'app.js:9272-9344(finalize)・10867-10970(closeShowResult 前半) / エンジン側なし',
   },
-  {
-    id: 'K1-A10', title: 'ドーム興行の経歴記録(domeMain)・ドーム回数・初ドームの節目',
-    category: 'processing', side: 'app', impact: '数値', scenarios: ['dome'], checkpoints: ['A', 'B'],
-    patterns: ['domeShowsThisSeason', 'roster[*].careerRecord.history', 'milestones.first_dome_show'],
-    mustAppear: true, refs: 'app.js:9046-9083, 13089-13107(興行前の節目) / エンジン側なし',
-  },
+  // K1-A10(ドーム興行の経歴 domeMain・ドーム回数・初ドームの節目が実プレイだけ)は K-1 第4段 4-A で解消したので外した
+  // (2026-09-26)。両経路が Engine.show.finalize の中の Engine.show.recordCareerMarks を通す(MVP 用の大試合 bigMatch・§7 X07 も)。
   {
     id: 'K1-A11', title: 'メディア密着取材の消化(人気・信頼・団体人気・関係値)',
     category: 'processing', side: 'app', impact: '数値', scenarios: ['directives'], checkpoints: ['A', 'B'],
