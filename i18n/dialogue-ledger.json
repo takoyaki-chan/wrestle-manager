@@ -31638,6 +31638,20 @@
     }
   },
   {
+    "key": "……片はついた。",
+    "en": "...That's that.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……物足りないわ。次は、全部もらいに行く",
     "en": "...Not enough to sit with. Next time I go and take it all.",
     "files": [
@@ -33128,6 +33142,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "……終わったわね。勝ったのは、こっち。",
+    "en": "...So it's over. And we're the ones who won.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
     }
   },
   {
@@ -104677,6 +104705,20 @@
     }
   },
   {
+    "key": "いい抗争だったよ。向こうも最後まで手を抜かなかった。だから、この勝ちには値打ちがある。",
+    "en": "A good feud. They never eased up, right to the end. That's what makes this win worth something.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "いい日になりましたね",
     "en": "It turned into a good day, didn't it.",
     "files": [
@@ -106034,6 +106076,20 @@
     "en": "Well hey, I won.",
     "files": [
       "data.js:POST_MATCH_FLAVOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "いやー、長かったね。でも最後に勝ったのはこっちじゃん♪　今夜はみんなで打ち上げしよ。",
+    "en": "Phew, that went on forever. But we're the ones who won in the end ♪ Let's all go out and celebrate tonight.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -135031,6 +135087,20 @@
     }
   },
   {
+    "key": "どっちが上か、これではっきりしたでしょ。文句があるなら、リングで言いに来なよ。",
+    "en": "That settles who's on top, doesn't it? If they've got complaints, they can come say it in the ring.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "どなたがお相手でも、このリングの主はわたくしですのよ",
     "en": "Whoever my opponent may be, this ring belongs to me.",
     "files": [
@@ -139966,6 +140036,20 @@
     }
   },
   {
+    "key": "ふふ、思ったより時間がかかったわね。でも、最後に笑うのはやっぱりこっちだったでしょ？",
+    "en": "Mm, that took longer than I expected. But we were always going to be the ones smiling at the end, weren't we?",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "ふふ、最高の気分。ご褒美ちょうだいね",
     "en": "Mm, I feel wonderful. I'll be wanting a reward.",
     "files": [
@@ -141299,6 +141383,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "ほらな、強え方が勝つんだよ。向こうの連中、しばらく大人しくしてな。",
+    "en": "Told ya. The stronger side wins. That lot over there can keep quiet for a while.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
       "personality": "bold"
     }
   },
@@ -156169,6 +156267,20 @@
     }
   },
   {
+    "key": "わたしたちが勝った、んですよね……まだ、ちょっと信じられないです。",
+    "en": "We... won, didn't we...? I still can't quite believe it.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "わたしに逆らう子は、まとめて折ってあげる",
     "en": "Any girl who crosses me — I'll break the lot of you together.",
     "files": [
@@ -166346,6 +166458,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "一試合ずつ取ってきた結果だと思う。みんな、よくやってくれた。",
+    "en": "I think we got here by taking it one match at a time. Everyone did great.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
     }
   },
   {
@@ -178737,6 +178863,20 @@
     }
   },
   {
+    "key": "勝った……ほんとに勝ったんだ……！　ついてきてくれたみんなに、早く言いたい。",
+    "en": "We won... we really won...! I want to tell everyone who stuck with me, right now.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "勝った……勝っちゃった……",
     "en": "I won... it really happened...",
     "files": [
@@ -180255,6 +180395,20 @@
     }
   },
   {
+    "key": "勝って終われたことを、誇りに思います。敗れた側の悔しさも忘れずに、次の試合へ向かいます。",
+    "en": "I'm proud we could finish as the winners. I'll take the other side's frustration into the next match, too.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "勝つためなら何でもやるわ。",
     "en": "I'll do anything to win.",
     "files": [
@@ -180308,6 +180462,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "勝つのはこっちだって、最初から言ってたんだ。まあ、思ったより粘られたけどね。",
+    "en": "I said from the start we'd be the ones to win. Though, sure, they hung on longer than I expected.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
     }
   },
   {
@@ -195395,6 +195563,20 @@
     }
   },
   {
+    "key": "散々突っかかってきたんだもの、当然の結末よ。……次に噛みついてきたら、容赦しないわ。",
+    "en": "After all the times they came at us, this was the only ending. ...If they snap at us again, I won't go easy.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "数えるのも野暮なほど守り続けた、揺るぎない王座だ。",
     "en": "She has held it so often that counting has become gauche. The title does not move.",
     "files": [
@@ -197671,6 +197853,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard"
+    }
+  },
+  {
+    "key": "最後まで誰も投げ出さなかった。この結果は、派閥の全員で取ったものです。",
+    "en": "Nobody gave up, right to the end. Every one of us in the faction earned this result together.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
     }
   },
   {
@@ -204779,6 +204975,20 @@
     }
   },
   {
+    "key": "決着はついた。次に行く。",
+    "en": "It's settled. On to the next.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "決着はついた。次に進む",
     "en": "That's settled. Next.",
     "files": [
@@ -204818,6 +205028,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "決着はつきました。……けれど、これで終わりではないわ。まだ上があるもの。",
+    "en": "It is settled. ...But this is not the end. There is still higher to go.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
     }
   },
   {
@@ -207617,6 +207841,20 @@
     }
   },
   {
+    "key": "皆さまが最後まで力を尽くしてくださった結果ですわ！　この勝利に恥じない戦いを、これからも続けてまいります。",
+    "en": "This is what everyone's all-out effort earned! We shall keep fighting in a way worthy of this victory.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "皆さまのご声援のおかげです……本当に、ありがとうございます……！",
     "en": "This is thanks to your support... truly, thank you so very much...!",
     "files": [
@@ -207669,6 +207907,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite"
+    }
+  },
+  {
+    "key": "皆さんが一試合ずつ積み重ねてくれた結果です。本当に、ありがとうございました。",
+    "en": "This came from everyone building it up one match at a time. Thank you, truly.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
     }
   },
   {
@@ -221112,6 +221364,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "見たかよ、勝ったのはこっちだ。まっすぐぶつかって、まっすぐ勝った。それだけだろ。",
+    "en": "You see that? We won. Went straight at 'em and won straight up. That's all there is to it.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_RIVALRY_VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
     }
   },
   {

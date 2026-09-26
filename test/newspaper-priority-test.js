@@ -73,7 +73,8 @@ section('4. 派閥の諍いは一般試合より上', () => {
   // 「派閥とかの諍いとか、そういうゴシップの方が楽しい」
   const gossip = ['factionEscalation', 'factionResolution', 'factionCoup', 'factionWarSettled',
                   'factionEndless', 'factionShowdown', 'factionDefection', 'factionSplit',
-                  'factionSuccession', 'factionDissolution', 'factionInternalBout'];
+                  'factionSuccession', 'factionDissolution', 'factionInternalBout',
+                  'factionRivalryDecided'];
   gossip.forEach(k => {
     assert.ok(P[k] != null, `${k} が優先度表に無い`);
     assert.ok(P[k] > P.playerShowNormal,

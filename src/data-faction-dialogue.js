@@ -349,6 +349,85 @@ const FACTION_F06_FORCE_BEHIND_LINES = {
 };
 
 // ─────────────────────────────────────────────────────────────
+// 抗争ポイントの先取で決着した週(faction-rivalry-points-spec §5 / 2026-09-26 第5回 問11)— 勝った派閥のリーダーの一言。
+// 新聞の業界ニュース factionRivalryDecided の本文に「」つきで引用される(記者に向けた言葉。社長への呼びかけではない)。
+// F06_FORCE と同じ粒度: 標準は7性格、ほかの口調は normal+性格1つ。欠けた性格は同じ口調の normal へ落ちる(getFactionLine)
+// ─────────────────────────────────────────────────────────────
+const FACTION_RIVALRY_VICTORY_LINES = {
+  standard: {
+    normal: [
+      "一試合ずつ取ってきた結果だと思う。みんな、よくやってくれた。",
+    ],
+    bold: [
+      "どっちが上か、これではっきりしたでしょ。文句があるなら、リングで言いに来なよ。",
+    ],
+    quiet: [
+      "……終わったわね。勝ったのは、こっち。",
+    ],
+    shy: [
+      "わたしたちが勝った、んですよね……まだ、ちょっと信じられないです。",
+    ],
+    easygoing: [
+      "いやー、長かったね。でも最後に勝ったのはこっちじゃん♪　今夜はみんなで打ち上げしよ。",
+    ],
+    earnest: [
+      "最後まで誰も投げ出さなかった。この結果は、派閥の全員で取ったものです。",
+    ],
+    emotional: [
+      "勝った……ほんとに勝ったんだ……！　ついてきてくれたみんなに、早く言いたい。",
+    ],
+  },
+  ojousama: {
+    normal: [
+      "決着はつきました。……けれど、これで終わりではないわ。まだ上があるもの。",
+    ],
+    earnest: [
+      "皆さまが最後まで力を尽くしてくださった結果ですわ！　この勝利に恥じない戦いを、これからも続けてまいります。",
+    ],
+  },
+  cool: {
+    normal: [
+      "決着はついた。次に行く。",
+    ],
+    quiet: [
+      "……片はついた。",
+    ],
+  },
+  delinquent: {
+    normal: [
+      "見たかよ、勝ったのはこっちだ。まっすぐぶつかって、まっすぐ勝った。それだけだろ。",
+    ],
+    bold: [
+      "ほらな、強え方が勝つんだよ。向こうの連中、しばらく大人しくしてな。",
+    ],
+  },
+  polite: {
+    normal: [
+      "皆さんが一試合ずつ積み重ねてくれた結果です。本当に、ありがとうございました。",
+    ],
+    earnest: [
+      "勝って終われたことを、誇りに思います。敗れた側の悔しさも忘れずに、次の試合へ向かいます。",
+    ],
+  },
+  seductive: {
+    normal: [
+      "ふふ、思ったより時間がかかったわね。でも、最後に笑うのはやっぱりこっちだったでしょ？",
+    ],
+    emotional: [
+      "散々突っかかってきたんだもの、当然の結末よ。……次に噛みついてきたら、容赦しないわ。",
+    ],
+  },
+  composed: {
+    normal: [
+      "いい抗争だったよ。向こうも最後まで手を抜かなかった。だから、この勝ちには値打ちがある。",
+    ],
+    bold: [
+      "勝つのはこっちだって、最初から言ってたんだ。まあ、思ったより粘られたけどね。",
+    ],
+  },
+};
+
+// ─────────────────────────────────────────────────────────────
 // Phase 3e: F08-A 直接対決 試合前後演出
 // 4テーブル × hostility帯 / HP帯分岐
 // 6性格 × 6アーキタイプ、normal フォールバック、cool/delinquent/ojousama は核
@@ -1217,6 +1296,7 @@ const INTERNAL_CHALLENGE_POST_LOSER_LINES = {
 if (typeof window !== 'undefined') {
   window.FACTION_F06_FORCE_AHEAD_LINES = FACTION_F06_FORCE_AHEAD_LINES;
   window.FACTION_F06_FORCE_BEHIND_LINES = FACTION_F06_FORCE_BEHIND_LINES;
+  window.FACTION_RIVALRY_VICTORY_LINES = FACTION_RIVALRY_VICTORY_LINES;
   window.FACTION_F08_PRE_MATCH_LINES_A = FACTION_F08_PRE_MATCH_LINES_A;
   window.FACTION_F08_PRE_MATCH_LINES_B = FACTION_F08_PRE_MATCH_LINES_B;
   window.FACTION_F08_POST_MATCH_WINNER_LINES = FACTION_F08_POST_MATCH_WINNER_LINES;
@@ -1240,6 +1320,7 @@ if (typeof module !== 'undefined' && module.exports) {
     FACTION_F06_AMBIENT_LINES,    FACTION_F08_LEADER_LINES,
     FACTION_F06_FORCE_AHEAD_LINES,
     FACTION_F06_FORCE_BEHIND_LINES,
+    FACTION_RIVALRY_VICTORY_LINES,
     FACTION_F08_PRE_MATCH_LINES_A,
     FACTION_F08_PRE_MATCH_LINES_B,
     FACTION_F08_POST_MATCH_WINNER_LINES,

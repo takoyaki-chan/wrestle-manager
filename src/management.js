@@ -15187,6 +15187,14 @@ const Engine = {
           // 決着の効果(§5: 勝者・敗者の勢い・信頼・絆・対立度ほか)・記録の削除・自然沈静化の週数は返した state にだけ入る
           // (2026-09-26 まで state をその場で書き換える形で、決着の効果の戻り値を捨てていた)
           if (resolution && resolution.state) s = resolution.state;
+          // 決着の知らせ(2026-09-26 第5回 問11): 先取100は新聞(業界ニュース・勝ったリーダーの一言つき)と週のログに1行、
+          // 派閥の消滅で終わった記録はログに1行。表示だけで数値は動かさない(一言の抽選は専用の乱数系列)
+          if (resolution && resolution.resolved && typeof Engine.factions.buildRivalryResolutionNotice === 'function') {
+            const noticeRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA2A));
+            const notice = Engine.factions.buildRivalryResolutionNotice(s, resolution, noticeRng);
+            if (notice.news && Engine.industryNews) s = Engine.industryNews.push(s, notice.news);
+            if (notice.log) events.push({ ...notice.log, s: s.season, w: s.week });
+          }
           // §4.3 40週の2択(F06_FORCE)。社長の判断を派閥イベントとして待つ(2026-09-26 裁定4)。
           // 画面は App.handleFactionEvent、auto-sim は autoHandleFactionEvent が Engine.factions.applyF06ForceChoice を呼ぶ
           if (resolution && resolution.forceClose && !s._pendingFactionEvent
@@ -16404,24 +16412,8 @@ const Engine = {
           }
         });
       }
-      // 因縁ペア（tierが最大のもの）
-      if (G.rivalries) {
-        let maxTier = 0, hotPair = null;
-        Object.entries(G.rivalries).forEach(([key, riv]) => {
-          const tier = riv.tier || 0;
-          const matches = riv.matches || 0;
-          if (tier > maxTier || (tier === maxTier && matches > (hotPair?._matches || 0))) {
-            maxTier = tier;
-            const ids = key.split('>');
-            const rLeft = G.roster.find(f => f.id === ids[0]);
-            const rRight = G.roster.find(f => f.id === ids[1]);
-            if (rLeft && rRight) hotPair = { leftName: rLeft.name, rightName: rRight.name, _matches: matches };
-          }
-        });
-        if (hotPair && maxTier >= 1) {
-          preview.rivalry = { leftName: hotPair.leftName, rightName: hotPair.rightName };
-        }
-      }
+      // 因縁ペア(週刊新聞の次回展望と同じ Engine.newspaper.pickPreviewRivalry。2026-09-26 まで常に空だった)
+      preview.rivalry = Engine.newspaper.pickPreviewRivalry(G);
       // タイトル戦展望
       const champId = G.titles?.world?.championId;
       if (champId) {
@@ -33637,6 +33629,12 @@ function _wmResolvePreformattedIndustryData(ev, dict) {
         : '決勝より前に、この大会の頂は一度現れていた。';
       return { ...data, round: T(ROUND_JA[data.roundKey] || data.roundKey), closing: T(closingJa) };
     }
+    case 'factionRivalryDecided': {
+      // 2026-09-26 第5回 問11: 勝ったリーダーの一言(FACTION_RIVALRY_VICTORY_LINES の原文=辞書のキー)を、
+      // 載る瞬間の言語で「」ごと組む(PPV の _quoted と同じ作り。dict 無しでは原文のまま)
+      if (!data.quoteLine) return data;
+      return { ...data, quote: T('「{line}」').replace('{line}', T(data.quoteLine)) };
+    }
     case 'hotProspectDebut':
       if (data.won == null) return data;
       return { ...data, result: T(data.won ? '白星' : '黒星') };
@@ -33990,6 +33988,8 @@ Engine.newspaper = {
     // ── 業界ニュース拡充: bond/rivalry/派閥/奪還 ──
     factionEscalation:    125,
     factionResolution:    122,
+    // 抗争ポイントの先取で決着(2026-09-26 第5回 問11)。F02 の決着(factionResolution)と同じ格
+    factionRivalryDecided: 122,
     reclaimSuccess:       120,
     reclaimChallenge:     108,
     reclaimFailure:       102,
@@ -36156,6 +36156,34 @@ Engine.newspaper = {
     return result;
   },
 
+  /** 次回展望の因縁ペア。自団体の2人の組で、決着していない因縁の段(Engine.title の band.tier。1=因縁/2=宿敵/3=宿命)が
+   *  最も高い組。同じ段なら因縁の記録の対戦回数が多い組、それも同じなら記録の並びで先の組。段が無い(因縁30未満)組は選ばない。
+   *  返り値 { leftName, leftId, rightName, rightId } | null。
+   *  2026-09-26 修正(K-1 第2段の作業者の報告): 因縁の記録のキーは Engine.title.getRivalryKey の「小さいID-大きいID」なのに
+   *  '>' で割って文字列のまま選手IDと比べ、段は記録に無い riv.tier を読んでいたので、常に空だった。
+   *  キーを '-' で割って数値にそろえ(checkRivalryTitles と同じ読み方)、段は関係値から引く */
+  pickPreviewRivalry(state) {
+    if (!state || !state.rivalries) return null;
+    const roster = state.roster || [];
+    let best = null;
+    Object.entries(state.rivalries).forEach(([key, riv]) => {
+      const [idA, idB] = String(key).split('-').map(Number);
+      const rLeft = roster.find(f => f.id === idA);
+      const rRight = roster.find(f => f.id === idB);
+      if (!rLeft || !rRight) return;
+      const pair = Engine.title.getRivalryPairCore(state, rLeft.id, rRight.id);
+      if (pair.resolvedType || !pair.band) return;
+      const tier = pair.band.tier || 0;
+      if (tier < 1) return;
+      const matches = (riv && riv.matches) || 0;
+      if (!best || tier > best.tier || (tier === best.tier && matches > best.matches)) {
+        best = { tier, matches, left: rLeft, right: rRight };
+      }
+    });
+    if (!best) return null;
+    return { leftName: best.left.name, leftId: best.left.id, rightName: best.right.name, rightId: best.right.id };
+  },
+
   /** 次回展望データを構築 */
   buildPreview(state) {
     const preview = { fanExpect: [], rivalry: null, title: null };
@@ -36170,24 +36198,8 @@ Engine.newspaper = {
         }
       });
     }
-    // 因縁ペア（tierが最大のもの）
-    if (state.rivalries) {
-      let maxTier = 0, hotPair = null;
-      Object.entries(state.rivalries).forEach(([key, riv]) => {
-        const tier = riv.tier || 0;
-        const matches = riv.matches || 0;
-        if (tier > maxTier || (tier === maxTier && matches > (hotPair?._matches || 0))) {
-          maxTier = tier;
-          const ids = key.split('>');
-          const rLeft = (state.roster || []).find(f => f.id === ids[0]);
-          const rRight = (state.roster || []).find(f => f.id === ids[1]);
-          if (rLeft && rRight) hotPair = { leftName: rLeft.name, leftId: rLeft.id, rightName: rRight.name, rightId: rRight.id, _matches: matches };
-        }
-      });
-      if (hotPair && maxTier >= 1) {
-        preview.rivalry = { leftName: hotPair.leftName, leftId: hotPair.leftId, rightName: hotPair.rightName, rightId: hotPair.rightId };
-      }
-    }
+    // 因縁ペア(pickPreviewRivalry)
+    preview.rivalry = Engine.newspaper.pickPreviewRivalry(state);
     // タイトル戦展望
     const champId = state.titles?.world?.championId;
     if (champId) {

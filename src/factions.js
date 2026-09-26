@@ -5511,8 +5511,10 @@ Engine.factions = {
   },
 
   // §4 決着判定（毎週。tickWeek の派閥パイプライン）。純関数(入力の state を書き換えない)。
-  // 戻り値は常に { state, resolved, reason, winnerFactionId, loserFactionId, forceClose }。呼び出し側は state を受け取る
+  // 戻り値は常に { state, resolved, reason, winnerFactionId, loserFactionId, survivorFactionId, forceClose }。呼び出し側は state を受け取る
   //   (決着の効果・記録の削除・自然沈静化の週数の数え上げは、すべて返した state にだけ入る)。
+  //   survivorFactionId: 片方の派閥が消えて終わった記録(CONSOLATION、または先取100の時点で片方が消えていた POINTS)の残った側。
+  //   決着の知らせ(buildRivalryResolutionNotice)が読む。
   //   決着が発生した場合 resolved: true と reason('POINTS'|'CONSOLATION'|'CALM')、
   //   決着は無いが40週の2択(F06_FORCE)を出すべき記録がある場合 resolved: false, reason: 'FORCE_CLOSE_PENDING'、
   //   どちらも無ければ resolved: false, reason: null。
@@ -5526,7 +5528,8 @@ Engine.factions = {
   //   そのため決着の勢い・信頼・絆・対立度が一度も入らず、入力の G の記録まで書き換えていた。返却値で更新する形に改めた
   checkRivalryResolution(state, rng) {
     const out = (s, fields) => ({
-      state: s, resolved: false, reason: null, winnerFactionId: null, loserFactionId: null, forceClose: null, ...fields,
+      state: s, resolved: false, reason: null, winnerFactionId: null, loserFactionId: null,
+      survivorFactionId: null, forceClose: null, ...fields,
     });
     if (!state || !state.factionRivalryPoints) return out(state, {});
     const cfg = FACTION_CONFIG;
@@ -5557,11 +5560,16 @@ Engine.factions = {
         // 勝者敗者派閥が両方存命のときのみフル適用(記録の削除は applyRivalryVictory が行う)
         if (fA && fB) {
           s = this.applyRivalryVictory(withRp(), winId, losId, 'POINTS', rng);
-        } else {
-          setEntry(key, null);
-          s = withRp();
+          return out(s, { resolved: true, reason: 'POINTS', winnerFactionId: winId, loserFactionId: losId, forceClose });
         }
-        return out(s, { resolved: true, reason: 'POINTS', winnerFactionId: winId, loserFactionId: losId, forceClose });
+        setEntry(key, null);
+        s = withRp();
+        // 片方が消えていた(効果なし)。知らせ(buildRivalryResolutionNotice)は派閥消滅と同じ扱いにするので、残った側を返す
+        const survivorOfPoints = fA ? fA.id : (fB ? fB.id : null);
+        return out(s, {
+          resolved: true, reason: 'POINTS', winnerFactionId: winId, loserFactionId: losId,
+          survivorFactionId: survivorOfPoints, forceClose,
+        });
       }
 
       // §4.2 派閥消滅(§5.4 CONSOLATION: 勝者なし・残った派閥の消滅相手への hostility -40 のみ)
@@ -5579,7 +5587,7 @@ Engine.factions = {
             reason: 'CONSOLATION',
           });
         }
-        return out(s, { resolved: true, reason: 'CONSOLATION', forceClose });
+        return out(s, { resolved: true, reason: 'CONSOLATION', survivorFactionId: survivorId, forceClose });
       }
 
       // §4.3 40週経過(B「続けさせる」を選んだ記録は、その時点から +20週 の forceCloseDeferredUntil まで待つ)
@@ -5622,6 +5630,54 @@ Engine.factions = {
     }
     const startAbs = Engine.util.absWeekTotal(entry.startedSeason, entry.startedWeek, false, 0);
     return startAbs + FACTION_CONFIG.pointsForceCloseWeeks;
+  },
+
+  // ── 抗争の決着の知らせ(2026-09-26 第5回 問11「派閥の抗争の決着は、新聞とログに1行で見せる」) ──
+  // checkRivalryResolution の返り値(と決着後の state)から、業界ニュース1本と週のログ1行を組む。純関数・表示専用
+  // (勝敗・効果・乱数の本流には触れない。一言の抽選は呼び出し側が渡す専用の乱数系列だけを引く)。モーダルは出さない。
+  //   POINTS(先取100・両派閥が存命): 新聞 factionRivalryDecided(勝ったリーダーの一言つき)+ログ faction_rivalry_decided.points
+  //   CONSOLATION / 先取100の時点で片方が消えていた POINTS: ログ faction_rivalry_decided.consolation だけ(残った側の名前)。
+  //     勝ち名乗りのない終わり方なので(§5.4 勝者なし)、記事と一言は出さない
+  //   CALM(自然沈静化)・F06_RECONCILE(40週の和解。記事は画面側の factionReconcile)・決着なし: 何も返さない
+  // 戻り値 { news: industryNews のイベント | null, log: { type, data } | null }
+  buildRivalryResolutionNotice(state, resolution, rng) {
+    const none = { news: null, log: null };
+    if (!state || !resolution || !resolution.resolved) return none;
+    const factions = state.factions || [];
+    const roster = state.roster || [];
+    const findF = (id) => (id != null ? factions.find(f => f.id === id) : null);
+    const winF = resolution.reason === 'POINTS' ? findF(resolution.winnerFactionId) : null;
+    const losF = resolution.reason === 'POINTS' ? findF(resolution.loserFactionId) : null;
+
+    if (winF && losF) {
+      const log = { type: 'faction_rivalry_decided', data: { variant: 'points', winFaction: winF.name, loseFaction: losF.name } };
+      const winLeader = roster.find(c => c.id === winF.leaderId);
+      const loseLeader = roster.find(c => c.id === losF.leaderId);
+      const table = (typeof FACTION_RIVALRY_VICTORY_LINES !== 'undefined') ? FACTION_RIVALRY_VICTORY_LINES : null;
+      const quoteLine = winLeader && table ? this.getFactionLine(table, winLeader, rng) : '';
+      // 記事は両リーダーが所属していて一言が引けたときだけ(欠けた記事を出さない)
+      if (!winLeader || !loseLeader || !quoteLine) return { news: null, log };
+      const orgFallback = (typeof _NP_PLAYER_ORG_FALLBACK_JA !== 'undefined') ? _NP_PLAYER_ORG_FALLBACK_JA : '';
+      const news = {
+        type: 'factionRivalryDecided',
+        characterId: winLeader.id,
+        data: {
+          org: state.orgName || orgFallback, orgMissing: !state.orgName,
+          winFaction: winF.name, loseFaction: losF.name,
+          winLeader: winLeader.name, loseLeader: loseLeader.name,
+          // 一言は選ばれた原文(辞書のキー)で積み、紙面に載る瞬間に「」ごと言語別に組む(_wmResolvePreformattedIndustryData)
+          quoteLine,
+        },
+      };
+      return { news, log };
+    }
+
+    const survivor = (resolution.reason === 'CONSOLATION' || resolution.reason === 'POINTS')
+      ? findF(resolution.survivorFactionId) : null;
+    if (survivor) {
+      return { news: null, log: { type: 'faction_rivalry_decided', data: { variant: 'consolation', factionName: survivor.name } } };
+    }
+    return none;
   },
 
   // ── §4.3 F06 強制発火(40週の2択)— 派閥イベント F06_FORCE ──

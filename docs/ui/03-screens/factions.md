@@ -93,6 +93,8 @@ Phase B で導入される **抗争ポイント制** を可視化する主舞台
 - **Timeline**（HISTORY 展開時のみ）
   - 横帯マーカー: F02 / Match / F08-A / F09 / now
   - マーカー色分け: F02=warn, Match=cream-gold, F08=hostility, F09=hostility-deep, now=hostility
+  - 抗争の記録が閉じた印(RIVALRY_CLOSED。3派閥以上のときの別の組の終わり方)は reason を言葉にする(2026-09-26。`_dfcRivalryClosedLabel`):
+    ポイント先取で決着 / 抗争の幕引き / 自然沈静化 / 派閥消滅で終結(知らない reason は「決着」)。内部名(POINTS/CALM 等)は出さない
 
 ### FactionCard（抗争中・大判）
 

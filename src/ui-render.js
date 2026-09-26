@@ -13794,6 +13794,17 @@ function _dfcRenderCard(faction, state, opts = {}) {
   return html;
 }
 
+// 抗争の記録が閉じた印(RIVALRY_CLOSED)の言葉。reason は内部名(faction-rivalry-points-spec §5.4)なので画面に出さない。
+// 自分の組の決着は抗争欄ごと消えるので、ここに出るのは3派閥以上のときの別の組の終わり方(2026-09-26 修正: 以前は
+// 「決着 ・ CALM」のように内部名がそのまま出ていた)。知らない reason は「決着」に落とす
+function _dfcRivalryClosedLabel(reason) {
+  if (reason === 'POINTS') return WM_I18N.t('ポイント先取で決着');
+  if (reason === 'F06_RECONCILE') return WM_I18N.t('抗争の幕引き');
+  if (reason === 'CALM') return WM_I18N.t('自然沈静化');
+  if (reason === 'CONSOLATION') return WM_I18N.t('派閥消滅で終結');
+  return WM_I18N.t('決着');
+}
+
 // 抗争タイムライン（FeudTimeline）
 function _dfcRenderFeudTimeline(state, factionAId, factionBId, feudEntry) {
   const tl = state.factionTimeline || [];
@@ -13824,7 +13835,7 @@ function _dfcRenderFeudTimeline(state, factionAId, factionBId, feudEntry) {
     else if (/F02/.test(ev.type)) { cls = 'f02'; label = WM_I18N.t('抗争イベント'); }
     else if (/F08/.test(ev.type)) { cls = 'f08'; label = WM_I18N.t('直接対決'); }
     else if (/F09/.test(ev.type)) { cls = 'f09'; label = WM_I18N.t('対抗戦'); }
-    else if (ev.type === 'RIVALRY_CLOSED') { cls = 'f09'; label = WM_I18N.t('決着 ・ {reason}', { reason: ev.reason || '' }); }
+    else if (ev.type === 'RIVALRY_CLOSED') { cls = 'f09'; label = _dfcRivalryClosedLabel(ev.reason); }
     else if (ev.type === 'INTERNAL_CHALLENGE_REGISTERED') { cls = 'match'; label = WM_I18N.t('序列戦 ・ 受理'); }
     else if (ev.type === 'INTERNAL_CHALLENGE_RESOLVED') { cls = 'match'; label = ev.challengerWon ? WM_I18N.t('序列戦 ・ 下克上') : WM_I18N.t('序列戦 ・ 防衛'); }
     else if (ev.type === 'INTERNAL_CHALLENGE_DRAWN') { cls = 'match'; label = WM_I18N.t('序列戦 ・ 決着つかず'); }
