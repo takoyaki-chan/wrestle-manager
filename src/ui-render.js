@@ -2382,7 +2382,7 @@ function _renderRosterDetailPanel(c, hired) {
     // care-rework2 P3-2: 頼んだ重点は期間中ずっと見えるようにする(何を頼んだか忘れさせない)
     const _focus = c._inviteBuff.focusStat;
     if (_focus && typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[_focus]) {
-      tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('重点')}</span><span class="rd-meta-val">${WM_I18N.t('{stat}を重点に指導中', { stat: STAT_LABELS_JP[_focus] })}</span></div>`;
+      tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('重点')}</span><span class="rd-meta-val">${WM_I18N.t('{stat}を重点に指導中', { stat: WM_I18N.t(STAT_LABELS_JP[_focus]) })}</span></div>`;
     }
   } else if (hired.length > 0) {
     let opts = `<option value="0"${!coach?' selected':''}>${WM_I18N.t('--- なし ---')}</option>`;
@@ -2404,7 +2404,8 @@ function _renderRosterDetailPanel(c, hired) {
     const mult = coach.gMult || 1.0;
     const sm = getCoachStyleMatch(coach, c);
     const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : `<span style="color:#7a7466">${WM_I18N.t('不一致')}</span>`;
-    const abilitiesText = (coach.abilities||[]).join('・');
+    // i18n: 能力名を各々 t() し、区切りは言語で分ける(EN は ", "。道場のコーチ能力 P7-60 と同じ)
+    const abilitiesText = (coach.abilities||[]).map(a => WM_I18N.t(a)).join(WM_I18N.lang === 'ja' ? '・' : ', ');
     tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('コーチ効果')}</span><span class="rd-meta-val" style="font-size:12px">${WM_I18N.t('成長×{mult}', { mult })} <span class="badge badge-${coach.style}" style="font-size:9px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${abilitiesText}</span></div>`;
   }
   // Growth tendency
@@ -2416,7 +2417,7 @@ function _renderRosterDetailPanel(c, hired) {
   // Development rate
   const potPct = getPotentialPct(c);
   const potLabel = getPotentialLabel(c);
-  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('開発率')}</span><span class="rd-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="width:${potPct}%;height:100%;background:${potLabel.color};border-radius:3px"></div></div><span style="font-size:12px;color:${potLabel.color};font-weight:700">${potLabel.label}</span></div></span></div>`;
+  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('開発率')}</span><span class="rd-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="width:${potPct}%;height:100%;background:${potLabel.color};border-radius:3px"></div></div><span style="font-size:12px;color:${potLabel.color};font-weight:700">${WM_I18N.t(potLabel.label)}</span></div></span></div>`;
   // Physical decline
   const stageLabel = {none:WM_I18N.t('良好'),early:WM_I18N.t('わずかに衰えの兆候'),major:WM_I18N.t('衰退期'),terminal:WM_I18N.t('限界')};
   const stageColor = {none:'#1a8a4a',early:'#a07010',major:'#a06000',terminal:'#a03030'};
@@ -10545,11 +10546,11 @@ function _renderDbCoaches() {
     html += `<tr class="clickable" onclick="showCoachTooltip(${c.id})">
       <td>${coachPortraitImg(c, 36)}</td>
       <td style="font-weight:600">${WM_I18N.pn(c.name)}</td>
-      <td><span class="coach-grade coach-grade-${c.grade}" style="font-size:12px">${c.grade}級</span></td>
+      <td><span class="coach-grade coach-grade-${c.grade}" style="font-size:12px">${WM_I18N.t('{tier}級', { tier: c.grade })}</span></td>
       <td class="num" style="font-weight:700;color:${gc}">×${c.gMult||1.0}</td>
       <td class="num" style="color:${gc}">${c.observation}</td>
       <td><span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span></td>
-      <td style="font-size:11px;color:var(--text-sub)">${(c.abilities||[]).join('・')}${c.flavor ? ` <span style="color:var(--text-dim)">[${WM_I18N.t(c.flavor)}]</span>` : ''}</td>
+      <td style="font-size:11px;color:var(--text-sub)">${(c.abilities||[]).map(a => WM_I18N.t(a)).join(WM_I18N.lang === 'ja' ? '・' : ', ')}${c.flavor ? ` <span style="color:var(--text-dim)">[${WM_I18N.t(c.flavor)}]</span>` : ''}</td>
       <td class="num" style="font-size:12px">${c.salary}${WM_I18N.t('万')}</td>
       <td class="num" style="font-size:12px">${c.hireFee}${WM_I18N.t('万')}</td>
       <td>${isHired ? `<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">${WM_I18N.t('雇用中')}</span>` : '<span style="font-size:11px;color:var(--text-dim)">—</span>'}</td>

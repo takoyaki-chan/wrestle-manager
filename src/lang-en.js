@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4792件、訳文あり4792件)
+//  生成元: i18n/ui-ledger.json (総キー4793件、訳文あり4793件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -478,6 +478,7 @@
     "{name}を解任しますか？\\n担当選手のアサインも解除されます": "Dismiss {name}?\\nHer assigned wrestlers will be unassigned too",
     "{name}コーチを、誰に付ける。4週間の指導になる。指導との相性までは、始めてみないと分からない。": "Who do you put Coach {name} with? It is a four-week assignment. Whether the fit works, you will not know until it starts.",
     "{name}コーチ招聘中 — 練習効果アップ(残{w}週)": "Coach {name} on retainer — training boosted (weeks left: {w})",
+    "{name}コーチ招聘中 残り{n}週": "Guest coach on site: {name} — weeks left: {n}",
     "{name}優位 +{diff}": "{name} ahead +{diff}",
     "{name}優位 {diff}": "{name} ahead {diff}",
     "{name}内の固まりを軽くたしなめた。": "You lightly chided the clique inside {name}.",
