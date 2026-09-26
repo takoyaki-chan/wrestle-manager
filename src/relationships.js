@@ -2807,8 +2807,8 @@ Engine.relationships = {
     //   ・他団体の出来事は「直近12週(今週を含む)に出した自団体の件数×2」まで。自団体0件でも12週に1件は出す
     //   ・同じ週に枠より多く候補があれば、王者・人気上位/自団体との縁(元所属・因縁50以上)が絡むものを優先
     //   ・枠から外れた分はポップアップにしないだけ。関係値・クールダウンは積んだ時点で確定済みで、一切触らない
-    // UI(_drainFlagModalQueue)は渡されたキューを出すだけ。判定済みの項目には scope('own'|'other')を付け、
-    // PPV 週など drain されずに持ち越した分を二度数えない。
+    // 判定済みの項目には scope('own'|'other')を付け、持ち越した分を二度数えない。
+    // (2026-09-26 第4回裁定5: ポップアップとしては出さない。列の長さは直後の pruneModalQueue が直近の窓に保つ)
     // 入力の配列・項目・記録はどれも書き換えない。show-result のプレビュー tick は本番 G と _modalQueue を
     // 共有したまま tickWeek を回すので、ここで破壊的に書くと本番 G の件数記録が二重になる。
     MODAL_GATE: {
@@ -2893,6 +2893,28 @@ Engine.relationships = {
         recent.push({ w: now, own: ownSigs.size, other: kept.length });
       }
       return { ...state, _modalQueue: nextQueue, relModalWindow: recent };
+    },
+
+    // ── 2026-09-26 第4回裁定5: 関係性のポップアップ(M-1〜M-24)は出さない。たまり続ける列だけ直す ──
+    // 8/13 の裁定「関係性の変化は試合後にポップアップで知らせない(世界の側で見せる)」に合わせる。
+    // 出来事の生成(判定・データ)は残す — 後日、新聞・相関図など世界の側で見せる設計の材料にする。
+    // 列(_modalQueue)を消費する画面が無いので、直近の窓(MODAL_GATE.WINDOW_WEEKS=12週・今週を含む)の
+    // 項目だけ残し、それより古いものを落とす。以前は画面側の消費が 2026-04-28 から一度も動いておらず
+    // (ui-common.js の _drainFlagModalQueue が window.G を見て毎回すぐ戻っていた)、セーブの中で
+    // 増え続けていた(headless 進行 seed 42: 3季で127件)。
+    // tickWeek 末尾(gateModalQueue の直後)と、セーブの読み込み時(旧セーブの肥大した列)に呼ぶ。
+    // 関係値・クールダウン・件数の記録(relModalWindow)・乱数には触れない。入力の配列は書き換えない。
+    // 季・週が読めない項目(壊れた項目)も落とす
+    pruneModalQueue(state) {
+      if (!state || !Array.isArray(state._modalQueue)) return state;
+      const cfg = Engine.relationships.flags.MODAL_GATE;
+      const now = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+      const oldest = now - cfg.WINDOW_WEEKS; // これ以前の週に積まれた項目は落とす(gateModalQueue の窓と同じ幅)
+      const queue = state._modalQueue;
+      const kept = queue.filter(e => e && typeof e === 'object'
+        && Number.isFinite(e.season) && Number.isFinite(e.week)
+        && Engine.util.absWeekTotal(e.season, e.week, false, 0) > oldest);
+      return kept.length === queue.length ? state : { ...state, _modalQueue: kept };
     },
 
     // 他団体の候補を「目立つ順」に並べる(同じ週に枠より多いときだけ呼ばれる)
@@ -5285,6 +5307,16 @@ Engine.glimpse = {
     return result;
   },
 
+  // セリフ表(アーキタイプ×性格)から、共有の乱数を使わずに1行選ぶ(季・週・選手・閾値から作る専用の種)。
+  // roll:false の閾値(信頼15未満の噂)用。表示専用の文選びで、数値には関与しない
+  _pickLineWithOwnSeed(lineObj, fighter, state, salt) {
+    const pool = getDialoguePool(lineObj, fighter);
+    if (pool.length <= 1) return pool[0];
+    const saltNum = String(salt || '').split('').reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, state.season || 1, state.week || 1, fighter.id || 0, saltNum));
+    return pool[Engine.rng.int(lineRng, 0, pool.length - 1)];
+  },
+
   // ══════════════════════════════════════════════════════════
   //  P4: A層 Glimpse — 重要イベント（bond/rivalry/trust閾値跨ぎ）
   // ══════════════════════════════════════════════════════════
@@ -5390,6 +5422,7 @@ Engine.glimpse = {
       const prevTrust = prevTrustSnap[f.id];
       const curTrust = f.trust ?? 50;
       if (prevTrust === undefined) return;
+      const firedHere = []; // この選手で今週積んだ glimpse(supersedes のまとめに使う)
 
       GLIMPSE_A_THRESHOLDS.forEach(th => {
         if (th.axis !== 'trust') return;
@@ -5408,17 +5441,37 @@ Engine.glimpse = {
         const cdKey = `trust_${th.id}_${f.id}`;
         if (fired[cdKey]) return;
         if (cooldowns[cdKey] && absWeek - cooldowns[cdKey] < th.cooldown) return;
-        if (Engine.rng.float(rng) >= th.rate) return;
+        // roll:false(信頼15未満の噂。2026-09-26 第4回裁定8)は率の抽選をしない=乱数を引かない。
+        // この rng は同じ週のほかの選手の閾値の抽選にも使うので、引く回数を変えると既存の噂の出方が変わる
+        if (th.roll !== false && Engine.rng.float(rng) >= th.rate) return;
 
         cooldowns[cdKey] = absWeek;
         fired[cdKey] = true;
-        const line = pickDialogueLine(GLIMPSE_A_LINES[th.id], f);
-        glimpses.push({
+        // セリフの文選びも、roll:false の閾値は共有の乱数(Math.random・この rng)に触れない専用の種で選ぶ
+        // (表示専用の文選びなので Math.random でもよいが、auto-sim/JAゴールデンは Math.random に種を入れて
+        // 回しているため、引く回数が増えると後ろの文選びがずれる)
+        const line = th.roll === false
+          ? this._pickLineWithOwnSeed(GLIMPSE_A_LINES[th.id], f, state, th.id)
+          : pickDialogueLine(GLIMPSE_A_LINES[th.id], f);
+        const g = {
           layer: 'A', type: th.id, tone: th.tone, label: th.label,
           speakerId: f.id, speakerName: f.name,
           targetId: null, targetName: null,
           dialogue: line, axis: 'trust', value: curTrust,
-        });
+        };
+        glimpses.push(g);
+        firedHere.push(g);
+      });
+
+      // supersedes: 同じ週に上の段(例: 信頼15未満)と下の段(20未満)の両方をまたいだら、上の段の1回にまとめる。
+      // 下の段の発火の記録(クールダウン・再武装)はそのまま残す(あとで下の段の噂が遅れて出ないように)
+      firedHere.forEach(g => {
+        const th = GLIMPSE_A_THRESHOLDS.find(t => t.id === g.type);
+        if (!th || !th.supersedes) return;
+        const covered = firedHere.find(o => o.type === th.supersedes);
+        if (!covered) return;
+        const at = glimpses.indexOf(covered);
+        if (at >= 0) glimpses.splice(at, 1);
       });
     });
 

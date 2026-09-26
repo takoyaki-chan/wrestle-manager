@@ -12726,6 +12726,20 @@
     }
   },
   {
+    "key": "……ええ、もう決めたも同然よ。止められるものなら、止めてみなさい",
+    "en": "...Yes, it's as good as decided. Stop me, if you think you can.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "……ええ、もう言葉は不要ですわ",
     "en": "...Yes, words are no longer needed.",
     "files": [
@@ -13958,6 +13972,34 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "……ここを出たあとのこと、考えてるの",
+    "en": "...I've been thinking about what comes after I leave.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……ここを離れようかって、本気で思い始めてる",
+    "en": "...I've started to seriously think about leaving here.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "normal"
     }
   },
@@ -18063,6 +18105,20 @@
     }
   },
   {
+    "key": "……っ、もう、ここにいるのがつらいんだ。次は、たぶん出ていく",
+    "en": "...Nn. It hurts just being here now. Next time, I'll probably leave.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "……っ、待ってください。分かってるんすよ、自分でも。……ただ、言葉にされると効くっすね。",
     "en": "...Ah, hold on. I know it myself, I do. ...It just hits harder said out loud.",
     "files": [
@@ -18506,6 +18562,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "……どうするかは、もうほぼ決めてある",
+    "en": "...I've all but decided what to do.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
     }
   },
   {
@@ -20888,6 +20958,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……もう、決めかけてる",
+    "en": "...I've nearly made up my mind.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "quiet"
     }
   },
@@ -31046,6 +31130,20 @@
     }
   },
   {
+    "key": "……気持ちは、もうほとんど決まっています",
+    "en": "...My mind is almost made up.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……決まらなかったか。まあ、悪くない。",
     "en": "...Nothing decided, then. Well, not so bad.",
     "files": [
@@ -32870,6 +32968,20 @@
     "en": "...The answer. Cut, but not finished.",
     "files": [
       "victory-lines.js:VS_EX_EMPLOYER_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……答えは、ほぼ出た",
+    "en": "...I have my answer. Nearly.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -35658,6 +35770,20 @@
     }
   },
   {
+    "key": "……身の振り方を、そろそろ決めなければならないわね",
+    "en": "...It is nearly time I decided where I go from here.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "……身体が動く限り、このリングは譲れなかった",
     "en": "...As long as I could still move, this ring wasn't going to anyone else.",
     "files": [
@@ -37951,6 +38077,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…あの…わたし…ここを離れることを、本気で考えていて……",
+    "en": "...Um... I... I've been seriously thinking about leaving here...",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
       "personality": "shy"
     }
   },
@@ -61802,6 +61942,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…わたし…出ていくって…ほとんど、決めちゃってて……",
+    "en": "...I... I've pretty much decided... that I'm leaving...",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "shy"
     }
   },
@@ -92751,6 +92905,20 @@
     "cell": null
   },
   {
+    "key": "あと一回だ。あと一回ナメた真似したら、出てく",
+    "en": "One more time. Disrespect me one more time and I'm gone.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "あと一歩、届きませんでした。……その一歩の重さを、忘れません",
     "en": "One step short. ...I won't forget how heavy that step is.",
     "files": [
@@ -105708,6 +105876,34 @@
     }
   },
   {
+    "key": "いやー、さすがに笑えねえわ。次はもう、ねえかもな",
+    "en": "Man, this ain't funny anymore. Might not be a next time.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "いやー、そろそろ潮時かも。……笑って言ってるけど、本気だよ",
+    "en": "Yeah, I think it's about time I moved on. ...I'm laughing, but I mean it.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "いやー、ついにこの日が来ちまったっすね。じゃ、元気で。",
     "en": "Ahh, this day went and came around. Well, look after yourself.",
     "files": [
@@ -107887,6 +108083,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "うふふ……笑って済ませるのも、そろそろおしまいですわね",
+    "en": "I suppose I cannot keep laughing this off for much longer.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
     }
   },
   {
@@ -110888,6 +111098,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "えへへ…さすがにもう、笑っていられないです。次は、たぶんないです",
+    "en": "I really can't laugh this one off anymore. I don't think there'll be a next time.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
       "personality": "easygoing"
     }
   },
@@ -136047,6 +136271,20 @@
     }
   },
   {
+    "key": "のんびり構えてたけど……そろそろ荷物をまとめる頃合いかな",
+    "en": "I've been taking it easy, but... it's about time I packed my things, I think.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "は? マジかよ。冗談じゃねぇ",
     "en": "Huh? Seriously? You've gotta be kidding me.",
     "files": [
@@ -137210,6 +137448,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "はっきり申し上げます。このままなら、私は出ていきます",
+    "en": "I'll say it plainly. If things stay like this, I'm leaving.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
     }
   },
   {
@@ -139289,6 +139541,20 @@
     "en": "Mm, treated this preciously, I had better make it worth something.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "ふふ、そろそろお別れかしらね。……冗談だと思った？",
+    "en": "It may be almost time to say goodbye. ...Did you think I was joking?",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -147791,6 +148057,20 @@
     }
   },
   {
+    "key": "もう、ほとんど決めてる。次に何かあったら、出ていくと思う",
+    "en": "I've more or less decided. If anything else happens, I think I'm leaving.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "もう、よろしいですわ。何も申し上げることはありません。……ごきげんよう。",
     "en": "That is quite enough. I have nothing left to say. ...Good day.",
     "files": [
@@ -148994,6 +149274,20 @@
     "en": "I can't... I can't train like this...",
     "files": [
       "data.js:CHOICE_EVENT_DIALOGUES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "もう無理…！ 次に何かあったら、ほんとに出ていくから…！",
+    "en": "I can't take it anymore...! If anything else happens, I'm really leaving...!",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -152367,6 +152661,20 @@
     }
   },
   {
+    "key": "よく考えた。……ここを離れる方向で、気持ちは固まりかけてる",
+    "en": "I've thought it through. ...I'm close to deciding to leave here.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "よく耐えたわね…交代よ",
     "en": "You held out beautifully... my turn.",
     "files": [
@@ -155442,6 +155750,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama"
+    }
+  },
+  {
+    "key": "わたくしの我慢にも限りがございます。次はございませんわ",
+    "en": "Even my patience has its limits. There will not be a next time.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
     }
   },
   {
@@ -175609,6 +175931,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "出ていく理由の方が、もう多い",
+    "en": "There are more reasons to leave now than to stay.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
     }
   },
   {
@@ -200115,6 +200451,20 @@
     }
   },
   {
+    "key": "検討は、もう終わりに近づいています。……申し訳ありません",
+    "en": "I've nearly finished weighing it. ...I'm sorry.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "業界の最も高い場所で一年を終えた。次に問われるのは、守り続ける覚悟である。",
     "en": "The year ended at the highest place in the business. What gets asked next is the will to keep it.",
     "files": [
@@ -200708,6 +201058,48 @@
     "cell": null
   },
   {
+    "key": "次で最後にするわ。……引き留めたいなら、今のうちよ",
+    "en": "The next one will be the last. ...If you want to keep me, now's the time.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "次で決めるよ。残るか、出ていくか",
+    "en": "I'll decide next time. Stay, or go.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "次なんかあったら、マジで出てくからな。脅しじゃねえぞ",
+    "en": "Anything else happens, I'm out for real. I ain't bluffin'.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "次にお会いするときは、もう少し歯応えのある方を連れて",
     "en": "When next we meet, do bring someone with a little more bite.",
     "files": [
@@ -201264,6 +201656,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "次はないから。今度同じことをされたら、黙って出ていく",
+    "en": "There won't be a next time. Do that to me again and I'll walk out without a word.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "bold"
     }
   },
@@ -202264,6 +202670,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "正直に言うと、ここを離れる方向で考えてる",
+    "en": "To be honest, I'm leaning toward leaving.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
     }
   },
   {
@@ -205879,6 +206299,20 @@
     "cell": null
   },
   {
+    "key": "熟慮いたしました。……ここを去る心づもりは、ほぼ固まっております",
+    "en": "I have given it careful thought. ...I am all but resolved to leave.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "熱い試合を…必ず、約束する",
     "en": "A hot match... I promise you that much.",
     "files": [
@@ -206612,6 +207046,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "申し訳ありません。……次に何かあれば、ここを離れるつもりです",
+    "en": "I'm sorry. ...If anything else happens, I intend to leave.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
     }
   },
   {
@@ -215097,6 +215545,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite"
+    }
+  },
+  {
+    "key": "私を手放すつもり？ ……いいわ、それならこっちから出ていくだけ",
+    "en": "Planning to let me go? ...Fine. Then I'll be the one to walk out.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
     }
   },
   {
@@ -227097,6 +227559,20 @@
     "en": "This is a selfish request. Send the three of us over there.",
     "files": [
       "data.js:CHALLENGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "軽い気持ちで言ってないわ。……ここを出ることを、真剣に考えてるの",
+    "en": "I'm not saying this lightly. ...I'm seriously thinking about leaving.",
+    "files": [
+      "data.js:GLIMPSE_A_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,

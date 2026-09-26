@@ -15241,11 +15241,14 @@ const Engine = {
     if (glimpseAResult.glimpses.length > 0) {
       s = { ...s, _pendingGlimpseA: glimpseAResult.glimpses };
       // 2026-08-13裁定: 関係性のモーダル通知は全廃(世界の側から垣間見せる)。
-      // ただし「退団を考えているという噂」(trust danger級)だけは社長の実務に直結するため、
-      // 週次レポートに1行だけ静かに残す
+      // ただし退団の噂(trust danger級: 信頼20を割った週・15を割った週)だけは社長の実務に直結するため、
+      // 週次レポートに1行だけ静かに残す。文は GAMELOG_TEMPLATES.trust_departure_rumor(表示時に言語を引く。
+      // below20 は以前の文字列ログと同じ文)。15を割った週は「決めかけている」(2026-09-26 第4回裁定8)
       glimpseAResult.glimpses
         .filter(g => g.tone === 'danger')
-        .forEach(g => events.push(`💬 ${g.speakerName}が退団を考えているという噂がある`));
+        .forEach(g => events.push({ type: 'trust_departure_rumor', data: {
+          name: g.speakerName, variant: g.type === 'trust_below_15' ? 'below15' : 'below20',
+        }, s: s.season, w: s.week }));
     }
     // ── スナップショット生成 ──
     const snapshotRng = Engine.rng.create(
@@ -15425,11 +15428,16 @@ const Engine = {
 
     // K-11(2026-09-25 Keisuke 裁定): 関係性ポップアップのうち他団体の出来事を、直近12週に出した
     // 自団体の件数の2倍まで(自団体0件でも12週に1件)に絞る。興行・週次処理・前週の週送り後に積まれた
-    // _modalQueue をここで一度だけ判定する(全ての enqueue の後・UI の drain の前)。UI は結果を出すだけ。
-    // 関係値・乱数には触れない
+    // _modalQueue をここで一度だけ判定する(全ての enqueue の後)。関係値・乱数には触れない
     if (Engine.relationships && Engine.relationships.flags
         && typeof Engine.relationships.flags.gateModalQueue === 'function') {
       s = Engine.relationships.flags.gateModalQueue(s);
+    }
+    // 2026-09-26 第4回裁定5: 関係性のポップアップは出さない(8/13 裁定)。列を消費する画面が無いので、
+    // 直近12週の項目だけ残す(出来事のデータは後日の「世界の側」の表示の材料として持つ)。以前は増え続けていた
+    if (Engine.relationships && Engine.relationships.flags
+        && typeof Engine.relationships.flags.pruneModalQueue === 'function') {
+      s = Engine.relationships.flags.pruneModalQueue(s);
     }
 
     // 呼び名(specs/call-name-spec-v1.0.md): 週の関係値の変化が出揃った後で、下の名前で呼ぶ記録を更新する

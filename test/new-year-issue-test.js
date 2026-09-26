@@ -137,7 +137,8 @@ function baseState(overrides = {}) {
   assert.ok(/if \(!G\.offSeason && G\.week === 1 && \(G\.season \|\| 1\) > 1\) \{\s*App\._maybeShowBigNewsPopup\(/.test(src),
     '新年号の通知が「第1週に到着した時点」から呼ばれていない');
   // 1回だけの制御は既存の _bigNewsNotifiedWeek(season:week キー)に任せる
-  const start = app.indexOf('  _maybeShowBigNewsPopup(delay) {');
+  // 引数は (delay) または (delay, defer)(2026-09-26 第4回裁定6で defer を追加)
+  const start = app.indexOf('  _maybeShowBigNewsPopup(delay');
   assert.ok(start >= 0, '_maybeShowBigNewsPopup が無い');
   const body = app.slice(start, app.indexOf('\n  },', start));
   assert.ok(/_bigNewsNotifiedWeek === weekKey/.test(body),

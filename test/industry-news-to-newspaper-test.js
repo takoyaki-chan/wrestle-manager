@@ -173,7 +173,8 @@ section('3-e. 持ち越しには期限がある（時限性のある記事が後
 section('4. シーズン開幕号は既存の号外フレームで知らせる', () => {
   const appJs = read('src/app.js');
   const uiCommon = read('src/ui-common.js');
-  const at = appJs.indexOf('_maybeShowBigNewsPopup(delay) {');
+  // 引数は (delay) または (delay, defer)(2026-09-26 第4回裁定6で defer を追加)
+  const at = appJs.indexOf('  _maybeShowBigNewsPopup(delay');
   assert.ok(at > 0, '_maybeShowBigNewsPopup が見つからない');
   // 固定長で切ると、関数にコメントを足しただけで検査対象が窓から外れる
   // (2026-08-01 に 900 で外れた)。関数の終わりまでを対象にする
