@@ -179,7 +179,7 @@ const Engine = {
       return entries.map(entry => {
         const template = ALL_CHARS.find(c => c.id === entry.id);
         if (!template) return null;
-        const fighter = Engine.rival.makeAIFighter(template, rng, null, entry.age || 19);
+        const fighter = Engine.rival.makeAIFighter(template, rng, null, entry.age || 19, undefined, { season: state.season || 1, week: state.week || 1 });
         return {
           ...fighter,
           orgId: null,
@@ -304,6 +304,9 @@ const Engine = {
     },
 
     repairOnLoad(rawState) {
+      // K-4: 人生番号(lifeSerial)の無い旧セーブか。末尾の印付けで debutSeason を在籍季数から推定する
+      // (途中の転生の関所が lifeSerial を作るので、判定は入口で取っておく)
+      const legacyLives = !(rawState && rawState.lifeSerial && typeof rawState.lifeSerial === 'object');
       let state = {
         ...rawState,
         // task-68: archetype 'normal' → 'standard' 移行(旧セーブ互換)。
@@ -495,12 +498,14 @@ const Engine = {
         }
       }
 
+      // 引退枠→休眠プール(転生の経路 A2)。K-4: 必ず転生の関所 Engine.life.beginNewLife を通す
       const addDormantEntries = (ids, age) => {
         ids.forEach(id => {
           if (state.dormantPool.some(e => e.id === id)) return;
           state.dormantPool.push({ id, age });
           state.retiredIds = state.retiredIds.filter(rid => rid !== id);
           delete state.retiredSeasons[id];
+          state = Engine.life.beginNewLife(state, id);
         });
       };
       const curYouth = () => state.dormantPool.filter(e => {
@@ -591,6 +596,11 @@ const Engine = {
         state = clean;
         changes.push('ticker_items_removed');
       }
+
+      // K-4(人生番号): 印付け(移行 §7 は後の段で、この前に置く)。旧セーブは lifeSerial を初期化し、
+      // 団体ロスターの debutSeason を在籍季数から推定する
+      state = Engine.life.stamp(state, { estimateDebut: legacyLives });
+      if (legacyLives) changes.push('life_serial_initialized');
 
       return {
         state,
@@ -10160,7 +10170,8 @@ const Engine = {
         lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
         orgJoinWeek: 0,      // Phase 3: 団体加入時の絶対週
         contractPop: 0,  // 契約時人気（給与固定用、initAIOrgsで正式セット）
-        orgTimeline: [{ orgId: orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
+        // K-4(在籍履歴の季): 作られた季から始める(呼び出し側が opts.season/week を渡す。無ければ従来どおり第1季)
+        orgTimeline: [{ orgId: orgId || 'fa', fromSeason: opts.season || 1, fromWeek: opts.week || 1 }],
         devLabelOffset: Engine.rng.int(rng, -7, 7),
         mediaRevSeason: 0,    // 年間メディア収入個人貢献累計（PPV/JT/プロモ連動）
         talentRevSeason: 0,   // 年間タレント活動収入累計（cm/variety/gravure/brand バフ分）
@@ -14482,6 +14493,9 @@ const Engine = {
         week: state.week, season: state.season, type: 'invariant_violation', message: msg, timestamp: Date.now(),
       }] };
     }
+    // K-4(人生番号): 週の入口で選手に lifeNo / debutSeason の印を付ける(何度呼んでも同じ・乱数に触れない)。
+    // 季中の入口はここ、オフは advanceWeek の入口(別々に呼ばれるので両方に置く)
+    state = Engine.life.stamp(state);
     // 呼び名(specs/call-name-spec-v1.0.md): 下の名前で呼ぶ記録を週の入口でも更新する。
     // 興行など tickWeek の外で絆が85へ届いた方向を、週内の減衰で85を割る前に拾うため(末尾でもう一度更新)。
     // 絆・乱数には触れない。入力の state は書き換えず、変化があれば新しい state を返す
@@ -14887,7 +14901,7 @@ const Engine = {
         const template = ALL_CHARS.find(c => c.id === cid);
         if (!template || !entry) continue;
         const age = entry.age || 19;
-        const fighter = Engine.rival.makeAIFighter(template, faRng, null, age);
+        const fighter = Engine.rival.makeAIFighter(template, faRng, null, age, undefined, { season: s.season || 1, week: s.week || 1 });
         fa.push(fighter);
         added.push(fighter);
         pool = pool.filter(e => e.id !== cid);
@@ -17542,7 +17556,7 @@ const Engine = {
         if (!template) continue;
         const entry = pool.find(e => e.id === cid);
         const age = entry ? (entry.age || 17) : 17;
-        const fighter = Engine.rival.makeAIFighter(template, rng, null, age);
+        const fighter = Engine.rival.makeAIFighter(template, rng, null, age, undefined, { season: state.season || 1, week: state.week || 1 });
         fighter.series = 'pool';
         fighter._notion = { pw: template.pw, sp: template.sp, te: template.te, st: template.st, mn: template.mn };
         fighter._isSeed = false;
@@ -18758,7 +18772,8 @@ const Engine = {
   // i18n Stage B P4-2(D-P4-2): 第2引数 opts は任意の { lang, dict }。シーズン開幕新年号発行
   // (Engine.newspaper.publish)へ素通しするだけ。省略時は従来どおりJA原文のまま不変。
   advanceWeek(state, opts) {
-    let s = { ...state };
+    // K-4(人生番号): 入口で印を付ける(オフは tickWeek を通らない週があるため、こちらにも置く)
+    let s = { ...Engine.life.stamp(state) };
     const events = [];
     // i18n Stage B P4-4: {entrySummary}/{championWatch}生成元用。dict/lang未指定(既定)時は
     // JA原文のまま(既存呼び出し元=auto-sim/ja-goldenは無改修で不変)。
@@ -19088,6 +19103,9 @@ const Engine = {
             delete retiredSeasons[id];
           }
           s = { ...s, dormantPool: pool, freeAgents: fa, retiredIds, retiredSeasons };
+          // 転生の経路 A1(季末の補充)。K-4: 引退枠から戻るIDは必ず転生の関所を通す
+          // (前の人生の生きた記録を退避・消去し、人生番号を1つ進める)
+          returnees.forEach(id => { s = Engine.life.beginNewLife(s, id); });
           if (returnees.length > 0) {
             events.push(`🌱 新世代${returnees.length}名がプロ入りを目指して参入`);
           }
@@ -20245,6 +20263,8 @@ const Engine = {
     if (skipDraft && initState.roster && initState.roster.length > 0) {
       initState = Engine.prologue.create(initState);
     }
+    // K-4(人生番号): 全員 1番目の人生。団体ロスターは第1季デビュー
+    initState = Engine.life.stamp({ ...initState, lifeSerial: {} });
     return initState;
   }
 };
@@ -20273,6 +20293,110 @@ Engine.life = {
     }
     const cur = f && f.orgId;
     return (cur && cur !== 'fa') ? cur : null;
+  },
+
+  // ── 人生番号(S2。設計書 §2) ──
+  //   state.lifeSerial = { [id]: n }  そのIDの「今の人生」の番号(無ければ 1)
+  //   fighter.lifeNo                 その選手が属する人生の番号(無ければ lifeSerial)
+  //   fighter.debutSeason            その人生で最初に団体に所属した季
+  //   番号を進めるのは転生の関所(beginNewLife)だけ。引退の時点ではなく転生の時点で進めるのは、
+  //   引退後に書かれる記録(年末の殿堂入り・翌季の引退記事・年代記)を引退した人生の番号で刻むため。
+
+  /** そのIDの今の人生の番号(lifeSerial。無ければ 1) */
+  current(state, id) {
+    const ls = state && state.lifeSerial;
+    const n = (ls && typeof ls === 'object') ? Number(ls[id]) : NaN;
+    return Number.isFinite(n) && n >= 1 ? n : 1;
+  },
+  /** 選手(またはID)が属する人生の番号。選手の lifeNo を優先し、無ければそのIDの今の人生 */
+  of(state, fighterOrId) {
+    if (fighterOrId && typeof fighterOrId === 'object') {
+      const n = Number(fighterOrId.lifeNo);
+      if (Number.isFinite(n) && n >= 1) return n;
+      return Engine.life.current(state, fighterOrId.id);
+    }
+    return Engine.life.current(state, fighterOrId);
+  },
+  /**
+   * 印付け(後付け処理)。何度呼んでも同じ結果になり、変化が無ければ同じ state を返す。
+   * - 自団体・AI団体・FA・スカウト候補・retiredFighters の選手で lifeNo が無い選手に lifeSerial[id] ?? 1
+   * - 団体ロスターにいて debutSeason が無い選手に、オフ中なら翌季・季中なら今季
+   *   (旧セーブ = lifeSerial が無い状態の最初の印付けでは、在籍季数から推定: max(1, 季 − careerSeasons)。
+   *    オフ第1週の季末処理で careerSeasons が1つ増えた後は +1 する)
+   * 置き場所: tickWeek の入口(呼び名の更新の直前)・advanceWeek の入口・repairOnLoad の末尾・createInitialState。
+   * 見込み選手のオブジェクトは捨てられては作り直されるので、番号はオブジェクトではなく lifeSerial から決める。
+   * @param {object} [opts] { estimateDebut: boolean } 旧セーブの推定を使うか(既定: lifeSerial が無いとき)
+   */
+  stamp(state, opts) {
+    if (!state || typeof state !== 'object') return state;
+    const hasSerial = state.lifeSerial != null && typeof state.lifeSerial === 'object' && !Array.isArray(state.lifeSerial);
+    const estimateDebut = (opts && opts.estimateDebut != null) ? !!opts.estimateDebut : !hasSerial;
+    const lifeSerial = hasSerial ? state.lifeSerial : {};
+    const probe = { lifeSerial };
+    const season = Number(state.season) || 1;
+    const nextDebut = state.offSeason ? season + 1 : season;
+    const seasonEndDone = !!state.offSeason && (Number(state.offWeek) || 0) >= 1;
+    const mark = (f, inOrg) => {
+      if (!f || typeof f !== 'object' || f.id == null) return f;
+      const n = Number(f.lifeNo);
+      const needLife = !(Number.isFinite(n) && n >= 1);
+      const needDebut = inOrg && f.debutSeason == null;
+      if (!needLife && !needDebut) return f;
+      const next = { ...f };
+      if (needLife) next.lifeNo = Engine.life.current(probe, f.id);
+      if (needDebut) {
+        next.debutSeason = estimateDebut
+          ? Math.max(1, season - (Number(f.careerSeasons) || 0) + (seasonEndDone ? 1 : 0))
+          : nextDebut;
+      }
+      return next;
+    };
+    let changed = !hasSerial;
+    const mapList = (list, inOrg) => {
+      if (!Array.isArray(list)) return list;
+      let any = false;
+      const out = list.map(f => { const g = mark(f, inOrg); if (g !== f) any = true; return g; });
+      if (!any) return list;
+      changed = true;
+      return out;
+    };
+    const roster = mapList(state.roster, true);
+    let aiOrgs = state.aiOrgs;
+    if (aiOrgs && typeof aiOrgs === 'object') {
+      let anyOrg = false;
+      const nextOrgs = {};
+      Object.keys(aiOrgs).forEach(orgId => {
+        const od = aiOrgs[orgId];
+        const r = od && Array.isArray(od.roster) ? mapList(od.roster, true) : null;
+        if (r && r !== od.roster) { nextOrgs[orgId] = { ...od, roster: r }; anyOrg = true; }
+        else nextOrgs[orgId] = od;
+      });
+      if (anyOrg) aiOrgs = nextOrgs;
+    }
+    const freeAgents = mapList(state.freeAgents, false);
+    const scoutCandidates = mapList(state.scoutCandidates, false);
+    const retiredFighters = mapList(state.retiredFighters, false);
+    if (!changed) return state;
+    const out = { ...state, lifeSerial };
+    if (roster !== state.roster) out.roster = roster;
+    if (aiOrgs !== state.aiOrgs) out.aiOrgs = aiOrgs;
+    if (freeAgents !== state.freeAgents) out.freeAgents = freeAgents;
+    if (scoutCandidates !== state.scoutCandidates) out.scoutCandidates = scoutCandidates;
+    if (retiredFighters !== state.retiredFighters) out.retiredFighters = retiredFighters;
+    return out;
+  },
+  /**
+   * 転生の関所(唯一)。引退枠から休眠プールへ戻すIDは、3つの転生経路(季末の補充 advanceWeek・
+   * ロード時修復 saveDoctor.repairOnLoad・CLI tools/save-doctor.js)とも必ずここを通す。
+   * 前の人生の生きた記録を退避・消去し(closeLiveRecords)、そのIDの人生番号を1つ進める。
+   * 新しい state を返す(入力は書き換えない)。
+   */
+  beginNewLife(state, id) {
+    const nid = Number(id);
+    if (!state || !Number.isFinite(nid)) return state;
+    const s = (typeof Engine.life.closeLiveRecords === 'function') ? Engine.life.closeLiveRecords(state, nid) : state;
+    const next = Engine.life.current(state, nid) + 1;
+    return { ...s, lifeSerial: { ...((s.lifeSerial && typeof s.lifeSerial === 'object') ? s.lifeSerial : {}), [nid]: next } };
   },
 };
 
@@ -28045,6 +28169,22 @@ Engine.validateGameState = function(G) {
         warn(`battlePoints.${key} が不正値: ${val}`);
       }
     });
+  }
+
+  // ── K-4 I-1: 人生番号の整合(docs/fun-audit-v0.1/k4-separate-lives-design.md §2-5) ──
+  // 現役・FA・スカウト候補の選手が属する人生(lifeNo)は、そのIDの今の人生(lifeSerial)と一致する。
+  // 食い違うのは、転生の関所を通ったIDの古い選手オブジェクトが世界に残っている場合(=別人と同一人物の混線)
+  if (Engine.life && typeof Engine.life.of === 'function') {
+    const checkLife = (f, where) => {
+      if (!f || f.id == null) return;
+      const own = Engine.life.of(G, f);
+      const cur = Engine.life.current(G, f.id);
+      if (own !== cur) warn(`人生番号の不一致: ${f.name}(id:${f.id}) ${where} lifeNo=${own} / 今の人生=${cur}`);
+    };
+    (G.roster || []).forEach(f => checkLife(f, 'roster'));
+    Object.entries(G.aiOrgs || {}).forEach(([orgId, org]) => ((org && org.roster) || []).forEach(f => checkLife(f, orgId)));
+    (G.freeAgents || []).forEach(f => checkLife(f, 'freeAgents'));
+    (G.scoutCandidates || []).forEach(f => checkLife(f, 'scoutCandidates'));
   }
 
   // ── 選手循環診断（長期プレイ安定性） ──

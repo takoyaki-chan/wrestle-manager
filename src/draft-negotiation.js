@@ -771,7 +771,8 @@ Engine.draftNegotiation = {
       if (Engine.rival.trainCapOVR(testFighter) < cfg.tcOvrThreshold) break;
 
       const recruitRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, candidate.id, 0xE120, iterations));
-      const newFighter = Engine.rival.makeAIFighter(candidate.template, recruitRng, sOrgId, 17 + Engine.rng.int(rng, 0, 2), [0.75, 0.80]);
+      const newFighter = Engine.rival.makeAIFighter(candidate.template, recruitRng, sOrgId, 17 + Engine.rng.int(rng, 0, 2), [0.75, 0.80],
+        { season: state.offSeason ? (state.season || 1) + 1 : (state.season || 1), week: state.offSeason ? 1 : (state.week || 1) });
       occupied.add(candidate.id);
       dormantEntries = dormantEntries.filter(e => e.id !== candidate.id);
 

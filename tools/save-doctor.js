@@ -231,13 +231,15 @@ function createFAFromDormant(state, entries, rngSalt) {
     .map(entry => {
       const template = getTemplateById(entry.id);
       if (!template) return null;
-      return normalizeFighterForFA(Engine.rival.makeAIFighter(template, rng, null, entry.age || 19));
+      return normalizeFighterForFA(Engine.rival.makeAIFighter(template, rng, null, entry.age || 19, undefined, { season: state.season || 1, week: state.week || 1 }));
     })
     .filter(Boolean);
 }
 
 function repairState(inputState) {
-  const state = clone(inputState);
+  // K-4(人生番号): 旧セーブ(lifeSerial 無し)は先に印付けして lifeSerial を作る(debutSeason は在籍季数から推定)。
+  // 下の転生の関所が lifeSerial を作るより前に行う(順序が逆だと旧セーブの判定ができなくなる)
+  let state = Engine.life.stamp(clone(inputState));
   const changes = [];
   const baselineSeason = Math.max(1, (state.season || 1) - 10);
 
@@ -356,12 +358,14 @@ function repairState(inputState) {
       .sort((a, b) => (state.retiredSeasons[a] || 0) - (state.retiredSeasons[b] || 0));
   };
 
+  // 引退枠→休眠プール(転生の経路 A3)。K-4: 必ず転生の関所 Engine.life.beginNewLife を通す
   const addDormantEntries = (ids, age) => {
     for (const id of ids) {
       if (state.dormantPool.some(e => e.id === id)) continue;
       state.dormantPool.push({ id, age });
       state.retiredIds = state.retiredIds.filter(rid => rid !== id);
       delete state.retiredSeasons[id];
+      state = Engine.life.beginNewLife(state, id);
     }
   };
 
@@ -405,6 +409,8 @@ function repairState(inputState) {
   if (untrackedIds.length > 0) {
     untrackedIds.forEach((id, idx) => {
       state.dormantPool.push({ id, age: dormantAges[idx % dormantAges.length] });
+      // どこにも居なかったIDも、前の人生の記録が残っているかもしれないので関所を通す
+      state = Engine.life.beginNewLife(state, id);
     });
     changes.push(`Recovered ${untrackedIds.length} fully untracked IDs into dormant pool`);
   }

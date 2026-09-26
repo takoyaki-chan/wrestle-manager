@@ -3591,7 +3591,7 @@ const Storage = {
             const newFA = pick.map(e => {
               const template = ALL_CHARS.find(c => c.id === e.id);
               if (!template) return null;
-              return Engine.rival.makeAIFighter(template, faRng, null, e.age || 17);
+              return Engine.rival.makeAIFighter(template, faRng, null, e.age || 17, undefined, { season: G.season || 1, week: G.week || 1 });
             }).filter(Boolean);
             if (newFA.length > 0) {
               G = { ...G,
