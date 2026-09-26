@@ -40,6 +40,9 @@
 >
 > **改訂 2026-09-26 その6(第2段 — 表示・記録だけの差の統一)**
 > E08・A06・T01・A03・A04 を `Engine.show` の共通の関数(と進行の修復)で両経路そろえ、許容リストから外した(**33 → 28**)。auto-sim の数値は不変(記録の欄を除いた毎週の状態・全乱数ストリームの引き数・Math.random の回数が 40季 seed42/7919 で一致)。A03 だけは「年末のベストマッチ賞」を通って数値が動きうる道がある(この2本では0回)。A07・T02・T03 は持ち越し、C04・C05 は closeShowResult の後半にあるので第5段。実施結果と第3段へ残る差は §8 第2段の「第2段の実施結果」。
+>
+> **改訂 2026-09-26 その7(第3段 — `Engine.show.finalize` の切り出しと実プレイの組み替え)**
+> エンジンの `Engine.executeShow` の試合後の部分を `Engine.show.beginShow` / `Engine.show.finalize` に切り出し(3-1)、実プレイの `App._finalizeShowImpl` をその呼び出し+経路ごとの指定(ctx 11個)+実プレイだけの処理の差し込み口(hooks 5つ)に組み替えた(3-2)。**両経路の数値は完全に不変**(エンジン: auto-sim の毎週の状態・乱数の引き順・Math.random の回数・意味指紋 / 実プレイ: 差分テストの両経路の状態を丸ごと前後比較して16本一致)。3-3 で §7 X05(派閥の予約の清算の信頼・人気が書き戻しで消える)を解消し、動いたのは directives(F07)の1本だけ。あわせて K1-A07 を推奨③(1試合1枠・tag 印)でそろえ、許容リストから外した(**28 → 27**)。差分テストに `--dump` と `compare-dumps.js`(同じ経路の前後比較)を足し、fixture の台詞選びを種付きにした。実施結果・新しく見つけたこと(§7 X13・X14)・第4段 4-A と第5段へ残る差は §8 第3段の「第3段の実施結果」。確定仕様は `specs/show-finalize-spec-v1.0.md`。
 
 ---
 
@@ -78,6 +81,7 @@
 | `test/k1-parity/scenarios.js` | シナリオ定義(14シナリオ・15本) |
 | `test/k1-parity/diff.js` | 基準/エンジン/実プレイの三者比較と集計 |
 | `test/k1-parity/allowlist.js` | 既知の乖離の台帳(40項目。分類・どちらにあるか・数値への影響・根拠の行番号つき) |
+| `test/k1-parity/compare-dumps.js` | (第3段で追加)`run.js --dump <dir>` で保存した両経路の状態を、src を変える前後で丸ごと比べる(同じ経路の数値が動いていないかの確認。`--ignore-key` で表示だけの欄を外せる) |
 | `package.json` | `test:k1:parity` を追加(下記「package.json と .gitignore を変えた理由」) |
 | `.gitignore` | `test/k1-parity/out/` を追加(同上) |
 
@@ -203,11 +207,11 @@ node test/k1-parity/run.js --scenario injury    # 1本だけ(「消えた既知�
 | K1-A03 | 季節統計(seasonStats: 興行数・勝敗・最高評価)<br>**→ 第2段で解消(2026-09-26・82dc9cee)**。両経路が `Engine.show.accumulateSeasonStats` を通す。季の最高評価はベストマッチ賞の自団体の候補になる(実プレイと同じ。§8 第2段) | 実プレイ | 表示。auto-sim では0のまま。序章ハイライト(最高評価50/70/80)や季末の集計が読む | app.js:8809-8827 |
 | K1-A04 | 興行結果の新聞データ(currentNewspaper)→ 週刊新聞の興行記事<br>**→ 第2段で解消(2026-09-26・39b8d29f)**。両経路が `Engine.show.buildShowNewspaperData` を通す(テンプレは app.js が登録) | 実プレイ | 表示。auto-sim の新聞には自団体の興行記事が載らない(一面の選ばれ方の計測に響く) | app.js:9355-9363 |
 | K1-A06 | 対戦成績の履歴メタ(元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦)と、元同僚初対面の記事<br>**→ 第2段で解消(2026-09-26・23a5fe63)**。両経路が `Engine.show.recordShowH2h`(印は `Engine.show.buildMatchMeta`)を通す | 実プレイ(Phase 2-A) | 表示 | app.js:8957-8975, 11620-11644 / management.js:15445 は meta を渡さない |
-| K1-A07 | タッグ試合の直近戦績(recentMatches・対角4ペア)<br>**→ 第2段では持ち越し**(どちらにそろえるかの選択肢は §8 第2段) | **要確認**(エンジンのコメントは「タッグはスキップ」) | 表示(直近5戦の表示) | app.js:8979-8995 / management.js:15450-15455 |
+| K1-A07 | タッグ試合の直近戦績(recentMatches・対角4ペア)<br>**→ 第3段で解消(2026-09-26・2566e616)**。推奨③: 両経路が `Engine.show.finalize` で1試合1枠(A1↔B1・A2↔B2、`tag: true`)。選手ポップアップの「直近」に「(タッグ)」 | **要確認**(エンジンのコメントは「タッグはスキップ」) | 表示(直近5戦の表示) | app.js:8979-8995 / management.js:15450-15455 |
 | K1-A09 | ラストラン出場後の即引退(引退記録・年代記・関係値の凍結と整理・信頼) | 実プレイ(「4週待ちバグ修正」) | **中**。auto-sim では、ラストランの選手が季末のまとめ判定まで試合を続ける | app.js:9272-9344, 10867-10970 / management.js:17947-17969(季末だけ) |
 | K1-A10 | ドーム興行の経歴(domeMain)・ドーム回数・初ドームの節目 | 実プレイ(団体人気リバランス v1.1 §4/§5) | 小〜中。「ドームは年1回」の数え方が auto-sim では効かない | app.js:9046-9083, 13089-13107 |
 | K1-A11 | メディア密着取材の消化(人気+5・信頼・団体人気・関係値) | 実プレイ(v2.0 Phase1-6) | 小〜中。auto-sim では密着取材が終わらない。実プレイ側は団体人気の加算に clamp が無い(監査 §8 #18) | app.js:9250-9270 |
-| K1-A12 | F07 メイン推薦の消化 | 実プレイ(ただし効果の半分が消えている) | 小。残り興行数は減るが、信頼の +1/−2 は 8807 行の roster 上書きで消える(§7 X05) | app.js:8494-8528 |
+| K1-A12 | F07 メイン推薦の消化<br>**→ 第3段 3-3 で信頼の増減が効くようになった(2026-09-26・cc3ce953。§7 X05)**。処理そのものは実プレイだけ(第4段 4-A) | 実プレイ(ただし効果の半分が消えている) | 小。残り興行数は減るが、信頼の +1/−2 は 8807 行の roster 上書きで消える(§7 X05) | app.js:8494-8528 |
 | K1-A13 | 派閥対抗戦 F09 の決着(スイープボーナス・年表・決着記事・クールダウン・予約の解除) | 実プレイ | 中。auto-sim では F09 の予約が解けず、決着もしない | app.js:8530-8618 |
 | K1-A14 | 王座戦への乱入(対戦相手の差し替え・熱・団体人気・バトルポイント・乱入CD) | 実プレイ(v1.2) | 中。auto-sim には乱入が無い。乱入が起きた興行は、王座戦の中身が別物になる | app.js:7004-7047, 7845-7890 |
 | K1-A15 | タッグ不仲ペアの試合後 信頼−1<br>**→ 裁定 K-12 の実装(7ba3738e)で解消。2026-09-26 に許容リストから外した** | **裁定 K-12 待ち** | 小。1試合ずつスキップ・観戦のときだけ付き、全試合スキップとエンジンには無い。能力−3は元から効いていない(§7 X02) | app.js:7256-7264, 7404-7412 |
@@ -345,7 +349,7 @@ B(tickWeek 後)の差が、A のどの差から来ているかを確かめた。
 | X02 | タッグ不仲の「能力−3」は power/speed/technique/spirit という存在しないキーを下げていて、どの経路でも効かない。lowBondA/B の指定もエンジンは読まない。全試合スキップでは信頼−1も付かない | app.js:7247, 7395, 7670-7690 |
 | X03 | **→ 第4段 4-B-3 で解消(2026-09-26・45ddf491)**。両経路が `Engine.show.rollMatchInjury` で引数を組む。<br>怪我判定の引数の違い。実プレイは週・季に0を渡すので、中傷・重傷の経歴が「0季0週」で残る。険悪ペアの怪我率×2(bond-rivalry P-3)と舞台の格(壮絶な幕切れの重み)を渡していない<br>(2026-09-26 の基準の取り直しで departure シナリオに実測が出たので、許容リストに K1-X03 として登録) | app.js:8322, 8328 / management.js:15063-15089 |
 | X04 | 集客の F08 フラグ(isF08Match)を実プレイだけが渡す | app.js:8025 / management.js:14727-14732 |
-| X05 | 派閥系の結果処理(Common-1 予約・F08 ディレクティブ・F08 の試合後効果・派閥内序列戦・F07)は実プレイだけにある。そのうえ、信頼・人気の変化は処理後半の `s = { ...s, roster }` で上書きされて消える。F07 はハーネスでも確認した(残り興行数だけ減り、リーダーの信頼は動かない) | app.js:8410-8644 → 8807 / factions.js の applyCommon1MatchResult・applyInternalChallengeResult・applyF08PostMatchExtraEffects・_applyTrustToMembers |
+| X05 | **→ 第3段 3-3 で解消(2026-09-26・cc3ce953)**。派閥の予約の清算(`App._finalizeHookFactionBookings`)に作業中のロスターを状態に載せて渡し、変わったロスターを受け取る。処理そのものは実プレイだけのまま(第4段 4-A)。<br>派閥系の結果処理(Common-1 予約・F08 ディレクティブ・F08 の試合後効果・派閥内序列戦・F07)は実プレイだけにある。そのうえ、信頼・人気の変化は処理後半の `s = { ...s, roster }` で上書きされて消える。F07 はハーネスでも確認した(残り興行数だけ減り、リーダーの信頼は動かない) | app.js:8410-8644 → 8807 / factions.js の applyCommon1MatchResult・applyInternalChallengeResult・applyF08PostMatchExtraEffects・_applyTrustToMembers |
 | X06 | 特別な予約試合の清算は、実プレイだけにあるか引数が違う。奪還挑戦・直訴シリーズ・興行内の挑戦状は実プレイだけ。統一王座の防衛戦は、エンジンが leftId/rightId/source を渡し、実プレイは渡さない | app.js:6912-7002, 7892-8001, 9103-9242 / management.js:15563-15598 |
 | X07 | MVP 用の「大試合」記録(MQ85以上)は実プレイだけ。MVPの較正ツールは auto-sim 経由なので、自団体選手の大試合が較正に入っていない | app.js:9023-9044 / management.js:19801 / tools/mvp-race-calibration.js:41 |
 | X08 | 実プレイは applyMQPopularity の popEvents(メイン低評価・連敗の人気減の知らせ)を捨てていて、ログに出ない | app.js:8269-8274 |
@@ -353,6 +357,8 @@ B(tickWeek 後)の差が、A のどの差から来ているかを確かめた。
 | X10 | 超満員ドームの節目(_pendingDomeSelloutCeremony)は実プレイだけ | app.js:8081-8085, 10788-10801 |
 | X11 | 通常興行以外の二重実装(このハーネスの対象外)。<br>・対抗戦の決着(App.finalizeWar)<br>・PPV(App.finalizePPV。auto-sim はTV観戦の抽出だけ)<br>・遠征(_finalizeAwayChallengeShow)と統一王座の遠征<br>・モチベ喪失による引退(エンジンは検出だけで、実行は processWeek の画面側。auto-sim は一時キーとして捨てる)<br>・週送り(advanceFromWeekSummary)の画面側処理 | app.js:15586-, 15839-, 10650-, 11873-, 11682- / management.js:13404 |
 | X12 | **関係性フラグのポップアップ(M-1〜M-24)は実プレイで一度も出ていない**(2026-09-26 第4段 4-B 後半で発見。**同日 第4回裁定5「出さないまま、たまり続ける列だけ直す」で対応済み**: `_drainFlagModalQueue` を削除し、列は `pruneModalQueue` で直近12週に保つ。relationship-flags-spec §4.4)。<br>`_drainFlagModalQueue` の先頭が `if (!window.G ...) return;` で、G は app.js の `let` 宣言なので window に載らず、毎回すぐ戻る(実ページで `typeof window.G === 'undefined'` を確認。2026-04-28 の Phase 7 から)。M-22「引退の置き土産」・M-23「突然離脱の波紋」も積まれるだけで出ない。<br>キューは消費されず、K-11 の間引き後も判定済みの項目が残るので、セーブに積もり続ける(headless 進行 seed 42: 2季目頭 68件・3季目頭 119件・4季目頭 127件、約1.7万バイト)。<br>`G` を見るように直すと全フラグのポップアップが出始める(K-11 の「他団体は自団体の2倍まで」の間引きはこの表示を前提にした裁定)。直すかどうか・出す量は Keisuke の裁定で決める。第4段 4-B-6 で入れた「怪我引退の週は本人の引退ポップアップの後に流す」は、直ったときに順番が正しくなるように置いてある | ui-common.js:2306(`_drainFlagModalQueue`)・2178(`_findFighterById` も同じ書き方) / app.js:3891(`let G`) / relationships.js gateModalQueue |
+| X13 | **相手発の直訴(果たし状の迎撃=自団体の興行の3試合)で、コーチの要約のログ1行が出ていない**(2026-09-26 第3段で発見。表示だけ・未修正)。`App._applyChallengeRequestResult` は `_challengeRequestCoachLogLine` を状態の `gameLog` に足すが、`_finalizeShowImpl` はログを「興行前の `G.gameLog` + 今回のイベント」で組み直すので消える(遠征の直訴 `_finalizeAwayChallengeShow` は状態の `gameLog` をそのまま使うので出る)。第3段は数値・表示を動かさない条件なので従来どおり残した。直すなら K1-T03(ログの型の統一)と一緒に、finalize の途中で状態の `gameLog` に足された行も拾う形にする | app.js `_applyChallengeRequestResult`(coachLine)/ `_finalizeShowImpl`(`G = { ...fin.state, gameLog: [...G.gameLog, ...fin.events] }`) |
+| X14 | **通常興行の試合後の処理は、書き戻しまで状態の `roster` を興行前のロスターとして読む**(両経路で同じ。第3段で確認)。作業中のロスター(人気・怪我・引退・信頼が動いた後)ではなく興行前の値を読むのは、ファン期待の印と集客の期待カード(`Engine.fanExpect.generate`: 怪我人の除外・王座挑戦の人気順)、興行の文脈の関係値(`applyShowContextEffects`: 嫉妬の対象から怪我人を外す判定)、派閥ポイントの序列(`_getFactionMatchRank` の OVR 順)など。「状態1本」に寄せると派閥の予約が無い興行でも両経路の数値が動くので、第3段では寄せていない(派閥の予約の清算だけ作業中のロスターを渡し、戻すときに興行前のロスターへ戻す)。寄せるかは第4段で計測してから | management.js `Engine.show.finalize`(`s.roster` は書き戻しまで `beginShow` の state.roster)|
 
 ---
 
@@ -466,6 +472,72 @@ B(tickWeek 後)の差が、A のどの差から来ているかを確かめた。
 | 3-1 | Engine.executeShow の試合後部分を `Engine.show.finalize` に切り出し、executeShow はそれを呼ぶだけにする | エンジン経路の数値が完全に不変(auto-sim の指紋、`node test/balance-baseline.js`) |
 | 3-2 | 実プレイの `_finalizeShowImpl` を「共通関数+まだ移していない画面側だけの処理」に組み替える。§4.7 の一致している部分から共通関数へ寄せ、差がある項目は当面それぞれの経路の追加処理として残す | ハーネスの A/B の差が増減しないこと(許容リストが変わらない)+UI走破1本 |
 | 3-3 | 処理後半の roster 上書き(§7 X05)を解消し、状態を1本で受け渡す形にする。F07 などの信頼・人気の変化が効くようになる | 実プレイの数値が少し動く(派閥の予約があるときだけ) |
+
+**第3段の実施結果(2026-09-26)** — 3-1〜3-3 と K1-A07 を実施。許容リスト **28 → 27**(A07 を外した)。確定仕様は `specs/show-finalize-spec-v1.0.md`
+
+| 順 | やったこと | コミット | 数値 |
+|---|---|---|---|
+| 3-1 | `Engine.show.beginShow(state, validMatches)` → `{ state, roster, preShowLosingStreaks }` と `Engine.show.finalize(state, validMatches, results, ctx)` → `{ state, results, injuryResults, events, showRivalryResolutions, titleMatchOutcomes, fp, venueHeat, pressureFactor }` を新設。`executeShow` は修復・カードの検査 → beginShow → 試合のシミュレーション(Pass 1)→ finalize だけ(683行 → 57行) | 0196b6eb | **完全に不変**(下の「数値の確認」) |
+| 3-2 | `_finalizeShowImpl` を beginShow → finalize(ctx 11個・hooks 5つ)に組み替え(1,438行 → 53行+hooks)。`_sameSinglesPair` と `App._suddenDepartureDestination` は `Engine.show` の同じ判定を呼ぶだけに | bae6c7be | **完全に不変**(同上) |
+| 3-3 | §7 X05: 派閥の予約の清算に作業中のロスターを渡し、変わったロスターを受け取る | cc3ce953 | 実プレイだけ・派閥の予約がある興行だけ(下の「3-3 で動いた数値」) |
+| A07 | タッグの直近戦績を推奨③(1試合1枠・A1↔B1・A2↔B2・`tag: true`)で両経路そろえる。選手ポップアップに「(タッグ)」 | 2566e616 | 表示だけ(直近戦績。数値に効く読み手なし) |
+
+**両経路の呼び方**
+
+- エンジン: `Engine.show.finalize(s, validMatches, rawResults, { roster, preShowLosingStreaks, preShowState: state })`(経路の指定なし=従来どおり)
+- 実プレイ: `Engine.show.finalize(begun.state, validMatches, results, { roster, preShowLosingStreaks, preShowState: G, logStyle: 'structured', mqPath: 'App._finalizeShowImpl', rivalryBeforeTitles: true, intruderId, f08AttendanceMark: true, nextMatchBuffCard: G.showCard, markDomeSellout: true, crossOrgRelationshipContext: true, resolveUnifiedTitle: false, injuryPresentationDict: WM_I18N.t, buildNewspaper: false, hooks: { afterTitles, afterRelationships, afterGrowth, beforeKaigan, afterWriteback } })`
+- hooks の中身は以前の `_finalizeShowImpl` のまま、呼ぶ位置も以前の順番(乱入・奪還・直訴 / 派閥の予約 / ブレークスルー・最高評価・スランプ / MVP の大試合・ドーム / 統一王座・B3・ゲスト返却)。ctx と hooks の一覧・寄せる先は仕様 §4・§5
+
+**数値の確認(3-1・3-2)**
+
+- 一時プローブ(auto-sim の差し込み口 `__WM_AUTOSIM_HOOKS` で毎週の G を丸ごとハッシュし、`Engine.rng.create/_next` を包んで全引きの順序ハッシュ・ストリーム別の引き数、Math.random の回数を数える。コミットしていない)で切り出しの前後を比べた
+  - 40季 seed 42: 毎週の状態ハッシュ(2,120週)・最終状態・**乱数の引き順ハッシュ af8bcc48**・引き数 6,618,788・create 174,475・ストリーム 167,340・Math.random 5,416・意味指紋 db9b0841 がすべて一致
+  - 20季 seed 7919 `--care`: 同じくすべて一致(引き数 3,346,353・意味指紋 ce838ba8)
+  - `node test/balance-baseline.js`: 逸脱なし
+- 実プレイ: 差分テストに `--dump <dir>`(両経路の各時点の状態・ログ・試合結果・怪我・乱数の引き数を丸ごと保存)と `test/k1-parity/compare-dumps.js`(同じ経路の前後比較。要約せず全欄)を足し、src を変える前の dump と比べた → 3-1 後・3-2 後とも **16本すべて一致**(エンジン経路・実プレイ経路の A/B/C 時点・先読み・finalize 直後・乱数の3つの窓)
+  - fixture を作る headless 進行の台詞選び(Math.random)が実行ごとに変わり、前後比較で `_pendingGlimpseA` の台詞だけが揺れていたので、`run.js` の fixture 生成を種付きにした(数値の抽選は Engine.rng なので照合は不変)
+- ctx で残した違いは「実プレイの従来の順番・入力」をそのまま再現するためのもの。順番を変えても数値が同じと確かめたところは共通の順にそろえた: ファン期待の印の期待カード(判定の材料が変わらないので最初に作る)・王座戦の挑戦者 ID(王座戦は必ず王者を含むので同じ)・歴代最高評価/対戦成績/開眼の位置(読む欄が書き戻しの前後で変わらない)
+- `_rivalryResolvedThisWeek` を入力と共有の配列への push から「写してから足す」に(値は同じ)
+
+**3-3 で動いた数値**(実プレイだけ。エンジンは無関係)
+
+- 差分テストで動いたのは directives(F07 メイン推薦。メインに派閥の選手がいない → リーダーの信頼 −2)の1本だけ: リーダー(選手95)の信頼 **61.29 → 59.29**(興行後)、週次の後 **63.29 → 62.37**。退団寸前の帳簿の「派閥」の欄 1.23 → 3.23(週次の後 0.98 → 2.58。人間関係・空気の欄も週次の配分で +0.15〜0.23)。ほかの15本は両経路とも状態が丸ごと一致
+- 効くようになったもの(どれも実プレイだけ・派閥の予約がある興行だけ。信頼は `trustSensitivity` つき): F07 メイン推薦(メンバー +1/リーダー −2、6興行)、Common-1 の清算(勝者の信頼 +3〜5・人気 +1〜3、敗者の信頼 −1〜3。下克上ならリーダーの信頼 −3〜6・人気 −2〜4 と勝者の人気 +2〜4)、派閥内序列戦(成功: 旧リーダー −5〜8・新リーダー +5〜8・人気 +3〜5 / 失敗: リーダー +3〜5・人気 +2〜3・挑戦者 −3〜5)、F08 の試合後(負けた派閥の末端の信頼 −2〜4)
+  - Common-1 の結果モーダルは以前から「信頼 +○」を見せていたが、実際には効いていなかった(見せた数字と実際の食い違い)
+- 派閥の関数は作業中のロスター(この興行の人気・怪我・引退の後)を読むようになった(当事者の名前・予約の有効性・末端の序列など)。共通の処理に戻すときは状態の roster を興行前のロスターへ戻す(§7 X14)
+- 許容リスト: K1-A12 に `roster[*].trustStrain.faction` を足した(信頼そのものは先に当たる K1-A11 に数える)。項目数は変わらない
+
+**K1-A07 の確認**
+
+- tag-mixed の例: 以前 エンジンは記録なし/実プレイは各選手に2枠(対角の2人)→ 両経路とも各選手に1枠(44↔66・62↔72、`tag: true`)
+- auto-sim 40季 seed 42 で recentMatches を除いた毎週の状態ハッシュ・最終状態・乱数の引き順・引き数・Math.random の回数が一致。意味指紋 db9b0841 → **61ef0aa5**(差は recentMatches だけ)。差分テストの前後比較も recentMatches を除けば 3-3 の directives 以外は一致
+- 読むのは選手ポップアップの「直近」の1行だけ。印は辞書の既存の「タッグ」(EN: Tag)を使い、新しい文言は足していない
+
+**テスト**
+
+- `npm test` 313本 PASS(第3段の回帰ガード `test/k1-stage3-test.js` を追加。文面で経路を確かめるテスト9本は `test/helpers/show-paths.js` = 入口の本文+finalize+hooks を見るように直した)
+- `npm run test:k1:parity` PASS(登録 27・未登録0・消えた0・向きの食い違い0・握りつぶし0)
+- `node test/auto-sim.js 40 42` ALL CLEAR(意味指紋 61ef0aa5)/ `node test/balance-baseline.js` 逸脱なし / `node test/ja-golden.js` 完全一致
+- UI 走破(1季)PASS / 天頂戦の点火 PASS
+- 既存の不具合(第3段の前後で同じ・今回の変更と無関係): 点火 `incoming-challenge` は `incoming-result-two-beat` が不発(変更前の app.js でも同じ操作列 digest 20047a9b9d4cdcc5 で同じ失敗)、`faction-ignite` は fixture を作れない(seed 7 で「リーダー健在の派閥が2つ無い」。main の management.js でも同じ)
+
+**第4段 4-A・第5段へ残る差(許容リスト27件)**
+
+| 種類 | 項目 | 実プレイ側の置き場所(第3段の後) | 寄せる段 |
+|---|---|---|---|
+| 実プレイだけの処理(数値) | A01 最高評価と信頼ボーナス / A02 ブレークスルー・スランプ | hooks.afterGrowth(`_finalizeHookGrowthEvents`) | 4-A |
+| | A10 ドームの経歴(と §7 X07 MVP の大試合) | hooks.beforeKaigan(`_finalizeHookCareerMarks`) | 4-A |
+| | A12 F07 / A13 F09 の決着(と §7 X05 の Common-1・F08・派閥内序列戦) | hooks.afterRelationships(`_finalizeHookFactionBookings`) | 4-A |
+| | A14 乱入(と §7 X06 の奪還・直訴) | hooks.afterTitles(`_finalizeHookSpecialBouts`)+ ctx.intruderId | 4-A |
+| | A09 ラストランの即引退 / A11 密着取材 | `_finalizeShowImpl` の finalize の後 | 4-A |
+| | A16 引退者の関係値・因縁の整理 | closeShowResult の前半 | 4-A |
+| 波及 | A01B / A14B / B01〜B06 | — | 上流が消えれば消える |
+| 画面の段取り | T04 怪我引退の演出データの取り出し | closeShowResult の前半 | 4-A と一緒に |
+| ログ・画面の状態 | T03 興行ログの型(ctx.logStyle)/ T02 宣戦布告の既読 | ctx.logStyle / 画面 | T03 は裁定待ち・T02 は画面側に残す |
+| closeShowResult の後半(C) | C01 王座設立 / C02 契約枠 / C03 サバイバル / C04 序章 / C05 財務履歴 / C06 表示キュー / C07 節目のバフ | closeShowResult | 第5段 |
+
+- ハーネスに出ないが ctx に残した違い(4-A で1つずつ消す): §7 X04 集客の F08 印(`f08AttendanceMark`)/ §7 X06 統一王座戦の関係値の文脈と清算(`crossOrgRelationshipContext`・`resolveUnifiedTitle`)/ §7 X10 超満員ドームの節目(`markDomeSellout`)/ 次の試合のバフのカード(`nextMatchBuffCard`。空き枠のタッグに2人がいるだけで倍率が掛かる。実質起きない)/ 因縁の記録の時期(`rivalryBeforeTitles`。奪還挑戦の防衛者が外れる前の特性で記録する)/ 新聞はラストランの後(`buildNewspaper: false`)/ ログの型(`logStyle`)
+- 新しく見つけたこと: §7 X13(相手発の直訴のコーチ要約のログが出ない)、§7 X14(書き戻しまで興行前のロスターを読む。両経路共通)
 
 ### 第4段: 数値が動くものを1件ずつ寄せる(裁定つき)
 

@@ -61,8 +61,8 @@ Engine.mq.finalize(state, matchResult, context = {}, profile = 'raw')
 
 | 経路 | 呼び出し元 | profile |
 |---|---|---|
-| 通常興行(headless) | `Engine.executeShow`(`management.js:12261`) | `normal-single`/`normal-tag`(動的判定) |
-| 通常興行(プレイヤー画面) | `App._finalizeShowImpl`(`app.js:6997`) | 同上 |
+| 通常興行(headless) | `Engine.executeShow` → `Engine.show.finalize`(2026-09-26 K-1 第3段。show-finalize-spec-v1.0) | `normal-single`/`normal-tag`(動的判定) |
+| 通常興行(プレイヤー画面) | `App._finalizeShowImpl` → 同じ `Engine.show.finalize`(`ctx.mqPath: 'App._finalizeShowImpl'` で内訳の名札だけ変わる) | 同上 |
 | PPV GRAND FINAL | `Engine.ppv.applyPPVResults`(`management.js:14310`) | `ppv` |
 | 天頂戦(4年に一度) | `Engine.ppvTournament._applyMqBonuses`(`management.js:24900`) | `ppv` |
 | AI団体同士の通常興行 | `Engine.rival.processAIWeek`(`management.js:8839`) | `ai-show` |
