@@ -386,7 +386,7 @@ function makeRenderCtx() {
     '_npPhotoBg', '_npSubPhotoHtml', '_npFindFighterOrgKey', '_npSpringTagStoryIds', '_npTopTagPhotoHtml',
     '_npCrisisColumnHtml', '_npKurodaCommentText',
     '_npV3PrimaryId', '_npV3OrgLine', '_npV3Paragraphs', '_npV3IndexBar', '_npV3MvpBox',
-    '_npV3KurodaColumn', '_npV3HofEntry', '_npV3IsHofRetirement', '_npV3HallOfFameRetirement',
+    '_npV3PreviewColumn', '_npV3KurodaColumn', '_npV3HofEntry', '_npV3IsHofRetirement', '_npV3HallOfFameRetirement',
     '_npV3TopStory', '_npV3Shoulder', '_npV3JunTop', '_npV3Small',
     '_npV3Briefs', '_npResolvePlayerShowData', '_npFrontV3',
   ].map(fnBody).join('\n'), ctx);
@@ -546,6 +546,138 @@ section('H10. 殿堂入り引退は発行済みの号も一面ジャックへ昇
   } finally {
     rctx.G.allHallOfFame = oldAllHof;
   }
+});
+
+// ─────────────────────────────────────────────────────────────
+// I. 次回展望(2026-09-26 Keisuke 裁定 案B: 黒田コラムの上に、別の欄として3行)
+//    specs/newspaper-spec-v1.0.md §1・§3-7
+// ─────────────────────────────────────────────────────────────
+
+const previewFull = {
+  fanExpect: [
+    { leftName: '深町真琴', leftId: 104, rightName: '高津小春', rightId: 102 },
+    { leftName: '橘玲美', leftId: 106, rightName: '林真尋', rightId: 105 },
+  ],
+  rivalry: { leftName: '阿武隈塔子', leftId: 101, rightName: '宇田川里奈', rightId: 103 },
+  title: { championName: '橘玲美', championId: 106, challengerName: '林真尋', challengerId: 105 },
+};
+const previewIssue = { ...fullIssue, preview: previewFull };
+// kuroda-text.js のトップレベル const は vm の文脈オブジェクトのプロパティにならないので式で取り出す
+const KP = vm.runInContext('KURODA_PREVIEW', rctx);
+function previewHtml(html) {
+  const at = html.indexOf('np-v3-preview"');
+  if (at < 0) return '';
+  return html.slice(at, html.indexOf('</section>', at));
+}
+function previewItems(html) {
+  return [...previewHtml(html).matchAll(/<li>([\s\S]*?)<\/li>/g)].map(m => m[1]);
+}
+
+section('I1. 興行週の号(詳報あり)では黒田コラムの直上に次回展望の欄が出る', () => {
+  const html = rctx._npFrontV3(previewIssue, 6, 14, true);
+  const pvAt = html.indexOf('class="np-v3-preview"');
+  const kuAt = html.indexOf('class="np-v3-kuroda"');
+  assert.ok(pvAt >= 0, '次回展望の欄が出ていない');
+  assert.ok(html.includes('>次回展望<'), '欄の見出し「次回展望」が無い');
+  assert.ok(kuAt > pvAt, '次回展望が黒田コラムより下にある(コラムの直上が定位置)');
+  const between = html.slice(pvAt, kuAt);
+  assert.ok(!/np-v3-(small|beta|jun|kata)/.test(between), '次回展望と黒田コラムの間に別の記事が挟まっている');
+  const body = fnBody('_npFrontV3');
+  assert.ok(body.indexOf('_npV3PreviewColumn(') < body.indexOf('_npV3KurodaColumn('),
+    '_npFrontV3 で次回展望がコラムより後に組まれている');
+});
+
+section('I2. 3行はファン期待 → 因縁 → 王座戦線の順で、KURODA_PREVIEW の文(名前入り・句点で閉じる)', () => {
+  const items = previewItems(rctx._npFrontV3(previewIssue, 6, 14, true));
+  assert.strictEqual(items.length, 3, `行数が${items.length}(3行のはず)`);
+  assert.ok(items[0].includes('深町真琴') && items[0].includes('高津小春'), 'ファン期待の行に組の名前が無い: ' + items[0]);
+  assert.ok(items[1].includes('阿武隈塔子') && items[1].includes('宇田川里奈'), '因縁の行に組の名前が無い: ' + items[1]);
+  assert.ok(items[2].includes('橘玲美') && items[2].includes('林真尋'), '王座戦線の行に王者・挑戦者の名前が無い: ' + items[2]);
+  const pools = [KP.fanExpect, KP.rivalry, KP.titleOutlook];
+  items.forEach((line, i) => {
+    assert.ok(/。$/.test(line), `${i + 1}行目が句点で閉じていない: ${line}`);
+    const d = i === 2 ? { championName: '橘玲美', challengerName: '林真尋' }
+      : i === 0 ? { leftName: '深町真琴', rightName: '高津小春' } : { leftName: '阿武隈塔子', rightName: '宇田川里奈' };
+    assert.ok(pools[i].some(fn => fn(d) + '。' === line), `${i + 1}行目が KURODA_PREVIEW の文ではない: ${line}`);
+  });
+});
+
+section('I3. 非興行週の号(詳報なし)には出さない', () => {
+  const html = rctx._npFrontV3({ ...previewIssue, playerShowData: null }, 6, 15, true);
+  assert.ok(!html.includes('np-v3-preview'), '興行の無い週の号に次回展望が出ている');
+});
+
+section('I4. 書ける行が無ければ欄ごと出さない(generic の「まだ見えていない」型で埋めない)', () => {
+  const html = rctx._npFrontV3({ ...previewIssue, preview: { fanExpect: [], rivalry: null, title: null } }, 6, 14, true);
+  assert.ok(!html.includes('np-v3-preview'), '中身の無い次回展望の欄が出ている');
+  const genericHit = KP.generic.some(fn => html.includes(fn({})));
+  assert.ok(!genericHit, 'generic の文で欄を埋めている');
+  const noPv = rctx._npFrontV3({ ...fullIssue, preview: undefined }, 6, 14, true);
+  assert.ok(!noPv.includes('np-v3-preview'), 'preview を持たない号で空の欄が出ている');
+});
+
+section('I5. 無い行は出さない(因縁だけ無い号は2行)', () => {
+  const items = previewItems(rctx._npFrontV3({ ...previewIssue, preview: { ...previewFull, rivalry: null } }, 6, 14, true));
+  assert.strictEqual(items.length, 2);
+  assert.ok(!items.some(s => s.includes('阿武隈塔子')), '無いはずの因縁の行が出ている');
+});
+
+section('I6. 同じ組を2行で書かない。2番手の組には「一番見たがっている」の文を使わない', () => {
+  // ファン期待の1番手が因縁の組と同じ → ファン期待は2番手の組から
+  const pv = {
+    fanExpect: [
+      { leftName: '宇田川里奈', rightName: '阿武隈塔子' },
+      { leftName: '深町真琴', rightName: '高津小春' },
+    ],
+    rivalry: previewFull.rivalry,
+    title: previewFull.title,
+  };
+  const topLine = KP.fanExpect[0]({ leftName: '深町真琴', rightName: '高津小春' });
+  for (let week = 2; week <= 48; week += 2) {
+    const items = previewItems(rctx._npFrontV3({ ...previewIssue, preview: pv }, 6, week, true));
+    assert.strictEqual(items.length, 3, `W${week}: 行数が${items.length}`);
+    assert.ok(items[0].includes('深町真琴'), `W${week}: ファン期待が因縁と同じ組を書いている: ${items[0]}`);
+    assert.ok(items[0] !== topLine + '。', `W${week}: 2番手の組に「一番見たがっている」を使っている`);
+  }
+  // ファン期待の2組がどちらも因縁・王座と同じ → ファン期待の行は出さない
+  const pv2 = { ...pv, fanExpect: [pv.fanExpect[0], { leftName: '林真尋', rightName: '橘玲美' }] };
+  const items2 = previewItems(rctx._npFrontV3({ ...previewIssue, preview: pv2 }, 6, 14, true));
+  assert.strictEqual(items2.length, 2, 'ファン期待の組が全部重なっているのにファン期待の行が出ている');
+});
+
+section('I7. 同じ号は何度描いても同じ文(表示専用のシード固定)', () => {
+  const a = previewHtml(rctx._npFrontV3(previewIssue, 6, 14, true));
+  const b = previewHtml(rctx._npFrontV3(previewIssue, 6, 14, false));
+  assert.ok(a && a === b, '同じ号で文が変わる(言語切替・過去号を開き直すたびに記者の文が変わる)');
+});
+
+section('I8. 名前は名前辞書(pn)を通し、HTMLエスケープする', () => {
+  const origPn = rctx.WM_I18N.pn;
+  rctx.WM_I18N.pn = s => `[${s}]`;
+  try {
+    const pv = { fanExpect: [{ leftName: '深町<b>', rightName: '高津小春' }], rivalry: null, title: null };
+    const items = previewItems(rctx._npFrontV3({ ...previewIssue, preview: pv }, 6, 14, true));
+    assert.strictEqual(items.length, 1);
+    assert.ok(items[0].includes('[深町&lt;b&gt;]') && items[0].includes('[高津小春]'),
+      '名前が pn を通っていない/エスケープされていない: ' + items[0]);
+  } finally {
+    rctx.WM_I18N.pn = origPn;
+  }
+});
+
+section('I9. 過去号でも、その号に焼かれた材料で書く(詳報側の preview しか無い号も拾う)', () => {
+  const psdOnly = { ...fullIssue, preview: undefined, playerShowData: { ...fullIssue.playerShowData, preview: previewFull } };
+  const items = previewItems(rctx._npFrontV3(psdOnly, 6, 14, false));
+  assert.strictEqual(items.length, 3, '詳報(playerShowData)側の preview から書けていない');
+});
+
+section('I10. 欄の色はトークンだけ(16進を直書きしない)', () => {
+  const rules = [...htmlSrc.matchAll(/\.np-v3-preview[a-z-]*[^{}]*\{([^}]*)\}/g)].map(m => m[1]);
+  assert.ok(rules.length >= 3, '次回展望のCSSが見つからない');
+  const joined = rules.join(' ');
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(joined), '次回展望のCSSに16進カラーがある');
+  assert.ok(!/rgba?\(/.test(joined), '次回展望のCSSに rgba() の直書きがある');
+  assert.ok(/var\(--cream-red\)/.test(joined) && /var\(--cream-gold\)/.test(joined), '紙面の色トークンを使っていない');
 });
 
 // ─────────────────────────────────────────────────────────────

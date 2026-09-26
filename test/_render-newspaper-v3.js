@@ -80,15 +80,25 @@ const ctx = {
       <div class="np-sec">自団体 興行結果</div>
       <h3 class="np-show-headline">（ここに既存の興行詳報がそのまま入る：VS 対面 / 星取 / 観客満足度 / ダイジェスト表）</h3>
     </section>`,
+  // i18n 以降の紙面関数は WM_I18N / _quoteVal / kurodaText(kuroda-text.js) を呼ぶ。ja と同じ契約のスタブ
+  // (test/newspaper-front-v3-test.js の makeRenderCtx と同じ)。2026-09-26 次回展望の追加時に補修
+  WM_I18N: { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  }, pn(str) { return str; }, pnSurname(str) { return str; }, mv(str) { return str; }, mvShort(str) { return str; } },
+  _quoteVal: value => `「${value == null ? '' : value}」`,
 };
 vm.createContext(ctx);
+vm.runInContext(R('src/kuroda-text.js'), ctx);
 vm.runInContext([
   '_npPhotoBg', '_npSubPhotoHtml', '_npFindFighterOrgKey', '_npSpringTagStoryIds', '_npTopTagPhotoHtml',
   '_npCrisisColumnHtml', '_npKurodaCommentText',
   '_npV3PrimaryId', '_npV3OrgLine', '_npV3Paragraphs', '_npV3IndexBar', '_npV3MvpBox',
-  '_npV3KurodaColumn', '_npV3HofEntry', '_npV3IsHofRetirement', '_npV3HallOfFameRetirement',
+  '_npV3PreviewColumn', '_npV3KurodaColumn', '_npV3HofEntry', '_npV3IsHofRetirement', '_npV3HallOfFameRetirement',
   '_npV3TopStory', '_npV3Shoulder', '_npV3JunTop', '_npV3Small',
-  '_npV3Briefs', '_npFrontV3',
+  '_npV3Briefs', '_npResolvePlayerShowData', '_npFrontV3',
 ].map(n => extractFunction(renderSrc, n)).join('\n'), ctx);
 
 const issue = {
@@ -114,6 +124,12 @@ const issue = {
     { type: 'general', characterId: null, headline: '週間観客動員は4団体合計18,240人（前週比+6%）' },
   ],
   playerShowData: { left: { id: 1 }, right: { id: 6 } },
+  // 次回展望(黒田コラムの直上)。Engine.newspaper.buildPreview と同じ形
+  preview: {
+    fanExpect: [{ leftName: '赤羽あすか', leftId: 4, rightName: '相川あかね', rightId: 2 }],
+    rivalry: { leftName: '阿武隈塔子', leftId: 1, rightName: '相沢みなみ', rightId: 6 },
+    title: { championName: '阿武隈塔子', championId: 1, challengerName: '安沢ひかり', challengerId: 5 },
+  },
 };
 
 const front = ctx._npFrontV3(issue, 6, 14, true);

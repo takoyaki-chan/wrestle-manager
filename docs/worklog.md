@@ -1,5 +1,39 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 新聞1面に「次回展望」の欄を戻した — 案B・黒田コラムの上に3行(Claude/Opus 5.5・worktree)
+
+Keisuke 裁定(09-26)「新聞1面に次回展望の欄を戻す(案B: 黒田コラムの上に、別の欄として3行)」。2026-04-26 の新聞 v3.1 で1面から外れ、黒田の `KURODA_PREVIEW` が未配線のまま残っていたもの。材料(`buildPreview` / `buildShowNewspaperData` の `preview`)は揃っており、因縁ペアは同日の修正(`pickPreviewRivalry`)で入るようになっていた。仕様の正は `specs/newspaper-spec-v1.0.md` §3-7(欄の決まりを表で追記)。**数値は変えていない(表示だけ)**。
+
+### 変えたところ
+| もの | 中身 | 場所 |
+|---|---|---|
+| 欄 | `_npV3PreviewColumn(wp, 季, 週)`。`_npFrontV3` で黒田コラムの直前に組む。見出し「次回展望」+最大3行(ファン期待 → 因縁 → 王座戦線) | src/ui-render.js |
+| 出る号 | `wp.playerShowData` がある号だけ(=興行週に今週生成した結果。§3-5 と同じ条件)。非興行週の号・新年号には出さない | 同上 |
+| 材料 | 号に焼かれた `wp.preview`、無ければ `playerShowData.preview`。過去号もその号の材料で書く | 同上 |
+| 重複 | 因縁・王座の行が組を先に取り、ファン期待は `fanExpect` の上から未使用の組。2番手の組には fanExpect の先頭の文(「一番見たがっている」)を使わない。因縁と王座が同じ組なら両方残す | 同上 |
+| 空 | 行が無ければ欄ごと出さない。`KURODA_PREVIEW.generic` は使わない | 同上 |
+| 文選び | 表示専用。`Engine.rng.derive(季, 週, 0xF0CA/B/C)` の号ごと固定シード(原則4の例外。黒田コラムの `0xC0DA` と同じ作法)。`kurodaText(fn, d, WM_I18N.t)` で訳出、名前は `WM_I18N.pn` → `escHtml`。JA は原文に文末の句点が無いので行末に「。」を足す(EN はピリオドで終わる) | 同上 |
+| 見た目 | `.np-v3-preview*`。MVP小窓と同じ小見出し(10px・900・字間3px・紙面の赤)、地は `--cream-gold` 9% + 同系の細枠。色はトークンだけ(`--cream-red`/`--cream-gold`/`--cream-text-main`、`color-mix`)・余白は `--space-*`。幅を固定しない | src/index.html |
+| 英語 | KURODA_PREVIEW 17本は template-ledger に英訳済み・lang-en-templates.js に全件あり(確認のみ)。見出しを ui-ledger に1行手で足した(「次回展望」→「Looking Ahead」)→ `node test/i18n-build-dict.js` で lang-en.js 再生成(4777キー・未訳0)。抽出器 `i18n-extract-ui.js` を回すと台帳の500行あまりが並べ替わるため(main の台帳が抽出順とずれている。手で足した kept 行の位置など)、その差分は捨てて1行だけ入れた | i18n/ui-ledger.json / src/lang-en.js |
+| 注記 | kuroda-text.js の KURODA_PREVIEW に消費点と「先頭は最上位の組専用」の注記、i18n-extract-templates.js の「死蔵テーブル」注記を更新 | src/kuroda-text.js / test/i18n-extract-templates.js |
+
+### 判断(Keisuke へ報告)
+- **非興行週の号には出さない**: `buildPreview` は毎号(非興行週・新年号も)作られているが、中身(因縁・王者と挑戦者・人気上位の組)は翌週もほぼ同じで、出すと同じ組を2号続けて書く。文面も「興行を終えた記者の次の興行への見通し」(generic は「今回の結果を踏まえて」)なので、結果を報じた号に置いた。材料はあるので、非興行週にも出すなら条件1行で切り替えられる
+- **3行とも無いときは欄ごと出さない**: generic 4本のうち2本は「注目カードはまだ見えていない」「目立つ因縁カードは現時点ではない」という不在の説明で、中身の無い号を埋める文になる(spec §0)。実際に空になるのは稀(ロスター2人未満・全員負傷、または人気上位の組がどれもマンネリで外れ、かつ因縁も王者もいない号)。generic は未配線のまま
+- 序盤(王者・因縁がまだ無い)は**ファン期待の1行だけ**の号が多い(点火 fixture S1W8 も1行)
+
+### 検証
+- `node test/newspaper-front-v3-test.js` に I1〜I10 を追加(位置=コラムの直上/行の順と KURODA_PREVIEW の文・句点/非興行週は出ない/空なら出ない・generic で埋めない/無い行は出ない/同じ組を2行で書かない・2番手に「一番」を使わない(24号分)/シード固定/pn とエスケープ/詳報側の preview を拾う/色はトークンだけ)。ALL PASS
+- `npm test` 311/311 PASS・`node test/ja-golden.js` 基準と完全一致(エンジンの文は変えていないので取り直し不要)・`i18n-ratchet` 増加なし・`i18n-ledger-consistency` OK・`ui-baseline-guard` OK
+- `npm run test:ui:walkthrough`(1季)PASS・Issues 0
+- `npm run test:ui:ignite -- --scenario newspaper-lang-switch` JA/EN とも PASS。シナリオの probe に次回展望(行数・見出し・本文・コラムより上か)を足し、tourAssert で最新号とバックナンバー1(engineer が詳報を差し込んだ号)に欄が出ること・JA は見出し「次回展望」・EN は「Looking Ahead」で本文に日本語が残らないことを見る。EN: 「Put Yukie Konishi and Honoka Anazawa together on the next show and the tickets sell on that alone.」/ JA: 「次の興行で小西ゆきえと穴澤ほのかがぶつかれば、それだけでチケットは売れる。」・紙面全体の JA 露出 0・i18n-miss 0
+- 幅: 目視用レンダラ `test/_render-newspaper-v3.js` を補修(i18n 以降 WM_I18N/_quoteVal/kurodaText が無く落ちていた)し、次回展望の材料を足して再生成。Playwright で 375/820/1280px を測り、欄・行とも横はみ出し 0・コラムの 14px 上に並ぶことを確認
+- 見つけた既存の不具合(今回は触っていない): 2面「主力対決」の寸評 `_npMatchupFlavorText` は文末に句点が無ければ「。」を足すが、判定が `/[。！？]$/` だけなので **EN でピリオドの後に「。」が付き、2文が空白なしで連結される**(KURODA_MATCHUP_FLAVOR の英訳120本は全部ピリオドで終わる)。JA 露出の検出(かな・漢字の範囲)には「。」が入らないので走破でも拾えていない
+
+### 残
+- Keisuke 実機確認(`docs/実機確認バックログ.md` の先頭)・specs diff 確認
+- `docs/ui/03-screens/` に新聞の画面仕様書は無い(新聞の見た目の正は `specs/newspaper-spec-v1.0.md`)。今回はそこへ書いた
+
 ## 2026-09-26 退団寸前の引き留め A+B — 言葉だけでは届かない帯・原因の帳簿と原因に合った手当て(Claude/Opus 5.5・worktree)
 
 設計 `docs/care-last-warning-design-v0.1.md`(Keisuke 承認: §9 の10問すべて「おすすめ」。Q6 給与の猶予は付けない・Q8 セリフ標準204本)。仕様の正は `specs/trust-system-spec-v2.1.md` §17。今回の範囲は仕組み(エンジン)とログの一節・画面の出し入れ。**セリフ204本は別の作業者が下書き中なので、器(表と引く関数と落ち先)まで**。

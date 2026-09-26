@@ -8854,6 +8854,15 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
 .np-v3-beta b { display: block; font-size: 12px; font-family: 'Noto Serif JP', serif; color: #1a0d04; margin-bottom: 3px; }
 .np-v3-beta-sep { color: #8b1a1a; font-weight: 900; padding: 0 4px; }
 
+/* 次回展望(黒田コラムの直上。コラムとは別の欄として、金の薄い地で区切る。2026-09-26)
+   色は紙面の既存色と同じ値のトークン(--cream-red = 紙面の赤 / --cream-gold)から採る */
+.np-v3-preview { margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); background: color-mix(in srgb, var(--cream-gold) 9%, transparent); border: 1px solid color-mix(in srgb, var(--cream-gold) 35%, transparent); }
+.np-v3-preview-ttl { font-size: 10px; font-weight: 900; letter-spacing: 3px; color: var(--cream-red); margin-bottom: var(--space-xs); }
+.np-v3-preview-list { list-style: none; margin: 0; padding: 0; }
+.np-v3-preview-list li { position: relative; padding-left: var(--space-md); font-size: 11px; line-height: 1.7; color: var(--cream-text-main); overflow-wrap: anywhere; }
+.np-v3-preview-list li + li { margin-top: 2px; }
+.np-v3-preview-list li::before { content: '▸'; position: absolute; left: 0; color: var(--cream-red); }
+
 /* 黒田コラム(最下段固定。編集手帳のポジション) */
 .np-v3-kuroda { display: flex; gap: 10px; align-items: center; margin-top: 14px; padding: 10px 12px 6px; background: rgba(120,84,39,0.06); border-top: 3px double rgba(139,26,26,0.45); }
 .np-v3-kuroda-face { width: 34px; height: 34px; border-radius: 50%; flex: none; background-size: cover; background-position: center; background-color: #2a1a10; border: 1px solid rgba(139,26,26,0.5); }

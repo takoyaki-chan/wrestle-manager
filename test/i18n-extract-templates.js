@@ -290,8 +290,8 @@ const TABLE_PATH_FILTER = {
 };
 
 // P4-5: src/kuroda-text.js の対象プール(FAN_HANDLESは日本語を含まない識別子文字列の
-// ため対象外。KURODA_PREVIEWは消費点が見つからない死蔵テーブルだが、テーブルとして
-// 実在するため抽出は行う — 保留理由はworklogへ記録)。
+// ため対象外。KURODA_PREVIEWは P4-5 当時は消費点の無い死蔵テーブルだったが、テーブルとして
+// 実在するため抽出していた — 2026-09-26 に新聞1面の「次回展望」欄(_npV3PreviewColumn)として配線を戻した)。
 const KURODA_TABLES = [
   'KURODA_HEADLINES',
   'KURODA_EDITORIAL',
