@@ -160,8 +160,11 @@ assert.strictEqual(channelMisses.length, 0,
 
 // ── 4. 表示点(ui-render.js `.dojo-rest-bubble`) ────────────────────────────
 const uiRender = readSource('src', 'ui-render.js');
-const bubbleLine = uiRender.split('\n').find((l) => l.includes('dojo-rest-bubble'));
-assert.ok(bubbleLine, 'ui-render.js に .dojo-rest-bubble の描画行が見つかりません');
+// 休憩中の枠の文は restText に1回だけ作り、吹き出しと地の文(GL-12・2026-09-26)の両方が使う
+const restBubbleLine = uiRender.split('\n').find((l) => l.includes('class="dojo-rest-bubble"'));
+assert.ok(restBubbleLine && restBubbleLine.includes('restText'), 'ui-render.js の .dojo-rest-bubble が restText を出していません');
+const bubbleLine = uiRender.split('\n').find((l) => l.includes('const restText ='));
+assert.ok(bubbleLine, 'ui-render.js に休憩中の枠の文(restText)を作る行が見つかりません');
 assert.ok(bubbleLine.includes('WM_I18N.t(g.dialogue)'),
   '.dojo-rest-bubble が g.dialogue を WM_I18N.t() に通していません');
 assert.ok(bubbleLine.includes('WM_I18N.t(g.label)'),

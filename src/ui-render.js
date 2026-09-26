@@ -2147,11 +2147,21 @@ function _renderRosterDojoHeader() {
       html += '<div class="dojo-rest-fighters">';
       restPicked.forEach(g => {
         const delay = Engine.rng.int(restRng, 0, 14); // 22s周期の中でバラけさせる
-        html += `<div class="dojo-rest-fighter" title="${g.speakerName || ''}" onclick="showFighterPopup(${g.speakerId},'roster')">`;
         // i18n Stage B P5-1: g.dialogue はrelationships.jsのGLIMPSE_A/B_LINES選択(pickDialogueLine)
         // で得た生JA行(relationships.jsは並行エージェントの領分のため選択ロジックには触れず、
         // ここ=表示直前でt()を通す)。
-        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s"><span class="dojo-bubble-text">${_quoteLine((g.dialogueTpl ? WM_I18N.t(g.dialogueTpl, g.dialogueVars || {}) : WM_I18N.t(g.dialogue)) || WM_I18N.t(g.label) || '')}</span></div>`;
+        const restText = (g.dialogueTpl ? WM_I18N.t(g.dialogueTpl, g.dialogueVars || {}) : WM_I18N.t(g.dialogue)) || WM_I18N.t(g.label) || '';
+        // 話者のいない地の文(GL-12「第三者の証言」、tone:'narration')は吹き出しにしない(2026-09-26)。
+        // mockup-baseline §3「地の文は吹き出しにしない。鉤括弧も付けない」。当事者の一人の頭上に白い吹き出しで
+        // 出すと、その子が自分たちの噂を口にしているように見えていた。顔も出さず、コーチ不在時の雰囲気の文と
+        // 同じ見せ方で休憩中の枠に置く(GL-12 が出る場所はここだけ — 興行後の垣間見えは weekLogFeed 経由で
+        // この枠にしか届かない)
+        if (g.tone === 'narration') {
+          html += `<div class="dojo-rest-narration" style="--rest-cycle:22s;--rest-delay:${delay}s">${restText}</div>`;
+          return;
+        }
+        html += `<div class="dojo-rest-fighter" title="${g.speakerName || ''}" onclick="showFighterPopup(${g.speakerId},'roster')">`;
+        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s"><span class="dojo-bubble-text">${_quoteLine(restText)}</span></div>`;
         html += `<div class="dojo-rest-avatar">${portraitImg(g.speakerId, 34)}</div>`;
         html += '</div>';
       });

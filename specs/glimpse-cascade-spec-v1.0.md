@@ -37,7 +37,9 @@
 
 候補は `G.weekLogFeed` のうち `_isDojoRestEligibleGlimpse`(ui-render.js)を通るもの。1週に出すのは1人だけ。
 
-吹き出しは幅200px・最大4行(2026-09-26 Keisuke 裁定・案A。旧 150px・2行では長い一言が「…」で切れていた)。下の表の A層・B層の全セリフと退団寸前の引き留めの表(全1,370本)が JA/EN とも切れずに入る。検査は `node test/ui-walkthrough/dojo-rest-bubble-fit-check.js`(手動実行)。見た目の規則は `docs/ui/03-screens/dojo-heat-self-bubble.md`「道場シーンの吹き出しの共通規則」。
+吹き出しは幅200px・最大4行(2026-09-26 Keisuke 裁定・案A。旧 150px・2行では長い一言が「…」で切れていた)。下の表の A層・B層の全セリフと退団寸前の引き留めの表(全1,370本。うち GL-12 の5本は下のとおり地の文で出す)が JA/EN とも切れずに入る。検査は `node test/ui-walkthrough/dojo-rest-bubble-fit-check.js`(手動実行)。見た目の規則は `docs/ui/03-screens/dojo-heat-self-bubble.md`「道場シーンの吹き出しの共通規則」。
+
+**GL-12「第三者の証言」(tone `narration`)は吹き出しにしない**(2026-09-26)。話者のいない地の文なので、休憩中の枠に `.dojo-rest-narration` として出す — コーチ不在時の雰囲気の文(`.dojo-scene-atmosphere`)と同じ見せ方(吹き出しの塗りなし・画像の上に直接置く斜体の文字・影付き)、顔なし・鉤括弧なし・クリックなし、幅200px・右寄せ、休憩中の吹き出しと同じ22秒周期で浮かんで消える。以前は当事者の一人(nameA)の頭上の白い吹き出しに鉤括弧付きで出ており、その子が自分たちの噂を口にしているように見えていた(mockup-baseline §3「地の文は吹き出しにしない」とのずれ)。休憩中の枠に出さない案は採らなかった — B層の Glimpse は `weekLogFeed` にしか流れず、`weekLogFeed` を読むのは道場のこの枠だけなので、外すと GL-12 はどこにも出なくなる。抽選(18%)・1週1人の枠は他の Glimpse と共有のまま。
 
 `G.weekLogFeed` は**週送りのたびに前週分を捨ててから**その週の Glimpse を積む(2026-09-26 K-1 第1段で統一)。
 興行の無い週(`App.processWeek`)は tickWeek の前、興行週(`App.closeShowResult`)と PPV の2経路は tickWeek 直後の G の作り直しで空にする。
