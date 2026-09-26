@@ -79,17 +79,6 @@ module.exports = [
   },
   // K1-E04(突然の退団が実プレイで起きない)は K-1 第4段 4-B-7 で解消したので外した(2026-09-26)。
   // 両経路が Engine.show.applySuddenDepartures を通す(前兆の確認は k1-parity-report.md §8 の 4-B 後半)。
-  {
-    id: 'K1-A01B', title: 'K1-A01(キャリア最高評価と信頼ボーナス)の差を、去った選手がフリー・他団体・演出データへ持ち出す',
-    category: 'propagation', side: 'app', impact: '数値', scenarios: ['departure'], checkpoints: ['A', 'B'],
-    patterns: [
-      'freeAgents[*].careerBestMQ', 'freeAgents[*]._trustBonus', 'freeAgents[*]._trustBonusSources',
-      'aiOrgs.*.roster[*].careerBestMQ', 'aiOrgs.*.roster[*]._trustBonus', 'aiOrgs.*.roster[*]._trustBonusSources',
-      '_pendingSuddenDepartures[*].fighter.careerBestMQ', '_pendingSuddenDepartures[*].fighter._trustBonus',
-      '_pendingSuddenDepartures[*].fighter._trustBonusSources',
-    ],
-    mustAppear: false, refs: 'K1-A01 の波及(第4段 4-B-7 で実プレイでも突然の退団が起きるようになって見えた)',
-  },
   // K1-E05(派閥抗争ポイント・派閥内ポイントの試合ごとの加点が実プレイに無い)は K-1 第4段 4-B-2 で解消したので
   // 外した(2026-09-26)。両経路が Engine.show.accrueFactionPoints を通す。F09 の試合も ×1.8 で加点される。
   // 残る抗争ポイントの差は F09 のスイープボーナス(+15。実プレイだけ)で、K1-A13 に数える。
@@ -170,24 +159,10 @@ module.exports = [
   // K1-E02(試合成長の式。実プレイに年齢倍率・関係性倍率が無く、タッグの相手は強い方)は K-1 第4段 4-B-4 で
   // 解消したので外した(2026-09-26)。両経路が Engine.show.applyMatchGrowth を通す(タッグの相手は2人の平均=裁定)。
   // tickWeek 後(B)に残る能力の差は、実プレイだけの処理(K1-A01 の信頼ボーナスなど)の波及で、K1-B06 に数える。
-  {
-    id: 'K1-A01', title: 'キャリア最高評価(careerBestMQ)の更新と信頼ボーナス(+1.2)',
-    category: 'processing', side: 'app', impact: '数値', checkpoints: ['A', 'B'],
-    patterns: ['roster[*].careerBestMQ', 'roster[*]._trustBonus', 'roster[*]._trustBonusSources'], sides: { A: ['appOnly'] },
-    mustAppear: true, refs: 'app.js:8890-8897 / エンジンは更新しない(management.js:15193 のコメントどおり)',
-  },
-  {
-    id: 'K1-A02', title: 'ブレークスルー判定・敗戦スランプ・スランプ/モチベ喪失のモメンタム',
-    category: 'processing', side: 'app', impact: '数値', checkpoints: ['A', 'B'],
-    patterns: ['roster[*].slump.recoveryMomentum', 'roster[*].slump', 'roster[*].motivationLoss', 'roster[*].hotStreak', '_pendingGrowthEvents',
-      'roster[*].careerRecord.history', 'roster[*].careerHistory'],
-    // 2026-09-26: K-4 S1(休眠プールの規則)で fixture(seed 42・S2W14)の世界が変わり、この週にスランプ・好調・
-    // ブレークスルーに当たる選手がいなくなって、状態の差としては出なくなったため、一時 mustAppear: false にしていた。
-    // 2026-09-26 基準の取り直し3回目: headless 進行の WM_I18N スタブを直した(派閥の選択が効くようになった)fixture では、
-    // スランプ中の選手の回復モメンタム(slump.recoveryMomentum)が全16本で A=実プレイだけ・B=両方で違う として出る
-    // (dome はブレークスルーの経歴も)。元の強さ(mustAppear: true)に戻した。A02 を一本化したら項目ごと外すこと
-    mustAppear: true, refs: 'app.js:8829-8941 / エンジン側なし(乱数ストリーム 0xB818/0x5C6/0x5C7/0x5C8 は実プレイだけが引く)',
-  },
+  // K1-A01(キャリア最高評価 careerBestMQ の更新と信頼ボーナス +1.2 が実プレイだけ)と K1-A02(ブレークスルー・敗戦スランプ・
+  // スランプ/モチベ喪失のモメンタムが実プレイだけ)は K-1 第4段 4-A で解消したので外した(2026-09-26)。両経路が
+  // Engine.show.finalize の中の Engine.show.applyGrowthEvents を通す(乱数 0xB818・0x5C6・0x5C7・0x5C8 を両経路が引く)。
+  // 去った選手が K1-A01 の差を持ち出していた K1-A01B も一緒に外した。
   // K1-A03(季節統計 seasonStats: 興行数・勝敗・最高評価)は K-1 第2段で解消したので外した(2026-09-26)。
   // 両経路が Engine.show.accumulateSeasonStats を通す。季の収支合計(seasonStats.total*・peak*)は closeShowResult の
   // 後半にあり、K1-C05 に数える(第5段で tickWeek へ)。

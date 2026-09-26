@@ -34,6 +34,10 @@ function prepareBase(base) {
   // (2026-09-26: K-2+K-3+K-16 ほかの取り込み後、S2W14 で2人が怪我をしていた)。
   // 週次の復帰処理と同じく preInjuryPop も片付ける。怪我を扱う injury シナリオは自分で条件を入れる。
   G.roster = (G.roster || []).map(f => (f.injury ? Engine.popularity.clearPreInjury({ ...f, injury: null }) : f));
+  // 信頼が臨界帯(15未満)の選手は20まで戻しておく(入力の設定。2026-09-26 第4段 4-A: 試合後の成長イベントが
+  // エンジンにも入って fixture の世界が変わり、選手7が信頼15未満になって、ほとんどのシナリオで突然の退団を起こし
+  // ラストランなどの確かめたい処理を隠していた)。突然の退団を扱う departure シナリオは自分で信頼を下げる
+  G.roster = G.roster.map(f => (f.trust != null && f.trust < 15 ? { ...f, trust: 20 } : f));
   if (!Engine.util.isRegularShowWeek(G.week)) {
     throw new Error(`base week ${G.week} is not a regular show week`);
   }
@@ -262,16 +266,27 @@ const scenarios = [
     build(base) {
       let G = prepareBase(base);
       const f = need(healthy(G), 12, this.name);
-      const existing = (G.factions || []).find(x => Array.isArray(x.memberIds) && x.memberIds.length >= 4 && x.status !== 'dissolved');
+      // 基準状態の派閥のうち一番大きいもの(リーダー+2人以上)を使う(2026-09-26 第4段 4-A: 試合後の成長イベントなどが
+      // エンジンにも入って fixture の世界が変わり、派閥が 3人+3人 になった。以前は4人以上の派閥を要求していた)
+      let existing = (G.factions || [])
+        .filter(x => Array.isArray(x.memberIds) && x.memberIds.length >= 3 && x.status !== 'dissolved')
+        .sort((a, b) => b.memberIds.length - a.memberIds.length)[0];
       if (!existing) throw new Error(`${this.name}: base state has no faction to pair with`);
-      const inExisting = new Set(existing.memberIds);
       // 新しい派閥(900)の顔ぶれは、どの派閥にも属していない選手から選ぶ(2026-09-26)。
       // 基準状態に派閥が2つある fixture で、もう一方の派閥の選手を 900 にも入れてしまい、
       // validateGameState の「複数派閥に所属」の違反を両経路に出していた(入力の作り方の不具合)
       const inAnyFaction = new Set((G.factions || [])
         .filter(x => x.status !== 'dissolved')
         .flatMap(x => (Array.isArray(x.memberIds) ? x.memberIds : [])));
-      const outsiders = f.filter(x => !inExisting.has(x.id) && !inAnyFaction.has(x.id));
+      let outsiders = f.filter(x => !inAnyFaction.has(x.id));
+      // 派閥が4人に満たなければ、どの派閥にも属さない選手で4人(リーダー+3人)まで補う(入力の設定。2026-09-26 第4段 4-A)
+      if (existing.memberIds.length < 4) {
+        const add = outsiders.slice(0, 4 - existing.memberIds.length).map(x => x.id);
+        existing = { ...existing, memberIds: [...existing.memberIds, ...add] };
+        G = { ...G, factions: G.factions.map(x => (x.id === existing.id ? existing : x)) };
+        outsiders = outsiders.filter(x => !add.includes(x.id));
+      }
+      const inExisting = new Set(existing.memberIds);
       const insiders = f.filter(x => inExisting.has(x.id) && x.id !== existing.leaderId);
       const leaderA = G.roster.find(x => x.id === existing.leaderId);
       // 使うのは insiders[0..2] の3人(2026-09-26: 基準状態の派閥が4人=リーダー+3人になったので下限を実際の使用数に合わせた)

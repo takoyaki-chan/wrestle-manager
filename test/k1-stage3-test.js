@@ -65,7 +65,9 @@ section('3-1: executeShow は beginShow → 試合のシミュレーション �
   const body = engineShowBody();
   ['resolvedRivalryEntry', 'applyMatchPopularity', 'resetPromoStacks', 'resolveMatchInjury', 'applyInjuryRetirementAftermath',
     'accrueFactionPoints', 'applyMatchGrowth', 'accumulateSeasonStats', 'recordShowH2h', 'applySuddenDepartures',
-    'buildInjuryRetirementPresentations', 'buildShowNewspaperData'].forEach(fn => {
+    'buildInjuryRetirementPresentations', 'buildShowNewspaperData',
+    // 第4段 4-A(実プレイだけにあった処理をエンジンへ)
+    'applyGrowthEvents'].forEach(fn => {
     assert.ok(body.includes(`Engine.show.${fn}(`), `エンジンの経路が Engine.show.${fn} を通っていない`);
   });
 });
@@ -84,11 +86,13 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
     assert.ok(impl.includes(opt), `_finalizeShowImpl が ${opt} を渡していない`);
   });
   const hookNames = ['afterTitles: w => App._finalizeHookSpecialBouts(w)', 'afterRelationships: w => App._finalizeHookFactionBookings(w)',
-    'afterGrowth: w => App._finalizeHookGrowthEvents(w, pendingGrowthEvents)', 'beforeKaigan: w => App._finalizeHookCareerMarks(w)',
-    'afterWriteback: w => App._finalizeHookGuests(w, pendingGrowthEvents)'];
+    'beforeKaigan: w => App._finalizeHookCareerMarks(w)',
+    'afterWriteback: w => App._finalizeHookGuests(w)'];
   hookNames.forEach(h => assert.ok(impl.includes(h), `hooks に ${h} が無い`));
+  // 第4段 4-A でエンジンへ移した処理の hooks は残っていない
+  assert.ok(!/afterGrowth:/.test(impl) && !/_finalizeHookGrowthEvents/.test(app), '成長イベントの hook(第4段 4-A でエンジンへ移した)が残っている');
   // 共通の処理を実プレイ側に書き直していない(_finalizeShowImpl と hooks のどこにも無い)
-  const hooks = ['_finalizeHookSpecialBouts', '_finalizeHookFactionBookings', '_finalizeHookGrowthEvents', '_finalizeHookCareerMarks', '_finalizeHookGuests']
+  const hooks = ['_finalizeHookSpecialBouts', '_finalizeHookFactionBookings', '_finalizeHookCareerMarks', '_finalizeHookGuests']
     .map(name => {
       const st = app.indexOf(`\n  ${name}(`);
       assert.ok(st >= 0, `App.${name} が無い`);
@@ -97,7 +101,8 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
   ['Engine.mq.finalize(', 'Engine.mq.updateRecord(', 'Engine.attendanceV2.calcAttendanceV2(', 'Engine.applyShowPopularity(',
     'Engine.title.crownChampion(', 'Engine.title.recordRivalry(', 'Engine.show.resolveMatchInjury(', 'Engine.relationships.applyMatchResult(',
     'Engine.relationships.applyShowContextEffects(', 'Engine.show.accrueFactionPoints(', 'Engine.show.applyMatchGrowth(',
-    'Engine.show.recordShowH2h(', 'Engine.pushRecentMatch(', 'Engine.kaigan.processMatchResults(', 'Engine.show.applySuddenDepartures(']
+    'Engine.show.recordShowH2h(', 'Engine.pushRecentMatch(', 'Engine.kaigan.processMatchResults(', 'Engine.show.applySuddenDepartures(',
+    'Engine.growthEvents.checkAndApplyBreakthrough(', 'Engine.growthEvents.checkSlump(', 'Engine.growthEvents.updateSlumpMomentumAfterMatch(']
     .forEach(call => {
       assert.ok(!impl.includes(call), `_finalizeShowImpl に共通の処理(${call})が残っている`);
       assert.ok(!hooks.includes(call), `実プレイの hooks に共通の処理(${call})が入っている`);
@@ -203,13 +208,8 @@ section('finalize: hooks は決まった順に1回ずつ、作業中の値の入
   const mk = name => w => {
     calls.push(name);
     ['s', 'roster', 'titles', 'rivalries', 'events', 'titleMatchOutcomes', 'validMatches', 'results'].forEach(k => assert.ok(w[k], `${name}: w.${k} が無い`));
-    if (name === 'afterGrowth') {
-      const wb = w.writeback();
-      assert.strictEqual(wb.roster, w.roster, 'writeback のロスターが作業中のロスターでない');
-      assert.strictEqual(wb.lastShowResults, w.results);
-    }
   };
-  const names = ['afterTitles', 'afterRelationships', 'afterGrowth', 'beforeKaigan', 'afterWriteback'];
+  const names = ['afterTitles', 'afterRelationships', 'beforeKaigan', 'afterWriteback'];
   const hooks = Object.fromEntries(names.map(n => [n, mk(n)]));
   const plain = runFinalize().fin;
   const hooked = runFinalize({ hooks }).fin;
@@ -266,6 +266,54 @@ section('finalize: ctx.logStyle — 省略時は文字列、structured は実プ
   assert.ok(structured.some(e => e && (e.type === 'show_rating_org_pop_update' || e.type === 'show_rating_org_pop_update_small_venue')),
     '実プレイの★の構造化ログが無い');
   assert.ok(!structured.some(e => typeof e === 'string' && e.startsWith('📊 ★')), '構造化ログに文字列の★が混ざった');
+});
+
+// ── 第4段 4-A: 実プレイだけにあった処理がエンジンの経路でも起きる ──
+section('4-A K1-A01: キャリア最高評価の更新と信頼ボーナス(+1.2)が finalize で付く(両経路共通)', () => {
+  const run = runFinalize();
+  let checked = 0;
+  run.results.forEach((r, i) => {
+    const m = run.validMatches[i];
+    const ids = m.matchType === 'tag' ? [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2] : [m.left, m.right];
+    ids.forEach(id => {
+      const before = run.input.roster.find(c => c.id === id);
+      const after = run.fin.state.roster.find(c => c.id === id);
+      if (!before || !after || !(r.mq > (before.careerBestMQ || 0))) return;
+      checked++;
+      assert.strictEqual(after.careerBestMQ, r.mq, `選手${id}のキャリア最高評価が更新されていない`);
+      assert.ok((after._trustBonusSources || []).includes('careerBestMQ'), `選手${id}に最高評価の信頼ボーナスが付いていない`);
+    });
+  });
+  assert.ok(checked > 0, 'fixture に最高評価を更新する出場者がいない(検査にならない)');
+});
+
+section('4-A K1-A02: ブレークスルー・スランプの判定は finalize の中(Engine.show.applyGrowthEvents)。演出データは _pendingGrowthEvents', () => {
+  const body = finalizeBody();
+  assert.ok(body.includes('Engine.show.applyGrowthEvents('), 'finalize が Engine.show.applyGrowthEvents を呼んでいない');
+  // 出場者の多い興行を何本か回し、ブレークスルー・スランプの演出データが状態に載ることを確かめる(乱数の種を変える)
+  let events = 0;
+  for (let k = 0; k < 12 && events === 0; k++) {
+    const input = clone(showState);
+    input.rngSeed = 1000 + k;
+    const validMatches = input.showCard.filter(m => m.matchType === 'tag' || (m.left > 0 && m.right > 0));
+    const begun = Engine.show.beginShow(input, validMatches);
+    let roster = begun.roster;
+    const results = validMatches.map(m => {
+      if (m.matchType === 'tag') {
+        const f = id => roster.find(c => c.id === id);
+        const tag = Engine.showTagMatch.simulate({ ...begun.state, roster }, { fighter1: f(m.teamA.fighter1), fighter2: f(m.teamA.fighter2) }, { fighter1: f(m.teamB.fighter1), fighter2: f(m.teamB.fighter2) });
+        roster = tag.roster;
+        return tag.result;
+      }
+      const rng = Engine.rng.create(Engine.rng.derive(input.rngSeed, input.season, input.week, m.left, m.right));
+      return Engine.battle.simulateMatch(roster.find(c => c.id === m.left), roster.find(c => c.id === m.right), rng, 1, {});
+    });
+    const fin = Engine.show.finalize(begun.state, validMatches, results, { roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: input });
+    const ge = fin.state._pendingGrowthEvents || [];
+    ge.forEach(e => assert.ok(['breakthrough', 'slump_start', 'motivation_loss_start'].includes(e.type), `知らない成長イベント ${e.type}`));
+    events += ge.length;
+  }
+  assert.ok(events > 0, '12本回してブレークスルー・スランプが一度も起きない(エンジンの経路で判定していない疑い)');
 });
 
 if (failed > 0) {

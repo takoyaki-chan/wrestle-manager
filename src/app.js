@@ -7737,7 +7737,6 @@ const App = {
     // 以前ここに書き写してあった王座・集客・評価の確定・記録・因縁・人気・★・熱・怪我・関係値・派閥ポイント・成長・
     // 対戦成績・開眼・突然の退団は、すべて finalize の中(両経路で1本)
     const begun = Engine.show.beginShow(G, validMatches);
-    const pendingGrowthEvents = [];
     const fin = Engine.show.finalize(begun.state, validMatches, results, {
       roster: begun.roster,
       preShowLosingStreaks: begun.preShowLosingStreaks,
@@ -7756,9 +7755,8 @@ const App = {
       hooks: {
         afterTitles: w => App._finalizeHookSpecialBouts(w),
         afterRelationships: w => App._finalizeHookFactionBookings(w),
-        afterGrowth: w => App._finalizeHookGrowthEvents(w, pendingGrowthEvents),
         beforeKaigan: w => App._finalizeHookCareerMarks(w),
-        afterWriteback: w => App._finalizeHookGuests(w, pendingGrowthEvents),
+        afterWriteback: w => App._finalizeHookGuests(w),
       },
     });
     const injuryResults = fin.injuryResults;
@@ -8451,132 +8449,6 @@ const App = {
     w.common1MatchIdx = common1ResolvedIdx;
   },
 
-  // hooks.afterGrowth(成長・季節の統計の直後、対戦成績の前): ブレークスルー判定・キャリア最高評価と信頼ボーナス・
-  // 敗戦スランプ・スランプ/モチベ喪失のモメンタム(K1-A01・K1-A02)。成長の演出データは pendingGrowthEvents に積み、
-  // hooks.afterWriteback で状態に載せる(以前と同じ位置)
-  _finalizeHookGrowthEvents(w, pendingGrowthEvents) {
-    // 以前の実プレイはここで書き戻していた(ブレークスルーの関係値の判定は、書き戻した状態のロスターを見る)
-    let s = w.writeback();
-    let roster = w.roster;
-    const { validMatches, results } = w;
-
-    // v1.8: §2 ブレークスルー判定 & careerBestMQ 更新（試合後）
-    const btRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB818));
-    results.forEach((r, rIdx) => {
-      const m = validMatches[rIdx];
-      // タッグマッチ: 4人にブレークスルー・スランプ判定
-      let btEntries;
-      if (r.matchType === 'tag') {
-        const allIds = [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2];
-        const winTeamIds = r.winner === 'teamA' ? [m.teamA.fighter1, m.teamA.fighter2]
-          : r.winner === 'teamB' ? [m.teamB.fighter1, m.teamB.fighter2] : [];
-        btEntries = allIds.map(charId => {
-          const isTeamA = charId === m.teamA.fighter1 || charId === m.teamA.fighter2;
-          const oppIds = isTeamA ? [m.teamB.fighter1, m.teamB.fighter2] : [m.teamA.fighter1, m.teamA.fighter2];
-          const oppOvr = Math.max(...oppIds.map(id => { const f = roster.find(c => c.id === id); return f ? Engine.util.ov(f) : 50; }));
-          return { charId, won: winTeamIds.includes(charId), oppOvr };
-        });
-      } else {
-        btEntries = [
-          { charId: r.left.id,  won: r.winner === 'left',  oppOvr: null },
-          { charId: r.right.id, won: r.winner === 'right', oppOvr: null },
-        ];
-      }
-      btEntries.forEach(({ charId, won, oppOvr: preOppOvr }) => {
-        const fighter = roster.find(c => c.id === charId);
-        if (!fighter || fighter.isIntrusion) return;
-        let oppOvr;
-        if (preOppOvr !== null) { oppOvr = preOppOvr; }
-        else {
-          const oppId = charId === r.left.id ? r.right.id : r.left.id;
-          const oppFighter = roster.find(c => c.id === oppId);
-          oppOvr = oppFighter ? Engine.util.ov(oppFighter) : (r[charId === r.left.id ? 'right' : 'left']?.pw ?? 50);
-        }
-        const isTitle = !!r.isTitleMatch;
-
-        // ブレークスルー判定（careerBestMQ更新前に実施 — mq > prevBest 判定のため）
-        const btContext = { isTitle, won, isPPV: isPPV(s.week), isRivalryResolution: !!r.rivalryResolved, isWarMatch: false };
-        const btResult = Engine.growthEvents.checkAndApplyBreakthrough(
-          btRng, fighter, r.mq, oppOvr, btContext, s.season, s.week, Engine.coach.getFlavorBreakthroughMult(s, fighter.id)
-        );
-        if (btResult) {
-          const btFighter = {
-            ...btResult.fighter,
-            _trustBonus: (btResult.fighter._trustBonus || 0) + 3.5,
-            _trustBonusSources: [...(btResult.fighter._trustBonusSources || []), 'breakthrough'],
-          };
-          roster = roster.map(c => c.id === charId ? btFighter : c);
-          const btHintFighter = roster.find(c => c.id === charId) || fighter;
-          const btHintLine = pickDialogueLine(BT_HINT_LINES, btHintFighter);
-          pendingGrowthEvents.push({
-            type: 'breakthrough', fighterId: charId,
-            stat: btResult.stat, gain: btResult.gain, hotStreak: btResult.hotStreak,
-            btHint: btHintLine
-          });
-          // Phase 4 G-01: ブレークスルー → OVR近接キャラからrivalry上昇
-          if (s.relationships) {
-            const btRelRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE57, charId));
-            s = Engine.relationships.applyBreakthroughEffect(s, charId, btRelRng);
-          }
-        }
-
-        // careerBestMQ 更新（ブレークスルー判定後に実施）
-        const btUpdatedFighter = roster.find(c => c.id === charId);
-        if (r.mq > (btUpdatedFighter.careerBestMQ || 0)) {
-          roster = roster.map(c => c.id === charId
-            ? { ...c, careerBestMQ: r.mq, _trustBonus: (c._trustBonus || 0) + 1.2,
-                _trustBonusSources: [...(c._trustBonusSources || []), 'careerBestMQ'] }
-            : c);
-        }
-
-        // §4.2 敗北スランプ判定
-        if (!won) {
-          const slumpRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5C6, charId));
-          const slumpFighter = roster.find(c => c.id === charId);
-          if (Engine.growthEvents.checkSlump(slumpRng, slumpFighter, 'defeat')) {
-            const newF = Engine.growthEvents.applySlump(slumpFighter, 'defeat', s.season, s.week);
-            roster = roster.map(c => c.id === charId ? newF : c);
-            pendingGrowthEvents.push({ type: 'slump_start', fighterId: charId, trigger: 'defeat' });
-            // Phase 4 G-03: スランプ → bond60+心配、rivalry30+低下
-            if (s.relationships) {
-              const symRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE58, charId));
-              s = Engine.relationships.applySympathyEffect(s, charId, { min: 1, max: 2 }, symRng);
-              // N-05: スランプ八つ当たり
-              const lashRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE6C, charId));
-              s = Engine.relationships.applySlumpLashout({ ...s, roster }, charId, lashRng);
-            }
-          }
-        }
-
-        // §4.4/§5.4 試合後 momentum 更新（スランプ/モチベ喪失中）
-        const momRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5C7, charId));
-        const momFighter = roster.find(c => c.id === charId);
-        let updatedF = Engine.growthEvents.updateSlumpMomentumAfterMatch(momFighter, r.mq, won, momRng);
-        updatedF = Engine.growthEvents.updateMotivationLossMomentumAfterMatch(updatedF, r.mq, won, momRng);
-
-        // §5.2 モチベ喪失 敗北トリガー
-        if (!won && updatedF.slump) {
-          const mlRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x5C8, charId));
-          if (Engine.growthEvents.checkMotivationLoss(mlRng, updatedF, 'defeat')) {
-            updatedF = Engine.growthEvents.applyMotivationLoss(updatedF, s.season, s.week);
-            pendingGrowthEvents.push({ type: 'motivation_loss_start', fighterId: charId });
-            // Phase 4 G-06: モチベ喪失 → bond60+心配、rivalry30+低下
-            if (s.relationships) {
-              const symRng2 = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE59, charId));
-              s = Engine.relationships.applySympathyEffect(s, charId, { min: 1, max: 1 }, symRng2);
-            }
-          }
-        }
-        if (updatedF !== momFighter) {
-          roster = roster.map(c => c.id === charId ? updatedF : c);
-        }
-      });
-    });
-
-    w.s = s;
-    w.roster = roster;
-  },
-
   // hooks.beforeKaigan(対戦成績・直近戦績・対戦記録の後、開眼の前): MVP 用の大試合の経歴(§7 X07)・
   // ドーム興行の経歴とドーム回数(K1-A10)
   _finalizeHookCareerMarks(w) {
@@ -8650,17 +8522,13 @@ const App = {
     w.roster = roster;
   },
 
-  // hooks.afterWriteback(書き戻しの直後、記録更新の刻印・突然の退団の前): 成長の演出データを載せる・
-  // 全国統一王座戦の清算(§7 X06)・挑戦状 B3 の清算・直訴のゲストを所属団体へ戻す
-  _finalizeHookGuests(w, pendingGrowthEvents) {
+  // hooks.afterWriteback(書き戻しの直後、記録更新の刻印・突然の退団の前): 全国統一王座戦の清算(§7 X06)・
+  // 挑戦状 B3 の清算・直訴のゲストを所属団体へ戻す(成長の演出データは第4段 4-A から finalize が載せる)
+  _finalizeHookGuests(w) {
     let s = w.s;
     let roster = w.roster;
     const titles = w.titles;
     const { events, validMatches, results } = w;
-
-    if (pendingGrowthEvents.length > 0) {
-      s = { ...s, _pendingGrowthEvents: pendingGrowthEvents };
-    }
 
     // 全国統一王座戦: 通常興行の共通処理後、ゲストを本来のAI団体へ戻して王座を清算する。
     if (App._unifiedTitleShowData) {
