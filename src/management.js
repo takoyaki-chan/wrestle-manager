@@ -15187,6 +15187,14 @@ const Engine = {
           // 決着の効果(§5: 勝者・敗者の勢い・信頼・絆・対立度ほか)・記録の削除・自然沈静化の週数は返した state にだけ入る
           // (2026-09-26 まで state をその場で書き換える形で、決着の効果の戻り値を捨てていた)
           if (resolution && resolution.state) s = resolution.state;
+          // 決着の知らせ(2026-09-26 第5回 問11): 先取100は新聞(業界ニュース・勝ったリーダーの一言つき)と週のログに1行、
+          // 派閥の消滅で終わった記録はログに1行。表示だけで数値は動かさない(一言の抽選は専用の乱数系列)
+          if (resolution && resolution.resolved && typeof Engine.factions.buildRivalryResolutionNotice === 'function') {
+            const noticeRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA2A));
+            const notice = Engine.factions.buildRivalryResolutionNotice(s, resolution, noticeRng);
+            if (notice.news && Engine.industryNews) s = Engine.industryNews.push(s, notice.news);
+            if (notice.log) events.push({ ...notice.log, s: s.season, w: s.week });
+          }
           // §4.3 40週の2択(F06_FORCE)。社長の判断を派閥イベントとして待つ(2026-09-26 裁定4)。
           // 画面は App.handleFactionEvent、auto-sim は autoHandleFactionEvent が Engine.factions.applyF06ForceChoice を呼ぶ
           if (resolution && resolution.forceClose && !s._pendingFactionEvent
@@ -33621,6 +33629,12 @@ function _wmResolvePreformattedIndustryData(ev, dict) {
         : '決勝より前に、この大会の頂は一度現れていた。';
       return { ...data, round: T(ROUND_JA[data.roundKey] || data.roundKey), closing: T(closingJa) };
     }
+    case 'factionRivalryDecided': {
+      // 2026-09-26 第5回 問11: 勝ったリーダーの一言(FACTION_RIVALRY_VICTORY_LINES の原文=辞書のキー)を、
+      // 載る瞬間の言語で「」ごと組む(PPV の _quoted と同じ作り。dict 無しでは原文のまま)
+      if (!data.quoteLine) return data;
+      return { ...data, quote: T('「{line}」').replace('{line}', T(data.quoteLine)) };
+    }
     case 'hotProspectDebut':
       if (data.won == null) return data;
       return { ...data, result: T(data.won ? '白星' : '黒星') };
@@ -33974,6 +33988,8 @@ Engine.newspaper = {
     // ── 業界ニュース拡充: bond/rivalry/派閥/奪還 ──
     factionEscalation:    125,
     factionResolution:    122,
+    // 抗争ポイントの先取で決着(2026-09-26 第5回 問11)。F02 の決着(factionResolution)と同じ格
+    factionRivalryDecided: 122,
     reclaimSuccess:       120,
     reclaimChallenge:     108,
     reclaimFailure:       102,

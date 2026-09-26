@@ -7951,6 +7951,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}で続いていた「{winFaction}」と「{loseFaction}」の抗争は、リングで白星を重ねた「{winFaction}」が制した。リーダーの{winLeader}は{quote}と話した。敗れた「{loseFaction}」は、{loseLeader}の下で立て直しを迫られる。",
+    "en": "The feud between {winFaction} and {loseFaction} at {org} has gone to {winFaction}, who kept stacking up wins in the ring. Their leader, {winLeader}, put it this way: {quote} The beaten {loseFaction} now have to rebuild under {loseLeader}.",
+    "files": [
+      "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}との対外戦{record}も、この章の彼女の重みを物語る。",
     "en": " An interpromotional record of {record} against {org} says as much about her weight in this chapter.",
     "files": [
@@ -8491,6 +8501,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}の控室を二つに分けていた派閥抗争に、勝ち負けがついた。派閥どうしの試合で星を積み上げた「{winFaction}」が、「{loseFaction}」を上回った。{winLeader}は{quote}と語った。「{loseFaction}」では、率いる{loseLeader}の求心力が問われることになる。",
+    "en": "The faction feud that split the {org} locker room in two has a winner. {winFaction}, who piled up wins in the matches between the factions, finished ahead of {loseFaction}. {winLeader} said: {quote} Over in {loseFaction}, {loseLeader}'s hold on the group will now be tested.",
+    "files": [
+      "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}の派閥「{factionName}」が消滅——{leaderName}の喪失で求心力失う",
     "en": "{factionName} folds: {leaderName}, {org}",
     "files": [
@@ -8523,6 +8543,16 @@
   {
     "key": "{org}の派閥抗争が沈静化——「{factionAName}」と「{factionBName}」に停戦の空気",
     "en": "{org} cools: {factionAName}, {factionBName}",
+    "files": [
+      "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の派閥抗争に決着——「{winFaction}」が「{loseFaction}」を退ける",
+    "en": "{org} feud settled — {winFaction} see off {loseFaction}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -14478,6 +14508,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "⚔ {factionName}の抗争は、相手の派閥の消滅で終わった",
+    "en": "⚔ The {factionName} feud is over: the rival faction dissolved",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "⚔ {opponentName}との対抗戦を辞退",
     "en": "⚔ Declined the interpromotional match with {opponentName}",
     "files": [
@@ -14492,6 +14532,16 @@
     "en": "⚔ Interpromotional series vs {opponent} — {playerWins}-{aiWins}, {result}",
     "files": [
       "CROSS_WAR_RESULT_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚔ 派閥抗争に決着: {winFaction}が{loseFaction}を制した",
+    "en": "⚔ Faction feud settled: {winFaction} beat {loseFaction}",
+    "files": [
+      "GAMELOG_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -14870,6 +14920,16 @@
   {
     "key": "「{winFaction}」が対抗戦を制圧——{loseLeader}の派閥に重い星",
     "en": "{winFaction} take the war — {loseLeader} beaten",
+    "files": [
+      "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「{winFaction}」が抗争を制す——{org}、「{loseFaction}」との派閥争いに決着",
+    "en": "{winFaction} take the feud — {org} faction fight with {loseFaction} settled",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
