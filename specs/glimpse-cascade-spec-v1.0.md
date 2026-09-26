@@ -37,6 +37,8 @@
 
 候補は `G.weekLogFeed` のうち `_isDojoRestEligibleGlimpse`(ui-render.js)を通るもの。1週に出すのは1人だけ。
 
+吹き出しは幅200px・最大4行(2026-09-26 Keisuke 裁定・案A。旧 150px・2行では長い一言が「…」で切れていた)。下の表の A層・B層の全セリフと退団寸前の引き留めの表(全1,370本)が JA/EN とも切れずに入る。検査は `node test/ui-walkthrough/dojo-rest-bubble-fit-check.js`(手動実行)。見た目の規則は `docs/ui/03-screens/dojo-heat-self-bubble.md`「道場シーンの吹き出しの共通規則」。
+
 `G.weekLogFeed` は**週送りのたびに前週分を捨ててから**その週の Glimpse を積む(2026-09-26 K-1 第1段で統一)。
 興行の無い週(`App.processWeek`)は tickWeek の前、興行週(`App.closeShowResult`)と PPV の2経路は tickWeek 直後の G の作り直しで空にする。
 以前は興行週と PPV の経路だけ空にしていなかったため、前週の Glimpse が翌週の道場にも残り、確定枠(gold/danger 級)が同じ選手の同じ台詞で2週続いていた(30季で19回 → 0回)。回帰テスト: `test/k1-stage1-test.js`

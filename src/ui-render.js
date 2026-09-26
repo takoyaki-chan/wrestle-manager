@@ -1935,6 +1935,8 @@ const DOJO_REST_B_TYPES = new Set(['GL-01', 'GL-02', 'GL-03', 'GL-04', 'GL-05', 
 const DOJO_REST_A_AXES = new Set(['bond', 'rivalry', 'trust']);
 const DOJO_REST_PROB = 0.18; // 控えめ: 対象1件につき18%抽選。該当ゼロなら何も出さない
 // 出すのは1人だけ。2人だと縦に並んでしまい、セリフも合わせると窮屈になるため(2026-07-26 Keisuke)
+// 2026-09-26 に吹き出しを最大4行(幅200px)へ広げたので、1人でも高さ約108px。2人を縦に積むとバナー
+// (最大200px)に収まらない — 増やすなら並べ方から作り直すこと
 const DOJO_REST_MAX = 1;
 /** 休憩中の選手候補として使える Glimpse か判定する。
  *  本人の心の状態・人間関係・試合や勝ち負けを受けた気持ちを映すもの:
@@ -2015,7 +2017,7 @@ function _renderRosterDojoHeader() {
           .replace('{name}', callNameText(null, heatFighter, '') || WM_I18N.t('この子'));
         coachHeatFighterId = heatFighter.id;
       }
-      html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble">${_quoteLine(speechText)}</div></div>
+      html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble"><span class="dojo-bubble-text">${_quoteLine(speechText)}</span></div></div>
         <div class="dojo-scene-coach-avatar" onclick="showCoachTooltip(${coachForBubble.id})" style="cursor:pointer">
           ${coachPortraitImg(coachForBubble, 48)}
         </div>
@@ -2109,7 +2111,7 @@ function _renderRosterDojoHeader() {
         const isHeatSelf = !!(heatSelfFighter && heatSelfLineText && c.id === heatSelfFighter.id);
         html += `<div class="dojo-scene-fighter-wrap${isHeatSelf ? ' has-heat-bubble' : ''}" style="margin-bottom:${offsetY}px" title="${WM_I18N.pn(c.name)}" onclick="showFighterPopup(${c.id},'roster')">`;
         if (isHeatSelf) {
-          html += `<div class="dojo-heat-bubble">${_quoteLine(heatSelfLineText)}</div>`;
+          html += `<div class="dojo-heat-bubble"><span class="dojo-bubble-text">${_quoteLine(heatSelfLineText)}</span></div>`;
         } else {
           html += `<div class="dojo-scene-shout" style="--shout-cycle:${cycle}s;--shout-delay:${delay}s"></div>`;
         }
@@ -2149,7 +2151,7 @@ function _renderRosterDojoHeader() {
         // i18n Stage B P5-1: g.dialogue はrelationships.jsのGLIMPSE_A/B_LINES選択(pickDialogueLine)
         // で得た生JA行(relationships.jsは並行エージェントの領分のため選択ロジックには触れず、
         // ここ=表示直前でt()を通す)。
-        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">${_quoteLine((g.dialogueTpl ? WM_I18N.t(g.dialogueTpl, g.dialogueVars || {}) : WM_I18N.t(g.dialogue)) || WM_I18N.t(g.label) || '')}</div>`;
+        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s"><span class="dojo-bubble-text">${_quoteLine((g.dialogueTpl ? WM_I18N.t(g.dialogueTpl, g.dialogueVars || {}) : WM_I18N.t(g.dialogue)) || WM_I18N.t(g.label) || '')}</span></div>`;
         html += `<div class="dojo-rest-avatar">${portraitImg(g.speakerId, 34)}</div>`;
         html += '</div>';
       });

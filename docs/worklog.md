@@ -1,5 +1,24 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 道場の休憩中の吹き出しを幅200px・最大4行に(Keisuke 裁定・案A)(Claude/Opus 5.5・worktree)
+
+表示だけ。数値・文選びは変えていない。
+
+- **幅と行数**: `.dojo-rest-bubble` を 150px・2行 → **200px・4行**。道場に出る全セリフ(GLIMPSE_A の bond/rivalry/trust 閾値すべて・GLIMPSE_B GL-01〜12・引き留めの噂/応えてもらえたの表・ラベル。計1,370本、GL-12 は表示言語で最長の名前2つを入れて)を実UIで測って決めた。4行に収まる最小幅は JA 約185px・EN 約180px。Meiryo/Yu Gothic/Arial/Segoe UI に差し替えても 190px 以上で4行以内 → 余裕を見て 200px。最長は JA 57字・EN 114字
+- **切れる本数(旧150px・2行 → 新)**: 引き留め102本 JA 89→0・EN 92→0 / 信頼15割れ34本 JA 24→0・EN 23→0 / ほかのA層848本 JA 189→0・EN 298→0 / B層 GL-01〜11 368本 JA 51→0・EN 115→0 / GL-12 5本 5→0
+- **尻尾が消えていた(既存の不具合・3つとも)**: 道場の3つの吹き出し(コーチ `.dojo-scene-bubble`・熱量の本人 `.dojo-heat-bubble`・休憩中)は、行数の打ち切りのため本体に `overflow:hidden` を付けていて、尻尾(`::after`・bottom:-6px)まで切れて見えていなかった。打ち切りを本文 `<span class="dojo-bubble-text">` に移した(3つとも。コーチ・熱量の幅と行数は据え置き)
+- **バナーの高さ**: 画像は 6:1 のため幅が狭いと背が低い。`.dojo-header-img` に `min-height:136px`(コーチの群 約120px・4行の休憩中 約108px が上で切れない)
+- **幅760px以下は流し込み配置**: 横並びではいちばん混む週(コーチ190+練習の列 約300+休憩中200+余白)で約720px要り、スマホでは高さ約60pxしかなく全要素が上で切れて重なっていた(既存)。画像を背景に敷き、3群を flex-wrap で並べる(入りきらなければ下へ折り返す)。いちばん混む週でバナーの高さ約350px
+- **2人の縦積み**: `DOJO_REST_MAX = 1` なので起きない。4行×2人はバナー(最大200px)に収まらないので、増やすなら並べ方から作り直す旨をコメントに書いた
+- 同じ見た目の規則の確認: 3つとも クリーム地・黒文字・11px・行間1.35・`--radius-lg`・尻尾中央で揃っている(CSS は別宣言)。幅・行数はコーチ190/2・熱量150/2・休憩中200/4。**参考(直していない)**: コーチの報告の一言は JA 52/184・EN 85/184、熱量の本人の一言は JA 37/75・EN 49/75 が2行で切れる
+- 見つけた既存の違和感(触っていない): GL-12「第三者の証言」は話者のいない地の文(「…誰もが息を潜めたという」)だが、休憩中の選手(当事者の一人)の頭上の白い吹き出しに鉤括弧付きで出る(mockup-baseline §3「地の文は吹き出しにしない」とずれる)
+- 触った: `src/index.html`(道場の CSS)・`src/ui-render.js`(3つの吹き出しに本文の span・DOJO_REST_MAX のコメント)・`test/ui-walkthrough/dojo-rest-bubble-fit-check.js`(新規・手動)・`test/ui-walkthrough/care-last-warning-lines-check.js`(参考の数え方を新しい構造に合わせ、1280/375px で0本を検査に)・`docs/ui/mockup-baseline-v0.1.md`(§3 例外・v0.9)・`docs/ui/03-screens/dojo-heat-self-bubble.md`(道場シーンの吹き出しの共通規則)・`specs/glimpse-cascade-spec-v1.0.md` §0.1・`specs/trust-system-spec-v2.1.md` §17-5(既知の制約の道場の側を解消と追記)
+
+### 検証
+- `node test/ui-walkthrough/dojo-rest-bubble-fit-check.js`(新規・手動): JA/EN × 1920/1280/1024/761/760/414/375/360px × 3場面(コーチ+練習の列+熱量の吹き出し/コーチ不在/練習の列なし)で、全1,370本が切れない・吹き出しと顔がバナーからはみ出さない・コーチの吹き出し/顔/名前・雰囲気の地の文・練習中の顔・熱量の吹き出し・掛け声に被らない・ほかの要素もバナーに収まる・3つの尻尾が切られていない・尻尾が顔の水平中心・例外0。ALL CHECKS PASS
+- `node test/ui-walkthrough/care-last-warning-lines-check.js`・`node test/ui-walkthrough/dojo-heat-self-bubble-check.js` ALL CHECKS PASS
+- `node test/ui-baseline-guard-test.js` ok・`npm test` 312/312 PASS・UI 走破1本 `npm run test:ui:walkthrough` PASS(1季・345操作・Issues 0)
+
 ## 2026-09-26 声かけの結果モーダルのマーカーの食い違い+決裁の結果モーダルの英語の未訳(Claude/Opus 5.5・worktree)
 
 1つ下の節(セリフ204本の流し込み)で見つけた2件。数値は変えていない(表示だけ)。
