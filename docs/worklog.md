@@ -1,5 +1,88 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 K-4 S4〜S8 — 恒久記録を「ID+人生番号」に・注目の人生は15季・画面の読み手・既存セーブの移行・仕様(Claude/Opus 5.5・worktree)
+
+裁定 K-4 の後半。設計書 `docs/fun-audit-v0.1/k4-separate-lives-design.md` §8 の S4〜S8 と、追加依頼のセーブ容量。人生番号は画面に出さない・「二代目」等の呼び方もしない。仕様の正は新規 `specs/life-identity-spec-v1.0.md`。
+
+### S4 恒久記録のエンジン側(0e580a62)
+- `Engine.life` に読み書きの道具: `entryLife` / `livesOf` / `livesFor` / `isCurrentLife` / `findHofEntry(state, id, lifeNo, {endSeason})` / `findArchiveEntry` / `summarizeLife` / `recordRetiredLives`。`beginNewLife` は `retiredLives[id]` を消す
+- 殿堂 `_buildHofEntry`: `lifeNo`。デビュー記録の無いAI選手の在籍の始まりは `debutSeason`(以前は常に1 → 殿堂の在籍年が「S1〜」)
+- 年代記: `archiveFighter` は (id, lifeNo) で重複判定(2度目の自団体OGも登録)・`lifeNo`/`debutSeason` を刻む。`_collectCandidates` は前の人生のアーカイブと今の人生の現役を別の候補に。`_resolveFullFighter` は人生で引く(過去の章のエースの防衛数が0になっていた)。章のエース/同世代に `lifeNo`・在籍年・`active`、3章上限は人生単位
+- 序章: `founderState` は1番目の人生だけ「現役/引退」(`Engine.prologue.founderArchive` 新設)。ハイライトに `characterLifeNo`
+- `_getDepartures`(シーズン総括の退団者)は今季引退した人生のアーカイブ
+- 新聞: `Engine.industryNews.push` で積んだ時点の `characterLives`、記事にも `characterLives`。AI引退のキューに `lifeNo`・`retiredSeason`。**AI引退記事はIDだけで殿堂を引いていた**(前の人生の殿堂入りで特別号になりうる)→ 人生番号で引く。自団体の引退記事も積んだ時点の人生番号で
+- 統一王座の履歴6種に `lives`。防衛記事の「奪取」判定は今の人生だけ
+- 相関図の退避(app.js `archiveRetiredRivalryState`)と裏切りの記録(relationships.js)に `lives`(各1行。並行作業の領域の引退の見せ方・ポップアップの列には触れていない)
+- `retiredLives` の書き手3か所: 自団体 `finalizeRetireeBuffer`・AI `processSeasonEnd`(戻り値 `retiredLives` → advanceWeek が書く)・`retireUnsignedFreeAgents`(殿堂判定・引退処理そのものは不変、要約を足しただけ)
+- validateGameState に I-2(殿堂・年代記アーカイブの (id, 人生番号) の二重)
+- `test/k4-permanent-records-test.js`(9項目。S3 までの src で 8 項目が落ちる)
+
+### S5 戻ってくるまでの休み(736b2e94)
+- `DORMANT_POOL_CFG.retiredCooldownNotable = 15`。`Engine.life.isNotableLife`(retiredLives の hof/crowned/alumni。無ければ殿堂・年代記アーカイブ)/ `returnCooldown` / `canReturn(state, id, emergency)`
+- 3経路: 季末の補充・ロード時修復 `_eligibleRetired`(非常時に休みを無視するのは通常の人生だけ・休みを終えた人生を先に)・CLI(S7 で一本化)
+- `test/k4-return-cooldown-test.js`(4項目)。計測版に再デビュー率・引退→転生の間隔・恒久記録の番号・ロード時修復の注目の人生を追加
+
+### S6 UI の読み手(fb05daf4)
+- `findFighter(id, source, lifeNo)`(元の本体はそのまま、lifeNo があれば再帰で照合)/ `canOpenFighterPopup(id, lifeNo)` / `showFighterPopup(id, source, _, lifeNo)`(前の人生で殿堂入り → その人生の殿堂詳細、していなければ押せない)/ `lifeYearsLabel`
+- 記録タブ: 元データを `${id}#${人生}` で重複除去(前の人生の天頂戦優勝・防衛記録が消えていた)。統一王座の歴代表は履歴の `lives` で引き、在位中は今の人生だけ。在籍年は同じIDの別の人生が同じ画面に並ぶときだけ(名前帯の所属行・王者名・防衛帯)
+- 殿堂: 同じIDが2つの人生で殿堂入りしているときだけカードに在籍年の1行。詳細の在籍年(旧AI殿堂の `startUnknown` は「〜S9」)。`openHofDetailById(id, lifeNo)` / `openChronicleForFighter(id, lifeNo)`。「年代記で見る」・対抗戦の予備も人生単位
+- 年代記: 殿堂バッジ・リンク・顔を「ID+人生番号」。同じ章に別の人生が並ぶときだけ在籍年。序章の旗揚げメンバーは1番目の人生で表示・押下
+- 新聞: 名前(`_newsClickableName`)・写真(サブ・一面・タッグ並び・大ニュース・殿堂特別号・肩)を記事の `characterLives` で。前の人生の一面は今の同名の所属を出さない。今週の興行・対戦カード等の欄は今の人生の選手しか載らないので不変
+- 相関図: `lives` を持つ退避は表示中の2人の今の人生と一致するときだけ「過去の線」
+- `test/k4-ui-lives-test.js`(6項目。S5 の src で全部落ちる)。ソース文面を照合する既存テスト2本(spring-tag-newspaper-team-photo・audit-cheap-items)のアンカーを新しい引数に合わせた。chronicle-rebuild の文面照合に合わせ、初代王者の人生照合は入れていない(初代王者は旗揚げ直後の戴冠で必ず1番目の人生)
+- ui-check: 7項目すべて該当なし/○(画像・吹き出し・隊列・勝敗・待ち・進行は新設なし。色は `var(--chr-ink-mid)`)。`docs/ui/03-screens/records.md` のデータ接続・実装状況を更新
+
+### S7 既存セーブの移行と CLI の一本化(e40cf802)
+- `Engine.life.migrateLegacyLives`(印 `_migrated_k4_lives_v1`。repairOnLoad の引退の後始末・補充より前。createInitialState は印つき): M2 殿堂・アーカイブを終わりの季(2季以内は同じ人生)で束ねて番号。**同じ人生が殿堂に2度登録された旧データ(ultralong の柳島みずほ: S7〜S18 が S18 と S20 に2回殿堂入り)は最初だけ残す** / M3 生きた選手はデビュー(推定)が最後の記録の終わりより後なら k+1。**既存の lifeNo(S2 の印付けで全員1)は正としない**、`lifeSerial` は max(既存, 数え直し) / M4 休眠プール k+1 / M5 引退枠は引退した人生 / M6 休眠プールの全IDの生きた記録を閉じる / M8 / M9 `startUnknown` / 統一王座の旧履歴に `lives` / 年代記の章を作り直す
+- `tools/save-doctor.js`: 独自の再投入(repairState 約250行)を廃し `Engine.saveDoctor.repairOnLoad` に委ねる。使い方の文書の手順は不変
+- 実セーブ棚の移行: ultralong 殿堂21件に番号・2つの人生のID 2件・転生済みの現役9人(設計書の「現役の殿堂ID9人」と一致)・同じ人生の二重殿堂入り1件除去 / mobile 殿堂10件・転生済み4人 / prerefix 殿堂4件・アーカイブ6件
+- `test/k4-migration-test.js`(7項目。S6 の src で6項目落ちる)
+- 気づき: `save-regression` の Phase 1 は `--dry-run` だけで `--repair` を付けていないので、診断のみで修復(移行)は通らない。移行の実セーブ検査は k4-migration-test と k4-life-serial-test が repairOnLoad で直接行う
+
+### セーブ容量(833eeb5a)
+- 転生の関所の退避(`retiredRivalries` の lifeEnd)の読み手は年代記の宿敵の数え上げ(id1・id2・`h2h.bySeason`)だけ。S6 で相関図が lifeEnd の組を描かなくなったので、**対戦のあった組だけ・季ごとの試合数だけ**に詰めた(関係値・因縁の欄・勝敗の要約・年齢・週を持たない)。開発版の形式は移行で詰める
+- 40季: 2,461件・圧縮後108KB → 1,732件・33KB(状態全体 593→516KB)。**100季: 4,719件・JSON 629KB・圧縮後 89KB(状態全体 740KB)**。詰める前の形式なら100季で約290KB。1人生あたりの上限は、年代記の宿敵の数え方を変えずに掛けられないので入れていない(転生1回あたり平均約7組)
+- `k4-rebirth-clean-test` の退避の形の検査を新しい形に更新
+
+### S8 仕様(docs(k4-s8) のコミット)
+- 新規 `specs/life-identity-spec-v1.0.md` + INDEX。追記: career-history(§6)・chronicle v0.3 §K・chronicle-prologue §12・relationship v2.3 §F・call-name §6b・newspaper(3-1)・scout §9(注目の人生は15季)
+
+### 計測(`node test/k4-lives-probe.js`)
+| 項目 | K-4 前(100季) | S8(100季) | S5(40季) |
+|---|---|---|---|
+| 休眠プール(第1週)中央値/最小 | 8 / 4 | 11 / 4 | 13 / 7 |
+| ドラフト前の17-18歳 | 6 / 4 | 7 / 4 | 8 / 6 |
+| スカウト候補 | 6 / 4 | 7 / 4 | 7 / 6 |
+| FA(第1週) | 6 / 4 | 7 / 3 | 8 / 6 |
+| AIロスター 中央値/最小/10%点 | 36 / 29 / 31 | 38 / 29 / 35 | 38 / 35 / 35 |
+| AI S/A/B 中央値(最小) | 16/11/9(13/7/4) | 16/13/10(12/9/6) | 16/13/9(15/11/6) |
+| 自団体ロスター | 8 / 5 | 8 / 5 | 8 / 7 |
+| 転生 / うち引退を経ない | 599 / 219 | 609 / 0 | 208 / 0 |
+| 転生の初見時点で生きた記録が残っていた | 599 | 15(※) | 3(※) |
+| 再デビュー率 注目/通常 | — | 84% / 95% | 61% / 88% |
+| 注目の人生の引退→転生 最小/早戻り | — | 15季 / 0件 | 15季 / 0件 |
+| 殿堂 (id,人生)の二重 / 番号の無いエントリ | — | 0 / 0(115件・2つの人生のID 31) | 0 / 0(40件・6) |
+| フリーのまま引退 | — | 1.99人/季・紙面177/199 | 2.00人/季 |
+| ロード時修復の変種(40季) | — | — | 戻った232件すべて関所経由・注目の早戻り0 |
+
+- 供給は S3 後(休眠プール29・17-18歳14・FA12)より下がったが、K-4 前と比べて中央値はすべて同じか多く、最小値の低下は1以内(FA・AI S)で合格基準を満たす。S3 から下がったのは注目の人生が15季休むため
+- ※ 団体ロスターで初見(ドラフトの安全網などで休眠プールから直接入団)= 関所の後に新しい人生で書かれた記録
+
+### 検証
+- 回帰テスト新規4本(permanent-records 9・return-cooldown 4・ui-lives 6・migration 7)。いずれも直前の段の src(`WM_TEST_SRC_DIR`)で落ちることを確認
+- `npm test` 307/307(main 取り込み後)/ `node test/auto-sim.js 40 42` ALL CLEAR(S5 後)/ 100季(計測版、main 取り込み後)ALL CLEAR / `npm run test:k1:parity` PASS(S4 後・main 取り込み後)/ `npm run test:ui:walkthrough` PASS・Issues 0(S6 後)/ 点火 chronicle PASS / `node test/save-regression.js --walkthrough` ALL CLEAR(Phase 1 + 実セーブ6本の走破すべて Issues 0。S7 後)/ ui-baseline-guard ok
+
+### 残・引き継ぎ
+- 番号を刻んでいない恒久記録: 記録保持者(mqRecord/mqRecordTag/streakRecord の holderIds。名前と顔だけで押せない)・年末表彰(季で判定できる)。必要になったら `Engine.life.livesFor` で刻むだけ
+- 設計書 §9 Q7(ロード時修復の補充条件の見直し)は別件のまま。非常補充でも注目の人生は戻らなくなった
+- `save-regression` Phase 1 に `--repair` を付けるかは要相談(付けると移行も実セーブで毎回通る)
+- M7(既に転生して現役の選手の関係値の混ざり)・M10(登録されなかった2度目の自団体OG)は設計どおり現状維持
+
+### 触ったファイル
+- src/management.js(Engine.life の S4〜S7・殿堂・年代記・序章・新聞・統一王座・processSeasonEnd・retireUnsignedFreeAgents・finalizeRetireeBuffer・advanceWeek の補充・repairOnLoad・validateGameState I-2)/ src/data.js(retiredCooldownNotable)/ src/ui-common.js / src/ui-render.js / src/app.js(退避の lives 1行)/ src/relationships.js(裏切りの記録の lives 1行)/ tools/save-doctor.js
+- test/k4-permanent-records-test.js・k4-return-cooldown-test.js・k4-ui-lives-test.js・k4-migration-test.js(新規)/ test/k4-lives-probe.js / test/k4-rebirth-clean-test.js / test/spring-tag-newspaper-team-photo-test.js / test/audit-cheap-items-test.js
+- specs/life-identity-spec-v1.0.md(新規)・INDEX・7仕様 / docs/ui/03-screens/records.md / docs/実機確認バックログ.md / docs/game-system-roadmap.md
+
 ## 2026-09-26 総点検 第4回の確認 5〜8 — 関係性ポップアップの列・別れを先に・引退/退団のログ・信頼15未満の噂(Claude/Opus 5.5・worktree)
 
 Keisuke 裁定(2026-09-26 第4回の確認、全ておすすめ)の 5〜8。K-1 第4段 4-B 後半の作業で見つかった点の後始末。**数値は不変**(auto-sim の指紋の差は列の長さと前兆の記録だけ。下の「検証」)。
