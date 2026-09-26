@@ -11116,6 +11116,111 @@ function showFactionF06Modal(payload, state, onChoice) {
   });
 }
 
+// F06_FORCE: 長引いた抗争の2択(specs/faction-rivalry-points-spec-v0.1.md §4.3、2026-09-26 裁定4)
+// 画面仕様: docs/ui/03-screens/faction-f06-force.md。Office 応接室型のいつものモーダル(節目の全画面演出にはしない)。
+// F08 と同じ2人の対置で、両リーダーが頭上の吹き出しで一言。一言は抗争ポイントの先行側(AHEAD)と
+// 並んでいる/追う側(BEHIND)で表を分ける(数値は嘘をつかない — 画面の立ち位置は実際の点差から決まる)。
+// 選んだ結果の反映は onChoice → App.handleFactionEvent → Engine.factions.applyF06ForceChoice(UI は G を直接変えない)
+function showFactionF06ForceModal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showFactionF06ForceModal(payload, state, onChoice)); return; }
+
+  payload = payload || {};
+  const roster = state ? (state.roster || []) : [];
+  const leaderA = roster.find(c => c.id === payload.leaderAId);
+  const leaderB = roster.find(c => c.id === payload.leaderBId);
+  const leaderAName = leaderA ? leaderA.name : (payload.leaderAName || '???');
+  const leaderBName = leaderB ? leaderB.name : (payload.leaderBName || '???');
+  const leaderAUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
+  const leaderBUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
+  const factionAName = _factionDisplayName(payload.factionAName) || WM_I18N.t('派閥A');
+  const factionBName = _factionDisplayName(payload.factionBName) || WM_I18N.t('派閥B');
+  const ptA = Number(payload.pointsA) || 0;
+  const ptB = Number(payload.pointsB) || 0;
+  // 「抗争○週目」は表示する週で数え直す(大型イベントと重なって翌週に持ち越されても今の週数を出す)
+  const weeks = (payload.startedSeason != null && state && Engine.util && Engine.util.absWeekTotal)
+    ? Math.max(0, Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek)
+      - Engine.util.absWeekTotal(payload.startedSeason, payload.startedWeek, false, 0))
+    : (Number(payload.weeks) || 0);
+
+  // 先行側は AHEAD、同点・追う側は BEHIND(同点では両方 BEHIND)。seed 決定性(週で決まる)
+  const lineSeed = (salt) => Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, salt);
+  const tableFor = (mine, theirs) => (mine > theirs ? FACTION_F06_FORCE_AHEAD_LINES : FACTION_F06_FORCE_BEHIND_LINES);
+  // i18n(P5-2p): _factionLine は t() 済みの完成文を返す。_u3bSideHtml へは lineTranslated:true で渡す
+  const lineA = _factionLine(tableFor(ptA, ptB), leaderA, lineSeed(0xFA6A));
+  const lineB = _factionLine(tableFor(ptB, ptA), leaderB, lineSeed(0xFA6B));
+
+  const html = `
+    <div class="fevt-overlay-office" id="fevtF06ForceOverlay">
+      <div class="fevt-report-card f06f">
+        <div class="fevt-report-header">
+          <div class="fevt-report-title">${WM_I18N.t('⏳ 長引く抗争')}</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ ${WM_I18N.t('抗争{n}週目', { n: weeks })}</div>
+        </div>
+        ${_factionReporterStrip(state, WM_I18N.t('両派閥とも、決着がつかないまま長くなりました。リーダーの二人が、社長の判断を待っています'), true)}
+        <div class="fevt-subject-stage u3b-theme-cream">
+          <div class="fevt-subject-duel">
+            <div class="col">
+              ${_u3bSideHtml({
+                name: leaderAName, line: lineA, lineTranslated: true,
+                imgUrl: leaderAUrl, role: `${factionAName} ・ LEADER`, statLabel: 'PT', statValue: ptA,
+                bubbleClass: 'fevt-bubble left', portraitClass: 'fevt-duel-portrait',
+              })}
+            </div>
+            <div class="fevt-duel-vs">VS</div>
+            <div class="col right">
+              ${_u3bSideHtml({
+                name: leaderBName, line: lineB, lineTranslated: true,
+                imgUrl: leaderBUrl, role: `${factionBName} ・ LEADER`, statLabel: 'PT', statValue: ptB,
+                bubbleClass: 'fevt-bubble right', portraitClass: 'fevt-duel-portrait',
+              })}
+            </div>
+          </div>
+          <div class="fevt-subject-divider" style="margin-top:18px"></div>
+          <div class="fevt-observation-note">
+            ${WM_I18N.t('抗争が始まって、もう<span class="marker hostile">{weeks}週</span>になる。どちらの派閥も、まだ決着に手が届いていない。', { weeks })}<br>
+            ${WM_I18N.t('リングの外でも睨み合いは続き、ロッカールームには疲れが見え始めた。')}
+          </div>
+        </div>
+        <div class="fevt-decision-prompt">${WM_I18N.t('この抗争を、社長としてどう扱いますか？')}</div>
+        <div class="fevt-decision-tray two">
+          <div class="fevt-decision-card" data-choice="A">
+            <div class="fevt-decision-letter">A</div>
+            <div class="fevt-decision-label">${WM_I18N.t('和解させる')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('ポイントは白紙に戻し、勝者も敗者も出さずに幕を引く。両派閥の対立はやわらぐ')}</div>
+          </div>
+          <div class="fevt-decision-card" data-choice="B">
+            <div class="fevt-decision-letter">B</div>
+            <div class="fevt-decision-label">${WM_I18N.t('続けさせる')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('ポイントはそのまま持ち越す。決着はリングに任せ、当面は口を出さない')}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const root = _factionEnsureOverlayRoot();
+  root.innerHTML = html;
+  const overlay = root.querySelector('.fevt-overlay-office');
+  if (overlay) {
+    void overlay.offsetWidth;
+    _activatePopupOverlaySync(overlay);
+  }
+
+  // 1操作=1進行(§5-D 鉄則2): 二度押し・閉じる途中(600ms)の押し直しで2回選ばれないよう、最初の1回だけ通す
+  let decided = false;
+  root.querySelectorAll('.fevt-decision-card').forEach(card => {
+    card.addEventListener('click', function() {
+      if (decided) return;
+      const choice = this.dataset.choice;
+      if (choice !== 'A' && choice !== 'B') return;
+      decided = true;
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      if (onChoice) onChoice(choice);
+    });
+  });
+}
+
 // F07 v0.4: 派閥動向（Office 応接室型 / modalShape choice2 or choice3）
 // trio 配置は維持し、incidentType により本文・選択肢を分岐。
 // 互換: incidentType 未指定の場合は旧 DEMAND_ABSTRACT 3 択挙動を表示。

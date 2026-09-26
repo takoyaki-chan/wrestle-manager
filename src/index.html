@@ -5390,6 +5390,13 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
   background: linear-gradient(180deg, rgba(180,42,42,0.16) 0%, rgba(180,42,42,0.03) 100%);
 }
 .fevt-report-card.f08 .fevt-report-title { color: #7a1414; letter-spacing: 2.5px; }
+/* F06_FORCE 長引く抗争の2択(2026-09-26, docs/ui/03-screens/faction-f06-force.md)。
+   常設の対立表示は橙(01-foundations 原則11: 赤は開戦級のみ)。色はトークンだけで組む */
+.fevt-report-card.f06f .fevt-report-header {
+  border-bottom: 1px solid rgba(var(--accent-hostility-rgb), 0.4);
+  background: linear-gradient(180deg, rgba(var(--accent-hostility-rgb), 0.13) 0%, rgba(var(--accent-hostility-rgb), 0.02) 100%);
+}
+.fevt-report-card.f06f .fevt-report-title { color: var(--accent-hostility-deep); }
 
 /* ============================================================
    away-flow-redesign 実装A: 同行2名を選ぶ（Office / .fevt-overlay-office 流用）

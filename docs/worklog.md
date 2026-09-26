@@ -114,6 +114,53 @@ Keisuke 裁定(2026-09-26 第4回の確認、全ておすすめ)の 5〜8。K-1 
 - 関係性の出来事(列に残した直近12週ぶん)を新聞・相関図など「世界の側」で見せる設計は後日(裁定5の後半)
 - 別れの後に続く通知の順番: 経営の通知(契約枠・王座設立など)が、その週の怪我のポップアップより先に出る(共有ゲートで先に並ぶため)。裁定6は「別れを先に」なので残したが、気になれば直せる
 
+## 2026-09-26 総点検 第4回の確認3・4 — 通常興行のメインの上乗せ・長引いた抗争の「和解させる/続けさせる」(Claude/Opus 5.5・worktree)
+
+Keisuke 裁定(第4回の確認 3・4)。K-1 第4段で実プレイにも派閥ポイントが貯まるようになったのを受けて、仕様と実装の差2点を仕様どおりに。
+
+### 1. 裁定3 通常興行のメインにも上乗せ(da32643a)
+- `Engine.show.accrueFactionPoints` のメイン判定を `!!m.isSummit || i === 0` に。メイン=興行カードの先頭(validMatches[0])で、人気・怪我の舞台の格・起用約束と同じ規約。PPV の頂上決戦の印も従来どおり
+- 以前は `isSummit` だけを見ていて、PPV はこの関数を通らないので**メイン補正は一度も掛かっていなかった**。通常興行のメインの勝利で抗争ポイント ×1.3(リーダーどうし 10→13、2番手どうし 6→8)、非リーダーの勝利で派閥内 +2(王座戦兼任は +3 のみ)。F09 の先頭の試合も +0.3 の後に ×1.8
+- k1-stage4b-test の期待値3か所をメイン込みに(1試合目に組んだ試合がメインになるため)
+
+### 2. 裁定4 40週の2択 F06_FORCE(da32643a エンジン / e700c898 画面)
+- **判定が止まる不具合**: `checkRivalryResolution` は40週の記録で `_pendingForceCloseRivalry` を立てて return していた。拾う処理が無いので毎週そこで止まり、同じ週の後ろの記録の自然沈静化が判定されなかった(headless 進行で印が1,123〜1,489週立ちっぱなしのシードあり)。→ 40週の記録は `forceClose` として返し、判定はほかの記録へ続ける(2択は1週1件)
+- tickWeek が派閥イベント `F06_FORCE`(`buildF06ForcePayload`: 両派閥・両リーダー・ポイント・週数・記録の開始週)を立てる。`applyF06ForceChoice`(純関数): **A** 記録を閉じる(RIVALRY_CLOSED / F06_RECONCILE)・両方向 hostility −30・勝者敗者の効果なし・F08/F09 CD / **B** ポイント維持・`forceCloseDeferredUntil`=選んだ週+20。出してから選ぶまでに記録/派閥が消えたら何もしない(`isF06ForceStillValid`)。旧セーブの印は tickWeek が捨てる
+- 画面 `showFactionF06ForceModal`: いつものモーダル(Office の報告カード、F08 と同じ2人の対置 M 132×194・頭上の吹き出し・PT・「抗争○週目」。残り週数は出さない)。見出し帯は常設の対立の橙(トークンのみ)。二度押し防止。A は業界ニュース factionReconcile。BGM TENSION 0.12。結果は「抗争の幕引き」/「抗争続行」(主役=先行側のリーダー)
+- 画面仕様書 `docs/ui/03-screens/faction-f06-force.md` を新設(テンプレどおり。Keisuke レビュー待ち)
+- auto-sim ほかヘッドレス9本の自動応答: A/B 等確率(ほかの派閥イベントと同じ)
+
+### 追加した文言(全文は完了報告。JA/EN)
+- UI 16キー(`i18n/ui-ledger.json` → `src/lang-en.js`): ⏳ 長引く抗争 / 抗争{n}週目 / コーチの報告1 / 観察メモ2 / 問い1 / 選択肢4 / 結果文2 / 影響2 / 結果の見出し2。「抗争ポイント」は既訳 Conflict Points を流用
+- セリフ 38行 `FACTION_F06_FORCE_AHEAD_LINES`(先行側)/`FACTION_F06_FORCE_BEHIND_LINES`(並んでいる/追う側。同点でも使うので「負けている」と言い切らない)。7口調それぞれ normal+性格2つ、標準は7性格。辞書は37行追加(「……まだ、終わってない。」は既存キーと同文で既訳 "...Still not over." を共有)。セル検査違反0
+
+### 決着までの週数(headless 進行 6シード×30季。seed 42/7/1234/7919/2024/31337。週数は記録ができてから決着した週まで)
+| 条件 | 記録 | 自然沈静化 | 先取100 | 40週の和解(A) | 派閥消滅 |
+|---|---|---|---|---|---|
+| 変更前・K-1 と同じ方法(スタブ不具合あり) | 141 | 136(3〜38週・中央3) | 1(443週) | — | 4 |
+| 変更前・スタブ修正 | 505 | 495(3〜38・中央3) | 5(52〜78週・中央68) | —(印が立ちっぱなし2シード) | 5 |
+| 変更後・スタブ修正(自動応答 A/B 等確率) | 593 | 579(3〜38・中央3) | 0 | 3(40週。2択3回とも A) | 7 |
+| 変更後・スタブ修正(B を選び続ける) | 581 | 568(3〜50。延長後に沈静化4件 45〜50週) | 5(30〜70週・中央36。延長を挟んだもの 42・70週) | — (2択7回) | 8 |
+- 40週まで残った記録の40週時点: 先行側 61〜86pt・追う側 19〜66pt。メイン補正で先取100が早まり、40週より前に決着するものが出た(B 継続の計測で 30〜37週が3件)
+- **見つけた測定の歪み(未修正・裁定待ち)**: `test/ui-walkthrough/fixtures/headless-sim.js` の WM_I18N スタブに `pn` が無く(auto-sim.js のスタブにはある)、`_factionDisplayName` を通る F06/F07 の選択の適用が毎回例外になって握りつぶされる。F07 のクールダウンが付かず毎週 F07 が立ち、その週は決着判定・F09・派閥内挑戦が止まる(seed 1234 で先取100が443週かかったのはこれ)。K-1 第4段の「先取100 93〜132週」もこの影響下。スタブを直すと k1-parity の基準 fixture の軌道が変わり許容リストと食い違う(未登録5・消えた既知差分1を確認)ので、直さずに報告。計測はスタブを直した写しで行った
+
+### 見つけた既存の不具合(未修正・裁定待ち)
+- **先取100の勝者・敗者の効果が入っていない**: `applyRivalryVictory` が `applyMomentumChange`/`_applyTrustToMembers`/`_applyBondDirected`/`applyHostilityChange`(純関数)の戻り値を捨てている。勝者の勢い+40・信頼+5・絆+5、敗者の勢い−25・信頼−8/−3、両方向 hostility −40(派閥消滅の残存側 −40 も)が入らない。集客ボーナス・寝返り倍率・権威の喪失・タイムラインだけ入る(09-18 のクールダウンの取りこぼしと同じ型)。spec §5.4 の前に注記。「変わる数値は裁定の2点だけ」の指示に従い触っていない
+
+### 検証
+- 新テスト `test/faction-f06-force-close-test.js`(12項目): 変更前の src で 11 FAIL(PPV の isSummit の1件は「従来どおり」の確認なので PASS)
+- 手動チェック(新規) `node test/ui-walkthrough/faction-f06-force-check.js`: seed 42 S2W15 の合成 fixture(4人ずつの2派閥・40週前の記録 62—41)から「週を処理」→ 報告カード → A(ダブルクリック)/ B / EN を本物のボタンで。ALL CHECKS PASS
+- `npm test` 299/299 PASS / `node test/auto-sim.js 40 42` ALL CLEAR・指紋 bdb5ffd4(変更前と同じ。auto-sim の世界は派閥ができない)/ `npm run test:k1:parity` PASS(33件・未登録0・消えた0)/ `npm run test:ui:walkthrough` PASS(344手・Issues 0)/ ui-baseline-guard ok / ja-golden は変更前の src と同じハッシュ(e3615124。基準との不一致は main 時点から)/ i18n-ratchet は基準を更新(data-faction-dialogue.js +38 新セリフ、factions.js +8・ui-common.js +3・app.js +1 は t() の新キー)/ i18n-ledger-consistency ok
+
+### 触ったファイル
+- src/management.js(accrueFactionPoints のメイン判定・tickWeek の F06_FORCE・旧印の掃除)/ src/factions.js(checkRivalryResolution・_rivalryForceCloseDueAbs・buildF06ForcePayload・isF06ForceStillValid・applyF06ForceChoice)/ src/app.js(handleFactionEvent・FACTION_AUDIO_MAP)/ src/ui-common.js(showFactionF06ForceModal)/ src/index.html(.fevt-report-card.f06f)/ src/data-faction-dialogue.js(2表)/ i18n 台帳2本・src/lang-en.js・src/lang-en-dialogue.js
+- test: faction-f06-force-close-test.js(新)・ui-walkthrough/faction-f06-force-check.js(新)・k1-stage4b-test.js・auto-sim.js ほか自動応答8本・fixtures/i18n-ratchet-baseline.json
+- specs/faction-rivalry-points-spec-v0.1.md(§2.7・§4.3 実装メモ・§5.4 注記・変更履歴)/ specs/faction-internal-rank-spec-v0.2.md(§3.5 実装)/ docs/ui/03-screens/faction-f06-force.md(新)・faction-events.md(ポインタ)/ docs/fun-audit-v0.1/k1-parity-report.md(§8 に実装済みの注記)/ docs/実機確認バックログ.md / docs/game-system-roadmap.md
+
+### 残課題
+- 裁定待ち: applyRivalryVictory の効果の取りこぼし / headless-sim のスタブ(直すなら k1-parity の許容リストの見直しとセット)/ 一言38行・地の文の文面レビュー
+- 自動応答が等確率なので、auto-sim 系の計測で B(延長)の道はあまり通らない。B の道の検証は上の「B を選び続ける」計測で代用した
+
 ## 2026-09-26 K-1 第4段 4-B 後半 — プロモ蓄積のリセット・怪我による引退・突然の退団を実プレイにも(Claude/Opus 5.5・worktree)
 
 裁定 K-1 第4段 4-B の後半3件(Keisuke 承認済み・2026-09-25 第3回の確認)。前半と同じく `Engine.executeShow` の該当部分を `Engine.show.*` の純関数に切り出し、切り出しだけの段階で auto-sim の指紋が不変であることを確かめてから、実プレイ(`App._finalizeShowImpl`)を呼び替えた。**エンジン経路(auto-sim)の数値は3件とも不変**(10季 seed42 ac048164 / 40季 seed42 bdb5ffd4 / 40季 seed7919 d9dbafed。作業前と同じ)。

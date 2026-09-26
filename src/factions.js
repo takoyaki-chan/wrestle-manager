@@ -5499,11 +5499,19 @@ Engine.factions = {
   },
 
   // §4 決着判定（毎週・finalizeShow直後にも）
-  // 戻り値: 決着が発生した場合 { resolved: true, reason, winnerFactionId, loserFactionId }、無ければ null
+  // 戻り値: 決着が発生した場合 { resolved: true, reason, winnerFactionId, loserFactionId, forceClose }、
+  //   決着は無いが40週の2択(F06_FORCE)を出すべき記録がある場合 { resolved: false, reason: 'FORCE_CLOSE_PENDING', forceClose }、
+  //   どちらも無ければ null。
+  // forceClose: { pairKey, factionAId, factionBId } | null — 呼び出し側(tickWeek)が buildF06ForcePayload で
+  //   F06_FORCE の派閥イベントに組み立てて _pendingFactionEvent に積む(§4.3。2026-09-26 裁定4)。
+  // 2026-09-26 修正: 以前は40週に達した記録で印(_pendingForceCloseRivalry)を立てて return していたため、
+  //   印を拾う処理が無いまま毎週そこで止まり、同じ週の後ろの記録の決着(自然沈静化など)が一度も判定されなかった。
+  //   40週の記録は1件だけ2択に回し、判定はほかの記録へ続ける
   checkRivalryResolution(state, rng) {
     if (!state || !state.factionRivalryPoints) return null;
     const cfg = FACTION_CONFIG;
     const keys = Object.keys(state.factionRivalryPoints);
+    let forceClose = null;
     for (const key of keys) {
       const e = state.factionRivalryPoints[key];
       if (!e) continue;
@@ -5520,7 +5528,7 @@ Engine.factions = {
         } else {
           delete state.factionRivalryPoints[key];
         }
-        return { resolved: true, reason: 'POINTS', winnerFactionId: winId, loserFactionId: losId };
+        return { resolved: true, reason: 'POINTS', winnerFactionId: winId, loserFactionId: losId, forceClose };
       }
 
       // §4.2 派閥消滅
@@ -5539,20 +5547,15 @@ Engine.factions = {
           }];
         }
         delete state.factionRivalryPoints[key];
-        return { resolved: true, reason: 'CONSOLATION', winnerFactionId: null, loserFactionId: null };
+        return { resolved: true, reason: 'CONSOLATION', winnerFactionId: null, loserFactionId: null, forceClose };
       }
 
-      // §4.3 40週経過
-      const startAbs = Engine.util.absWeekTotal(e.startedSeason, e.startedWeek, false, 0);
+      // §4.3 40週経過(B「続けさせる」を選んだ記録は、その時点から +20週 の forceCloseDeferredUntil まで待つ)
       const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
-      if (nowAbs - startAbs >= cfg.pointsForceCloseWeeks) {
-        // F06 強制発火フラグを立てる（モーダル処理は management.js 側で拾う）
-        state._pendingForceCloseRivalry = {
-          pairKey: key,
-          factionAId: e.factionAId,
-          factionBId: e.factionBId,
-        };
-        return { resolved: false, reason: 'FORCE_CLOSE_PENDING' };
+      if (nowAbs >= this._rivalryForceCloseDueAbs(e)) {
+        // 2択は1週に1件だけ出す。2件目以降は来週以降に回す(下位の自然沈静化は §4.5 の優先順位どおり見ない)
+        if (!forceClose) forceClose = { pairKey: key, factionAId: e.factionAId, factionBId: e.factionBId };
+        continue;
       }
 
       // §4.4 自然沈静化
@@ -5570,13 +5573,133 @@ Engine.factions = {
             }];
           }
           delete state.factionRivalryPoints[key];
-          return { resolved: true, reason: 'CALM', winnerFactionId: null, loserFactionId: null };
+          return { resolved: true, reason: 'CALM', winnerFactionId: null, loserFactionId: null, forceClose };
         }
       } else {
         e.naturalCalmStreak = 0;
       }
     }
+    if (forceClose) return { resolved: false, reason: 'FORCE_CLOSE_PENDING', forceClose };
     return null;
+  },
+
+  // §4.3 強制和解の判定週(絶対週)。記録の開始から40週。B「続けさせる」の後は選んだ週から +20週
+  _rivalryForceCloseDueAbs(entry) {
+    if (!entry) return Infinity;
+    if (entry.forceCloseDeferredUntil != null && Number.isFinite(entry.forceCloseDeferredUntil)) {
+      return entry.forceCloseDeferredUntil;
+    }
+    const startAbs = Engine.util.absWeekTotal(entry.startedSeason, entry.startedWeek, false, 0);
+    return startAbs + FACTION_CONFIG.pointsForceCloseWeeks;
+  },
+
+  // ── §4.3 F06 強制発火(40週の2択)— 派閥イベント F06_FORCE ──
+  // checkRivalryResolution が返した forceClose から、画面とエンジン(auto-sim)が使う payload を組む。
+  // 記録や派閥が無ければ null(呼び出し側はイベントを立てない)
+  buildF06ForcePayload(state, forceClose) {
+    if (!state || !forceClose) return null;
+    const e = (state.factionRivalryPoints || {})[forceClose.pairKey];
+    if (!e) return null;
+    const fA = (state.factions || []).find(f => f.id === e.factionAId);
+    const fB = (state.factions || []).find(f => f.id === e.factionBId);
+    if (!fA || !fB) return null;
+    const roster = state.roster || [];
+    const leaderA = roster.find(c => c.id === fA.leaderId);
+    const leaderB = roster.find(c => c.id === fB.leaderId);
+    const startAbs = Engine.util.absWeekTotal(e.startedSeason, e.startedWeek, false, 0);
+    const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+    return {
+      pairKey: forceClose.pairKey,
+      factionAId: fA.id,
+      factionBId: fB.id,
+      factionAName: fA.name,
+      factionBName: fB.name,
+      leaderAId: fA.leaderId != null ? fA.leaderId : null,
+      leaderBId: fB.leaderId != null ? fB.leaderId : null,
+      leaderAName: leaderA ? leaderA.name : '???',
+      leaderBName: leaderB ? leaderB.name : '???',
+      pointsA: e.pointsA || 0,
+      pointsB: e.pointsB || 0,
+      weeks: Math.max(0, nowAbs - startAbs),
+      startedSeason: e.startedSeason,
+      startedWeek: e.startedWeek,
+    };
+  },
+
+  // 2択を出してから選ぶまでの間に、記録が決着・派閥が消滅していないか(鉄則6: pending は自浄とセット)。
+  // 同じ組の記録が作り直されていた場合(開始週が違う)も無効
+  isF06ForceStillValid(state, payload) {
+    if (!state || !payload) return false;
+    const e = (state.factionRivalryPoints || {})[payload.pairKey];
+    if (!e) return false;
+    if (payload.startedSeason != null && (e.startedSeason !== payload.startedSeason || e.startedWeek !== payload.startedWeek)) return false;
+    const fA = (state.factions || []).find(f => f.id === payload.factionAId);
+    const fB = (state.factions || []).find(f => f.id === payload.factionBId);
+    return !!(fA && fB);
+  },
+
+  // F06_FORCE の選択を適用する(spec faction-rivalry-points §4.3 / §5.4)。純関数(入力の state を書き換えない)。
+  //   A 和解させる: ポイント破棄・両方向 hostility -30・勝者敗者なし・抗争の記録を閉じる(reason F06_RECONCILE)。
+  //     F08/F09 のクールダウンを付け直す(§5.3 決着後の即時再発火防止)
+  //   B 続けさせる: ポイント維持・次の強制和解の判定を選んだ週から +20週 後にする
+  // 記録や派閥が既に無ければ何もしない(state をそのまま返す)
+  applyF06ForceChoice(state, payload, choiceId, _rng) {
+    const cfg = FACTION_CONFIG;
+    if (!this.isF06ForceStillValid(state, payload)) {
+      return { state, resultText: '', impactSummary: [], skipped: true };
+    }
+    const key = payload.pairKey;
+    const e = state.factionRivalryPoints[key];
+    const fAId = e.factionAId, fBId = e.factionBId;
+    const fA = state.factions.find(f => f.id === fAId);
+    const fB = state.factions.find(f => f.id === fBId);
+    const aName = this._factionDisplayName(fA.name);
+    const bName = this._factionDisplayName(fB.name);
+    const nowAbs = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
+
+    if (choiceId === 'A') {
+      const d = cfg.forceCloseHostilityDecayOnA;
+      let s = this.applyHostilityChange(state, fAId, fBId, d);
+      s = this.applyHostilityChange(s, fBId, fAId, d);
+      const rp = { ...(s.factionRivalryPoints || {}) };
+      delete rp[key];
+      s = { ...s, factionRivalryPoints: rp };
+      s = this._markCooldown(s, this._f08Key(fAId, fBId));
+      s = this._markCooldown(s, this._f09Key(fAId, fBId));
+      s = {
+        ...s,
+        factionTimeline: [...(Array.isArray(s.factionTimeline) ? s.factionTimeline : []), {
+          type: 'RIVALRY_CLOSED',
+          season: s.season, week: s.week,
+          factionAId: fAId, factionBId: fBId,
+          pointsA: e.pointsA || 0, pointsB: e.pointsB || 0,
+          reason: 'F06_RECONCILE',
+        }],
+      };
+      return {
+        state: s,
+        resultText: WM_I18N.t('{a}と{b}の抗争は、社長の預かりで幕を下ろした。勝ち名乗りを上げた者はいない。', { a: aName, b: bName }),
+        impactSummary: [
+          { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: aName, b: bName }), delta: WM_I18N.t('{d}（両方向）', { d }) },
+          { label: WM_I18N.t('抗争ポイント'), delta: WM_I18N.t('白紙に戻った') },
+        ],
+      };
+    }
+
+    // 'B' 続けさせる
+    const rp = { ...(state.factionRivalryPoints || {}) };
+    rp[key] = {
+      ...e,
+      forceCloseDeferredUntil: nowAbs + cfg.forceCloseDelayWeeks,
+      forceCloseExtensions: (e.forceCloseExtensions || 0) + 1,
+    };
+    return {
+      state: { ...state, factionRivalryPoints: rp },
+      resultText: WM_I18N.t('{a}と{b}の抗争は続く。決着は、リングの上でつけることになった。', { a: aName, b: bName }),
+      impactSummary: [
+        { label: WM_I18N.t('抗争ポイント'), delta: WM_I18N.t('{pa} — {pb} のまま持ち越し', { pa: e.pointsA || 0, pb: e.pointsB || 0 }) },
+      ],
+    };
   },
 
   // §5 勝者敗者効果適用

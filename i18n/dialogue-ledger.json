@@ -13920,6 +13920,20 @@
     }
   },
   {
+    "key": "……ここまで来た。最後まで、やる。",
+    "en": "...We've come this far. We finish it.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……ここまで来た。降りる理由がない",
     "en": "...I got here. No reason to step down.",
     "files": [
@@ -14057,6 +14071,34 @@
     "cell": {
       "archetype": "standard",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "……このまま引き下がると思った？　冗談でしょ。",
+    "en": "...You thought I'd just back off like this? Don't be ridiculous.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "……このまま終わったら、わたし、ずっと引きずると思います。",
+    "en": "...If it ends like this, I think I'll carry it with me forever.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
     }
   },
   {
@@ -20076,6 +20118,20 @@
     }
   },
   {
+    "key": "……まだ、やれる。",
+    "en": "...We can still do this.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……まだ、早かったわね。",
     "en": "...Too soon for you.",
     "files": [
@@ -20272,9 +20328,10 @@
     "key": "……まだ、終わってない。",
     "en": "...Still not over.",
     "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES",
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
@@ -33126,6 +33183,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "……終わらせる。こっちの手で。",
+    "en": "...We end it. On our terms.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
     }
   },
   {
@@ -92956,6 +93027,34 @@
     }
   },
   {
+    "key": "あと少しで届きます。できれば、最後まで戦わせてください。",
+    "en": "We're nearly there. If at all possible, please let us fight it to the end.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "あと少しなのは、見ればわかるでしょ。ここで止める理由がない。",
+    "en": "Anyone can see we're almost there. There's no reason to stop now.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "あなたがいたから輝けたわ。……ありがとう",
     "en": "I shone because you were there. ...Thank you.",
     "files": [
@@ -98751,6 +98850,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "あら、もう終わらせるの？　まだ見せてないものが、たくさんあるのに。",
+    "en": "Oh? Ending it already? There's still so much I haven't shown.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
     }
   },
   {
@@ -111157,6 +111270,20 @@
     }
   },
   {
+    "key": "えー、ここでストップ？　……まあ、正直ちょっと長かったけどさ。",
+    "en": "Wait, we're stopping here? ...Okay, it has dragged on a bit, I'll give you that.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "えー、そんな話してた？ まあ、注意しとくね〜。",
     "en": "Huh, were they saying that? Well, I'll keep an eye out~.",
     "files": [
@@ -119262,6 +119389,34 @@
     }
   },
   {
+    "key": "ここで終わりにされたら……許さないわよ。",
+    "en": "If this ends here... I won't forgive it.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "ここで終わりにすれば、届かなかったと認めることになります。それだけは、できません。",
+    "en": "Ending it here would mean admitting we fell short. That's the one thing I can't do.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "ここで終わるつもりはない。絶対に這い上がる",
     "en": "I don't plan on ending here. I'll claw my way back up.",
     "files": [
@@ -120154,6 +120309,20 @@
     }
   },
   {
+    "key": "ここまで来て、なかったことにされるなんて絶対いや！",
+    "en": "We came all this way, and now it just gets erased? No way!",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "ここまで来て、退く理由がございませんわ。",
     "en": "Having come this far, there is no reason to withdraw.",
     "files": [
@@ -120516,6 +120685,20 @@
     }
   },
   {
+    "key": "ここまで積み重ねてきた一勝一勝を、きちんと形にしたいんです。お願いします。",
+    "en": "I want every win we've stacked up to count for something. Please.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "ここまで繋いだ分、最後は私が獲ります。痛みは、後で数えます",
     "en": "It was carried this far, so I'll take the last of it. I'll count the pain later.",
     "files": [
@@ -120611,6 +120794,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "ここまで追い込んどいて、引く奴がどこにいんだよ。",
+    "en": "Who backs off after pushin' 'em this far? Nobody, that's who.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
     }
   },
   {
@@ -120833,6 +121030,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "こっからだろ。ここで止められてたまるかよ。",
+    "en": "It starts now. Like hell I'm lettin' 'em stop us here.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
     }
   },
   {
@@ -121073,6 +121284,20 @@
     }
   },
   {
+    "key": "このままじゃ終われないよ。最後にどっちが立ってるか、はっきりさせよう。",
+    "en": "We can't end it like this. Let's make it clear who's still standing at the end.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "このままでは、納得しておりません。",
     "en": "As things stand, I am not satisfied.",
     "files": [
@@ -121185,6 +121410,20 @@
     }
   },
   {
+    "key": "このまま幕を引かれては、わたくしどもの名折れですわ！　どうか、もう一度機会を！",
+    "en": "Drawing the curtain now would be a disgrace to us all! Please, grant us one more chance!",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "このまま積み上げていけば、いずれ私が……",
     "en": "If I keep stacking wins like this, eventually I'll...",
     "files": [
@@ -121209,6 +121448,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "このまま終われるわけないじゃん。勝ちをもぎ取るのはここからだよ。",
+    "en": "No way we're ending it like this. This is where we rip the win away.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "bold"
     }
   },
@@ -127374,6 +127627,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "こんな終わり方、納得できるわけないでしょ……！　まだやれる！",
+    "en": "There's no way I can accept an ending like this...! We can still go!",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "emotional"
     }
   },
@@ -139408,6 +139675,20 @@
     }
   },
   {
+    "key": "ふふ、もうすぐ落ちるのに。ここで手を離すなんて、もったいないわ。",
+    "en": "Mm, they're about to fall. Letting go now would be such a waste.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "ふふ、もう引き止めないでくださいね？ 決めちゃったんですから。",
     "en": "Mm, don't try to hold me back now, will you? It's already decided.",
     "files": [
@@ -144710,6 +144991,20 @@
     }
   },
   {
+    "key": "まだ何も決まってない。ここから取りにいく。",
+    "en": "Nothing's been decided. We go after it from here.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "まだ何も返せてない…こんなの、受け入れられない",
     "en": "I haven't paid any of it back yet... I can't take this.",
     "files": [
@@ -145560,6 +145855,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "まだ終わりじゃない。それだけ。",
+    "en": "It's not over. That's all.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "normal"
     }
   },
@@ -150613,6 +150922,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "やっと、ここまで来られたんです……途中で終わるのは、ちょっと……",
+    "en": "I finally made it this far... Stopping halfway would be, um...",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "shy"
     }
   },
@@ -163000,6 +163323,20 @@
     "cell": null
   },
   {
+    "key": "リードしてるのはこっち。最後まで取り切らなきゃ、勝ったことにならない。",
+    "en": "We're the ones in front. If we don't finish it, it doesn't count as a win.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "ルックスも実力も…全部持ってる私に敵うわけないでしょ？",
     "en": "Looks and ability — I have all of it. What chance did you have?",
     "files": [
@@ -168445,6 +168782,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "今さら手打ちとか、ありえねえだろ。勝ってんのはこっちだぞ。",
+    "en": "A truce, now? No way. We're the ones winnin' here.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
     }
   },
   {
@@ -177398,6 +177749,34 @@
     "cell": null
   },
   {
+    "key": "勝ちが見えているのに、ここで手を引く理由はございません。",
+    "en": "Victory is in sight. I see no reason to withdraw now.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "勝ちきれていないことは承知しております。だからこそ、ここで退くわけにはまいりません。",
+    "en": "I am well aware we have not won yet. That is precisely why we cannot withdraw now.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "勝ちです。……あなたは、強かった。",
     "en": "The win is mine. ...You were strong.",
     "files": [
@@ -177446,6 +177825,20 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": null
+  },
+  {
+    "key": "勝ちは見えてる。あとは取るだけ。",
+    "en": "The win is right there. All that is left is to take it.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
   },
   {
     "key": "勝ちまくってるぜ。誰か止めてみろよ",
@@ -179793,6 +180186,20 @@
     }
   },
   {
+    "key": "勝ってる側が引く理由なんてないよ。最後まで付き合ってもらう。",
+    "en": "The side that's winning has no reason to back down. They'll stay in it with us to the very end.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "勝って帰るのが、こんなに味気ないなんて。必ず取り返します",
     "en": "I had no idea winning could taste this flat. I shall take it back.",
     "files": [
@@ -180524,6 +180931,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "勝てねえまま手打ちなんて、冗談じゃねえ。",
+    "en": "Callin' a truce without winnin'? Gimme a break.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
     }
   },
   {
@@ -197077,6 +197498,20 @@
     }
   },
   {
+    "key": "最後までやり遂げさせてくださいませ。中途半端な幕引きでは、誰も納得いたしませんわ！",
+    "en": "Please allow us to see this through. A half-finished ending would satisfy no one!",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "最後まで一緒に戦ってくださって、ありがとうございました。",
     "en": "Thank you for fighting alongside me right to the end.",
     "files": [
@@ -202082,6 +202517,20 @@
     }
   },
   {
+    "key": "正直、ちょっと疲れたかも。でもさ、勝てないまま終わるのはナシでしょ。",
+    "en": "Honestly, I'm kinda worn out. But ending it without a win? Nope.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "正直、もう限界だと感じています。…引退を考えています",
     "en": "Honestly, I feel I've reached my limit. ...I'm thinking of retiring.",
     "files": [
@@ -204025,6 +204474,20 @@
     }
   },
   {
+    "key": "決着がつかないまま終わるのは、逃げるのと同じです。まだ戦わせてください。",
+    "en": "Ending it without a result is the same as running away. Please let us keep fighting.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "決着がつきました。……もう、十分です",
     "en": "It's settled. ...That is enough now.",
     "files": [
@@ -204284,6 +204747,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "決着は、はっきりした形でつけたいです。ここで曖昧にしたら、ついてきてくれた仲間に顔向けできません。",
+    "en": "I want this settled so no one can argue. Leave it vague now, and I can't face the people who followed me.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "earnest"
     }
   },
@@ -204921,6 +205398,20 @@
     "hasPlaceholder": true,
     "hasProperNoun": false,
     "cell": null
+  },
+  {
+    "key": "流れはこっちにある。慌てる必要はないけど、止める必要もないね。",
+    "en": "The momentum's ours. No need to rush, but no need to stop either.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_AHEAD_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
   },
   {
     "key": "流れを読んで合わせる。それだけ",
@@ -219964,6 +220455,20 @@
     }
   },
   {
+    "key": "苦しいのは事実です。でも、まだ諦めてはいません。",
+    "en": "It's true we're struggling. But we haven't given up.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "苦しい時期を乗り越えた選手たちの姿に……涙が出そうだ",
     "en": "Looking at wrestlers who came through the hard years... I am close to tears.",
     "files": [
@@ -229641,6 +230146,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "長くやりすぎたかもしれないね。けど、勝てないまま手を引くのは性に合わない。",
+    "en": "Maybe we've let it run too long. Still, walking away without a win isn't my style.",
+    "files": [
+      "data-faction-dialogue.js:FACTION_F06_FORCE_BEHIND_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "normal"
     }
   },

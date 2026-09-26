@@ -124,8 +124,8 @@ v0.1 で導入予定だった「小さい方の派閥サイズによる救済倍
 - 各試合で `accrueRivalryPointsFromMatch`(本節)と `accrueInternalPointsFromExternalMatch`(faction-internal-rank-spec §3.2/§3.3)を呼ぶ。タッグはチーム代表(fighter1)、引き分けは加点なし、`_f09Locked` の試合は ×1.8・週の上限なし
 - `opts.common1MatchIdx`: その興行で Common-1 予約を清算した試合。派閥内ポイントは §3.1 の経路で入れ済みなので `isCommon1` を立てて二重に入れない(実プレイだけが使う)
 - 状態は写してから書く(入力の G を書き換えない)
-- **既知の差(裁定待ち)**: メイン補正(§2.2 +0.3、派閥内 §3.2 +2pt)の判定はカードの `isSummit`(PPV の頂上決戦の印)を見ているため、通常興行では掛からない。エンジンの従来の動きを変えずに両経路をそろえた
-- **既知の差(裁定待ち)**: §4.3 の40週強制和解は `_pendingForceCloseRivalry` を立てるだけで、拾う処理(F06 のモーダル・エンジンの自動処理)がどこにも無い。40週を過ぎた記録は先取100か派閥消滅まで続く
+- **メインの判定(2026-09-26 第4回裁定3で実装)**: 「興行のメインカード」= 興行カードの先頭の試合(`validMatches[0]`)。人気(`applyMatchPopularity` の isMainEvent)・怪我の舞台の格・起用約束と同じ「先頭=メインイベント」の規約。PPV の頂上決戦の印(`isSummit`)が付いた試合も従来どおりメイン(`isMain = !!m.isSummit || i === 0`)。メイン補正(§2.2 +0.3)と派閥内 §3.2 の +2pt が通常興行のメインの勝利に掛かる。F09 の先頭の試合もメイン(§3.4「§2.2 の補正は通常通り」)。以前は `isSummit` だけを見ていて、PPV はこの関数を通らないため**一度も掛かっていなかった**
+- **40週の2択(2026-09-26 第4回裁定4で実装)**: §4.3 の実装メモを参照(以前は `_pendingForceCloseRivalry` を立てるだけで拾う処理が無く、その印で判定が毎週止まっていた)
 
 ---
 
@@ -208,6 +208,15 @@ v0.3 で C 棚上げ削除。シンプル2択化。
 - A 和解: ポイント破棄、両方向 hostility -30、勝者なし、抗争終了
 - B 決裂継続: ポイント維持、抗争続行、+20週猶予（次の強制和解判定は20週後）
 
+**実装メモ(2026-09-26 第4回裁定4)**
+- 判定: `checkRivalryResolution` は `(現在週 - 記録の開始週) >= 40`(B を選んだ記録は `forceCloseDeferredUntil` = 選んだ週 +20 以降)の記録を `forceClose: { pairKey, factionAId, factionBId }` として返し、**判定はほかの記録へ続ける**(2択は1週に1件。2件目以降は翌週以降。40週に達した記録自身の自然沈静化は §4.5 の優先順位どおり見ない)。先取100・派閥消滅は延長中も最優先で決まる
+- 発火: tickWeek の派閥パイプラインが `Engine.factions.buildF06ForcePayload` で payload(両派閥・両リーダー・ポイント・週数・記録の開始週)を組み、派閥イベント `_pendingFactionEvent = { eventId: 'F06_FORCE', payload }` を立てる。ほかの派閥イベントと同じく、解決されるまで翌週の派閥パイプラインは止まる
+- 適用: `Engine.factions.applyF06ForceChoice(state, payload, 'A'|'B')`(純関数)。A=記録を閉じ `factionTimeline` に `{ type: 'RIVALRY_CLOSED', reason: 'F06_RECONCILE', factionAId, factionBId, pointsA, pointsB }`・両方向 hostility `forceCloseHostilityDecayOnA`(-30)・勝者敗者の効果なし(§5.4)・F08/F09 のクールダウン(§5.3 の即時再発火防止)。B=ポイント維持・`forceCloseDeferredUntil = 現在週 + forceCloseDelayWeeks(20)`・`forceCloseExtensions` +1
+- 自浄: 出してから選ぶまでに記録が消えた・派閥が消えた・同じ組の記録が作り直された(開始週が違う)ときは何もしない(`isF06ForceStillValid`。画面は説明を出さずに取り下げる)。旧セーブの `_pendingForceCloseRivalry` は tickWeek が静かに捨てる
+- 画面: `showFactionF06ForceModal`(docs/ui/03-screens/faction-f06-force.md)。自動プレイヤー(auto-sim ほかヘッドレス)は A/B 等確率
+- 記録の型: 実装の `factionTimeline` の型名は `RIVALRY_CLOSED`(§5.1 の `RESOLVED_BY_POINTS` は起案時の名前。reason の値は同じ)
+- 測定(headless 進行 6シード×30季、docs/worklog.md 2026-09-26): 40週の2択は6シードで3〜7回。等確率の自動応答では3回とも A(40週で和解)、B を選び続けると延長後に先取100(42・70週)か自然沈静化(45〜50週)で終わる
+
 ### §4.4 自然沈静化
 
 両方向 hostility が **20未満が連続4週続いた** 🔧 場合、抗争は自然消滅。ポイント破棄、勝者なし。
@@ -254,10 +263,12 @@ v0.3 で C 棚上げ削除。シンプル2択化。
 
 ### §5.4 reason別の効果分岐
 
+> **既知の不具合(2026-09-26 報告・裁定待ち。未修正)**: `applyRivalryVictory` は `applyMomentumChange` / `_applyTrustToMembers` / `_applyBondDirected` / `applyHostilityChange`(いずれも新しい状態を返す純関数)の戻り値を捨てているため、先取100(POINTS)の勝者・敗者の勢い・信頼・絆と両方向 hostility -40、派閥消滅(CONSOLATION)の残存側 hostility -40 が**実際には入っていない**(2026-09-18 に直したクールダウンの取りこぼしと同じ型)。その場で書き換える集客ボーナス・寝返り倍率・権威の喪失・タイムラインだけは入る。F06_RECONCILE は戻り値を使う形で実装したので影響なし
+
 | reason | 勝者効果 | 敗者効果 | hostility |
 |---|---|---|---|
 | POINTS（先取100） | フル適用 | フル適用 | -40 |
-| F06_RECONCILE（40週A和解） | なし | なし | -30 |
+| F06_RECONCILE（40週A和解） | なし | なし | -30(2026-09-26 実装。`applyF06ForceChoice`) |
 | CALM（自然沈静化） | なし | なし | 据置（既に20未満） |
 | CONSOLATION（派閥消滅） | なし | （消滅済み） | -40（残存側のみ） |
 
@@ -386,3 +397,4 @@ forceCloseHostilityDecayOnA: -30,  // A 和解選択時の hostility 減衰
 | v0.1 | 2026-05-01 | 初版起案。handoff v0.2 §5 確定値を仕様化、決着優先順位 / reason別効果分岐 / FACTION_CONFIG 項目を追加 |
 | v0.2 | 2026-05-01 | 補正を加算式に変更（メイン+0.3/タイトル+0.2/下剋上+0.2/タッグ-0.5）。派閥規模倍率を廃止。1興行ペア試合上限2 + 週次キャップ20pt を追加 |
 | v0.3 | 2026-05-01 | 決着優先順位確定（先取100最優先）。F09 hostility 70→65、後半補正1年目 1.0→1.1。F06 を A/B 2択化（C 削除）。敗者ペナルティ緩和（momentum -30→-25、trust リーダー-8/末端-3、F04・F05 ×2→×1.5）。F09 接近バッジ閾値 65→60。「抗争○週目」表示は出すと明記 |
+| 実装 | 2026-09-26 | 総点検 第4回の確認3・4(Keisuke 裁定): §2.7 メイン=興行カードの先頭(PPV の isSummit も従来どおり)。§4.3 40週の2択を派閥イベント F06_FORCE として実装(A 和解 F06_RECONCILE / B +20週)、40週の記録で判定が止まる不具合を修正。§5.4 の前に applyRivalryVictory の既知の不具合を記録 |

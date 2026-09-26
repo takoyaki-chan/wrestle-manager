@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-26T01:45:17.201Z",
+  "generatedAt": "2026-09-26T02:07:58.273Z",
   "files": {
     "data.js": {
       "jaCount": 17526,
@@ -26,8 +26,8 @@
       "jaChars": 9816
     },
     "ui-common.js": {
-      "jaCount": 1328,
-      "jaChars": 9308
+      "jaCount": 1331,
+      "jaChars": 9313
     },
     "ui-render.js": {
       "jaCount": 974,
@@ -42,8 +42,12 @@
       "jaChars": 8241
     },
     "app.js": {
-      "jaCount": 527,
-      "jaChars": 6480
+      "jaCount": 528,
+      "jaChars": 6462
+    },
+    "data-faction-dialogue.js": {
+      "jaCount": 355,
+      "jaChars": 5249
     },
     "battle-lines.js": {
       "jaCount": 594,
@@ -53,13 +57,9 @@
       "jaCount": 3,
       "jaChars": 4928
     },
-    "data-faction-dialogue.js": {
-      "jaCount": 317,
-      "jaChars": 4297
-    },
     "factions.js": {
-      "jaCount": 373,
-      "jaChars": 2952
+      "jaCount": 381,
+      "jaChars": 3040
     },
     "dev-event-catalog.js": {
       "jaCount": 187,

@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4754件、訳文あり4754件)
+//  生成元: i18n/ui-ledger.json (総キー4770件、訳文あり4770件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -280,6 +280,8 @@
     "{a}と{b}のリーダー対決を、今週のメインイベントとして公式戦に組みました": "You booked the leaders' showdown between {a} and {b} as this week's main event, on the official card",
     "{a}と{b}の争いをリングに持ち込む方針を取った。観客はこの火種を見逃さないだろう。": "You chose to carry the quarrel between {a} and {b} into the ring. The crowd will not miss a spark like this.",
     "{a}と{b}の対立は、社長の仲裁によって沈静化した。まだ完全な和解ではないが、互いに矛を収める段階に入った。": "Your mediation cooled the conflict between {a} and {b}. It is not a full reconciliation, but both sides have lowered their weapons.",
+    "{a}と{b}の抗争は、社長の預かりで幕を下ろした。勝ち名乗りを上げた者はいない。": "The feud between {a} and {b} was closed on the president's authority. No one got to claim the win.",
+    "{a}と{b}の抗争は続く。決着は、リングの上でつけることになった。": "The feud between {a} and {b} goes on. It will be settled in the ring.",
     "{a}と{b}の火種は、ついにリングで燃え上がる。": "The spark between {a} and {b} finally catches fire in the ring.",
     "{a}と{b}は決着つかず。": "{a} and {b} settle nothing.",
     "{a}と{b}は適度な距離を保った。関係は穏やかなまま。": "{a} and {b} kept a sensible distance. Things stayed calm between them.",
@@ -578,6 +580,7 @@
     "{org}興行　遠征試合結果": "{org} show — Away match results",
     "{org}（{n}名）": "{org} ({n})",
     "{outlet}からの{label}オファー": "{label} offer from {outlet}",
+    "{pa} — {pb} のまま持ち越し": "Carried over at {pa} — {pb}",
     "{period}の給与支払い": "Payroll for {period}",
     "{plan}が組まれた。{a}と{b}は手を組んで観客を沸かせた。": "{plan} was booked. {a} and {b} teamed up and brought the house down.",
     "{plan}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 絆 <strong>+1〜+3</strong>": "{plan} will be booked. Both factions' momentum <strong>+5 to +8</strong> / member-to-member bond <strong>+1 to +3</strong>",
@@ -776,6 +779,7 @@
     "⏭ スキップ": "⏭ Skip",
     "⏳ いつでも使用可能（温存OK）\n": "⏳ Usable at any time (fine to hold on to it)\n",
     "⏳ 交渉中": "⏳ In Talks",
+    "⏳ 長引く抗争": "⏳ A Feud That Won't End",
     "⏳{n}週": "⏳ Weeks: {n}",
     "⏳{n}週後": "⏳ Weeks until: {n}",
     "①": "1.",
@@ -1072,6 +1076,7 @@
     "この子": "this girl",
     "この布陣で決勝へ": "To the Final with This Lineup",
     "この布陣で開戦": "Go to War with This Lineup",
+    "この抗争を、社長としてどう扱いますか？": "How do you handle this feud?",
     "この挑戦、どう受けますか？": "How do you take this challenge?",
     "この挑戦状、どうしますか？": "What do you do with this challenge letter?",
     "この時代のエース": "The Ace of the Era",
@@ -1332,8 +1337,19 @@
     "グッズ収入（プロモ連動）": "Merch Income (Promo Tie-in)",
     "グッズ収入（興行ブースト）": "Merch Income (Show Boost)",
     "グッズ収入（週次）": "Merch Income (Weekly)",
+    "ポイントはそのまま持ち越す。決着はリングに任せ、当面は口を出さない": "The points carry over as they are. The ring decides it, and you stay out of it for now.",
+    "ポイントは白紙に戻し、勝者も敗者も出さずに幕を引く。両派閥の対立はやわらぐ": "The points are wiped clean and it ends with no winner and no loser. The tension between the factions eases.",
+    "リングの外でも睨み合いは続き、ロッカールームには疲れが見え始めた。": "The glaring goes on outside the ring too, and the locker room is starting to look worn out.",
+    "両派閥とも、決着がつかないまま長くなりました。リーダーの二人が、社長の判断を待っています": "Neither side has settled it, and it has dragged on a long time. Both leaders are waiting for your call.",
+    "和解させる": "Broker a truce",
     "対立が何度も重なってきた二人に使える。慢性化する前に手を打てば、亀裂が修復可能になることもある。": "For two wrestlers whose clashes keep piling up. Act before it turns chronic, and the rift can still be mended.",
     "成功すれば、二人の間のわだかまりがいくらか解ける。失敗しても関係は変わらない。": "If it works, some of the ill feeling between the two eases. If it fails, nothing changes between them.",
+    "抗争{n}週目": "Feud week {n}",
+    "抗争が始まって、もう<span class=\"marker hostile\">{weeks}週</span>になる。どちらの派閥も、まだ決着に手が届いていない。": "This feud is now in <span class=\"marker hostile\">week {weeks}</span>. Neither faction has managed to close it out.",
+    "抗争の幕引き": "Feud Closed",
+    "抗争続行": "Feud Continues",
+    "白紙に戻った": "Wiped clean",
+    "続けさせる": "Let it continue",
     "記事の反響で、ファンの間で名前が広まった": "The piece got people talking, and her name is spreading among the fans.",
     "集客力とグッズ売上にボーナス。興行出場で人気が上がりやすい": "Bonus to draw power and merch income. Popularity climbs more easily from working shows",
     "グッズ販売会": "Merch sale event",
