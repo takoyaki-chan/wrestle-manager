@@ -3675,6 +3675,13 @@ const Storage = {
         G = { ...G, _migrated_strainDebt_v1: true };
       }
 
+      // 2026-09-26 第4回裁定5: 関係性ポップアップの待ち行列(_modalQueue)は直近12週だけ残す。
+      // 消費する画面が無く、旧セーブでは季をまたいで増え続けていた(tickWeek 末尾と同じ規則で縮める)
+      if (Engine.relationships && Engine.relationships.flags
+          && typeof Engine.relationships.flags.pruneModalQueue === 'function') {
+        G = Engine.relationships.flags.pruneModalQueue(G);
+      }
+
       {
         const repair = Engine.saveDoctor.repairOnLoad(G);
         if (repair.changed) {
@@ -11072,15 +11079,8 @@ const App = {
     if (pendingLastRunRetirements.length > 0) {
       popupActions.push(done => showRetirementPopups(pendingLastRunRetirements, done));
     }
-    // 怪我による引退(K-1 4-B-6)の週は、関係性フラグのポップアップ(M-22「引退の置き土産」=仲の良い選手の反応を含む)を
-    // 本人の引退ポップアップの後に出す。下の setTimeout(0) で先に流すと、本人の引退より先に周りの反応が出てしまう
-    const deferFlagModalsAfterInjuryRetire = pendingInjuryRetirements.length > 0;
     if (pendingInjuryRetirements.length > 0) {
-      popupActions.push(done => showRetirementPopups(pendingInjuryRetirements, () => {
-        try { if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue(); }
-        catch (e) { console.error('[WM] flag modal drain after injury retirement failed:', e); }
-        if (done) done();
-      }));
+      popupActions.push(done => showRetirementPopups(pendingInjuryRetirements, done));
     }
     if (pendingGrowthEventsShow.length > 0) {
       popupActions.push(done => showGrowthEventPopups(pendingGrowthEventsShow, done));
@@ -11171,15 +11171,13 @@ const App = {
       _chainEventPopupQueueEmpty(runPopupActions);
     }
 
-    // relationship-flags-spec-v1.0 §4: 試合発火系の関係性フラグモーダル
     // Common-3 派閥加入通知（興行後に発生したものも消化）
     // §6 アーキタイプ遷移ナレーション（F02 完全敗北など興行後に発生する）
-    // **3系統とも同期で開かない(2026-08-13)。** この後の advanceFromWeekSummary →
-    // dismissAllPopups が同 tick で走り、同期表示した分(特にフラグモーダルの C3 キュー)は
-    // 表示前に消えていた。タイマーに載せて全消去の後で開き、共有ゲートで直列化させる。
+    // **同期で開かない(2026-08-13)。** この後の advanceFromWeekSummary →
+    // dismissAllPopups が同 tick で走り、同期表示した分は表示前に消えていた。
+    // タイマーに載せて全消去の後で開き、共有ゲートで直列化させる。
+    // 関係性フラグのポップアップ(M-1〜M-24)は出さない(2026-09-26 第4回裁定5)
     setTimeout(() => {
-      // 怪我による引退の週は、本人の引退ポップアップの後(上の popupActions)で流す
-      if (!deferFlagModalsAfterInjuryRetire && typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
       App._drainFactionJoinNotices();
       App._drainArchetypeTransitions();
     }, 0);
@@ -11817,14 +11815,12 @@ const App = {
     // v1.5s25b: 週次バフ消費（weekly_funds適用含む）
     App._applyWeeklyBuffEffects();
     App._tickMilestoneBuffsWeekly();
-    // relationship-flags-spec-v1.0 §4: 関係性フラグモーダルを順次 popup に流す
     // Common-3 派閥加入通知 / §6 アーキタイプ遷移ナレーション（F07 rebuke 4 累積など）
     // care-rework v0.1 §3.4 P4: 招聘の過程イベント（中間報告/衝突/延長打診/卒業レポート）
-    // **4系統とも同期で開かない(2026-08-13)。** processWeek も末尾で
-    // advanceFromWeekSummary → dismissAllPopups が同 tick で走るため、同期表示分
-    // (特にフラグモーダルの C3 キュー)は表示前に消えていた。closeShowResult と同じ扱い。
+    // **同期で開かない(2026-08-13)。** processWeek も末尾で
+    // advanceFromWeekSummary → dismissAllPopups が同 tick で走るため、同期表示分は表示前に消えていた。
+    // closeShowResult と同じ扱い。関係性フラグのポップアップ(M-1〜M-24)は出さない(2026-09-26 第4回裁定5)
     setTimeout(() => {
-      if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
       App._drainFactionJoinNotices();
       App._drainArchetypeTransitions();
       App._drainInviteEvents();

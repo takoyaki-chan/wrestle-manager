@@ -197,7 +197,9 @@ section('E03: 実プレイ(app.js)とエンジン(executeShow)が同じ関数で
   const app = readSource('src', 'app.js');
   const close = app.slice(app.indexOf('  closeShowResult() {'), app.indexOf('  closeShowResult() {') + 40000);
   assert.ok(/showRetirementPopups\(pendingInjuryRetirements/.test(close), 'closeShowResult が怪我引退の本人ポップアップを出していない');
-  assert.ok(/deferFlagModalsAfterInjuryRetire/.test(close), '引退の置き土産(M-22)を本人の引退ポップアップの後に回す処理が無い');
+  // 関係性フラグのポップアップ(M-22「引退の置き土産」を含む)は出さない(2026-09-26 第4回裁定5。以前はここで
+  // 本人の引退ポップアップの後に回していたが、表示の関数そのものが一度も動いていなかった)
+  assert.ok(!/_drainFlagModalQueue\s*\(/.test(close), 'closeShowResult が関係性フラグのポップアップを流している');
   const ui = readSource('src', 'ui-common.js');
   const blk = ui.slice(ui.indexOf('function _pbInjuryBlock('), ui.indexOf('function _pbInjuryBlock(') + 800);
   assert.ok(/ir\.retireType \? ''/.test(blk), '結果画面の怪我の欄が引退者にも全治の週数を出す');
