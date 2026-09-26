@@ -152,12 +152,8 @@ module.exports = [
     patterns: ['roster[*].recentMatches'],
     mustAppear: true, refs: 'app.js:8979-8995 / management.js:15450-15455(タッグは飛ばす)',
   },
-  {
-    id: 'K1-E08', title: '因縁決着エントリの記録欄(エンジン=lastShowNumber / 実プレイ=宿怨の勝者ID)',
-    category: 'formula', side: 'both', impact: '表示', scenarios: ['title-defense', 'rivalry'], checkpoints: ['A', 'B'],
-    patterns: ['rivalries.*.lastShowNumber', 'rivalries.*.bitterResolutionWinnerId'],
-    mustAppear: true, refs: 'management.js:14920-14932 / app.js:8192-8204。lastShowNumber は誰も読まない。bitterResolutionWinnerId は app.js:132 の試合前演出が読む',
-  },
+  // K1-E08(因縁決着エントリの記録欄。エンジン=lastShowNumber / 実プレイ=宿怨の勝者ID)は K-1 第2段で解消したので
+  // 外した(2026-09-26)。両経路が Engine.show.resolvedRivalryEntry で作り、両方の欄を持つ。
 
   // ════════════════ 全シナリオ共通(毎回出る差) ════════════════
   // K1-E01(出場選手のプロモ蓄積 promoStack のリセットが実プレイに無い)は K-1 第4段 4-B-5 で解消したので外した

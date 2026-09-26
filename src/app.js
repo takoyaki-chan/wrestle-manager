@@ -8183,19 +8183,9 @@ const App = {
         const resRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right, 0xBE77));
         const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(resRng, 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);
         const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
-        const updatedEntry = {
-          ...rivalries[key],
-          matches: 0,
-          lastWeek: s.week,
-          lastAbsWeek: Engine.util.absWeek(s.season, s.week),
-          lastResolvedWeek: s.week,
-          resolutionCount: resolution.newResolutionCount,
-          lastBand: 0,
-          oneSided: null,
-          pendingClashBonus: 0,
-          ...(resolution.resolved ? { resolved: resolution.resolved } : {}),
-          ...(resolution.resolved === 'bitter' ? { bitterResolutionWinnerId: winnerId } : {}),
-        };
+        // K-1 第2段(K1-E08): エンジンの executeShow と同じ Engine.show.resolvedRivalryEntry で作る
+        // (宿怨の決着の勝者 bitterResolutionWinnerId と、何番目の興行か lastShowNumber の両方を持つ)
+        const updatedEntry = Engine.show.resolvedRivalryEntry(rivalries[key], resolution, s, winnerId);
         rivalries = { ...rivalries, [key]: updatedEntry };
         if (s.relationships) {
           const rels = { ...(s.relationships || {}) };

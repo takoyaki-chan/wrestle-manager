@@ -15949,6 +15949,27 @@ const Engine = {
       });
       return out;
     },
+
+    // 因縁の決着エントリ(K-1 第2段 / K1-E08)。決着が成立した組の rivalries[key] を作り直す。
+    // 以前はエンジンが lastShowNumber(何番目の興行か)だけ、実プレイが bitterResolutionWinnerId(宿怨の決着の勝者。
+    // 試合前の演出 _bitterPrematchSide が読む)だけを書いていた。両方の欄を持たせる。
+    // state は興行数を数え終えた状態(totalShows はこの興行を含む)。戻り値: 新しいエントリ
+    resolvedRivalryEntry(prevEntry, resolution, state, winnerId) {
+      return {
+        ...prevEntry,
+        matches: 0,
+        lastWeek: state.week,
+        lastAbsWeek: Engine.util.absWeek(state.season, state.week),
+        lastShowNumber: state.totalShows || 0,
+        lastResolvedWeek: state.week,
+        resolutionCount: resolution.newResolutionCount,
+        lastBand: 0,
+        oneSided: null,
+        pendingClashBonus: 0,
+        ...(resolution.resolved ? { resolved: resolution.resolved } : {}),
+        ...(resolution.resolved === 'bitter' ? { bitterResolutionWinnerId: winnerId } : {}),
+      };
+    },
   },
 
   // ══════════════════════════════════════════════════════════
@@ -16294,19 +16315,10 @@ const Engine = {
         if (resolution) {
           const isFinalResolution = resolution.newResolutionCount >= 2;
           const nextRivalry = resolution.rivalryRange[0] + Engine.rng.int(Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, m.left, m.right, 0xBE77)), 0, resolution.rivalryRange[1] - resolution.rivalryRange[0]);
-          const updatedEntry = {
-            ...rivalries[key],
-            matches: 0,
-            lastWeek: s.week,
-            lastAbsWeek: Engine.util.absWeek(s.season, s.week),
-            lastShowNumber: s.totalShows || 0,
-            lastResolvedWeek: s.week,
-            resolutionCount: resolution.newResolutionCount,
-            lastBand: 0,
-            oneSided: null,
-            pendingClashBonus: 0,
-            ...(resolution.resolved ? { resolved: resolution.resolved } : {}),
-          };
+          const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
+          // K-1 第2段(K1-E08): 実プレイ(app.js)と同じ Engine.show.resolvedRivalryEntry で作る(lastShowNumber と
+          // 宿怨の決着の勝者 bitterResolutionWinnerId の両方を持つ)
+          const updatedEntry = Engine.show.resolvedRivalryEntry(rivalries[key], resolution, s, winnerId);
           rivalries = { ...rivalries, [key]: updatedEntry };
           if (s.relationships) {
             const rels = { ...(s.relationships || {}) };
@@ -16328,7 +16340,6 @@ const Engine = {
           });
           const rivalOrgPopDelta = Engine.orgPop.applyOrgPopChange(resolution.orgPopBonus, s.orgPop, null);
           s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) + rivalOrgPopDelta, 0, 100) };
-          const winnerId = r.winner === 'left' ? m.left : (r.winner === 'right' ? m.right : m.left);
           const loserId = winnerId === m.left ? m.right : m.left;
           const winnerName = charL.id === winnerId ? charL.name : charR.name;
           const loserName = charL.id === loserId ? charL.name : charR.name;
