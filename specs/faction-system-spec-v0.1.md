@@ -740,6 +740,9 @@ F08-A（社長判断 A: 直接対決）が選択された場合、当該リー�
 1. F08-A 試合前モーダル（f08-pre-match）
 2. rivalry 50+ 宣戦布告ポップアップ（既存）
 3. 初顔合わせフレーバー（match-flavor）
+   ※2026-09-26 現行: F08 の試合は宣戦布告の対象外(App.executeShow が除く)。F09・派閥内序列戦の試合は
+     フォーカスの時点に 宣戦布告 → 派閥の試合前の画面 の順(宣戦布告を閉じてから)。初顔合わせは「🎬 試合を観る」の後で、
+     派閥の試合前の画面がある試合には出さない(specs/match-flavor-popup-spec-v0.1.md §4.2.1・§4.2.2)
 
 試合終了時の優先順:
 1. F08-A 試合後モーダル（f08-post-match）
@@ -748,6 +751,9 @@ F08-A（社長判断 A: 直接対決）が選択された場合、当該リー�
 ```
 
 興行中ずっと active な試合一覧・結果の殻(`showResultOverlay`)は、排他の相手に数えない(`_isPopupActive({ ignoreShowResultOverlay: true })`。F09 の4画面・直訴の結果と同じ)。数えると試合後モーダルが殻の後ろの待ち行列に積まれ、殻は試合後モーダルの続きで結果を描くのを待つので、興行が結果の手前で止まる(2026-09-26 点火 `faction-f08` で発見・修正。派閥内序列戦の試合前・試合後モーダルも同じ扱い)。
+
+**スキップしていても出す(2026-09-26 Keisuke 裁定)**: 派閥の試合前の画面(F08-A の `f08-pre-match`・F09 の試合前(初回は Opening から)・派閥内序列戦の試合前)は物語の節目なので、同じ興行で前の試合を1試合スキップしていても、その試合にフォーカスが来たら出す。以前は `App.skipMatch` が `sp._suppressFlavor` を立て、`App._runPreMatchFlavorForMatch` がそれを見て以降の試合の試合前の画面を出さなかった(メインは最後の試合なので、前座を1つでもスキップすると F08 の直接対決の試合前の画面は出なかった)。`_suppressFlavor` は廃止。小さな演出(試合後の「敗者の心」・試合前の「✨ 初対決」)は従来どおりスキップでは出さない(specs/match-flavor-popup-spec-v0.1.md §4.2.1・§4.6.1)。「残り全試合をスキップ」は以降の試合にフォーカスが来ないので出ない(従来どおり)。その試合が既に始まっていれば出さない(遅れて観戦の上に出ない)。点火 `faction-f08-skip`。
+- 未変更(報告のみ): 派閥の**試合後**の画面のうち F09 の試合後(`showFactionF09MatchPostModal`)と派閥内序列戦の試合後(`showInternalChallengePostModal`)は `_runPostMatchFlavorForMatch` の中にあり、1試合スキップ(`_afterMatchSettle(idx, { skipFlavor: true })`)では出ない。派閥内序列戦の試合後の画面の材料 `G._pendingInternalChallengePostModal` はスキップすると消費されずに残り、次に観戦した派閥内序列戦の試合後に古い結果で出うる(F08 の試合後の画面は清算の `drainF08Aftermath` で常に出る)
 
 #### CSSクラス追加
 

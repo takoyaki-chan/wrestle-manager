@@ -3822,6 +3822,30 @@ Engine.challengeRequest = {
     return { ...s, challengeRequest: { ...s.challengeRequest, pendingThisWeek: null } };
   },
 
+  /** 出す直前の見直し(2026-09-26)。app.js が直訴・果たし状のモーダルを**出す直前にだけ**呼ぶ(週次処理は呼ばない)。
+   *  発起人・相手のどちらかがいま出られない(怪我・休養・謹慎。予約を消化する getScheduledCard と同じ基準)打診は、
+   *  受けても次の興行で予約が解除されるだけなので取り下げる。大型イベント・派閥イベントに週次のモーダル枠を取られて
+   *  持ち越している間に怪我・休養をしたときに起きる(抽選の時点では _passesPrereq が出られる2人だけを選ぶ)。
+   *  扱いは、発起人・相手が不在になった打診を取り下げる dropStalePending と同じ: CD・クォータは付けず(治って熱が
+   *  残っていれば次の抽選でまた届きうる)、取り下げの通知は出さない。持ち越し(出られるまで待つ)にしないのは、
+   *  持ち越している打診が新しい直訴の抽選と統一王座「こちらの番」の表示を堰き止め続けるため(dropStalePending と同じ理由) */
+  dropUnplayablePending(state) {
+    const s = this.dropStalePending(state);
+    const p = s.challengeRequest.pendingThisWeek;
+    if (!p) return s;
+    const healthy = f => !!f && !f.injury && !f.forcedRest && !f.suspended;
+    const aiOrgs = s.aiOrgs || {};
+    const inOrg = (orgId, id) => {
+      const org = aiOrgs[orgId];
+      return org && Array.isArray(org.roster) ? org.roster.find(f => f && f.id === id) : null;
+    };
+    const inRoster = id => (s.roster || []).find(f => f && f.id === id);
+    const requester = p._inverse ? inOrg(p.requesterOrgId, p.selfId) : inRoster(p.selfId);
+    const opponent = p._inverse ? inRoster(p.otherId) : inOrg(p.otherOrgId, p.otherId);
+    if (healthy(requester) && healthy(opponent)) return s;
+    return { ...s, challengeRequest: { ...s.challengeRequest, pendingThisWeek: null } };
+  },
+
   /** heat = rivalry + max(0, 50-bond)*0.8 + max(0, bond-75)*0.6 + (rivalry≥70 ? +10 : 0) */
   computeHeat(rivalry, bond) {
     const r = rivalry || 0;
@@ -4304,8 +4328,9 @@ Engine.challengeRequest = {
    * 写しは id と名前を引くためだけに残す。
    * 本人が出られないとき(怪我・引退・移籍・団体の解散、または自団体に来ている)は null — 呼び出し側は
    * 予約を解除する(直訴・統一王座戦の予約と同じ「消滅」。代表の選手が出られないときと同じ扱い)。
-   * 他団体の選手の「出られない」は怪我だけで見る(全国統一王座戦の _available と同じ)。休養(forcedRest)・謹慎(suspended)は
-   * 自団体の選手の印で、AI団体では誰も外さない — 自団体から移った選手に何十週も残っていることがある(seed 42 で S2〜S4 の88週)
+   * 他団体の選手の「出られない」は怪我だけで見る(全国統一王座戦の _available と同じ)。休養(forcedRest)は付けた団体の
+   * 「次の興行」までの印(AI団体では AI の興行の開始で外れる。2026-09-26 まで外れず何十週も残っていた)で、自団体の興行に
+   * 呼ぶ他団体の選手を縛るものではない
    */
   getScheduledSingleChallenge(state) {
     if (!this.isEligibleHomeShow(state)) return null;

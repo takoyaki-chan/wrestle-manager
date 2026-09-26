@@ -120,6 +120,20 @@ processAIWeek 処理内容:
   9. processAIWeeklyEvent（通知型/選択型イベント自動処理）
 ```
 
+**休養の印(2026-09-26 Keisuke 裁定「直す」)**: AI の選択型イベント S3(休養願い)の受諾(`applyChoiceEffect`。`_pickAIChoice` で約60%)は、自団体と同じく
+選手に `forcedRest`(次の興行は欠場の印)と `schedule: 'rest'` を付ける。AI の組み合わせ(`generateAIMatchCard`)はこの印を見ない(欠場させない)。
+印は自団体と同じく「次の興行」までのもので、**AI団体の通常興行週の5.(興行)の開始で外す**(`Engine.util.stripRestMarkers`。自団体の
+`Engine.show.beginShow` と同じ位置づけ)。印が残っている間は、団体の評価の層の厚み(org-ranking-spec §Depth)と直訴の発火・予約
+(challenge-request)がその選手を出られない選手として数える。以前は AI団体では誰も外さず、受諾した選手に何十週〜数季残っていた
+(seed 42 の大庭愛菜 95週。5シード×8季で印の延べ1442週・最長307週 → 修正後 19週・最長3週。印で評価が下がっていた団体×週 1170(平均-3.3)→19・
+順位の並びが変わっていた週 18→0・印で直訴が出なくなった抽選週 3→0。`tools/rest-marker-leak-compare.js`)。
+- 団体を離れる選手は印を持ち出さない: 手放す経路(`Engine.util.releaseToMarket`)・引き抜き(`Engine.transfer.resolvePoach` の受諾/引き留め失敗)・
+  契約満了と突然の退団の移籍(`Engine.contract.processDeparture`・`Engine.show.applySuddenDepartures`)・放出の獲得(`Engine.rival.claimDepartedStar`)で外す。
+  AI団体の選手に付くのは AI 自身の休養願いの `forcedRest` だけで、休暇 `onLeave`・謹慎 `suspended` は自団体の選手だけ。フリーの選手には付かない
+  (validateGameState の不変条件)
+- 既存セーブ: ロード時の修復(`Engine.saveDoctor.repairOnLoad`)が、フリーの選手の印と AI団体の `onLeave`/`suspended` を毎回、AI団体の `forcedRest` を
+  古いセーブ(印 `_migrated_rest_markers_v1` が無い)で1回だけ外す(直したセーブで毎回外すと、保存→ロードで AI 自身の休養が縮むため)。新しいゲームは印を持って始まる
+
 ### §4.0b AI団体の人気（団体人気 orgPop）
 
 - 興行ごと: 試合の平均MQから★（80/65/50/35 で ★5〜★2）を決め、人気の増減は自団体の興行と同じ
