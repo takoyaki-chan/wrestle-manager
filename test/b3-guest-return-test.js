@@ -48,7 +48,8 @@ function method(name) {
 const App = {};
 global.App = App;
 global.isPPV = w => Engine.util.isPPV(w);
-Object.assign(App, new Function(`return ({${method('_finalizeHookGrowthEvents')}\n${method('_finalizeHookCareerMarks')}\n${method('_finalizeHookGuests')}\n});`)());
+// 成長イベント・経歴の刻印は K-1 第4段 4-A から finalize の中(Engine.show.applyGrowthEvents / recordCareerMarks)
+Object.assign(App, new Function(`return ({${method('_finalizeHookGuests')}\n});`)());
 
 // 本物の進行で作った興行週(seed 42 の2季目14週。k1-stage3-test と同じ週)
 const baseState = clone(advanceUntil({ seed: 42, until: g => g.season === 2 && g.week === 14 && g.weekPhase === 'manage' && !g.offSeason }));
@@ -101,7 +102,6 @@ function runB3Show({ repIndex = 0, challengerExtra = {} } = {}) {
     return Engine.battle.simulateMatch(L, R, rng, (m.isTitle || (idx === 0 && G.showVenue === 9)) ? 2 : 1, ringIn.simOpts);
   });
   const begun = Engine.show.beginShow(G, validMatches);
-  const pendingGrowthEvents = [];
   let guestPost = null;
   const fin = Engine.show.finalize(begun.state, validMatches, results, {
     roster: begun.roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: G,
@@ -109,11 +109,9 @@ function runB3Show({ repIndex = 0, challengerExtra = {} } = {}) {
     f08AttendanceMark: true, nextMatchBuffCard: G.showCard || [], markDomeSellout: true, crossOrgRelationshipContext: true,
     resolveUnifiedTitle: false, injuryPresentationDict: WM_I18N.t, buildNewspaper: false,
     hooks: {
-      afterGrowth: w => App._finalizeHookGrowthEvents(w, pendingGrowthEvents),
-      beforeKaigan: w => App._finalizeHookCareerMarks(w),
       afterWriteback: w => {
         guestPost = clone(w.roster.find(c => c.id === guest.id) || null);
-        App._finalizeHookGuests(w, pendingGrowthEvents);
+        App._finalizeHookGuests(w);
       },
     },
   });

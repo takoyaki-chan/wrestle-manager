@@ -67,7 +67,7 @@ section('3-1: executeShow は beginShow → 試合のシミュレーション �
     'accrueFactionPoints', 'applyMatchGrowth', 'accumulateSeasonStats', 'recordShowH2h', 'applySuddenDepartures',
     'buildInjuryRetirementPresentations', 'buildShowNewspaperData',
     // 第4段 4-A(実プレイだけにあった処理をエンジンへ)
-    'applyGrowthEvents', 'recordCareerMarks'].forEach(fn => {
+    'applyGrowthEvents', 'recordCareerMarks', 'settleFactionBookings'].forEach(fn => {
     assert.ok(body.includes(`Engine.show.${fn}(`), `エンジンの経路が Engine.show.${fn} を通っていない`);
   });
 });
@@ -85,14 +85,15 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
     'injuryPresentationDict: WM_I18N.t', 'preShowState: G'].forEach(opt => {
     assert.ok(impl.includes(opt), `_finalizeShowImpl が ${opt} を渡していない`);
   });
-  const hookNames = ['afterTitles: w => App._finalizeHookSpecialBouts(w)', 'afterRelationships: w => App._finalizeHookFactionBookings(w)',
+  const hookNames = ['afterTitles: w => App._finalizeHookSpecialBouts(w)',
     'afterWriteback: w => App._finalizeHookGuests(w)'];
   hookNames.forEach(h => assert.ok(impl.includes(h), `hooks に ${h} が無い`));
   // 第4段 4-A でエンジンへ移した処理の hooks は残っていない
   assert.ok(!/afterGrowth:/.test(impl) && !/_finalizeHookGrowthEvents/.test(app), '成長イベントの hook(第4段 4-A でエンジンへ移した)が残っている');
   assert.ok(!/beforeKaigan:/.test(impl) && !/_finalizeHookCareerMarks/.test(app), '経歴の刻印の hook(第4段 4-A でエンジンへ移した)が残っている');
+  assert.ok(!/afterRelationships:/.test(impl) && !/_finalizeHookFactionBookings/.test(app), '派閥の予約の清算の hook(第4段 4-A でエンジンへ移した)が残っている');
   // 共通の処理を実プレイ側に書き直していない(_finalizeShowImpl と hooks のどこにも無い)
-  const hooks = ['_finalizeHookSpecialBouts', '_finalizeHookFactionBookings', '_finalizeHookGuests']
+  const hooks = ['_finalizeHookSpecialBouts', '_finalizeHookGuests']
     .map(name => {
       const st = app.indexOf(`\n  ${name}(`);
       assert.ok(st >= 0, `App.${name} が無い`);
@@ -102,23 +103,18 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
     'Engine.title.crownChampion(', 'Engine.title.recordRivalry(', 'Engine.show.resolveMatchInjury(', 'Engine.relationships.applyMatchResult(',
     'Engine.relationships.applyShowContextEffects(', 'Engine.show.accrueFactionPoints(', 'Engine.show.applyMatchGrowth(',
     'Engine.show.recordShowH2h(', 'Engine.pushRecentMatch(', 'Engine.kaigan.processMatchResults(', 'Engine.show.applySuddenDepartures(',
-    'Engine.growthEvents.checkAndApplyBreakthrough(', 'Engine.growthEvents.checkSlump(', 'Engine.growthEvents.updateSlumpMomentumAfterMatch(']
+    'Engine.growthEvents.checkAndApplyBreakthrough(', 'Engine.growthEvents.checkSlump(', 'Engine.growthEvents.updateSlumpMomentumAfterMatch(',
+    'Engine.factions.applyCommon1MatchResult(', 'Engine.factions.applyF09SweepBonus(', 'Engine.factions.applyInternalChallengeResult(', 'Engine.factions.applyF08PostMatchExtraEffects(']
     .forEach(call => {
       assert.ok(!impl.includes(call), `_finalizeShowImpl に共通の処理(${call})が残っている`);
       assert.ok(!hooks.includes(call), `実プレイの hooks に共通の処理(${call})が入っている`);
     });
 });
 
-// ── 3-3 派閥の予約の清算の信頼が書き戻しで消えない(§7 X05) ──
+// ── 3-3 派閥の予約の清算の信頼が書き戻しで消えない(§7 X05)。第4段 4-A からは Engine.show.settleFactionBookings(両経路) ──
 section('3-3: 派閥の予約の清算(F07 メイン推薦)の信頼の変化が作業中のロスターに残る(状態の roster は興行前のまま返す)', () => {
-  const app = readSource('src', 'app.js');
-  const start = app.indexOf('\n  _finalizeHookFactionBookings(w) {');
-  assert.ok(start >= 0, 'App._finalizeHookFactionBookings が無い');
-  const method = app.slice(start, app.indexOf('\n  },\n', start) + 4);
-  assert.ok(/let s = \{ \.\.\.w\.s, roster: w\.roster \};/.test(method), '派閥の関数に作業中のロスターを渡していない');
-  assert.ok(/w\.roster = s\.roster;/.test(method), '派閥の関数が変えたロスターを受け取っていない');
-  const hooks = new Function('Engine', 'FACTION_CONFIG', 'WM_I18N', '_factionDisplayName', 'wmDiag',
-    `return ({${method}\n});`)(Engine, FACTION_CONFIG, WM_I18N, n => n, () => {});
+  assert.ok(typeof Engine.show.settleFactionBookings === 'function', 'Engine.show.settleFactionBookings が無い');
+  assert.ok(finalizeBody().includes('Engine.show.settleFactionBookings('), 'finalize が Engine.show.settleFactionBookings を呼んでいない');
   const base = clone(showState);
   const leader = base.roster.find(c => !c.injury && !c.isRental && c.trust != null && c.trust > 30 && c.trust < 90);
   const members = base.roster.filter(c => c.id !== leader.id).slice(0, 2).map(c => c.id);
@@ -126,20 +122,22 @@ section('3-3: 派閥の予約の清算(F07 メイン推薦)の信頼の変化が
   const preShowRoster = base.roster;
   const working = base.roster.map(c => ({ ...c, popularity: (c.popularity || 0) + 1 })); // 作業中のロスター(興行で変わった)
   const others = base.roster.filter(c => !fac.memberIds.includes(c.id)).map(c => c.id);
-  const w = {
-    s: { ...base, factions: [...(base.factions || []), fac], _pendingF07Directive: { type: 'DEMAND_MAIN', factionId: 901, remainingShows: 3 } },
-    roster: working,
-    validMatches: [{ left: others[0], right: others[1] }], // メインに派閥の選手がいない → リーダーの信頼 −2
-    results: [{ winner: 'left', left: { id: others[0] }, right: { id: others[1] }, hpLeft: { final: 50, max: 100 }, hpRight: { final: 0, max: 100 } }],
-  };
-  hooks._finalizeHookFactionBookings(w);
+  const state = { ...base, factions: [...(base.factions || []), fac], _pendingF07Directive: { type: 'DEMAND_MAIN', factionId: 901, remainingShows: 3 } };
+  const stateBefore = clone(state);
+  const out = Engine.show.settleFactionBookings(state,
+    working,
+    [{ left: others[0], right: others[1] }], // メインに派閥の選手がいない → リーダーの信頼 −2
+    [{ winner: 'left', left: { id: others[0] }, right: { id: others[1] }, hpLeft: { final: 50, max: 100 }, hpRight: { final: 0, max: 100 } }]);
+  assert.deepStrictEqual(state, stateBefore, 'settleFactionBookings が入力の状態を書き換えた');
   const before = working.find(c => c.id === leader.id).trust;
-  const after = w.roster.find(c => c.id === leader.id).trust;
+  const after = out.roster.find(c => c.id === leader.id).trust;
   assert.ok(after < before, `リーダーの信頼が下がっていない(${before} → ${after})`);
-  assert.strictEqual(w.roster.find(c => c.id === leader.id).popularity, working.find(c => c.id === leader.id).popularity,
+  assert.strictEqual(out.roster.find(c => c.id === leader.id).popularity, working.find(c => c.id === leader.id).popularity,
     '作業中のロスターの他の値(人気)が興行前の値に戻った');
-  assert.strictEqual(w.s.roster, preShowRoster, '状態の roster を興行前のロスターに戻していない');
-  assert.strictEqual(w.s._pendingF07Directive.remainingShows, 2, '残り興行数が減っていない');
+  assert.strictEqual(out.state.roster, preShowRoster, '状態の roster を興行前のロスターに戻していない');
+  assert.strictEqual(out.state._pendingF07Directive.remainingShows, 2, '残り興行数が減っていない');
+  assert.strictEqual(out.common1MatchIdx, -1);
+  assert.deepStrictEqual(out.presentations, { common1Result: null, f08Aftermath: [], f09Ending: null }, '予約の無い演出データが出た');
 });
 
 // ── finalize の中身 ──
@@ -209,7 +207,7 @@ section('finalize: hooks は決まった順に1回ずつ、作業中の値の入
     calls.push(name);
     ['s', 'roster', 'titles', 'rivalries', 'events', 'titleMatchOutcomes', 'validMatches', 'results'].forEach(k => assert.ok(w[k], `${name}: w.${k} が無い`));
   };
-  const names = ['afterTitles', 'afterRelationships', 'afterWriteback'];
+  const names = ['afterTitles', 'afterWriteback'];
   const hooks = Object.fromEntries(names.map(n => [n, mk(n)]));
   const plain = runFinalize().fin;
   const hooked = runFinalize({ hooks }).fin;
@@ -220,7 +218,7 @@ section('finalize: hooks は決まった順に1回ずつ、作業中の値の入
 
 section('finalize: hooks が作業中の値を差し替えると、その後の処理はそれを使う', () => {
   const run = runFinalize({ hooks: {
-    afterRelationships: w => { w.common1MatchIdx = 0; w.s = { ...w.s, _stage3HookMark: 1 }; },
+    afterTitles: w => { w.s = { ...w.s, _stage3HookMark: 1 }; },
     afterWriteback: w => {
       assert.strictEqual(w.s.roster, w.roster, 'afterWriteback の時点で書き戻しが済んでいない');
       w.s = { ...w.s, _stage3AfterWriteback: true };

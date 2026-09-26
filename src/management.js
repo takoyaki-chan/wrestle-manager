@@ -16226,6 +16226,297 @@ const Engine = {
       return { state: s, roster: out };
     },
 
+    // 派閥の予約の清算(K-1 第4段 4-A / K1-A12・K1-A13・§7 X05。以前は実プレイの hooks.afterRelationships =
+    // App._finalizeHookFactionBookings だけにあった)。試合の関係値の後、F02③ 決着と派閥ポイントの前に1回呼ぶ:
+    //   task-79 Common-1 の興行予約(bookedCommon1)の清算(乱数 0xC0B1。特別興行週や他の予約試合との重複は繰り越す。
+    //   fail-open: 例外は握りつぶして予約を残す)
+    //   F08 ディレクティブ(直接対決の結果を 1.5× で派閥の勢い・対立度へ、リーダー2人の因縁 +30〜40。乱数 0xFA88)
+    //   F07 メイン推薦(6興行縛り: メインに派閥の選手がいればメンバーの信頼 +1、いなければリーダー −2)
+    //   F09 派閥対抗戦(スイープボーナス・年表・決着の記事・予約の解除)
+    //   派閥内序列戦(乱数 0xFA21)、F08 の試合後の追加の変動
+    // state は書き戻し前の状態(state.roster は興行前のロスター)。作業中のロスターを状態に載せて派閥の関数へ渡し、
+    // 変わったロスターを作業中のロスターとして返す。状態の roster は興行前のロスターへ戻す(書き戻しまで興行前の
+    // ロスターを読むのは両経路の従来どおり。§7 X14)。
+    // 演出データ(Common-1 の結果・F08 の試合後・F09 の決着)は状態に積まず presentations で返す(実プレイは結果画面の
+    // 前に順に見せる。エンジンは使わない)。F09 の決着の台詞は表示専用の文選び(Math.random。裁定 C-2)。
+    // 戻り値: { state, roster, common1MatchIdx, presentations: { common1Result, f08Aftermath, f09Ending } }
+    settleFactionBookings(state, roster, validMatches, results) {
+      const preShowRoster = state.roster;
+      let s = { ...state, roster };
+      const presentations = { common1Result: null, f08Aftermath: [], f09Ending: null };
+
+      // ── task-79: Common-1 興行予約(bookedCommon1)の清算 ──
+      // 枠(メイン/セミ/中盤)は問わない。今週のカードに予約ペアの一致する対戦が実際に組まれていれば、
+      // 既存の因縁清算(applyCommon1MatchResult)を適用する。特別興行週/PPV週や、他の予約試合
+      // (CH/B3/F09/派閥内序列戦/奪還戦)と同一興行での重複はここで弾き、繰り越す。
+      // 清算した試合の番号は、後段の派閥ポイントの加点(accrueFactionPoints)で派閥内ポイントを二重に入れないために返す
+      let common1ResolvedIdx = -1;
+      if (s.bookedCommon1 && Engine.factions && typeof Engine.factions.findBookedCommon1CardIndex === 'function') {
+        try {
+          const eligibleShow = !!(Engine.challengeRequest && Engine.challengeRequest.isEligibleHomeShow
+            && Engine.challengeRequest.isEligibleHomeShow(s));
+          const noCompeting = eligibleShow && !Engine.factions.hasCompetingBooking(validMatches);
+          const c1Idx = noCompeting ? Engine.factions.findBookedCommon1CardIndex(s, validMatches) : -1;
+          if (c1Idx >= 0 && results[c1Idx] && Engine.factions.isBookedCommon1Valid(s)) {
+            const booking = s.bookedCommon1;
+            const m = validMatches[c1Idx];
+            const r = results[c1Idx];
+            // 通常興行の試合エンジンは時間切れでも判定勝ちを返すため、ここには必ず左右どちらかの勝者が来る。
+            const winnerId = r.winner === 'left' ? m.left : m.right;
+            const loserId  = r.winner === 'left' ? m.right : m.left;
+            const c1Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xC0B1));
+            const c1Result = Engine.factions.applyCommon1MatchResult(s, booking, winnerId, loserId, c1Rng);
+            s = c1Result.state;
+            common1ResolvedIdx = c1Idx;
+            const { bookedCommon1: _doneC1, ...restC1 } = s;
+            s = restC1;
+            presentations.common1Result = {
+              payload: booking, matchResult: r,
+              fighterAId: booking.fighterAId, fighterBId: booking.fighterBId,
+              applyResult: {
+                resultText: c1Result.resultText,
+                impactSummary: c1Result.impactSummary,
+                winnerId: c1Result.winnerId,
+                loserId: c1Result.loserId,
+                winnerName: c1Result.winnerName,
+                loserName: c1Result.loserName,
+                factionName: c1Result.factionName,
+                isUpset: c1Result.isUpset,
+                upsetTag: c1Result.upsetTag,
+              },
+            };
+          }
+        } catch (e) {
+          console.error('[WM Faction] Common-1 booking resolution failed (fail-open, booking left pending):', e);
+        }
+      }
+
+      // ── F08 ディレクティブ: 直接対決試合の結果を派閥勢い/対立度に 1.5× で反映
+      //    + 両派閥リーダー間 rivalry に +30〜40 の大幅ブースト + ディレクティブクリア ──
+      if (s._pendingF08Directive && Engine.factions && typeof Engine.factions.applyMatchResult === 'function') {
+        const d = s._pendingF08Directive;
+        const f08Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFA88));
+        validMatches.forEach((m, idx) => {
+          if (m.matchType === 'tag') return;
+          const r = results[idx];
+          if (!r) return;
+          const hit = (m.left === d.leaderAId && m.right === d.leaderBId) || (m.left === d.leaderBId && m.right === d.leaderAId);
+          if (!hit) return;
+          const winnerToken = r.winner === 'left' ? (m.left === d.leaderAId ? 'A' : 'B')
+            : r.winner === 'right' ? (m.right === d.leaderAId ? 'A' : 'B')
+            : 'draw';
+          s = Engine.factions.applyMatchResult(s, m.left, m.right, { winner: winnerToken }, f08Rng, { variationMultiplier: (typeof FACTION_CONFIG !== 'undefined' && FACTION_CONFIG && FACTION_CONFIG.f08MatchResultMultiplier) || 1.5 });
+          // 両リーダー間 rivalry を +30〜40 の大幅ブースト(通常試合 +5〜10 の 4 倍程度)
+          // → リーダー同士の因縁が強烈に深まり、次の F02/F03 への発展を加速
+          const rivalryBoost = 30 + Math.floor(Engine.rng.float(f08Rng) * 11);
+          // 関係値のキーは方向つきの `a>b`(Engine.relationships._key)。2026-09-26 まで `a|b` で引いていて
+          // 一度も効いていなかった(点火 faction-f08 で発見。Keisuke 裁定「直す」)。両方向に同じ量を足す
+          const keyAB = Engine.relationships._key(d.leaderAId, d.leaderBId);
+          const keyBA = Engine.relationships._key(d.leaderBId, d.leaderAId);
+          const rels = { ...(s.relationships || {}) };
+          if (rels[keyAB] && rels[keyBA]) {
+            const clamp = (v) => Math.max(-100, Math.min(100, v));
+            rels[keyAB] = { ...rels[keyAB], rivalry: clamp((rels[keyAB].rivalry || 0) + rivalryBoost) };
+            rels[keyBA] = { ...rels[keyBA], rivalry: clamp((rels[keyBA].rivalry || 0) + rivalryBoost) };
+            s = { ...s, relationships: rels };
+          }
+        });
+        // 該当試合が実行されたかに関わらず、この興行後はディレクティブを落とす
+        const { _pendingF08Directive: _, ...rest } = s;
+        s = rest;
+      }
+
+      // ── Phase C: F07 DEMAND_MAIN ディレクティブ消化(6興行縛り)──
+      // 各興行ごとに評価: メインに当該派閥メンバーが入っていれば members trust +1、
+      // 入っていなければ leader trust -2。remainingShows をデクリメント、0 で解除。
+      if (s._pendingF07Directive && s._pendingF07Directive.type === 'DEMAND_MAIN') {
+        const dir = s._pendingF07Directive;
+        const fac = (s.factions || []).find(f => f.id === dir.factionId);
+        if (fac) {
+          const mainMatch = validMatches[0];
+          let containsFactionMember = false;
+          if (mainMatch) {
+            if (mainMatch.matchType === 'tag') {
+              const ids = [mainMatch.teamA?.fighter1, mainMatch.teamA?.fighter2, mainMatch.teamB?.fighter1, mainMatch.teamB?.fighter2].filter(Boolean);
+              containsFactionMember = ids.some(id => fac.memberIds.includes(id));
+            } else {
+              containsFactionMember = (mainMatch.left && fac.memberIds.includes(mainMatch.left)) || (mainMatch.right && fac.memberIds.includes(mainMatch.right));
+            }
+          }
+          if (containsFactionMember && Engine.factions._applyTrustToMembers) {
+            s = Engine.factions._applyTrustToMembers(s, fac.memberIds, 1);
+          } else if (Engine.factions._applyTrustToMembers && fac.leaderId) {
+            s = Engine.factions._applyTrustToMembers(s, [fac.leaderId], -2);
+          }
+        }
+        // remainingShows をデクリメント、0 で解除
+        const remaining = (dir.remainingShows != null ? dir.remainingShows : 1) - 1;
+        if (remaining > 0) {
+          s = { ...s, _pendingF07Directive: { ...dir, remainingShows: remaining } };
+        } else {
+          const { _pendingF07Directive: _, ...restF07 } = s;
+          s = restF07;
+        }
+      }
+
+      // ── Phase B: F09 派閥対抗戦 — sweep ボーナス適用 + 決着の演出データ + pending クリア ──
+      if (s._pendingF09 && Engine.factions && typeof Engine.factions.applyF09SweepBonus === 'function') {
+        const f09 = s._pendingF09;
+        const sweepResults = [];
+        validMatches.forEach((m, idx) => {
+          if (!m._f09Locked) return;
+          if (m.matchType === 'tag') return;
+          const r = results[idx];
+          if (!r || r.winner === 'draw') return;
+          const winnerId = r.winner === 'left' ? m.left : m.right;
+          const winnerFaction = Engine.factions.getFactionByFighterId(s, winnerId);
+          if (!winnerFaction) return;
+          sweepResults.push({ winnerFactionId: winnerFaction.id });
+        });
+        if (sweepResults.length > 0) {
+          s = Engine.factions.applyF09SweepBonus(s, f09.factionAId, f09.factionBId, sweepResults);
+        }
+        // factionTimeline に F09 完遂エントリ
+        if (Array.isArray(s.factionTimeline)) {
+          s = { ...s, factionTimeline: [...s.factionTimeline, {
+            type: 'F09_RESOLVED',
+            season: s.season, week: s.week,
+            factionAId: f09.factionAId, factionBId: f09.factionBId,
+            matchCount: sweepResults.length,
+          }]};
+        }
+        const winsA = sweepResults.filter(r => r.winnerFactionId === f09.factionAId).length;
+        const winsB = sweepResults.filter(r => r.winnerFactionId === f09.factionBId).length;
+        if (winsA !== winsB) {
+          const winFid = winsA > winsB ? f09.factionAId : f09.factionBId;
+          const losFid = winFid === f09.factionAId ? f09.factionBId : f09.factionAId;
+          const winF = (s.factions || []).find(f => f.id === winFid);
+          const losF = (s.factions || []).find(f => f.id === losFid);
+          if (winF && losF) {
+            const winLeader = (s.roster || []).find(c => c.id === winF.leaderId);
+            const losLeader = (s.roster || []).find(c => c.id === losF.leaderId);
+            // 業界ニュース: 派閥対抗戦決着
+            s = Engine.industryNews.push(s, {
+              type: 'factionWarSettled',
+              characterId: winF.leaderId || null,
+              data: {
+                org: s.orgName || 'プレイヤー団体',
+                winFaction: winF.name,
+                loseFaction: losF.name,
+                score: `${Math.max(winsA, winsB)}勝${Math.min(winsA, winsB)}敗`,
+                winLeader: winLeader ? winLeader.name : '?',
+                loseLeader: losLeader ? losLeader.name : '?',
+              },
+            });
+            const pickLine = (table, fighter) => {
+              if (!table || !fighter) return '';
+              const p = (Engine.contract && Engine.contract.getPersonalityType) ? Engine.contract.getPersonalityType(fighter) : 'normal';
+              const arch = fighter.archetype || 'standard';
+              // 第一分岐はアーキタイプ(口調)。2026-08-01 に軸を入れ替え
+              // (a,p) → (a,normal) → (standard,p) → (standard,normal) の4段
+              const byA = table[arch] || {};
+              const byStd = table.standard || {};
+              const byP = byA[p] || byA.normal || byStd[p] || byStd.normal || {};
+              const lines = byP.high || byP.mid || byP.low || [];
+              return lines.length ? lines[Math.floor(Math.random() * lines.length)] : '';
+            };
+            const winTable = (typeof FACTION_F09_ENDING_WIN_LINES !== 'undefined') ? FACTION_F09_ENDING_WIN_LINES : null;
+            const losTable = (typeof FACTION_F09_ENDING_LOSE_LINES !== 'undefined') ? FACTION_F09_ENDING_LOSE_LINES : null;
+            const winnerScore = winFid === f09.factionAId ? winsA : winsB;
+            const loserScore = winFid === f09.factionAId ? winsB : winsA;
+            // 決着の地の文(narration)は画面の言語で実プレイが組む(App._applyShowPresentations)
+            presentations.f09Ending = {
+              winnerFaction: { name: winF.name, leaderId: winF.leaderId, leaderName: winLeader ? winLeader.name : '' },
+              loserFaction:  { name: losF.name, leaderId: losF.leaderId, leaderName: losLeader ? losLeader.name : '' },
+              winnerLine: pickLine(winTable, winLeader),
+              loserLine: pickLine(losTable, losLeader),
+              scoreA: winsA, scoreB: winsB,
+              winnerScore, loserScore,
+              swept: Math.abs(winsA - winsB) >= 2,
+            };
+          }
+        }
+        const { _pendingF09: _f9, ...restF9 } = s;
+        s = restF9;
+      }
+
+      // ── 派閥内序列戦 試合結果反映(spec: faction-internal-rank-spec-v0.2 §4.4)──
+      if (Engine.factions && typeof Engine.factions.applyInternalChallengeResult === 'function') {
+        validMatches.forEach((m, idx) => {
+          if (!m._internalChallengeLocked) return;
+          if (m.matchType === 'tag') return;
+          const r = results[idx];
+          if (!r) return;
+          if (r.winner === 'draw') {
+            if (typeof Engine.factions.resolveInternalChallengeDraw === 'function') {
+              s = Engine.factions.resolveInternalChallengeDraw(s);
+            }
+            return;
+          }
+          const winnerId = r.winner === 'left' ? m.left : m.right;
+          const loserId  = r.winner === 'left' ? m.right : m.left;
+          const winnerHp = (r.winner === 'left' ? r.hpLeft : r.hpRight) || { final: 0, max: 100 };
+          const loserHp  = (r.winner === 'left' ? r.hpRight : r.hpLeft) || { final: 0, max: 100 };
+          const winnerHpPct = (winnerHp.max > 0) ? (winnerHp.final / winnerHp.max) : 1;
+          const loserHpPct  = (loserHp.max > 0) ? (loserHp.final / loserHp.max) : 0;
+          const icRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA21));
+          s = Engine.factions.applyInternalChallengeResult(s, {
+            winnerId, loserId, winnerHpPct, loserHpPct,
+          }, icRng);
+        });
+      }
+
+      // ── Phase 3e: F08-A 試合後 派閥関係追加変動 + アフターマスの演出データ ──
+      // _f08Locked がついた試合のうち、勝敗確定したものに対して発火。
+      // F02③ resolution が同時発火する試合は extra 効果スキップ(resolution 優先)。
+      if (Engine.factions && typeof Engine.factions.applyF08PostMatchExtraEffects === 'function') {
+        validMatches.forEach((m, idx) => {
+          if (!m._f08Locked) return;
+          if (m.matchType === 'tag') return;
+          const r = results[idx];
+          if (!r || r.winner === 'draw') return;
+          const winnerId = r.winner === 'left' ? m.left : m.right;
+          const loserId  = r.winner === 'left' ? m.right : m.left;
+
+          // F02③ resolution 同時発火判定(リーダー同士 + 両方向 hostility ≥60)
+          let isF02ResolutionFiring = false;
+          if (typeof Engine.factions.rollResolutionAfterMatch === 'function') {
+            const probe = Engine.factions.rollResolutionAfterMatch(s, { winnerId, loserId, isDraw: false });
+            if (probe && probe.pendingEvent && probe.pendingEvent.eventId === 'F02_RESOLUTION') {
+              isF02ResolutionFiring = true;
+            }
+          }
+
+          // HP残量パーセント
+          const loserSide = (winnerId === m.left) ? 'right' : 'left';
+          const loserHp = (loserSide === 'left' ? r.hpLeft : r.hpRight) || { final: 0, max: 100 };
+          const loserHpPct = (loserHp.max > 0) ? (loserHp.final / loserHp.max) : 0;
+          const winnerHp = (loserSide === 'left' ? r.hpRight : r.hpLeft) || { final: 0, max: 100 };
+          const winnerHpPct = (winnerHp.max > 0) ? (winnerHp.final / winnerHp.max) : 1;
+
+          const matchResult = { winnerId, loserId, winnerHpPct, loserHpPct };
+
+          // 1) 派閥関係追加変動
+          s = Engine.factions.applyF08PostMatchExtraEffects(s, matchResult, isF02ResolutionFiring);
+
+          // 2) アフターマスの演出データ(F02③ 同時発火時はスキップ — resolution 演出が優先)
+          if (!isF02ResolutionFiring && typeof Engine.factions.getF08AftermathData === 'function') {
+            const matchId = `${s.season}-${s.week}-${idx}`;
+            const shown = s._shownF08PostMatchIds || [];
+            if (!shown.includes(matchId)) {
+              const data = Engine.factions.getF08AftermathData(s, matchResult);
+              if (data) {
+                presentations.f08Aftermath.push({ matchId, data });
+                s = { ...s, _shownF08PostMatchIds: [...shown, matchId] };
+              }
+            }
+          }
+        });
+      }
+
+      return { state: { ...s, roster: preShowRoster }, roster: s.roster, common1MatchIdx: common1ResolvedIdx, presentations };
+    },
+
     // 季節の統計(seasonStats)に通常興行1回分を足す(K-1 第2段 / K1-A03。以前は実プレイの _finalizeShowImpl だけにあった)。
     // 興行数+1、決着のついた試合数(wins)・引き分け(draws)、季の最高評価(bestMQ)とその試合の顔合わせ(bestMQMatch。
     // タッグは「A & B vs C & D」)。表彰のベストマッチ賞(Engine.awards.selectBestMatch)・季の振り返り・序章の節目が読む。
@@ -16816,7 +17107,10 @@ const Engine = {
       // K-1 第2段(K1-A04): 王座戦の結果(防衛か奪取か)を控える。興行結果の新聞の見出し(buildShowNewspaperData)と
       // 実プレイの王座の式典が読む
       const titleMatchOutcomes = [];
-      const w = { validMatches, results, events, titleMatchOutcomes, common1MatchIdx: -1 };
+      // 演出データ(実プレイが結果画面の前後に見せるもの。状態には積まない。エンジン=auto-sim は使わない)。
+      // K-1 第4段 4-A: common1Result / f08Aftermath / f09Ending(派閥の予約)ほか
+      const presentations = {};
+      const w = { validMatches, results, events, titleMatchOutcomes };
       const callHook = (name) => {
         const fn = hooks[name];
         if (typeof fn !== 'function') return;
@@ -17362,7 +17656,18 @@ const Engine = {
         const showCtxRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE5C));
         s = Engine.relationships.applyShowContextEffects(s, validMatches, results, preShowLosingStreaks, showCtxRng);
       }
-      callHook('afterRelationships');
+      // 派閥の予約の清算(Common-1・F08・F07・F09・派閥内序列戦。K-1 第4段 4-A / K1-A12・K1-A13・§7 X05。以前は
+      // 実プレイの hooks.afterRelationships だけにあった)。演出データは presentations へ
+      let common1MatchIdx = -1;
+      {
+        const fb = Engine.show.settleFactionBookings(s, roster, validMatches, results);
+        s = fb.state;
+        roster = fb.roster;
+        common1MatchIdx = fb.common1MatchIdx;
+        if (fb.presentations.common1Result) presentations.common1Result = fb.presentations.common1Result;
+        if (fb.presentations.f08Aftermath.length > 0) presentations.f08Aftermath = fb.presentations.f08Aftermath;
+        if (fb.presentations.f09Ending) presentations.f09Ending = fb.presentations.f09Ending;
+      }
 
       // ── v4 §2-1: F02③ 決着 判定（リーダー同士の敵対試合で両方向hostility≥60） ──
       if (Engine.factions && typeof Engine.factions.rollResolutionAfterMatch === 'function' && !s._pendingFactionEvent) {
@@ -17380,7 +17685,7 @@ const Engine = {
 
       // ── 派閥抗争ポイント・派閥内ポイントの試合ごとの加点(K-1 4-B-2 / K1-E05。faction-rivalry-points-spec §2、
       // faction-internal-rank-spec §3.2/§3.3)。Common-1 で清算した試合(実プレイ)は派閥内ポイントを二重に入れない
-      s = Engine.show.accrueFactionPoints(s, validMatches, results, { common1MatchIdx: w.common1MatchIdx });
+      s = Engine.show.accrueFactionPoints(s, validMatches, results, { common1MatchIdx });
 
       // v1.3-2: §2 試合成長 — 怪我処理後、ロスターに残っている出場選手に成長を与える(K-1 4-B-4 / K1-E02。
       // 年齢倍率・関係性倍率・タッグの相手は2人の平均)
@@ -17563,7 +17868,7 @@ const Engine = {
       }
 
       // MQ再設計P3c: fp/venueHeatは興行1本につき1値。観測・計測用にトップレベルにも残す。
-      return { state: s, results, injuryResults, events, showRivalryResolutions, titleMatchOutcomes, fp, venueHeat: venueHeatResult.total, pressureFactor: venueHeatResult.pressureFactor };
+      return { state: s, results, injuryResults, events, showRivalryResolutions, titleMatchOutcomes, presentations, fp, venueHeat: venueHeatResult.total, pressureFactor: venueHeatResult.pressureFactor };
     },
   },
 
@@ -17662,7 +17967,7 @@ const Engine = {
     const fin = Engine.show.finalize(s, validMatches, rawResults, {
       roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: state,
     });
-    return { state: fin.state, results: fin.results, injuryResults: fin.injuryResults, events: fin.events, showRivalryResolutions: fin.showRivalryResolutions, fp: fin.fp, venueHeat: fin.venueHeat, pressureFactor: fin.pressureFactor };
+    return { state: fin.state, results: fin.results, injuryResults: fin.injuryResults, events: fin.events, showRivalryResolutions: fin.showRivalryResolutions, presentations: fin.presentations, fp: fin.fp, venueHeat: fin.venueHeat, pressureFactor: fin.pressureFactor };
   },
 
   // MQ/Show popularity helpers (pure functions)

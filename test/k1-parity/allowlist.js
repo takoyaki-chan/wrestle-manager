@@ -82,16 +82,9 @@ module.exports = [
   // K1-E05(派閥抗争ポイント・派閥内ポイントの試合ごとの加点が実プレイに無い)は K-1 第4段 4-B-2 で解消したので
   // 外した(2026-09-26)。両経路が Engine.show.accrueFactionPoints を通す。F09 の試合も ×1.8 で加点される。
   // 残る抗争ポイントの差は F09 のスイープボーナス(+15。実プレイだけ)で、K1-A13 に数える。
-  {
-    id: 'K1-A13', title: '派閥対抗戦 F09 の決着(スイープボーナス・年表・決着記事・クールダウン・予約の解除)',
-    category: 'processing', side: 'app', impact: '数値', scenarios: ['factions'], checkpoints: ['A', 'B'],
-    // factionRivalryPoints.*.pointsA/B: 試合ごとの加点は両経路で一致(第4段 4-B-2)。差はスイープボーナス +15 だけ
-    patterns: ['_pendingF09', 'factionTimeline', 'factionEventCooldowns.*', '_industryNewsEvents',
-      'factionRivalryPoints.*.pointsA', 'factionRivalryPoints.*.pointsB',
-      // K-1 第2段(K1-A04 を両経路でそろえた後)(B): 実プレイの号だけに F09 の決着記事(factionWarSettled)が載る
-      'weeklyNewspaper'],
-    mustAppear: true, refs: 'app.js _finalizeShowImpl の F09 決着(applyF09SweepBonus) / エンジン側なし(_f09Locked は加点倍率にだけ使う)',
-  },
+  // K1-A13(派閥対抗戦 F09 の決着が実プレイだけ)と K1-A12(F07 メイン推薦の消化が実プレイだけ)は K-1 第4段 4-A で解消したので
+  // 外した(2026-09-26)。両経路が Engine.show.finalize の中の Engine.show.settleFactionBookings を通す(Common-1・F08・
+  // 派閥内序列戦も。§7 X05)。演出データ(F09 の決着・Common-1 の結果・F08 の試合後)は状態に積まず fin.presentations。
   // K1-E06(実プレイの歴代最高評価の記録に matchType と勝者が渡らない)は K-1 第1段で解消したので外した(2026-09-26)。
   // app.js _finalizeShowImpl がエンジンと同じ引数を渡す。あわせて §7 X09(記録更新の経歴の刻印が roster の書き戻しで
   // 消える)も両経路で直した(Engine.mq.updateRecord の careerStamp を書き戻しの後で applyRecordCareerStamp)。
@@ -127,14 +120,6 @@ module.exports = [
     category: 'processing', side: 'app', impact: '数値', scenarios: ['directives'], checkpoints: ['A', 'B'],
     patterns: ['mediaSpotlight', 'orgPop', 'relationships.*', 'relationships.*.*', 'rivalries.*', 'rivalries.*.*', 'roster[*].popularity', 'roster[*].trust'],
     mustAppear: true, refs: 'app.js:9250-9270(団体人気は clamp なしで加算) / エンジン側なし',
-  },
-  {
-    id: 'K1-A12', title: 'F07 メイン推薦の消化(残り興行数・メンバー/リーダーの信頼。実プレイだけ)',
-    category: 'processing', side: 'app', impact: '数値', scenarios: ['directives'], checkpoints: ['A', 'B'],
-    // K-1 第3段 3-3(§7 X05 を解消): 信頼の増減が書き戻しで消えなくなった。directives ではメインに派閥の選手がいないので
-    // リーダーの信頼 −2(roster[*].trust は先に当たる K1-A11 に数える)と、退団寸前の帳簿の「派閥」の欄
-    patterns: ['_pendingF07Directive.remainingShows', 'roster[*].trustStrain.faction'],
-    mustAppear: true, refs: 'app.js App._finalizeHookFactionBookings(Engine.show.finalize の hooks.afterRelationships) / エンジン側なし(第4段 4-A)',
   },
   // K1-A15(タッグ不仲ペアの試合後 信頼−1)は、裁定 K-12 の実装(7ba3738e: Engine.showTagMatch に4経路を
   // 通した)で差が消えたので外した(2026-09-26)。以後この場所に差が出ると「未登録」で落ちる。

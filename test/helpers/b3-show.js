@@ -4,7 +4,7 @@
 //
 // App.executeShow と同じく、受けた挑戦状を次の通常興行のメインに固定して挑戦者(他団体の選手)を一時ゲストで入れ、
 // 試合をシミュレーションし(本体と同じく試合ごとに新品の rng)、Engine.show.finalize を実プレイの指定と
-// hooks(app.js から取り出した本物の _finalizeHookGrowthEvents / _finalizeHookCareerMarks / _finalizeHookGuests)で通す。
+// hooks(app.js から取り出した本物の _finalizeHookGuests。成長イベント・経歴の刻印は第4段 4-A から finalize の中)で通す。
 // test/b3-guest-return-test.js の runB3Show と同じ組み立て。
 //
 // guestMode:
@@ -29,7 +29,7 @@ function installAppHooks() {
   const App = global.App || {};
   global.App = App;
   if (typeof global.isPPV !== 'function') global.isPPV = w => Engine.util.isPPV(w);
-  Object.assign(App, new Function(`return ({${method('_finalizeHookGrowthEvents')}\n${method('_finalizeHookCareerMarks')}\n${method('_finalizeHookGuests')}\n});`)());
+  Object.assign(App, new Function(`return ({${method('_finalizeHookGuests')}\n});`)());
   hooksInstalled = true;
   return App;
 }
@@ -106,7 +106,6 @@ function runB3Show(G0, booking, { guestMode = 'game', extraCard = [] } = {}) {
     return Engine.battle.simulateMatch(L, R, rng, (m.isTitle || (idx === 0 && G.showVenue === 9)) ? 2 : 1, ringIn.simOpts);
   });
   const begun = Engine.show.beginShow(G, validMatches);
-  const pendingGrowthEvents = [];
   let guestPost = null;
   const fin = Engine.show.finalize(begun.state, validMatches, results, {
     roster: begun.roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: G,
@@ -114,11 +113,9 @@ function runB3Show(G0, booking, { guestMode = 'game', extraCard = [] } = {}) {
     f08AttendanceMark: true, nextMatchBuffCard: G.showCard || [], markDomeSellout: true, crossOrgRelationshipContext: true,
     resolveUnifiedTitle: false, injuryPresentationDict: WM_I18N.t, buildNewspaper: false,
     hooks: {
-      afterGrowth: w => App._finalizeHookGrowthEvents(w, pendingGrowthEvents),
-      beforeKaigan: w => App._finalizeHookCareerMarks(w),
       afterWriteback: w => {
         guestPost = clone(w.roster.find(c => c.id === guestId) || null);
-        App._finalizeHookGuests(w, pendingGrowthEvents);
+        App._finalizeHookGuests(w);
       },
     },
   });
