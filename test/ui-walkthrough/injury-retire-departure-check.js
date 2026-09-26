@@ -179,6 +179,18 @@ async function closeFarewellAndRest(page) {
   return after;
 }
 
+// ログのタブ(renderLog の「全て」)に出ている行のうち、name を含むものを返す
+async function logTabLines(page, name) {
+  return page.evaluate(n => {
+    const el = document.getElementById('logContent');
+    if (!el || typeof renderLog !== 'function') return ['(logContent なし)'];
+    el.dataset.filter = 'all';
+    renderLog();
+    return Array.from(el.querySelectorAll('div')).map(d => d.textContent.replace(/\s+/g, ' ').trim())
+      .filter(t => t.includes(n) && t.length < 200);
+  }, name);
+}
+
 async function advanceWeekCheck(page, check) {
   const adv = await page.$('[data-walk-role="advance-week"]');
   check('「週を処理」ボタンが押せる状態にある', !!adv && await adv.isVisible());
@@ -279,7 +291,12 @@ async function injuryCase(browser, server, fixtureText, check) {
     check('関係性フラグのポップアップ(M-22「引退の置き土産」)は出ない', !after.some(t => t.includes('引退の置き土産'))
       && !(await readOpenLog(page)).some(e => e.text.includes('引退の置き土産')), after);
 
-    // 5. 次の週へ進める
+    // 5. ログのタブに怪我による引退の1行(裁定7)
+    const logLine = await logTabLines(page, setup.retireeName);
+    const expectLog = setup.retireType === 'careerEnding' ? '試合中の重傷により引退' : '度重なる怪我により引退';
+    check(`ログのタブに「${expectLog}」の1行が残る`, logLine.filter(t => t.includes(expectLog)).length === 1, logLine);
+
+    // 6. 次の週へ進める
     await advanceWeekCheck(page, check);
     check('例外ゼロ', errs.length === 0, errs);
   } finally {
@@ -406,7 +423,8 @@ async function departureCase(browser, server, fixtureText, check) {
     }
     if (seen.length) console.log(`  (退団のトーストの前に出たもの: ${JSON.stringify(seen)})`);
     const tText = await page.evaluate(() => { const o = document.getElementById('mdlDOverlay'); return o ? o.textContent.replace(/\s+/g, ' ').trim().slice(0, 200) : null; });
-    check('退団のトーストが出る(名前と行き先)', toast && tText.includes(dep.destination === 'rival' ? '他団体へ移籍した' : 'フリーとなった'), tText);
+    // 行き先は実際に移った先(他団体のロスターにいれば移籍、そうでなければフリー)
+    check('退団のトーストが出る(名前と行き先)', toast && tText.includes(st.inAI ? '他団体へ移籍した' : 'フリーとなった'), tText);
     const toastCount = await page.evaluate(() => document.querySelectorAll('#mdlDOverlay.active').length);
     check('トーストは1枚だけ(二重に出ない)', toastCount === 1, toastCount);
     if (toast) {
@@ -415,6 +433,13 @@ async function departureCase(browser, server, fixtureText, check) {
     }
     const again = await waitFor(page, toastSrc, 1500);
     check('OK を1回押すと閉じ、同じトーストはもう出ない', !again);
+    // ログのタブに突然の退団の1行(行き先つき。裁定7)
+    const depLines = await logTabLines(page, dep.name);
+    const expectDep = st.inAI
+      ? await page.evaluate(id => { const e = Object.entries(G.aiOrgs || {}).find(([, o]) => (o.roster || []).some(f => f.id === id)); return e ? `突然退団し、${Engine.contract._getOrgName(e[0], G)}へ移籍した` : '?'; }, dep.id)
+      : '突然退団し、フリーとなった';
+    check(`ログのタブに「${expectDep}」の1行が残る`, depLines.filter(t => t.includes(expectDep)).length === 1, depLines);
+    check('トーストの行き先もログと同じ(他団体/フリー)', st.inAI ? tText.includes('他団体へ移籍した') : tText.includes('フリーとなった'), tText);
     for (let i = 0; i < 20; i++) {
       const closed = await closeOne(page);
       if (closed) continue;

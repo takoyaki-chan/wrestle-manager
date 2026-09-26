@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3578件、訳文あり3578件)
+//  生成元: i18n/template-ledger.json (総キー3582件、訳文あり3582件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3424,6 +3424,8 @@
     "🎬 ベストマッチ賞（試合評価 {mq}）": "🎬 Won Best Match (rated {mq})",
     "🎯 {name}が技の精度を上げてきた": "🎯 {name} has sharpened her execution",
     "🎯 目標: 業界1位の団体を超えてエンディングを目指せ！": "🎯 Goal: pass the number one promotion in the business and reach the ending!",
+    "🏁 {name}({age}歳)が度重なる怪我により引退": "🏁 {name} ({age}) retired after repeated injuries",
+    "🏁 {name}({age}歳)が試合中の重傷により引退": "🏁 {name} ({age}) retired after a serious injury in a match",
     "🏆 PPV — {winnerOrg}{winner}、{loserOrg}{loser}を下しタイトル戦制す": "🏆 PPV — {winnerOrg} {winner} beats {loserOrg} {loser} to take the title match",
     "🏆 {player} vs {ai} — 接戦を制し{winner}が勝利": "🏆 {player} vs {ai} — {winner} edges a close one",
     "🏆 {player} vs {ai} — 歴史に刻まれる頂上決戦、{winner}に軍配": "🏆 {player} vs {ai} — a Summit Match for the record, and {winner} has it",
@@ -3572,6 +3574,8 @@
     "😶‍🌫️ {name}…大丈夫だろうか": "😶‍🌫️ {name}... is she all right?",
     "😶‍🌫️ {name}が自主練も一人で行うようになった": "😶‍🌫️ {name} does her extra work alone now too",
     "🚪 {name}が一人で練習場を出ていった": "🚪 {name} walked out of the gym alone",
+    "🚪 {name}が突然退団し、{orgName}へ移籍した": "🚪 {name} abruptly left the promotion and joined {orgName}",
+    "🚪 {name}が突然退団し、フリーとなった": "🚪 {name} abruptly left the promotion and became a free agent",
     "🚪 {name}が荷物をまとめて団体を去った": "🚪 {name} packed up and left the promotion",
     "🚶 {name}が練習後にすぐ帰るようになった": "🚶 {name} leaves as soon as practice ends now",
     "🛍️ {name}のグッズが売れ行き好調！": "🛍️ {name}'s merchandise is selling well!",

@@ -8320,6 +8320,14 @@ const App = {
         roster = res.roster;
         if (!matchInjuredIds[idx]) matchInjuredIds[idx] = fighter.id;
         injuryResults.push(res.entry);
+        // 2026-09-26 総点検 第4回裁定7: 怪我による引退をログに1行(エンジンの executeShow と同じ位置)。
+        // 文は GAMELOG_TEMPLATES.injury_retirement(表示時に言語を引く)
+        if (res.retired) {
+          events.push({ type: 'injury_retirement', data: {
+            name: res.retired.name, age: res.retired.age,
+            variant: res.retired.retireType === 'careerEnding' ? 'careerEnding' : 'wear',
+          }, s: s.season, w: s.week });
+        }
       });
     });
     // 仲の良い選手の気落ち(O-04 と M-22)・信頼への波及・王座の返上(この興行の王座戦の結果も見る) — エンジンと同じ
@@ -9176,9 +9184,19 @@ const App = {
     // 1回呼ぶ。以前は呼び出しが無く、表示コードだけが残っていた。前兆は「💭よそよそしい」(信頼40未満)と、信頼20を
     // 割った週の「退団を考えているという噂」(ログ1行+道場の確定枠の吹き出し)。去った選手はトースト(closeShowResult)で見せる
     {
+      const pendingBefore = s._pendingSuddenDepartures;
       const sd = Engine.show.applySuddenDepartures(s);
       s = sd.state;
       if (sd.titleMsg) events.push(sd.titleMsg);
+      // 2026-09-26 総点検 第4回裁定7: 突然の退団をログに1行(行き先つき)。去った選手はこの呼び出しで
+      // 新しく積まれた _pendingSuddenDepartures。行き先は処理後の状態から引く(App._suddenDepartureDestination)
+      const departedNow = (s._pendingSuddenDepartures && s._pendingSuddenDepartures !== pendingBefore) ? s._pendingSuddenDepartures : [];
+      departedNow.forEach(d => {
+        const dest = App._suddenDepartureDestination(s, d.id);
+        events.push({ type: 'sudden_departure', data: dest
+          ? { name: d.name, variant: 'org', orgName: dest.orgName }
+          : { name: d.name, variant: 'free' }, s: s.season, w: s.week });
+      });
     }
     // K-1 4-B-6(K1-E03): 怪我による引退の演出データ(_pendingInjuryRetirements)。エンジンと同じ関数で組み、
     // closeShowResult が本人の引退ポップアップ(showRetirementPopups)で見せる。引退セリフは興行前の状態(G は
@@ -11795,17 +11813,41 @@ const App = {
   // §13.4 突然の退団のトースト(K-1 4-B-7)。興行週(closeShowResult)と非興行週(processWeek)で同じものを出す。
   // 週送りの全消去(advanceFromWeekSummary → dismissAllPopups)の後に開くようタイマーに載せる。
   // showNotifEventToast は他のポップアップが開いていれば共有の待ち行列に並ぶ(待ちの保険は共有ゲート側)
+  // 行き先は実際に移った先で書く(2026-09-26)。以前は退団の判定時の区分(人気40以上=他団体)で書いていたが、
+  // 人気40未満でも総合力の高い選手はスター争奪で他団体に移ることがあり、「フリーとなった」と食い違っていた
   _showSuddenDepartureToasts(departures, baseDelay) {
     (departures || []).forEach((d, i) => {
       if (!d) return;
-      setTimeout(() => showNotifEventToast({
-        type: 'N_sudden_departure',
-        fighter: d.id,
-        name: d.name,
-        text: WM_I18N.t('🚪 {name}が荷物をまとめて団体を去った。誰も止められなかった。', { name: d.name }),
-        detail: d.destination === 'rival' ? WM_I18N.t('{name}は他団体へ移籍した。', { name: d.name }) : WM_I18N.t('{name}はフリーとなった。', { name: d.name }),
-      }), (baseDelay || 0) + i * 200);
+      setTimeout(() => {
+        // 他団体のロスターにいれば移籍、フリー/休眠プールにいればフリー。どちらにも見当たらなければ判定時の区分
+        const toRival = App._suddenDepartureDestination(G, d.id)
+          ? true
+          : (App._isFreeAgentOrDormant(G, d.id) ? false : d.destination === 'rival');
+        showNotifEventToast({
+          type: 'N_sudden_departure',
+          fighter: d.id,
+          name: d.name,
+          text: WM_I18N.t('🚪 {name}が荷物をまとめて団体を去った。誰も止められなかった。', { name: d.name }),
+          detail: toRival ? WM_I18N.t('{name}は他団体へ移籍した。', { name: d.name }) : WM_I18N.t('{name}はフリーとなった。', { name: d.name }),
+        });
+      }, (baseDelay || 0) + i * 200);
     });
+  },
+
+  // 突然の退団で去った選手の行き先(他団体なら { orgId, orgName }、それ以外は null)。state の他団体ロスターを引く
+  _suddenDepartureDestination(state, fighterId) {
+    const orgs = (state && state.aiOrgs) || {};
+    for (const [orgId, org] of Object.entries(orgs)) {
+      if (org && (org.roster || []).some(f => f && f.id === fighterId)) {
+        return { orgId, orgName: Engine.contract._getOrgName(orgId, state) };
+      }
+    }
+    return null;
+  },
+
+  _isFreeAgentOrDormant(state, fighterId) {
+    const inList = (list) => (list || []).some(f => f && f.id === fighterId);
+    return !!state && (inList(state.freeAgents) || inList(state.dormantPool));
   },
 
   // 引退の週(ラストラン・怪我による引退)は、本人の別れのポップアップをその週のほかの表示より先に出し、

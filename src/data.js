@@ -32007,6 +32007,17 @@ const GAMELOG_TEMPLATES = {
   show_rating_org_pop_update_small_venue: '📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (会場が人気に対して小さく、伸びは控えめ) (現在: {curOrgPop})',
   heat_level_changed: '{emoji} Heat変動: {oldLabel} → {newLabel}（集客倍率 ×{mult}）',
   unified_title_result: { taken: '🌐 {name}が全国統一王座を奪取！', defended: '🌐 {name}が全国統一王座を防衛！' },
+  // 2026-09-26 総点検 第4回裁定7: 怪我による引退・突然の退団をログに1行(以前はポップアップとトーストだけで
+  // ログに残らなかった)。事実だけを書く。注記は経歴(career-history-spec の retire.reason)と同じ言い方
+  injury_retirement: {
+    wear: '🏁 {name}({age}歳)が度重なる怪我により引退',
+    careerEnding: '🏁 {name}({age}歳)が試合中の重傷により引退',
+  },
+  // 行き先は処理後の状態から引く(他団体の名前/フリー。フリー枠が無く休眠プールへ回った場合もフリーと書く)
+  sudden_departure: {
+    org: '🚪 {name}が突然退団し、{orgName}へ移籍した',
+    free: '🚪 {name}が突然退団し、フリーとなった',
+  },
 
   // ── app.js: 挑戦試合コーチ要約(_challengeRequestCoachLogLine・監査3-5と同法の6変種) ──
   challenge_request_coach_summary: {
@@ -32193,6 +32204,9 @@ const GAMELOG_TYPE_CATEGORY = {
   startup_draft_complete: ['finance'],
   startup_remaining_funds: ['finance'],
   startup_industry_rank: ['event'],
+  // 2026-09-26 第4回裁定7: 既存の引退の行(「引退」→シーズン)・移籍の行(「移籍」→イベント)にそろえる
+  injury_retirement: ['season'],
+  sudden_departure: ['event'],
 };
 
 /**

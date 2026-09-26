@@ -135,6 +135,57 @@ section('6: App._showFarewellsFirst — 待ちに時限の保険と二重起動�
   assert.ok(/setTimeout\(\(\) => \{\s*try \{\s*showRetirementPopups/.test(body), '週送りの全消去の後に開くタイマーに載っていない');
 });
 
+// ── 7. 怪我による引退と突然の退団をログに1行(英語つき) ──
+function finalizeShowBody() {
+  const app = readSource('src', 'app.js');
+  const start = app.indexOf('  _finalizeShowImpl() {');
+  assert.ok(start >= 0, '_finalizeShowImpl が見つからない');
+  return app.slice(start, app.indexOf('\n  },\n', start));
+}
+const EN_TEMPLATES = (() => {
+  const src = readSource('src', 'lang-en-templates.js');
+  const dict = {};
+  const sandbox = { WM_I18N: { addDict(o) { Object.assign(dict, o); } } };
+  require('vm').runInNewContext(src, sandbox);
+  return dict;
+})();
+
+section('7: ログの文(テンプレ)— 怪我による引退2型・突然の退団2型。事実だけを書き、英訳がある', () => {
+  const T = GAMELOG_TEMPLATES;
+  assert.ok(T.injury_retirement && T.sudden_departure, 'GAMELOG_TEMPLATES に injury_retirement / sudden_departure が無い');
+  const text = (type, data) => gameLogEntryText({ type, data, s: 2, w: 14 });
+  assert.strictEqual(text('injury_retirement', { name: 'A', age: 26, variant: 'wear' }), '🏁 A(26歳)が度重なる怪我により引退');
+  assert.strictEqual(text('injury_retirement', { name: 'A', age: 24, variant: 'careerEnding' }), '🏁 A(24歳)が試合中の重傷により引退');
+  assert.strictEqual(text('sudden_departure', { name: 'B', variant: 'org', orgName: 'X' }), '🚪 Bが突然退団し、Xへ移籍した');
+  assert.strictEqual(text('sudden_departure', { name: 'B', variant: 'free' }), '🚪 Bが突然退団し、フリーとなった');
+  // ログのタブの分類: 既存の引退の行(シーズン)・移籍の行(イベント)にそろえる
+  assert.deepStrictEqual(gameLogEntryCategory({ type: 'injury_retirement', data: {} }), ['season']);
+  assert.deepStrictEqual(gameLogEntryCategory({ type: 'sudden_departure', data: {} }), ['event']);
+  // 英訳(テンプレ辞書)
+  [T.injury_retirement.wear, T.injury_retirement.careerEnding, T.sudden_departure.org, T.sudden_departure.free].forEach(ja => {
+    const en = EN_TEMPLATES[ja];
+    assert.ok(typeof en === 'string' && en && !/[぀-ヿ一-鿿]/.test(en), `英訳が無い/日本語が残る: ${ja} => ${en}`);
+  });
+});
+
+section('7: 実プレイ(_finalizeShowImpl)が怪我による引退・突然の退団の行をログに積む(行き先は処理後の状態から)', () => {
+  const body = finalizeShowBody();
+  assert.ok(/type: 'injury_retirement'/.test(body) && /if \(res\.retired\)/.test(body), '怪我による引退の行を積んでいない');
+  assert.ok(/type: 'sudden_departure'/.test(body) && /App\._suddenDepartureDestination\(s, d\.id\)/.test(body), '突然の退団の行を積んでいない');
+  // 行き先の引き方: 他団体のロスターにいればその団体名、それ以外は null(フリー)
+  const app = readSource('src', 'app.js');
+  const start = app.indexOf('  _suddenDepartureDestination(');
+  assert.ok(start >= 0, 'App._suddenDepartureDestination が無い');
+  const method = app.slice(start, app.indexOf('\n  },', start) + 4);
+  const obj = require('vm').runInNewContext(`({${method}})`, { Engine: { contract: { _getOrgName: (id, st) => (st.rivalOrgNames || {})[id] || id } } });
+  const st = { aiOrgs: { kings: { roster: [{ id: 5 }] }, glow: { roster: [] } }, rivalOrgNames: { kings: 'KINGS' }, freeAgents: [{ id: 6 }] };
+  assert.strictEqual(JSON.stringify(obj._suddenDepartureDestination(st, 5)), JSON.stringify({ orgId: 'kings', orgName: 'KINGS' }));
+  assert.strictEqual(obj._suddenDepartureDestination(st, 6), null);
+  // 退団のトーストも実際の行き先で書く(判定時の区分=人気40以上だけで書かない)
+  const toast = app.slice(app.indexOf('  _showSuddenDepartureToasts('), app.indexOf('\n  },', app.indexOf('  _showSuddenDepartureToasts(')));
+  assert.ok(/App\._suddenDepartureDestination\(G, d\.id\)/.test(toast), '退団のトーストが実際の行き先を見ていない');
+});
+
 if (failed > 0) {
   console.log(`\nfun-audit-round4-test: ${failed} 件の FAIL`);
   process.exit(1);

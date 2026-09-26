@@ -34108,6 +34108,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "🏁 {name}({age}歳)が度重なる怪我により引退",
+    "en": "🏁 {name} ({age}) retired after repeated injuries",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🏁 {name}({age}歳)が試合中の重傷により引退",
+    "en": "🏁 {name} ({age}) retired after a serious injury in a match",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🏆 PPV — {winnerOrg}{winner}、{loserOrg}{loser}を下しタイトル戦制す",
     "en": "🏆 PPV — {winnerOrg} {winner} beats {loserOrg} {loser} to take the title match",
     "files": [
@@ -35582,6 +35602,26 @@
     "en": "🚪 {name} walked out of the gym alone",
     "files": [
       "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🚪 {name}が突然退団し、{orgName}へ移籍した",
+    "en": "🚪 {name} abruptly left the promotion and joined {orgName}",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🚪 {name}が突然退団し、フリーとなった",
+    "en": "🚪 {name} abruptly left the promotion and became a free agent",
+    "files": [
+      "GAMELOG_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-25T19:48:07.310Z",
+  "generatedAt": "2026-09-26T01:35:52.778Z",
   "files": {
     "data.js": {
-      "jaCount": 17485,
-      "jaChars": 311966
+      "jaCount": 17489,
+      "jaChars": 312020
     },
     "kuroda-text.js": {
       "jaCount": 900,
@@ -18,8 +18,8 @@
       "jaChars": 14589
     },
     "management.js": {
-      "jaCount": 1357,
-      "jaChars": 10089
+      "jaCount": 1352,
+      "jaChars": 10056
     },
     "coach-lines.js": {
       "jaCount": 483,
@@ -43,7 +43,7 @@
     },
     "app.js": {
       "jaCount": 527,
-      "jaChars": 6455
+      "jaChars": 6480
     },
     "battle-lines.js": {
       "jaCount": 594,
