@@ -165,7 +165,7 @@ finalizeShow 内で、各試合結果ごとに:
 
 ポイントは **下限0でクランプ**（マイナスにはならない）。マイナス到達はそれ自体が物語的に意味を持たないため。
 
-**実装(2026-09-26 K-1 第4段 4-B-2)**: §3.2/§3.3 の加点は `Engine.show.accrueFactionPoints` の中で行い、エンジン(`Engine.executeShow`)と実プレイ(`App._finalizeShowImpl`)の両方がそれを通す(以前の実プレイでは一度も入っていなかった)。Common-1 で清算した試合は `isCommon1` で §3.2 を飛ばす(手順1と2の二重加算防止)。メイン判定はカードの `isSummit` を見ているため、通常興行では「メインカード勝利 +2pt」が掛からない(既知の差・裁定待ち。faction-rivalry-points-spec §2.7)。
+**実装(2026-09-26 K-1 第4段 4-B-2)**: §3.2/§3.3 の加点は `Engine.show.accrueFactionPoints` の中で行い、エンジン(`Engine.executeShow`)と実プレイ(`App._finalizeShowImpl`)の両方がそれを通す(以前の実プレイでは一度も入っていなかった)。Common-1 で清算した試合は `isCommon1` で §3.2 を飛ばす(手順1と2の二重加算防止)。「興行のメインカード」は興行カードの先頭の試合(`validMatches[0]`。PPV の頂上決戦の印 `isSummit` も従来どおりメイン)で、通常興行のメインで非リーダーが勝つと +2pt が入る(2026-09-26 第4回裁定3。以前は `isSummit` だけを見ていて通常興行では一度も掛からなかった。判定の正は faction-rivalry-points-spec §2.7)。
 
 ---
 
