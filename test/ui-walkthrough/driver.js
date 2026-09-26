@@ -522,6 +522,20 @@ async function runWalk(options) {
     if (!ready || !ready.iframeSelector) return;
     if (ready.onclick && !ready.onclick.test(candidate.onclick || '')) return;
     const selector = ready.iframeSelector;
+    // 2026-09-26: 観戦の前に「✨ 初対決」(.pre-match-flavor。本当に初めて当たる2人だけ)が出る。出ている間は観戦が
+    // 始まらず iframe の src も替わらないので、実プレイと同じく OK で閉じ(偽の時計を 250ms ずつ進めて次の1枚・観戦の開始まで)、
+    // 観戦が始まって iframe が新しい src を読み始めてから下の実時間の待ちに入る。先に時計を 2.2 秒進めると、上と同じ理由で
+    // 800ms の再送の保険が読み込みより先に発火して STANDBY のまま止まる
+    for (let guard = 0; guard < 12; guard += 1) {
+      const flavorUp = await page.evaluate(() => {
+        const overlay = document.getElementById('mdlCOverlay');
+        return !!(overlay && overlay.classList.contains('active') && document.querySelector('#mdlCCard .pre-match-flavor'));
+      }).catch(() => false);
+      if (!flavorUp) break;
+      await page.evaluate(() => { const ok = document.getElementById('postMatchFlavorOkBtn'); if (ok) ok.click(); }).catch(() => {});
+      if (page.clock) await page.clock.runFor(250).catch(() => {});
+      await page.waitForTimeout(30);
+    }
     // ページ側の待ち(waitForFunction)は偽の時計の下で回らないことがあるので、Node 側で実時間の間隔で読む
     const deadline = Date.now() + 10000;
     while (Date.now() < deadline) {

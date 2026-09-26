@@ -4295,16 +4295,43 @@ Engine.challengeRequest = {
     return { card: merged, scheduled, groupId };
   },
 
-  /** One-off incoming challenge (large event B3) scheduled into the main event. */
+  /**
+   * One-off incoming challenge (large event B3) scheduled into the main event.
+   * 挑戦者は予約を消化する時点(興行準備・興行の開催)の本物の選手 — 挑戦してきた団体の最新のロスターにいる本人 — を返す
+   * (2026-09-26 Keisuke 裁定「直す」。直訴 getScheduledCard・全国統一王座戦 getIncomingMatch と同じ作り方)。
+   * 以前は挑戦状が届いた時点の写し pending.challenger(能力・人気・特性だけ)を返していて、写しに体調が無いため
+   * 試合後の怪我の判定が常に成立し(挑戦者が毎回必ず怪我をした)、年齢・自己最高評価・信頼も欠けたまま試合をしていた。
+   * 写しは id と名前を引くためだけに残す。
+   * 本人が出られないとき(怪我・引退・移籍・団体の解散、または自団体に来ている)は null — 呼び出し側は
+   * 予約を解除する(直訴・統一王座戦の予約と同じ「消滅」。代表の選手が出られないときと同じ扱い)。
+   * 他団体の選手の「出られない」は怪我だけで見る(全国統一王座戦の _available と同じ)。休養(forcedRest)・謹慎(suspended)は
+   * 自団体の選手の印で、AI団体では誰も外さない — 自団体から移った選手に何十週も残っていることがある(seed 42 で S2〜S4 の88週)
+   */
   getScheduledSingleChallenge(state) {
     if (!this.isEligibleHomeShow(state)) return null;
     const pending = state?._pendingIncomingB3Match;
     if (!pending) return null;
     const playerFighter = (state.roster || []).find(f => f.id === pending.fighterId);
-    const challenger = pending.challenger;
+    const challengerId = pending.challenger?.id;
+    if (challengerId == null) return null;
+    const aiOrgs = state.aiOrgs || {};
+    const inOrg = orgId => {
+      const org = aiOrgs[orgId];
+      if (!org || org.disbanded || !Array.isArray(org.roster)) return null;
+      return org.roster.find(f => f && f.id === challengerId) || null;
+    };
+    // 挑戦してきた団体が記録に無い古い予約だけ、いまいる AI団体から引く
+    let orgId = pending.orgId || null;
+    let challenger = orgId ? inOrg(orgId) : null;
+    if (!pending.orgId) {
+      orgId = Object.keys(aiOrgs).find(id => inOrg(id)) || null;
+      challenger = orgId ? inOrg(orgId) : null;
+    }
     const healthy = f => f && !f.injury && !f.forcedRest && !f.suspended;
-    if (!healthy(playerFighter) || !healthy(challenger)) return null;
-    return { ...pending, playerFighter, challenger, reservedIds: [playerFighter.id, challenger.id] };
+    if (!healthy(playerFighter) || !challenger || challenger.injury) return null;
+    // レンタル等で自団体のロスターに来ている相手からは挑戦を受けられない
+    if ((state.roster || []).some(f => f && f.id === challengerId)) return null;
+    return { ...pending, orgId, playerFighter, challenger, reservedIds: [playerFighter.id, challenger.id] };
   },
 
   reserveScheduledSingleMatch(state, card) {
@@ -4347,17 +4374,19 @@ Engine.challengeRequest = {
 
   /**
    * 挑戦状(B3)のゲストを所属団体へ戻すときの、本物の選手の記録(2026-09-26)。
-   * ゲストは挑戦状が届いた時点の写し(event.challenger = 能力・人気・特性など試合に要る欄だけ)から作るので、
-   * 体調・自己最高評価・今季の伸び・直近戦績などを持たない。興行の処理(Engine.show.finalize と実プレイの hooks)は
-   * その写しの上で動くため、以前のように写しを本物へ丸ごと被せると本物の値が壊れた
-   * (怪我で体調が NaN・自己最高評価が今回の評価に下がる・今季の伸びが0に戻る・直近戦績が1戦だけになる・一時印が残る)。
-   * ここでは「この興行で起きたこと」だけを本物に反映する:
+   * ゲストは興行の開催の時点の本物の写し(getScheduledSingleChallenge。2026-09-26 裁定で挑戦状が届いた時点の写しから変更)。
+   * 興行の処理(Engine.show.finalize と実プレイの hooks)はその写しの上で動く。写しを本物へ丸ごと被せず、
+   * pre(興行に入れたときの写し)と post(処理後)の差 =「この興行で起きたこと」だけを本物に反映する
+   * (以前の写しは体調・自己最高評価・今季の伸び・直近戦績などを持たず、丸ごと被せると怪我で体調が NaN・
+   *  自己最高評価が今回の評価に下がる・今季の伸びが0に戻る・直近戦績が1戦だけになる・一時印が残る、と壊れた):
    *   怪我      : 新しい怪我・体調は min(本物, 30)・怪我の前の人気(本物に記録が無いときだけ)・今季の怪我数・
    *               成長の減速(重い方を残す)。どれも Engine.injury.check と同じ規則
    *   試合の記録: 直近戦績(本物の末尾に足して5戦)・最後の勝敗・連敗数・自己最高評価(大きい方)・
    *               経歴(careerRecord は重複を除いて合流、careerHistory・growthLog は末尾に足す)・プロモの蓄積
    *   人気・能力: 興行の前後の差を本物に足す(能力は本物の上限 trainCap まで)。今季の伸びは能力に足せた分だけ
-   *   調子の波  : 絶好調・スランプ・モチベ喪失は、本物がどれも持っていないときだけ(エンジンもそういう選手にしか始めない)
+   *   調子の波  : 絶好調・スランプ・モチベ喪失は、本物の3つが pre と同じ(興行の間に本物が動いていない)なら post の3つを
+   *               そのまま(始まり・勢いの変化・終わり)。違うときは、本物がどれも持っていないときだけ新しく始まったものを
+   *               (エンジンもそういう選手にしか始めない)
    * それ以外(体調・契約・年齢・信頼の即時ボーナス _trustBonus など)は本物のまま。一時印は必ず外す。
    * 信頼の即時ボーナスは「自分の団体の舞台での出来事」への信頼なので、他団体の興行から持ち帰らない。
    * @param real 所属団体の本物(戻す時点)
@@ -4464,9 +4493,14 @@ Engine.challengeRequest = {
       out.careerRecord = { ...updatedCareer, ...baseCareer, history };
     }
 
-    // 調子の波: 本物がどれも持っていないときだけ(絶好調とスランプ・モチベ喪失はエンジンでも同時に持たない)
-    if (!base.hotStreak && !base.slump && !base.motivationLoss) {
-      ['hotStreak', 'slump', 'motivationLoss'].forEach(k => {
+    // 調子の波: 本物が興行の間に動いていなければ(ゲストは本物の写しなので pre と本物が同じ)、試合後の処理の結果
+    // (始まり・勢いの変化・終わり)をそのまま。動いていたら、本物がどれも持っていないときだけ新しく始まったものを
+    // (絶好調とスランプ・モチベ喪失はエンジンでも同時に持たない)
+    const FORM = ['hotStreak', 'slump', 'motivationLoss'];
+    if (FORM.every(k => sig(base[k]) === sig(before[k]))) {
+      FORM.forEach(k => { if (Object.prototype.hasOwnProperty.call(post, k)) out[k] = post[k]; });
+    } else if (!base.hotStreak && !base.slump && !base.motivationLoss) {
+      FORM.forEach(k => {
         if (post[k] && !before[k]) out[k] = post[k];
       });
     }

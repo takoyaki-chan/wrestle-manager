@@ -128,6 +128,7 @@ function build() {
     constSource('_POPUP_OVERLAY_IDS'),
     ...['_isPopupActive', '_enqueuePopup', '_drainPopupQueue', '_mdlCOpen', '_mdlCClose', 'showEventPopup',
       '_renderEventPopupAsC3', 'closeEventPopup', '_consumeEventPopupQueueEmpty', '_chainEventPopupQueueEmpty'].map(n => fnSource(n)),
+    fnSource('showMatchFlavorPopups', true), // 試合の前後の一言の共通の口(2026-09-26 初対決と共用に)
     fnSource('showPostMatchFlavorPopups', true), // 修正前のコードには無い(そのときは showEventPopup の経路で動く)
     'var App = {',
     methodSource('_collectPostMatchPopupsForMatch') + ',',

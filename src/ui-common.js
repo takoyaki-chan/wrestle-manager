@@ -2501,18 +2501,22 @@ function _chainEventPopupQueueEmpty(cb) {
   };
 }
 
-// ── 試合後の「敗者の心」(specs/match-flavor-popup-spec-v0.1.md §4.6。2026-09-26 Keisuke 裁定「出す」) ──
-// 観戦した試合の結果画面を閉じた後に、負けた選手の一言を autoCloseMs(1.8秒)だけ出し、全部閉じたら onDone を1回だけ呼ぶ。
-// ・興行中ずっと active な試合一覧の殻(showResultOverlay)の上に出す(F08/F09 の試合後の画面・直訴の結果と同じ例外)。
+// ── 試合の前後の一言(specs/match-flavor-popup-spec-v0.1.md §4.2.1・§4.6.1。2026-09-26 Keisuke 裁定) ──
+// 試合後の「敗者の心」(裁定「出す」)と試合前の「✨ 初対決」(裁定「判定を直して出す」)の共通の口。
+// 選手1人ずつの小さなカードを autoCloseMs(1.8秒)だけ順に出し、全部閉じたら onDone を1回だけ呼ぶ。
+// ・興行中ずっと active な試合一覧の殻(showResultOverlay)の上に出す(F08/F09 の試合前後の画面・直訴の結果と同じ例外)。
 //   以前は showEventPopup を通していたため、殻を「開いている別の画面」と数えて殻の後ろの待ち行列に積まれ、興行中に
-//   一度も出ないまま呼び出し側の保険のタイマーが毎試合発火していた(2026-09-26 点火 *-watch で発見)
-// ・汎用の _eventPopupQueue には並ばない。あの列は殻の後ろで止まったままの試合前の一言(初対決)を先頭に抱えていることが
-//   あり、後ろに並ぶと同じく出られない。見た目は C-3(_renderEventPopupAsC3)と同じ mdl-c の小型カード+頭上の吹き出し
-// ・殻以外の画面が本当に開いているときだけ待ち行列に積む。そこで止まれば呼び出し側の保険が cancel() して先へ進む。
-//   取り下げた一言は、後から待ち行列で呼ばれても出さない(次の試合の上に遅れて出ない)
+//   一度も出ていなかった(敗者の心は呼び出し側の保険のタイマーが毎試合発火。2026-09-26 点火 *-watch で発見)
+// ・汎用の _eventPopupQueue には並ばない。見た目は C-3(_renderEventPopupAsC3)と同じ mdl-c の小型カード+頭上の吹き出し
+// ・殻以外の画面が本当に開いているときだけ待ち行列に積む(興行中はその列は流れない)。敗者の心は呼び出し側の保険が
+//   cancel() して先へ進む。取り下げた一言は、後から待ち行列で呼ばれても出さない(次の試合の上に遅れて出ない)
 // ・1枚の「閉じる」は1回だけ(自動で閉じるタイマーと OK の早押しが重なっても、次の1枚/完了へ1回だけ進む)
-function showPostMatchFlavorPopups(popups, onDone) {
+// opts.cardClass : カードの印(既定 'post-match-flavor'。初対決は 'pre-match-flavor')
+// opts.isStillValid : 1枚ごとに出す直前に確かめる。偽なら残りを出さずに完了(初対決: その試合がまだ始まっていないか)
+function showMatchFlavorPopups(popups, onDone, opts) {
   const list = (Array.isArray(popups) ? popups : []).filter(Boolean);
+  const cardClass = (opts && opts.cardClass) || 'post-match-flavor';
+  const stillValid = () => !(opts && typeof opts.isStillValid === 'function') || !!opts.isStillValid();
   let finished = false;
   let cancelled = false;
   let closeCurrent = null;
@@ -2524,9 +2528,12 @@ function showPostMatchFlavorPopups(popups, onDone) {
   const showAt = (i) => {
     if (cancelled || finished) return;
     if (i >= list.length) { done(); return; }
+    if (!stillValid()) { cancelled = true; done(); return; }
     const o = list[i];
     const run = () => {
       if (cancelled || finished) { _drainPopupQueue(); return; }
+      // 待ち行列から遅れて呼ばれたときも、出す直前にもう一度(試合が始まった・興行が終わった後には出さない)
+      if (!stillValid()) { cancelled = true; _drainPopupQueue(); done(); return; }
       const characterHtml = (o.type === 'fighter' && o.id != null)
         ? `<div class="event-popup-character u3b-theme-dark">${_u3bSideHtml({
             name: o.name || '', line: o.speech || '', reserveBubble: !!o.speech, size: 'm', isLoser: !!o.isLoser,
@@ -2536,7 +2543,7 @@ function showPostMatchFlavorPopups(popups, onDone) {
           })}</div>`
         : '';
       const html = `
-        <div class="mdl-c-body post-match-flavor" style="padding-top:4px">
+        <div class="mdl-c-body ${cardClass}" style="padding-top:4px">
           ${characterHtml}
           ${o.detail ? `<div style="font-size:12px;color:var(--info-text-dim);margin-top:8px;text-align:center">${o.detail}</div>` : ''}
         </div>
@@ -2552,7 +2559,7 @@ function showPostMatchFlavorPopups(popups, onDone) {
         clearTimeout(timer);
         if (closeCurrent === close) closeCurrent = null;
         // 自分のカードがまだ出ているときだけ閉じる(ほかの mdl-c を巻き込まない)
-        if (document.querySelector('#mdlCCard .post-match-flavor')) _mdlCClose();
+        if (document.querySelector(`#mdlCCard .${cardClass}`)) _mdlCClose();
         if (cancelled) return;
         // 次の1枚(または完了)は mdl-c が閉じ切ってから。C-3 の連続表示と同じ 200ms の間
         setTimeout(() => showAt(i + 1), 200);
@@ -2575,6 +2582,17 @@ function showPostMatchFlavorPopups(popups, onDone) {
       if (closeCurrent) closeCurrent();
     },
   };
+}
+
+// 試合後の「— 敗者の心 —」(観戦した試合だけ。App._runPostMatchFlavorForMatch)
+function showPostMatchFlavorPopups(popups, onDone) {
+  return showMatchFlavorPopups(popups, onDone, { cardClass: 'post-match-flavor' });
+}
+
+// 試合前の「✨ 初対決」(観戦を選んだ試合の前。App._runFirstMeetBeforeWatch)。全部閉じたら onDone(観戦を始める)。
+// isStillValid で、その試合がまだ始まっていないときだけ出す(遅れて観戦の画面の上に出ない)
+function showPreMatchFlavorPopups(popups, onDone, isStillValid) {
+  return showMatchFlavorPopups(popups, onDone, { cardClass: 'pre-match-flavor', isStillValid });
 }
 
 // ── v1.3-3: Retirement Popup ────────────────
@@ -5843,11 +5861,10 @@ function renderMatchPreview() {
   if (nextIdx >= 0) {
     const nextEl = box.querySelector('[data-match-next="true"]');
     if (nextEl) setTimeout(() => nextEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-    // 試合前モーダル/フレーバー: 宣戦布告 → 初顔合わせ等の順に per-match 表示
-    // (specs/match-flavor-popup-spec-v0.1.md §4.2)
+    // 試合前モーダル: 宣戦布告 → 派閥の試合前の画面(派閥内序列戦・F08・F09)の順に per-match 表示
+    // (specs/match-flavor-popup-spec-v0.1.md §4.2)。「✨ 初対決」は「🎬 試合を観る」を押した後(App._runFirstMeetBeforeWatch)
     const cMap = sp.confrontationMap;
-    const hasConfrontation = cMap && cMap[nextIdx] && !sp._shownConfrontations.has(nextIdx);
-    if (hasConfrontation) {
+    const hasConfrontation = cMap && cMap[nextIdx] && !sp._shownConfrontations.has(nextIdx);    if (hasConfrontation) {
       sp._shownConfrontations.add(nextIdx);
       setTimeout(() => showRivalryPopups([cMap[nextIdx]], () => {
         if (typeof App !== 'undefined' && App._runPreMatchFlavorForMatch) App._runPreMatchFlavorForMatch(nextIdx);

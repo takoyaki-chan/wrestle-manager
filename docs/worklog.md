@@ -1,5 +1,38 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 裁定2件 — 挑戦状(B3)の挑戦者を試合の時点の本物から作る/「✨ 初対決」を判定を直して出す(Claude/Opus 5.5・worktree)
+
+1つ下の節で報告した未修正の2件(B3 の挑戦者が毎回必ず怪我をする・初対決の判定の食い違い)への Keisuke 裁定(09-26)。
+
+### 1. 挑戦状(B3)の挑戦者を試合の時点の本物から作る(裁定: 直す。変わる数値はこれだけ)
+- `Engine.challengeRequest.getScheduledSingleChallenge`(relationships.js)が、予約の写し `challenger` の id で挑戦してきた団体(`orgId`。記録の無い古い予約だけ、いまいる AI団体)の**最新のロスターの本人**を返す(直訴 `getScheduledCard`・統一王座戦 `getIncomingMatch` と同じ)。興行準備の画面と開催(`App.executeShow`)の両方がこれでゲストを作る
+- 本人が出られなければ予約は成立しない=解除(直訴・統一王座戦と同じ「消滅」。既存の「⚠ 挑戦試合の出場条件が整わないため、予約を解除しました」): 怪我・引退・移籍・団体の解散・自団体のロスターに来ている(レンタル)。他団体の選手の「出られない」は**怪我だけ**で見る(統一王座戦の `_available` と同じ)— 休養 `forcedRest`・謹慎 `suspended` は自団体の印で、AI団体に古いまま残っている(下の「見つけたこと」)
+- 返却 `mergeReturningGuest` と整合: ゲストが本物の写しになったので pre(興行に入れたときの写し)と post の差が正確になる。調子の波だけ、本物が興行の間に動いていなければ試合後の処理の結果(スランプの勢いの変化・終わり)もそのまま持ち帰るよう広げた(以前は「本物が何も持っていないときの新しい始まり」だけ)
+- **数値の変化**(`tools/b3-guest-source-compare.js` 新設。seed 42/7919/15838 の S2〜S4 の通常興行週ごと、前の週に届いた挑戦状、代表は自団体の OVR 上位3人、実プレイと同じ興行の処理): 挑戦者の怪我 **100%(513/513)→ 8.7%(43/492)**(同じ試合の代表 8.7%)/ 代表の勝ち 47.8% → 47.8%(同じ組で勝敗が入れ替わったのは 3/492)/ 予約の解除(届いた後に挑戦者が怪我)21/513。回帰テストの標本(seed 42 の S2・57試合)でも 100% → 10.5%
+- auto-sim はプレイヤーの挑戦状の経路を通らない(大型イベントはエンジンの自動解決)ので指紋は不変
+- specs/large-event-spec-v1.0.md §4.3b
+
+### 2. 「✨ 初対決」を判定を直して出す(裁定: 判定を直して出す。表示だけ)
+- 判定(`App._collectPreMatchPopupsForMatch`): `matchupLog` の `leftId`/`rightId`(向き不問・id は数に揃える)に無く、**かつ**対戦成績 `h2h` の `matches` が0のときだけ。matchupLog は自団体が関わった試合だけなので、他団体の興行・大会・開始前の経歴の対戦も持つ h2h も見る(台詞が「初めまして」の類いのため。観戦画面の「FIRST MEETING」の札も h2h)
+- 見せ方: 敗者の心と同じ口に(`showPostMatchFlavorPopups` の中身を `showMatchFlavorPopups(popups, onDone, { cardClass, isStillValid })` に括り出し、`showPreMatchFlavorPopups` を足した)。殻の上に左→右の1人ずつ・1.8秒(OK で早く閉じる)・間 200ms。カードの印 `.pre-match-flavor`
+- **出す経路の判断 = 観戦を選んだ試合だけ(敗者の心にそろえた)**: 「🎬 試合を観る」の後・観戦の iframe を開く前(`App.watchMatch` → 新設 `App._runFirstMeetBeforeWatch`)。閉じてから観戦へ1回だけ進む。スキップでは出さない
+  - 理由: 興行は前座からメインへ進む(次の試合は配列の末尾から)。旧来のフォーカスの時点(観るか選ぶ前)に出すと、既存の `sp._suppressFlavor`(一度スキップしたら以降の試合前の画面を出さない)のせいで、前座をスキップしてメインを観る遊び方ではメイン(挑戦状・統一王座戦)の初対決がまず出ず、前座の初対決だけがスキップの手を止めて割り込む(点火で実測: B3 のメインは最後の試合で、スキップ版では一度もフォーカスの時点に来なかった)。観戦の前なら、観たい試合だけを照らせる。前の試合をスキップしていても観戦を選んだ試合には出す(敗者の心と同じ)
+  - 派閥の試合前の画面がある試合(派閥内序列戦・F08・F09)とタッグには出さない(従来どおり)。1試合1回(`sp._shownFirstMeet`)、1枚ごとに試合がまだ始まっていないかを確かめる、時限の保険 件数×2200+1500ms(`[WM] firstMeet safety net fired`)
+  - 試合前のほかの画面との順番: フォーカスの時点に 宣戦布告 → 派閥の試合前の画面、観戦を押した後に 初対決 → 観戦。重ならない
+- **`e.left`/`e.right` と `leftId`/`rightId` の食い違いの棚卸し(matchupLog を読む・書く箇所を全部)**: 食い違いは**この1件だけ**。読む側 — relationships.js `isInContact`・`processWeeklyDecay`(自団体・AI団体とも leftId)/ `Engine.freshness.calc`(leftId。ui-render 3698/3961/4014・ui-common 5215・management 1393/1905/14410/16720/16864/28984 はこれ経由)/ management `generateAIMatchCard`・AI の新しい組の収集 14835 / `Engine.life._dropMatchups`(Number(leftId))/ app.js 保存の切り詰め `_everFoughtPairs`・ロード時の復元・移行2本。書く側 — 自団体の興行 17231・PPV 19145・AI 12178・遠征 app.js 9739・移行(すべて leftId/rightId)。test/helpers/k4-live-stores.js も leftId
+- specs/match-flavor-popup-spec-v0.1.md §4.2.1(新設)・docs/ui/03-screens/show-result-spec.md の表
+
+### 見つけたこと(未修正・報告のみ)
+- **因縁の宣戦布告も興行中は殻の後ろに積まれて出ていない**: `showRivalryPopups` が `_enqueuePopup` を殻の例外なしで通る(renderMatchPreview のフォーカスの 400ms 後)。その完了を待つ `_runPreMatchFlavorForMatch` も呼ばれないので、宣戦布告のある試合では派閥の試合前の画面も出ない。表示を始めた印(`_markRivalryMatchDialoguesSeen` のクールダウン)だけは付く。積まれたものは週送りの全消去で捨てられるか、殻が閉じた後の最初の drain で興行の後に遅れて出うる(後者は未確認)。直すなら敗者の心と同じ殻の例外(表示だけ・裁定待ち)
+- **一度スキップした興行では派閥の試合前の画面(F08・F09・派閥内序列戦)もフォーカスの時点で出ない**(`_suppressFlavor` が `_runPreMatchFlavorForMatch` の頭にある)。メインは最後の試合なので、前座を1つでもスキップすると F08 の直接対決の試合前の画面は出ない(表示だけ・裁定待ち)
+- **AI団体の選手に自団体の休養の印 `forcedRest` が何十週も残る**(自団体にいたときの印を移籍・退団で持ち出し、AI側では誰も外さない。seed 42 で大庭愛菜が S2W12〜S4W48 の88週・seed 7919 で生駒エリカ90週)。直訴の予約 `getScheduledCard` と直訴の発火条件 `_passesPrereq` がこの印を見るので、出られる他団体の選手を出られない扱いにしている(数値に効くので報告のみ。挑戦状の今回の修正では他団体の選手は怪我だけで見る)
+- 観察: カードの鮮度の「初顔合わせ」(動員×1.04)は matchupLog だけで決まるので、大会(秋の対抗戦など matchupLog に書かない試合)や他団体で当たった2人でも「初顔合わせ」になる。今回の初対決は h2h も見るので、準備画面の「✨初顔合わせ」の札が付いても初対決が出ない組がある(意図どおり。鮮度は自団体の客にとっての新しさ)
+
+### 検証
+- 回帰テスト(新規): `test/b3-guest-from-real-fighter-test.js`(開催の時点の本物・出られない本人の予約の消滅5通り・古い休養の印では消さない・古い予約の団体の引き直し・本物の興行で怪我の率と返却・調子の波)— **変更前のコードで6/7節が失敗**(本物を返す・消滅・団体の引き直し・怪我が毎回・返却・調子の波)/ `test/pre-match-first-meet-over-show-shell-test.js`(判定・殻の上・観戦へ1回・早押し・出さない場合・スキップ後も観戦なら出す・保険・フォーカスでは出さない・watchMatch の中の位置)— **変更前のコードで判定と「殻の後ろ」の両方で失敗**。`test/b3-guest-return-test.js` をゲストの作り方の変更に合わせた・`test/post-match-flavor-over-show-shell-test.js` に共通の口を足した。共通部品 `test/helpers/b3-show.js`
+- `npm test` 318/318 PASS・`node test/auto-sim.js 40 42` ALL CLEAR・意味指紋 61ef0aa5(変更前と同じ)・`npm run test:k1:parity` PASS(登録27・未登録0)・`node test/ui-baseline-guard-test.js` ok・UI 走破1本 PASS(1季・371操作・Issues 0・警告なし)
+- 点火: `b3-challenge` PASS(ゲスト 体調100・年齢20・同じ時点の本物と同じ/スキップで初対決0枚)・`b3-challenge-watch` PASS(黒岩千晶 vs 大庭愛菜は初めて → 初対決2枚 → 観戦 → 敗者の心1回)・`incoming-challenge-watch` PASS(3試合観戦・初対決4枚=初めての2組・敗者の心3回)・`incoming-challenge` PASS・`away-challenge` PASS・`faction-f08` PASS(試合前の画面は従来どおり)。点火の見張りに `.pre-match-flavor` を足し(`_assertB3FirstMeet`)、観戦の手の直後の実時間の待ち(`hold.frameReady`)は初対決を OK で閉じてから iframe の読み込みを待つようにした(driver.js)
+
 ## 2026-09-26 点火で見つけた2件の裁定を反映 — 観戦の後の「敗者の心」を出す/F08 の両リーダーの因縁を効かせる(Claude/Opus 5.5・worktree)
 
 1つ下の節(点火カタログの立て直し)で報告した未修正の4件のうち、Keisuke 裁定(09-26)が出た2件。
