@@ -55,53 +55,37 @@ module.exports = [
     category: 'propagation', side: 'app', impact: '数値', scenarios: ['intrusion'], checkpoints: ['B'],
     patterns: ['**'], mustAppear: false, refs: 'K1-A14 の波及',
   },
+  // K1-E03(怪我による引退の処理一式が実プレイに無い)は K-1 第4段 4-B-6 で解消したので外した(2026-09-26)。
+  // 両経路が Engine.show.resolveMatchInjury / applyInjuryRetirementAftermath / buildInjuryRetirementPresentations を通す。
+  // 実プレイで引退が起きるようになって見えた、画面側だけの後始末を次の2項目に数える
   {
-    id: 'K1-E03', title: '怪我による引退(wear 超過の重傷・壮絶な幕切れ)の処理一式',
-    category: 'processing', side: 'engine', impact: '数値', scenarios: ['injury'], checkpoints: ['A', 'B'],
-    patterns: [
-      'roster[*](presence)', 'retiredFighters[*](presence)', 'retiredIds', 'retiredSeasons.*',
-      'chronicle.fighterArchive[*](presence)', 'relationships.*.frozen', 'relationships.*.bond', 'relationships.*.rivalry',
-      'relationshipCounters.*', '_pendingInjuryRetirements', 'factions[*].memberIds', 'newsSeen.**',
-      'roster[*].pw', 'roster[*].sp', 'roster[*].te', 'roster[*].st', 'roster[*].mn', 'roster[*].seasonGrowth.*',
-      // 第4段 4-B-4 で K1-E02 を外して見えるようになった: 引退者の分だけ試合成長の乱数(1732)がずれ、
-      // 他の選手の成長ログの伸び(deltas)も入れ替わる
-      'roster[*].growthLog',
-      // 2026-09-26 追加(B): 引退した選手の挑戦試合の打診が消える・ロスターが変わって派閥イベントが変わる・
-      // 怪我引退のポップアップ(M-22)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
-      'challengeRequest.pendingThisWeek', '_pendingFactionEvent', 'relModalWindow[*].own',
-      // 怪我引退のポップアップ(M-22)はエンジンだけが積む(第1段で K1-P01 を外して見えるようになった)
-      '_modalQueue',
-      // 2026-09-26(main 取り込み後の fixture): K-11 の件数記録は今週の項目の有無ごと変わる。
-      // 怪我引退の処理が年代記の章を作り直す(Engine.chronicle.refreshChapters)ので、同期の選手紹介文が
-      // その時点の経歴で書き直される(実プレイは引退させないので作り直さない)
-      'relModalWindow', 'chronicle.chaptersCache.**',
-    ],
-    sides: { A: ['engOnly', 'appOnly', 'both'] },
-    mustAppear: true, refs: 'management.js:15084-15190(引退・O-04・信頼・王座) / app.js:8317-8331(怪我だけ付けて残す)',
-    note: '実プレイは retireType を記録するだけで引退させない(ロスターに残って長期離脱になる)。'
-      + 'エンジンは引退者をロスターから外すので、以降の試合成長の乱数(1732)の引き数がずれ、他の選手の伸びる能力も入れ替わる(乱数消費のずれ)。',
+    id: 'K1-T04', title: '怪我引退の演出データ(_pendingInjuryRetirements)— 実プレイは closeShowResult の前半で取り出して本人の引退ポップアップへ回す(エンジンは戻り値の状態に残す)',
+    category: 'transient', side: 'app', impact: '一時', scenarios: ['injury'], checkpoints: ['A', 'B'],
+    patterns: ['_pendingInjuryRetirements'], sides: { A: ['engOnly'], B: ['engOnly'] },
+    mustAppear: true, refs: 'app.js closeShowResult(pendingInjuryRetirements → showRetirementPopups) / management.js Engine.show.buildInjuryRetirementPresentations',
+    note: '中身は両経路とも同じ関数で組む(実プレイは経歴の要約を画面の言語で訳し、団体名を入れる)。auto-sim は取り出さないので G に残り続ける。',
   },
   {
-    id: 'K1-E04', title: '突然の退団(信頼15未満・1興行2.5%)',
-    category: 'processing', side: 'engine', impact: '数値', scenarios: ['departure'], checkpoints: ['A', 'B'],
+    id: 'K1-A16', title: '引退者の関係値・因縁の整理(archiveRetiredRivalryState: 関係値を消し、因縁を relationshipHistory.retiredRivalries へ移す)',
+    category: 'processing', side: 'app', impact: '数値', scenarios: ['injury'], checkpoints: ['A', 'B'],
+    patterns: ['relationshipHistory.retiredRivalries', 'relationships.*', 'relationships.*.*', 'rivalries.*', 'rivalries.*.*'],
+    mustAppear: true,
+    refs: 'app.js archiveRetiredRivalryState を closeShowResult の前半(怪我引退・ラストラン)・processWeek(モチベ喪失)・季末の引退確定で呼ぶ / エンジンは freezeRelationships(凍結)だけ',
+    note: '第4段 4-B-6 で実プレイでも怪我引退が起きるようになり、injury シナリオで見えるようになった(ラストランの同じ差は K1-A09 に数える)。'
+      + 'B では、消えた関係値の分だけ週次の関係値の減衰・Glimpse・スナップショットの共有乱数の引き方がずれる(K1-B04・K1-B05)。',
+  },
+  // K1-E04(突然の退団が実プレイで起きない)は K-1 第4段 4-B-7 で解消したので外した(2026-09-26)。
+  // 両経路が Engine.show.applySuddenDepartures を通す(前兆の確認は k1-parity-report.md §8 の 4-B 後半)。
+  {
+    id: 'K1-A01B', title: 'K1-A01(キャリア最高評価と信頼ボーナス)の差を、去った選手がフリー・他団体・演出データへ持ち出す',
+    category: 'propagation', side: 'app', impact: '数値', scenarios: ['departure'], checkpoints: ['A', 'B'],
     patterns: [
-      'roster[*](presence)', 'freeAgents[*](presence)', '_pendingSuddenDepartures[*](presence)', 'lockerRoomMorale',
-      'relationships.*', 'relationships.*.*', 'rivalries.*', 'roster[*].pw', 'roster[*].sp', 'roster[*].te', 'roster[*].st',
-      'roster[*].seasonGrowth.*',
-      // 2026-09-26 追加: 退団者が他団体へ移る(A)。移った先の週次興行・対戦成績が変わる(B)。残った選手の信頼への波及
-      'aiOrgs.*.roster[*](presence)', 'roster[*]._departureBondImpact', 'roster[*].trust',
-      'aiOrgs.*.roster[*].*', 'aiOrgs.*.roster[*].*.*', 'aiOrgs.*.matchupLog', 'h2h.*', 'h2h.*.*', 'h2h.*.lastMatch.*',
-      // 退団のポップアップ(M-23)は自団体の出来事なので、K-11 の件数記録(自団体の数)が今週ぶん変わる
-      // (今週の項目の有無ごと変わると配列の長さが変わる)
-      'relModalWindow[*].own', 'relModalWindow',
-      // 第1段で K1-P01 を外して見えるようになった: M-23 はエンジンだけが積む。移籍先で戦った退団者の逓減カウンター
-      '_modalQueue', 'relationshipCounters.*',
-      // 2026-09-26(main 取り込み後の fixture): ロスターが変わって週次ストーリーの共有乱数(0xBE1B)の引き方が
-      // ずれ、嫌悪の伝染が実プレイ側だけで起きた(B)
-      '_contagionLastWeek.*',
+      'freeAgents[*].careerBestMQ', 'freeAgents[*]._trustBonus', 'freeAgents[*]._trustBonusSources',
+      'aiOrgs.*.roster[*].careerBestMQ', 'aiOrgs.*.roster[*]._trustBonus', 'aiOrgs.*.roster[*]._trustBonusSources',
+      '_pendingSuddenDepartures[*].fighter.careerBestMQ', '_pendingSuddenDepartures[*].fighter._trustBonus',
+      '_pendingSuddenDepartures[*].fighter._trustBonusSources',
     ],
-    mustAppear: true, refs: 'management.js:15494-15561 / app.js なし(表示だけ app.js:12045 にある)',
-    note: 'Engine.trust.checkSuddenDepartures の呼び出しはエンジンの executeShow だけ。実プレイでは表示コードだけが残っていて、発生源が無い。',
+    mustAppear: false, refs: 'K1-A01 の波及(第4段 4-B-7 で実プレイでも突然の退団が起きるようになって見えた)',
   },
   // K1-E05(派閥抗争ポイント・派閥内ポイントの試合ごとの加点が実プレイに無い)は K-1 第4段 4-B-2 で解消したので
   // 外した(2026-09-26)。両経路が Engine.show.accrueFactionPoints を通す。F09 の試合も ×1.8 で加点される。
@@ -172,16 +156,12 @@ module.exports = [
   },
 
   // ════════════════ 全シナリオ共通(毎回出る差) ════════════════
-  {
-    id: 'K1-E01', title: '出場選手のプロモ蓄積(promoStack)リセット',
-    category: 'processing', side: 'engine', impact: '数値', checkpoints: ['A', 'B'],
-    patterns: ['roster[*].promoStack'], sides: { A: ['engOnly'] },
-    mustAppear: true, refs: 'management.js:15048-15052 / app.js なし',
-    note: 'B では週次の行動がプロモ(エンジン)と練習(実プレイ)に分かれ、収入・人気・コンディション・乱数(tickMain)の消費まで変わる(K1-B01〜B05)。',
-  },
+  // K1-E01(出場選手のプロモ蓄積 promoStack のリセットが実プレイに無い)は K-1 第4段 4-B-5 で解消したので外した
+  // (2026-09-26)。両経路が Engine.show.resetPromoStacks を通す。これで B の週次の行動(プロモ/練習)・収入・人気の差と、
+  // それを起点にした共有乱数のずれ(K1-B04)も多くのシナリオで消えた。以後この場所に差が出ると「未登録」で落ちる。
   // K1-E02(試合成長の式。実プレイに年齢倍率・関係性倍率が無く、タッグの相手は強い方)は K-1 第4段 4-B-4 で
   // 解消したので外した(2026-09-26)。両経路が Engine.show.applyMatchGrowth を通す(タッグの相手は2人の平均=裁定)。
-  // tickWeek 後(B)の能力の差は週次の練習/プロモの差(K1-E01)の波及で、K1-B06 に数える。
+  // tickWeek 後(B)に残る能力の差は、実プレイだけの処理(K1-A01 の信頼ボーナスなど)の波及で、K1-B06 に数える。
   {
     id: 'K1-A01', title: 'キャリア最高評価(careerBestMQ)の更新と信頼ボーナス(+1.2)',
     category: 'processing', side: 'app', impact: '数値', checkpoints: ['A', 'B'],
@@ -236,9 +216,9 @@ module.exports = [
 
   // ════════════════ tickWeek を通った波及(B) ════════════════
   {
-    id: 'K1-B01', title: 'お金(週次収支)— 主にプロモ収入の差(K1-E01)と引退/退団者の給与',
+    id: 'K1-B01', title: 'お金(週次収支)— 引退/退団者の給与・乱入・密着取材などの波及(プロモ収入の差 K1-E01 は第4段 4-B-5 で解消)',
     category: 'propagation', side: 'both', impact: '数値', checkpoints: ['B'],
-    patterns: ['funds', 'weeklyFinance.*', 'weeklyFinance.**'], mustAppear: false, refs: 'K1-E01 / K1-E03 / K1-E04 / K1-A09 の波及',
+    patterns: ['funds', 'weeklyFinance.*', 'weeklyFinance.**'], mustAppear: false, refs: 'K1-E03 / K1-E04 / K1-A09 / K1-A14 / K1-A11 の波及',
   },
   {
     id: 'K1-B02', title: 'ロッカールーム士気',
@@ -252,7 +232,7 @@ module.exports = [
     refs: 'what-if 実験: 実プレイの tickWeek 入力で promoStack と careerBestMQ/_trustBonus をエンジン側に揃えると消える。AI側の処理(乱数 0xA101〜3・0xAC01 の引き数)は両経路で同じ',
   },
   {
-    id: 'K1-B04', title: '関係値・因縁帯の週次変動の差(プロモ差 K1-E01 を起点にした共有乱数のずれ+入力の差)',
+    id: 'K1-B04', title: '関係値・因縁帯の週次変動の差(上流の差を起点にした共有乱数のずれ+入力の差。プロモ差 K1-E01 起点の分は 4-B-5 で消えた)',
     category: 'rng', side: 'both', impact: '数値', checkpoints: ['B'],
     patterns: ['relationships.*', 'relationships.*.bond', 'relationships.*.rivalry', 'rivalries.*.lastBand', 'popOvertakeTriggered.*'],
     mustAppear: false,
@@ -269,7 +249,7 @@ module.exports = [
     id: 'K1-B06', title: '自団体選手の週次状態の波及(練習/プロモ/休養・コンディション・人気・信頼・警告デバフ など)',
     category: 'propagation', side: 'both', impact: '数値', checkpoints: ['B'],
     // _milestoneBaseline: 成長の節目の比較基準(2026-09-25 通知・ログの修正で新設)。週末のロスターの写しなので同じ波及を受ける
-    patterns: ['roster[*].*', 'roster[*].*.*', '_milestoneBaseline.**', '_milestoneQueue'], mustAppear: false, refs: 'K1-E01・K1-A01・K1-E02 などの波及',
+    patterns: ['roster[*].*', 'roster[*].*.*', '_milestoneBaseline.**', '_milestoneQueue'], mustAppear: false, refs: 'K1-A01・K1-A02 などの波及(K1-E01・K1-E02 は第4段で解消)',
   },
 
   // ════════════════ 実プレイだけの週送り前処理(C: closeShowResult の後半) ════════════════
@@ -311,7 +291,9 @@ module.exports = [
     id: 'K1-C06', title: '表示キューの消化・週送り準備(Glimpse・週ログ・大ニュース通知・カード初期化・weekPhase)',
     category: 'transient', side: 'app', impact: '一時', checkpoints: ['C'],
     patterns: ['_pendingGlimpseA', '_pendingGlimpseB', 'weekLogFeed', 'gameLog', '_bigNewsNotifiedWeek', '_bigNewsUnread', 'showCard', 'weekPhase',
-      '_pendingGrowthEvents'],
+      '_pendingGrowthEvents',
+      // 第4段 4-B-7: 突然の退団の演出データは closeShowResult が tickWeek の後で取り出してトーストにする
+      '_pendingSuddenDepartures', '_pendingSuddenDepartures[*](presence)'],
     mustAppear: true, refs: 'app.js:11053-11298',
   },
 ];

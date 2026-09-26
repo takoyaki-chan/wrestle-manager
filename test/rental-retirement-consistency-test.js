@@ -83,9 +83,16 @@ function buildRentedState() {
 })();
 
 (function testBothSinglesRetirementBranchesTerminateRentals() {
-  const source = fs.readFileSync(path.join(srcDir, 'management.js'), 'utf8');
-  const calls = source.match(/Engine\.rental\.terminateForRetirement\(s, (?:lc|rc)\.id\)/g) || [];
-  assert.strictEqual(calls.length, 2, 'both sides of a singles match must terminate retired rentals');
+  // K-1 第4段 4-B-6(2026-09-26): 怪我による引退の後始末は Engine.show.retireInjuredFighter にまとまり、
+  // 興行の両経路(executeShow / app.js _finalizeShowImpl)が左右の選手ごとに resolveMatchInjury → retireInjuredFighter を通る
+  const source = fs.readFileSync(path.join(srcDir, 'management.js'), 'utf8').replace(/\r/g, '');
+  const retStart = source.indexOf('    retireInjuredFighter(state, roster, fighterId, chk) {');
+  assert.ok(retStart > 0, 'Engine.show.retireInjuredFighter is missing');
+  const retBody = source.slice(retStart, source.indexOf('\n    },', retStart));
+  assert.ok(/Engine\.rental\.terminateForRetirement\(s, fighterId\)/.test(retBody), 'injury retirement must terminate retired rentals');
+  const exec = source.slice(source.indexOf('  executeShow(state) {'), source.indexOf('  executeShow(state) {') + 60000);
+  assert.ok(/\[r\.left\.id, r\.right\.id\]\.forEach/.test(exec) && /Engine\.show\.resolveMatchInjury\(/.test(exec),
+    'both sides of a singles match must go through the shared injury retirement');
 })();
 
 console.log('rental-retirement-consistency-test: ok');

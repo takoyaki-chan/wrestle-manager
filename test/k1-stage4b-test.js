@@ -238,14 +238,21 @@ section('X03: 中傷・重傷の経歴に今の週・季が残る(本物の Engi
 });
 
 section('X03: 実プレイ(app.js)はエンジンと同じ Engine.show.rollMatchInjury を呼ぶ(週・季に 0 を渡さない)', () => {
+  // 第4段 4-B-6(K1-E03)で、怪我の判定は怪我による引退とまとめて Engine.show.resolveMatchInjury に入った。
+  // 両経路が左右の選手ごとに resolveMatchInjury を呼び、その中で rollMatchInjury(引数の組み立て)を通す
   const body = finalizeBody();
-  const calls = body.match(/Engine\.show\.rollMatchInjury\(s, r, idx, (lc|rc), \{ hostileMult, titleChampionId: injuryTitleChampId \}\)/g) || [];
-  assert.strictEqual(calls.length, 2, `_finalizeShowImpl の Engine.show.rollMatchInjury の呼び出しが ${calls.length} 件`);
+  const calls = body.match(/Engine\.show\.resolveMatchInjury\(s, roster, r, idx, fighter, \{ hostileMult, titleChampionId: injuryTitleChampId \}\)/g) || [];
+  assert.strictEqual(calls.length, 1, `_finalizeShowImpl の Engine.show.resolveMatchInjury の呼び出しが ${calls.length} 件`);
+  assert.ok(/\[r\.left\.id, r\.right\.id\]\.forEach/.test(body), '_finalizeShowImpl が左右の両方を判定していない');
   assert.ok(!/Engine\.injury\.check\(/.test(body), '_finalizeShowImpl が Engine.injury.check を直接呼んでいる');
   const mgmt = readSource('src', 'management.js');
   const ex = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('  executeShow(state) {') + 60000);
-  assert.strictEqual((ex.match(/Engine\.show\.rollMatchInjury\(s, r, idx, (lc|rc), \{ hostileMult, titleChampionId: _titleChampId \}\)/g) || []).length, 2,
-    'executeShow が Engine.show.rollMatchInjury を呼んでいない');
+  assert.strictEqual((ex.match(/Engine\.show\.resolveMatchInjury\(s, roster, r, idx, fighter, \{ hostileMult, titleChampionId: _titleChampId \}\)/g) || []).length, 1,
+    'executeShow が Engine.show.resolveMatchInjury を呼んでいない');
+  assert.ok(/\[r\.left\.id, r\.right\.id\]\.forEach/.test(ex), 'executeShow が左右の両方を判定していない');
+  const res = mgmt.slice(mgmt.indexOf('    resolveMatchInjury(state, roster, result, matchIdx, fighter, opts = {}) {'));
+  assert.ok(/Engine\.show\.rollMatchInjury\(state, result, matchIdx, fighter, opts\)/.test(res.slice(0, 1500)),
+    'Engine.show.resolveMatchInjury が Engine.show.rollMatchInjury を通っていない');
 });
 
 // ── 4. K1-E02 試合成長の式 ──

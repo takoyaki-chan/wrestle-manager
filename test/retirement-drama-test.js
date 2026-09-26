@@ -167,11 +167,16 @@ section('C-6. 両方の経路が新しい規則を使っている（自団体/AI
   const rollStart = management.indexOf('    rollMatchInjury(state, result, matchIdx, fighter, opts = {}) {');
   const rollBody = management.slice(rollStart, management.indexOf('\n    },', rollStart));
   assert.ok(rollStart > 0 && rollBody.includes('Engine.injury.check('), 'Engine.show.rollMatchInjury が Engine.injury.check を通っていない');
+  // K-1 第4段 4-B-6(2026-09-26): 怪我の判定と怪我による引退は Engine.show.resolveMatchInjury にまとまり、
+  // その中で rollMatchInjury を通す。両経路が resolveMatchInjury を呼ぶ
+  const resStart = management.indexOf('    resolveMatchInjury(state, roster, result, matchIdx, fighter, opts = {}) {');
+  assert.ok(resStart > 0 && management.slice(resStart, resStart + 1500).includes('Engine.show.rollMatchInjury('),
+    'Engine.show.resolveMatchInjury が Engine.show.rollMatchInjury を通っていない');
   const execShow = management.slice(management.indexOf('  executeShow(state) {'));
-  assert.ok(execShow.includes('Engine.show.rollMatchInjury('), '自団体の興行(エンジン)が Engine.show.rollMatchInjury を通っていない');
+  assert.ok(execShow.includes('Engine.show.resolveMatchInjury('), '自団体の興行(エンジン)が Engine.show.resolveMatchInjury を通っていない');
   const app = read('src/app.js');
   const fin = app.slice(app.indexOf('  _finalizeShowImpl() {'));
-  assert.ok(fin.slice(0, 60000).includes('Engine.show.rollMatchInjury('), '自団体の興行(実プレイ)が Engine.show.rollMatchInjury を通っていない');
+  assert.ok(fin.slice(0, 60000).includes('Engine.show.resolveMatchInjury('), '自団体の興行(実プレイ)が Engine.show.resolveMatchInjury を通っていない');
   const aiWeek = management.slice(management.indexOf('processAIWeek(rng, state, org) {'),
     management.indexOf('processSeasonEnd(rng, state) {'));
   assert.ok(aiWeek.includes('Engine.injury.check('), 'AI団体の興行が Engine.injury.check を通っていない');
