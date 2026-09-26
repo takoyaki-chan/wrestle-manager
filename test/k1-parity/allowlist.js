@@ -118,41 +118,16 @@ module.exports = [
   },
 
   // ════════════════ tickWeek を通った波及(B) ════════════════
-  {
-    id: 'K1-B01', title: 'お金(週次収支)— 引退/退団者の給与・乱入・密着取材などの波及(プロモ収入の差 K1-E01 は第4段 4-B-5 で解消)',
-    category: 'propagation', side: 'both', impact: '数値', checkpoints: ['B'],
-    patterns: ['funds', 'weeklyFinance.*', 'weeklyFinance.**'], mustAppear: false, refs: 'K1-E03 / K1-E04 / K1-A09 / K1-A14 / K1-A11 の波及',
-  },
-  {
-    id: 'K1-B02', title: 'ロッカールーム士気',
-    category: 'propagation', side: 'both', impact: '数値', checkpoints: ['B'],
-    patterns: ['lockerRoomMorale'], mustAppear: false, refs: '信頼・関係値の差の波及',
-  },
-  {
-    id: 'K1-B03', title: 'AI団体選手の信頼の微差(±0.01)— 自団体の信頼ボーナス(K1-A01)の波及',
-    category: 'propagation', side: 'both', impact: '数値', checkpoints: ['B'],
-    patterns: ['aiOrgs.*.roster[*].trust'], mustAppear: false,
-    refs: 'what-if 実験: 実プレイの tickWeek 入力で promoStack と careerBestMQ/_trustBonus をエンジン側に揃えると消える。AI側の処理(乱数 0xA101〜3・0xAC01 の引き数)は両経路で同じ',
-  },
-  {
-    id: 'K1-B04', title: '関係値・因縁帯の週次変動の差(上流の差を起点にした共有乱数のずれ+入力の差。プロモ差 K1-E01 起点の分は 4-B-5 で消えた)',
-    category: 'rng', side: 'both', impact: '数値', checkpoints: ['B'],
-    patterns: ['relationships.*', 'relationships.*.bond', 'relationships.*.rivalry', 'rivalries.*.lastBand', 'popOvertakeTriggered.*'],
-    mustAppear: false,
-    refs: 'relationships.js の週次減衰・週次ストーリー(0xBE1B)・N-03/N-04。what-if 実験: promoStack だけ揃えると AI ペアの関係値の差(veteran で48箇所)が消える',
-  },
+  // K1-B01(お金)・K1-B02(ロッカールーム士気)・K1-B03(AI団体選手の信頼の微差)・K1-B04(関係値・因縁帯の週次変動と共有乱数のずれ)・
+  // K1-B06(自団体選手の週次状態)は、上流の差(K1-A01/A02/A09/A11/A14 ほか)が K-1 第4段 4-A で消えて、両方の fixture
+  // (今の src で作るもの・4-A の前の src で作ったもの)とも出なくなったので外した(2026-09-26)。興行後(A)に残る差は
+  // ログ(K1-T03)と画面の既読(K1-T02)だけ。以後 tickWeek の後(B)に数値の差が出たら「未登録」で落ちる。
   {
     id: 'K1-B05', title: '週次の語り(Glimpse・スナップショット・節目・新聞既読)の選ばれ方',
     category: 'rng', side: 'both', impact: '表示', checkpoints: ['B'],
     patterns: ['_glimpse*', '_glimpse*.*', '_glimpse*.*.*', '_pendingGlimpse*', '_pendingGlimpse*[*].*', '_snapshotCooldowns.*',
       '_pendingMilestone.*', '_lastMilestoneAbsWeek', 'newsSeen.**'],
     mustAppear: false, refs: 'スナップショット(0x5A30)・Glimpse の抽選。入力と乱数の両方の差',
-  },
-  {
-    id: 'K1-B06', title: '自団体選手の週次状態の波及(練習/プロモ/休養・コンディション・人気・信頼・警告デバフ など)',
-    category: 'propagation', side: 'both', impact: '数値', checkpoints: ['B'],
-    // _milestoneBaseline: 成長の節目の比較基準(2026-09-25 通知・ログの修正で新設)。週末のロスターの写しなので同じ波及を受ける
-    patterns: ['roster[*].*', 'roster[*].*.*', '_milestoneBaseline.**', '_milestoneQueue'], mustAppear: false, refs: 'K1-A01・K1-A02 などの波及(K1-E01・K1-E02 は第4段で解消)',
   },
 
   // ════════════════ 実プレイだけの週送り前処理(C: closeShowResult の後半) ════════════════

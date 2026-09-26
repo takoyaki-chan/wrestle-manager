@@ -407,12 +407,19 @@ const APP_ONLY_WRITE_SITES = [
   { type: 'debut(スカウト/UI)',    src: uiCommonSource, re: /type: 'debut'.*via: 'scout'/ },
   { type: 'transfer(引き抜き交渉)', src: appSource,     re: /type: 'transfer'.*via: 'negotiate'/ },
   { type: 'war(自団体)',           src: appSource,      re: /type: 'war', season: G\.season/ },
-  { type: 'domeMain',              src: appSource,      re: /type: 'domeMain', season: s\.season/ },
-  { type: 'bigMatch',              src: appSource,      re: /type: 'bigMatch', season: s\.season/ },
 ];
 APP_ONLY_WRITE_SITES.forEach(({ type, src, re }) => {
   ok(re.test(src), `${type} の careerRecord 書き込みが消えている`);
 });
+// domeMain・bigMatch(通常興行のドーム・大試合の経歴)は K-1 第4段 4-A で app.js の hook から
+// Engine.show.recordCareerMarks(management.js。両経路が通る)へ移した
+{
+  const mgmtSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'management.js'), 'utf8');
+  ok(/type: 'domeMain', season: s\.season/.test(mgmtSrc), 'domeMain の careerRecord 書き込みが消えている(Engine.show.recordCareerMarks)');
+  ok(/type: 'bigMatch', season: s\.season/.test(mgmtSrc), 'bigMatch の careerRecord 書き込みが消えている(Engine.show.recordCareerMarks)');
+  ok(!/type: 'domeMain', season: s\.season/.test(appSource) && !/type: 'bigMatch', season: s\.season, week: s\.week, mq: r\.mq/.test(appSource),
+    '通常興行の domeMain・bigMatch の書き込みが app.js に書き直されている(両経路は Engine.show.recordCareerMarks)');
+}
 
 // 受賞歴は Engine.awards.recordAwardEvent 経由に一本化してある。
 // ロスターだけを舐める旧実装に戻ると、引退した年の受賞がまた消える。
