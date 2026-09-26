@@ -16,8 +16,13 @@ function section(source, startMarker, endMarker) {
   return source.slice(start, end);
 }
 
+// K-1 第3段: 判定は興行後の処理の共通関数 Engine.show.sameSinglesPair(app.js の _sameSinglesPair はそれを呼ぶだけ)。
+// 因縁の記録と決着の保険も Engine.show.finalize(両経路が通る)の中
+loadGame();
+const mgmt = fs.readFileSync(path.join(root, 'src', 'management.js'), 'utf8').replace(/\r\n/g, '\n');
 const pairSource = section(app, 'function _sameSinglesPair(', '\n\nconst Audio');
-const sameSinglesPair = new Function(`${pairSource}; return _sameSinglesPair;`)();
+assert.ok(pairSource.includes('return Engine.show.sameSinglesPair(match, result);'), 'app.js の _sameSinglesPair が共通の判定を使っていない');
+const sameSinglesPair = Engine.show.sameSinglesPair;
 
 assert.strictEqual(sameSinglesPair(
   { left: 10, right: 20 }, { left: { id: 20 }, right: { id: 10 } }
@@ -29,10 +34,12 @@ assert.strictEqual(sameSinglesPair(
   { left: 10, right: 20 }, { left: null, right: { id: 20 } }
 ), false, 'incomplete result participants must be rejected');
 
-assert.ok(app.includes('rivalry processing skipped: card/result participants differ'),
+assert.ok(mgmt.includes('rivalry processing skipped: card/result participants differ'),
   'rivalry accumulation must reject mismatched card/result pairs');
-assert.ok(app.includes('rivalry settlement skipped: card/result participants differ'),
+assert.ok(mgmt.includes('rivalry settlement skipped: card/result participants differ'),
   'rivalry settlement must reject mismatched card/result pairs');
+assert.ok(app.includes('rivalryBeforeTitles: true'),
+  'the live path must keep recording non-candidate rivalries before titles (Engine.show.finalize ctx)');
 assert.ok(common.includes('r, leftIsWinner, isDraw, `Match ${results.length - i}`, sourceMatch,'),
   'regular-show inline rivalry comments must receive the booked match for verification');
 assert.ok(common.includes("_queueRivalryMatchDialogue(r, leftIsWinner, isDraw, isMain ? WM_I18N.t('頂上決戦') : `Match ${matchNum}`, match)"),
@@ -46,7 +53,6 @@ assert.ok(dialogue.includes('因 縁 の 一 戦'),
 assert.ok(!dialogue.includes('因 縁 決 着'),
   'only actual resolution popups may use the rivalry-settled wording');
 
-loadGame();
 const settledPair = {
   resolvedType: null,
   rivalryAB: 80,

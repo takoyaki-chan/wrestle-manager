@@ -21,6 +21,8 @@
 //   node test/k1-parity/run.js --report            全差分を詳しく表示(照合結果は表示のみで exit 0)
 //   node test/k1-parity/run.js --scenario rivalry  1シナリオだけ
 //   node test/k1-parity/run.js --json <file>       生データを JSON で保存(既定: test/k1-parity/out/last-run.json)
+//   node test/k1-parity/run.js --dump <dir>        各シナリオの両経路の状態を丸ごと <dir>/<シナリオ>__<mode>.json に保存
+//                                                  (src を変える前後で取り、compare-dumps.js で「同じ経路の数値が動いていないか」を見る)
 //
 // src の挙動は変えない。ページ側で行う計測の詳細は page-probe.js の冒頭を参照。
 
@@ -38,13 +40,14 @@ const PROBE_PATH = path.join(__dirname, 'page-probe.js');
 const DEFAULT_JSON = path.join(__dirname, 'out', 'last-run.json');
 
 function parseArgs(argv) {
-  const opts = { report: false, scenario: null, json: DEFAULT_JSON, fixtureSeed: 42, season: 2, week: 14, verbose: false };
+  const opts = { report: false, scenario: null, json: DEFAULT_JSON, dump: null, fixtureSeed: 42, season: 2, week: 14, verbose: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--report') opts.report = true;
     else if (a === '--verbose') opts.verbose = true;
     else if (a === '--scenario') opts.scenario = argv[++i];
     else if (a === '--json') opts.json = argv[++i];
+    else if (a === '--dump') opts.dump = argv[++i];
     else if (a === '--fixture-seed') opts.fixtureSeed = Number(argv[++i]);
     else if (a === '--season') opts.season = Number(argv[++i]);
     else if (a === '--week') opts.week = Number(argv[++i]);
@@ -160,10 +163,26 @@ async function newPage(browser, server, fixtureText) {
 
 function buildFixture(opts) {
   const t0 = Date.now();
-  const G = advanceUntil({
-    seed: opts.fixtureSeed,
-    until: g => g.season === opts.season && g.week === opts.week && g.weekPhase === 'manage' && !g.offSeason,
-  });
+  // 表示用の文選び(Math.random。Glimpse の台詞など)を種付きにして、fixture を毎回同じにする
+  // (2026-09-26 K-1 第3段: --dump の前後比較で、fixture の台詞だけが実行ごとに変わっていた。数値の抽選は
+  // Engine.rng なので影響しない)
+  const origRandom = Math.random;
+  let mr = (0x2545F491 ^ opts.fixtureSeed) >>> 0 || 1;
+  Math.random = function seededFixtureRandom() {
+    mr = (mr + 0x6D2B79F5) | 0;
+    let t = Math.imul(mr ^ (mr >>> 15), 1 | mr);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  let G;
+  try {
+    G = advanceUntil({
+      seed: opts.fixtureSeed,
+      until: g => g.season === opts.season && g.week === opts.week && g.weekPhase === 'manage' && !g.offSeason,
+    });
+  } finally {
+    Math.random = origRandom;
+  }
   // headless 進行の自動応答が例外で失敗した件数(2026-09-26)。0 でなければ fixture の世界が実プレイと違う
   // (以前は WM_I18N スタブの不足で派閥の選択が毎回失敗し、黙って捨てられていた)ので、照合の失敗として数える
   const swallowed = summarizeSwallowedErrors();
@@ -375,6 +394,11 @@ async function main() {
         const run = await runScenario(browser, server, fixture.text, scenario, mode, cache);
         const analysis = analyze(run);
         allRuns.push({ scenario: scenario.name, title: scenario.title, mode, run, analysis });
+        if (opts.dump) {
+          fs.mkdirSync(opts.dump, { recursive: true });
+          fs.writeFileSync(path.join(opts.dump, `${scenario.name}__${mode}.json`),
+            JSON.stringify({ scenario: scenario.name, mode, G0: run.G0, engine: run.engine, app: run.app }));
+        }
         console.log(`\n== ${scenario.name} [${mode}] — ${scenario.title} (${Date.now() - ts}ms)`);
         if (run.notes.length) console.log(`  設定: ${run.notes.join(' / ')}`);
         if (run.seedInfo) console.log(`  シード探索: rngSeed=${run.seedInfo.seed} (${run.seedInfo.tried} 本目)`);

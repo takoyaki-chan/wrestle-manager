@@ -23,6 +23,7 @@
 
 const assert = require('assert');
 const { readSource } = require('./helpers/source.js');
+const { engineShowBody, appShowBody } = require('./helpers/show-paths.js');
 const { loadEngines, advanceUntil } = require('./ui-walkthrough/fixtures/headless-sim');
 
 loadEngines();
@@ -33,22 +34,14 @@ function section(name, fn) {
   catch (e) { failed++; console.log('  FAIL  ' + name + '\n        ' + (e && e.stack ? e.stack.split('\n').slice(0, 3).join('\n        ') : e)); }
 }
 
-// _finalizeShowImpl の本文(次のメソッドの手前まで)
+// 実プレイの経路の本文(K-1 第3段: App._finalizeShowImpl → Engine.show.finalize。実プレイだけの処理は App._finalizeHook*)
 function finalizeBody() {
-  const app = readSource('src', 'app.js');
-  const start = app.indexOf('  _finalizeShowImpl() {');
-  assert.ok(start >= 0, '_finalizeShowImpl が見つからない');
-  const end = app.indexOf('\n  },\n', start);
-  return app.slice(start, end);
+  return appShowBody();
 }
 
-// executeShow の本文(次のメソッドの手前まで)
+// エンジンの経路の本文(K-1 第3段: executeShow → Engine.show.finalize)
 function executeShowBody() {
-  const mgmt = readSource('src', 'management.js');
-  const start = mgmt.indexOf('  executeShow(state) {');
-  assert.ok(start >= 0, 'executeShow が見つからない');
-  const end = mgmt.indexOf('\n  },\n', start);
-  return mgmt.slice(start, end);
+  return engineShowBody();
 }
 
 function fighter(id, extra = {}) {

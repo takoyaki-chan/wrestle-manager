@@ -144,10 +144,12 @@ module.exports = [
     mustAppear: true, refs: 'app.js:9250-9270(団体人気は clamp なしで加算) / エンジン側なし',
   },
   {
-    id: 'K1-A12', title: 'F07 メイン推薦の消化(残り興行数だけ減る。信頼の増減は上書きで消える)',
+    id: 'K1-A12', title: 'F07 メイン推薦の消化(残り興行数・メンバー/リーダーの信頼。実プレイだけ)',
     category: 'processing', side: 'app', impact: '数値', scenarios: ['directives'], checkpoints: ['A', 'B'],
-    patterns: ['_pendingF07Directive.remainingShows'],
-    mustAppear: true, refs: 'app.js:8494-8528(_applyTrustToMembers の結果は 8807 の roster 上書きで失われる)',
+    // K-1 第3段 3-3(§7 X05 を解消): 信頼の増減が書き戻しで消えなくなった。directives ではメインに派閥の選手がいないので
+    // リーダーの信頼 −2(roster[*].trust は先に当たる K1-A11 に数える)と、退団寸前の帳簿の「派閥」の欄
+    patterns: ['_pendingF07Directive.remainingShows', 'roster[*].trustStrain.faction'],
+    mustAppear: true, refs: 'app.js App._finalizeHookFactionBookings(Engine.show.finalize の hooks.afterRelationships) / エンジン側なし(第4段 4-A)',
   },
   // K1-A15(タッグ不仲ペアの試合後 信頼−1)は、裁定 K-12 の実装(7ba3738e: Engine.showTagMatch に4経路を
   // 通した)で差が消えたので外した(2026-09-26)。以後この場所に差が出ると「未登録」で落ちる。
@@ -156,12 +158,8 @@ module.exports = [
   // K1-F01(タッグの人気・連敗・勝敗の付け方。実プレイは敗者も勝者扱い)は K-1 第4段 4-B-1 で解消したので外した
   // (2026-09-26)。両経路が Engine.show.applyMatchPopularity を通す。タッグにもメイン低評価の人気減と
   // ヒール適性の加点が掛かる(裁定)。以後この場所に差が出ると「未登録」で落ちる。
-  {
-    id: 'K1-A07', title: 'タッグ試合の直近戦績(recentMatches・対角4ペア)',
-    category: 'processing', side: 'app', impact: '表示', scenarios: ['tag-mixed', 'mq-record', 'tag-lowbond'], checkpoints: ['A', 'B'],
-    patterns: ['roster[*].recentMatches'],
-    mustAppear: true, refs: 'app.js:8979-8995 / management.js:15450-15455(タッグは飛ばす)',
-  },
+  // K1-A07(タッグ試合の直近戦績。実プレイは対角4組・エンジンは記録なし)は K-1 第3段で解消したので外した(2026-09-26)。
+  // 両経路が Engine.show.finalize で1試合1枠(A1↔B1・A2↔B2、tag: true の印)を記録する(報告書の推奨③)。
   // K1-E08(因縁決着エントリの記録欄。エンジン=lastShowNumber / 実プレイ=宿怨の勝者ID)は K-1 第2段で解消したので
   // 外した(2026-09-26)。両経路が Engine.show.resolvedRivalryEntry で作り、両方の欄を持つ。
 

@@ -90,7 +90,8 @@ function buildRentedState() {
   assert.ok(retStart > 0, 'Engine.show.retireInjuredFighter is missing');
   const retBody = source.slice(retStart, source.indexOf('\n    },', retStart));
   assert.ok(/Engine\.rental\.terminateForRetirement\(s, fighterId\)/.test(retBody), 'injury retirement must terminate retired rentals');
-  const exec = source.slice(source.indexOf('  executeShow(state) {'), source.indexOf('  executeShow(state) {') + 60000);
+  // K-1 第3段: エンジンの試合後の処理は Engine.show.finalize(executeShow はそれを呼ぶ。実プレイも同じ関数)
+  const exec = require('./helpers/show-paths.js').engineShowBody();
   assert.ok(/\[r\.left\.id, r\.right\.id\]\.forEach/.test(exec) && /Engine\.show\.resolveMatchInjury\(/.test(exec),
     'both sides of a singles match must go through the shared injury retirement');
 })();

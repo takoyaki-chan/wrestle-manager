@@ -99,7 +99,7 @@ A を選ぶと即座に試合は行われず、`G.bookedCommon1 = { fighterAId, 
 
 - **興行への組み込み**：次回**通常興行**の編成画面に「予約」バナーが出る（`renderShowPrep`）。プレイヤーが通常のカード編成でこの2名を同じ枠（メイン/セミ/中盤）に組めば、その枠がどこであっても興行結果処理で自動的に検出・清算される。枠は問わない（メインに置けば既存のビッグマッチ/因縁ブースト — `matchIdx===0` のタイトルマッチ相当の tier=2 判定 — が自然に乗るだけで、システム側から特定の枠を強制することはない）
 - **試合の規格**：通常興行の Pass-1 シミュレーションにそのまま乗る（`App._normalShowMatchTier` — メイン/タイトル/ドームメインのみ tier=2）。旧・即時試合フロー（`matchTier` 固定2 でのビッグマッチ扱い）は廃止
-- **清算処理**：`App._finalizeShowImpl` 内、F08 ディレクティブ処理の直前で `G.bookedCommon1` とカード上の一致ペアを検出し、`Engine.factions.applyCommon1MatchResult` を適用（§3.4.3 は不変）。選手名と派閥名は予約内の表示文字列を正とせず、`fighterAId` / `fighterBId` / `factionId` から決着時の現行stateを引き直す（名前を持たない旧予約でも`undefined`を出さない）。結果表示は興行結果表示の前段（F09/F08/CR と同じ drain チェーン）で `_renderCommon1MatchResult` を表示する
+- **清算処理**：実プレイの興行後の処理(`Engine.show.finalize` の hooks.afterRelationships = `App._finalizeHookFactionBookings`。2026-09-26 K-1 第3段で `App._finalizeShowImpl` から移した)の中、F08 ディレクティブ処理の直前で `G.bookedCommon1` とカード上の一致ペアを検出し、`Engine.factions.applyCommon1MatchResult` を適用（§3.4.3 は不変）。選手名と派閥名は予約内の表示文字列を正とせず、`fighterAId` / `fighterBId` / `factionId` から決着時の現行stateを引き直す（名前を持たない旧予約でも`undefined`を出さない）。結果表示は興行結果表示の前段（F09/F08/CR と同じ drain チェーン）で `_renderCommon1MatchResult` を表示する
 - **結果UI**：派閥の序列を動かし得る重要戦として、戴冠・節目防衛と同じ既存A型イベントモーダル（`mdl-a-title-*`）を使う。地の文と決着情報・数値影響は本文／結果欄、`COMMON1_LINES.resultLeader/resultLoser`だけを各選手画像の頭上吹き出しへ置く。旧Common-1専用`.c1r-*`カードは使わない
 - **衝突ルール**：
   - 特別興行週（PPV/春タッグ/秋対抗戦/天頂戦/4団体戦 等）には組み込まない → `Engine.challengeRequest.isEligibleHomeShow` が false の週は自動的に見送り、次の通常興行へ繰り越す
@@ -156,7 +156,8 @@ A を選ぶと即座に試合は行われず、`G.bookedCommon1 = { fighterAId, 
 - `Engine.factions.applyCommon1Choice` は choice='A' の場合 `G.bookedCommon1` を作り `booked: true` を返す（trust/rivalry はまだ反映しない）
 - `Engine.factions.applyCommon1MatchResult(state, payload, winnerId, loserId, rng)` — 試合結果から trust/rivalry を反映する独立関数（不変）
 - `Engine.factions.isBookedCommon1Valid` / `isBookedCommon1Expired` / `sweepBookedCommon1` / `findBookedCommon1CardIndex` / `hasCompetingBooking` — task-79 で追加した予約ヘルパー群
-- `App._finalizeShowImpl` 内（F08 ディレクティブ処理の直前）で予約ペアの一致検出・清算・`G._pendingCommon1Result` へのキューイングを行う
+- `App._finalizeHookFactionBookings`(実プレイの興行後の処理の hooks.afterRelationships。F08 ディレクティブ処理の直前)で予約ペアの一致検出・清算・`G._pendingCommon1Result` へのキューイングを行う
+- **信頼・人気の反映(2026-09-26 K-1 第3段 3-3)**: `applyCommon1MatchResult` の信頼(勝者 +3〜5・敗者 −1〜3・下克上のリーダー追撃)と人気(勝者 +1〜3・下克上の追加)は、以前は興行前のロスターの上で動かしたあと興行の処理の書き戻しで消えていた(結果モーダルの数値だけ出て、実際には効いていなかった)。清算に作業中のロスターを渡すようにして効くようになった(specs/show-finalize-spec-v1.0.md §5)
 - `management.js` の `tickWeek` 週次派閥処理ブロック末尾で `sweepBookedCommon1` を毎週実行（sealed/pending 週でも必ず走る）
 - `Engine.validateGameState` に `bookedCommon1` の整合チェック（オブジェクト型/存在しない選手ID参照/season・week 型）を追加
 - 旧・即時試合フロー（`App._common1Preview` / `App.common1WatchMatch` / `App.common1SkipMatch` / `App._receiveCommon1BattleResult` / `App._finalizeCommon1Match` / `_renderCommon1MatchPreview`）は呼び出し元を失い未使用（コードは残置、将来の削除候補）

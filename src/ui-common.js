@@ -4598,7 +4598,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck, lifeNo) {
               const shortName = (WM_I18N.lang === 'en') ? WM_I18N.pnSurname(name) : (name.length > 4 ? name.substring(0, 4) : name);
               const mark = m.result === 'win' ? '○' : m.result === 'loss' ? '×' : '';
               const color = m.result === 'win' ? '#2ecc71' : m.result === 'loss' ? '#e74c3c' : '#999';
-              return `<span style="color:${color};white-space:nowrap">${mark}${shortName}</span>`;
+              // K-1 第3段(K1-A07): タッグは1試合1枠(相手は向かい合った1人)。タッグだと分かる印を添える
+              const tagMark = m.tag ? `<span style="color:var(--text-dim)">(${WM_I18N.t('タッグ')})</span>` : '';
+              return `<span style="color:${color};white-space:nowrap">${mark}${shortName}${tagMark}</span>`;
             });
             html += `<div style="font-size:11px;color:var(--text-sub);margin-top:2px">${WM_I18N.t('直近')}: ${items.join(' ')}</div>`;
           }

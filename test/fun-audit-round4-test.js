@@ -136,11 +136,9 @@ section('6: App._showFarewellsFirst — 待ちに時限の保険と二重起動�
 });
 
 // ── 7. 怪我による引退と突然の退団をログに1行(英語つき) ──
+// K-1 第3段: 実プレイの試合後の処理は App._finalizeShowImpl → Engine.show.finalize(logStyle: 'structured')
 function finalizeShowBody() {
-  const app = readSource('src', 'app.js');
-  const start = app.indexOf('  _finalizeShowImpl() {');
-  assert.ok(start >= 0, '_finalizeShowImpl が見つからない');
-  return app.slice(start, app.indexOf('\n  },\n', start));
+  return require('./helpers/show-paths.js').appShowBody();
 }
 const EN_TEMPLATES = (() => {
   const src = readSource('src', 'lang-en-templates.js');
@@ -170,17 +168,26 @@ section('7: ログの文(テンプレ)— 怪我による引退2型・突然の�
 
 section('7: 実プレイ(_finalizeShowImpl)が怪我による引退・突然の退団の行をログに積む(行き先は処理後の状態から)', () => {
   const body = finalizeShowBody();
-  assert.ok(/type: 'injury_retirement'/.test(body) && /if \(res\.retired\)/.test(body), '怪我による引退の行を積んでいない');
-  assert.ok(/type: 'sudden_departure'/.test(body) && /App\._suddenDepartureDestination\(s, d\.id\)/.test(body), '突然の退団の行を積んでいない');
+  // K-1 第3段: ログの行は Engine.show.finalize の log('injury_retirement', …) / 構造化ログの sudden_departure
+  // (実プレイは logStyle: 'structured')
+  assert.ok(/log\('injury_retirement'/.test(body) && /if \(res\.retired\)/.test(body), '怪我による引退の行を積んでいない');
+  assert.ok(/logStyle: 'structured'/.test(body), '実プレイが構造化ログを選んでいない');
+  assert.ok(/type: 'sudden_departure'/.test(body) && /Engine\.show\.suddenDepartureDestination\(s, d\.id\)/.test(body), '突然の退団の行を積んでいない');
   // 行き先の引き方: 他団体のロスターにいればその団体名、それ以外は null(フリー)
   const app = readSource('src', 'app.js');
   const start = app.indexOf('  _suddenDepartureDestination(');
   assert.ok(start >= 0, 'App._suddenDepartureDestination が無い');
-  const method = app.slice(start, app.indexOf('\n  },', start) + 4);
-  const obj = require('vm').runInNewContext(`({${method}})`, { Engine: { contract: { _getOrgName: (id, st) => (st.rivalOrgNames || {})[id] || id } } });
-  const st = { aiOrgs: { kings: { roster: [{ id: 5 }] }, glow: { roster: [] } }, rivalOrgNames: { kings: 'KINGS' }, freeAgents: [{ id: 6 }] };
-  assert.strictEqual(JSON.stringify(obj._suddenDepartureDestination(st, 5)), JSON.stringify({ orgId: 'kings', orgName: 'KINGS' }));
-  assert.strictEqual(obj._suddenDepartureDestination(st, 6), null);
+  assert.ok(/return Engine\.show\.suddenDepartureDestination\(state, fighterId\);/.test(app.slice(start, app.indexOf('\n  },', start))),
+    'App._suddenDepartureDestination が興行後のログと同じ関数を使っていない');
+  const realGetOrgName = Engine.contract._getOrgName;
+  Engine.contract._getOrgName = (id, st) => (st.rivalOrgNames || {})[id] || id;
+  try {
+    const st = { aiOrgs: { kings: { roster: [{ id: 5 }] }, glow: { roster: [] } }, rivalOrgNames: { kings: 'KINGS' }, freeAgents: [{ id: 6 }] };
+    assert.strictEqual(JSON.stringify(Engine.show.suddenDepartureDestination(st, 5)), JSON.stringify({ orgId: 'kings', orgName: 'KINGS' }));
+    assert.strictEqual(Engine.show.suddenDepartureDestination(st, 6), null);
+  } finally {
+    Engine.contract._getOrgName = realGetOrgName;
+  }
   // 退団のトーストも実際の行き先で書く(判定時の区分=人気40以上だけで書かない)
   const toast = app.slice(app.indexOf('  _showSuddenDepartureToasts('), app.indexOf('\n  },', app.indexOf('  _showSuddenDepartureToasts(')));
   assert.ok(/App\._suddenDepartureDestination\(G, d\.id\)/.test(toast), '退団のトーストが実際の行き先を見ていない');

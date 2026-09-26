@@ -1,5 +1,34 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 K-1 第3段 — 通常興行の試合後の処理を `Engine.show.finalize` の1本に(Claude/Opus 5.5・worktree)
+
+裁定 K-1「興行後の処理を一本化する(A・段階的)」の移行計画の第3段。詳細・数値・残る差は `docs/fun-audit-v0.1/k1-parity-report.md`(改訂その7・§8 第3段の実施結果・§7 X13/X14)、確定仕様は新規 `specs/show-finalize-spec-v1.0.md`。
+
+### やったこと
+- **3-1(0196b6eb)**: `Engine.show.beginShow`(興行数・weekPhase・休養願いの解除・F02① の火種)と `Engine.show.finalize(state, validMatches, results, ctx)`(王座・集客・評価の確定・記録・因縁・人気・★・熱・怪我と引退・関係値・派閥ポイント・成長・対戦成績・直近戦績・開眼・書き戻し・突然の退団・演出データ・新聞データ)を新設。`Engine.executeShow` は修復 → beginShow → 試合のシミュレーション → finalize だけに(683行 → 57行)。経路ごとの違いは ctx の指定11個と hooks 5つ(afterTitles / afterRelationships / afterGrowth / beforeKaigan / afterWriteback)で受ける。エンジンは何も渡さない
+- **3-2(bae6c7be)**: `App._finalizeShowImpl` を beginShow → finalize(実プレイの指定と hooks)に組み替え(1,438行 → 53行)。実プレイだけの処理は `App._finalizeHook*` 5つへ中身のまま移し、呼ぶ位置も以前の順番(乱入・奪還・直訴 / 派閥の予約 / ブレークスルー・最高評価・スランプ / MVP の大試合・ドーム / 統一王座・B3・ゲスト返却)。密着取材・ラストランの即引退・新聞・画面の段取りは `_finalizeShowImpl` に残した
+- **3-3(cc3ce953)**: §7 X05 — 派閥の予約の清算(F07・Common-1・派閥内序列戦・F08 の試合後)の信頼・人気が、興行前のロスターの上で動いて書き戻しで消えていた。作業中のロスターを状態に載せて渡し、変わったロスターを受け取る。状態の roster は興行前のロスターに戻して返す(§7 X14。寄せると予約の無い興行の数値も動く)
+- **K1-A07(2566e616)**: タッグの直近戦績を推奨③でそろえた(1試合1枠・A1↔B1・A2↔B2・`tag: true`)。選手ポップアップの「直近」に「(タッグ)」(辞書の既存の「タッグ」)。以前はエンジンが記録せず、実プレイが対角の4組(1試合で2枠)
+- 差分テストに `--dump <dir>` と `test/k1-parity/compare-dumps.js`(同じ経路の前後比較・全欄)を追加。fixture の台詞選びを種付きに(実行ごとに台詞だけ揺れていた)
+- `_rivalryResolvedThisWeek` を入力と共有の配列への push から「写してから足す」に(値は同じ)
+
+### 数値
+- 3-1・3-2 は**完全に不変**: auto-sim 40季 seed42 の毎週の状態ハッシュ(2,120週)・最終状態・乱数の引き順ハッシュ・引き数 6,618,788・Math.random 5,416・意味指紋 db9b0841、20季 seed7919 `--care` も一致(一時プローブ)。balance-baseline 逸脱なし。差分テストの dump の前後比較で両経路16本すべて一致
+- 3-3: 差分テストで動いたのは directives(F07。メインに派閥の選手がいない → リーダー −2)の1本だけ。リーダーの信頼 61.29 → 59.29(週次の後 63.29 → 62.37)、帳簿の「派閥」1.23 → 3.23。Common-1 の結果モーダルが見せていた「信頼 +○」も実際に効くようになった
+- A07: recentMatches を除けば auto-sim の毎週の状態・乱数は一致。意味指紋 db9b0841 → 61ef0aa5(差は直近戦績だけ)
+- 許容リスト 28 → 27(A07 を外した。K1-A12 に帳簿の「派閥」の欄を足した)
+
+### 見つけたこと(未修正)
+- §7 X13: 相手発の直訴(自団体の興行の3試合)でコーチの要約のログ1行が出ていない(`_finalizeShowImpl` がログを興行前の `G.gameLog` から組み直すため。遠征の直訴では出る)。K1-T03 と一緒に
+- §7 X14: 試合後の処理は書き戻しまで状態の roster を興行前のロスターとして読む(両経路共通。期待カード・興行の文脈・派閥ポイントの序列)
+- 点火 `incoming-challenge`(二拍の結果画面が不発)と `faction-ignite`(seed 7 で fixture を作れない)は main の時点で失敗している(第3段の前後で同じ操作列・同じ失敗)
+
+### 検証
+- `npm test` 313/313 PASS(`test/k1-stage3-test.js` を追加。文面で経路を確かめる9本は `test/helpers/show-paths.js` を見るように直した)
+- `npm run test:k1:parity` PASS(登録27・未登録0・消えた0)/ `node test/auto-sim.js 40 42` ALL CLEAR(61ef0aa5)/ `node test/balance-baseline.js` 逸脱なし / `node test/ja-golden.js` 完全一致
+- UI 走破1本 PASS / 点火 `tenchosen` PASS / `node test/ui-baseline-guard-test.js` ok
+- main(3b42516d 道場の吹き出しほか)を取り込み後に上の全部を回し直した。さらに main(2c87ae3d 道場のコーチ・熱量の吹き出し)を取り込み後に `npm test` 313/313 PASS・`npm run test:k1:parity` PASS(登録27・未登録0・消えた0)
+
 ## 2026-09-26 道場のコーチ・熱量の本人の吹き出しを広げた/GL-12 を吹き出しから地の文へ(Keisuke 裁定「広げる」)(Claude/Opus 5.5・worktree)
 
 1つ下の節(休憩中の吹き出し200px・4行)の続き。表示だけ。数値・文選びは変えていない。
