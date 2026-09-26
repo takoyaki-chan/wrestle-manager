@@ -24,6 +24,7 @@
 //       ハイフン限定用法(規則24)・単位を持たない形(`{n} in a row`)へ書き直して逃がす。
 //       名前・団体名PH({name}等)+wins/reigns(三人称単数動詞)は誤検知として除外する
 //       (PHが数値ではないため単複の食い違いが起こらない)
+//    6. キーの CR(2026-09-26): キーに \r があれば違反。実行時の文字列の改行は LF なので一致しない
 //
 //  ■ 使い方
 //    node test/i18n-build-dict.js            src/lang-en.js を(再)生成
@@ -121,6 +122,11 @@ function main() {
       violations.push(`重複キー: ${JSON.stringify(entry.key)}`);
     } else {
       seenKeys.add(entry.key);
+    }
+    // 6. キーの CR(2026-09-26): 実行時の文字列(テンプレートリテラル)の改行は LF。CR 入りのキーは
+    //    辞書に在っても一度も一致しない(CRLF の作業ツリーから拾った複数行の t(`…`) が6行これで死んでいた)
+    if (entry.key.includes('\r')) {
+      violations.push(`キーに CR(\\r)が入っています(実行時は LF なので一致しない): ${JSON.stringify(entry.key.slice(0, 60))}`);
     }
 
     const en = typeof entry.en === 'string' ? entry.en : '';

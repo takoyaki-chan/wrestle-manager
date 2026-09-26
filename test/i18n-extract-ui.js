@@ -679,7 +679,10 @@ function main() {
   JS_FILES.forEach((filename) => {
     const filePath = path.join(SRC_DIR, filename);
     if (!fs.existsSync(filePath)) { warnings.push(`${filename}: ファイルが存在しない(スキップ)`); return; }
-    const src = fs.readFileSync(filePath, 'utf8');
+    // 改行は LF に揃えてから走査する(2026-09-26)。作業ツリーは CRLF(core.autocrlf)だが、実行時の
+    // テンプレートリテラルの値は JS の仕様で LF に正規化される。生の CRLF のまま拾うと、複数行の
+    // t(`…`) のキーに \r が入り、辞書に在っても実行時に一度も一致しない(6行がこれで死んでいた)
+    const src = fs.readFileSync(filePath, 'utf8').replace(/\r\n?/g, '\n');
     const calls = extractJsCalls(src, filename, warnings);
     calls.forEach((c) => record(c.text, filename));
     perFileStats.push({ file: filename, extracted: calls.length });

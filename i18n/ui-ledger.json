@@ -1185,7 +1185,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "<span class=\"marker\">{ringleader}</span>はリーダー\r\n            <span class=\"marker\">{leader}</span>の方針に\r\n            <span class=\"marker hostile\">{discontent}</span>ようだ。",
+    "key": "<span class=\"marker\">{ringleader}</span>はリーダー\n            <span class=\"marker\">{leader}</span>の方針に\n            <span class=\"marker hostile\">{discontent}</span>ようだ。",
     "en": "<span class=\"marker\">{ringleader}</span> seems <span class=\"marker hostile\">{discontent}</span> with leader <span class=\"marker\">{leader}</span>'s direction.",
     "files": [
       "ui-common.js"
@@ -1238,31 +1238,7 @@
   },
   {
     "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\n社長室の書類を決裁するのに使う。<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span>",
-    "en": "<strong style=\"color:var(--gold)\">⚡ Decision Points</strong><br>\nSpent to decide papers in the president's office.<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span>",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "決裁枠ツールチップ(通常時)。複数行テンプレ literal のため走査外"
-  },
-  {
-    "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\n社長室の書類を決裁するのに使う。<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">いまは満タン。<strong style=\"color:var(--text-main)\">次の回復は捨てられる</strong></span>",
-    "en": "<strong style=\"color:var(--gold)\">⚡ Decision Points</strong><br>\nSpent to decide papers in the president's office.<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">Currently full. <strong style=\"color:var(--text-main)\">The next recovery will be wasted</strong></span>",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "決裁枠ツールチップ(満タン時)。複数行テンプレ literal のため走査外"
-  },
-  {
-    "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\r\n社長室の書類を決裁するのに使う。<br>\r\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span>",
-    "en": "<strong style=\"color:var(--gold)\">⚡ Approvals</strong><br>\r\nSpent to approve the documents on your desk.<br>\r\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span>",
+    "en": "<strong style=\"color:var(--gold)\">⚡ Approvals</strong><br>\nSpent to approve the documents on your desk.<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span>",
     "files": [
       "ui-render.js"
     ],
@@ -1271,8 +1247,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\r\n社長室の書類を決裁するのに使う。<br>\r\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">いまは満タン。<strong style=\"color:var(--text-main)\">次の回復は捨てられる</strong></span>",
-    "en": "<strong style=\"color:var(--gold)\">⚡ Approvals</strong><br>\r\nSpent to approve the documents on your desk.<br>\r\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">Full right now. <strong style=\"color:var(--text-main)\">The next refill will go to waste</strong></span>",
+    "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\n社長室の書類を決裁するのに使う。<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">いまは満タン。<strong style=\"color:var(--text-main)\">次の回復は捨てられる</strong></span>",
+    "en": "<strong style=\"color:var(--gold)\">⚡ Approvals</strong><br>\nSpent to approve the documents on your desk.<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">Full right now. <strong style=\"color:var(--text-main)\">The next refill will go to waste</strong></span>",
     "files": [
       "ui-render.js"
     ],
@@ -1311,8 +1287,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "<strong style=\"color:var(--gold)\">🏛️ 地域振興助成金</strong><br>\r\n現在の支給額: <strong style=\"color:#2ecc71\">+{subsidyAmt}万/週</strong>（自動）<br>\r\n<span style=\"color:#aaa\">人気があと<strong style=\"color:#fff\">{remaining}pt</strong>上がると打ち切り</span><br><br>\r\n<span style=\"color:#aaa;font-size:11px\">打ち切り後はスポンサー収入が<br>10万 → <strong style=\"color:#fff\">30万/週</strong>に増えます</span>",
-    "en": "<strong style=\"color:var(--gold)\">🏛️ Regional Development Grant</strong><br>\r\nCurrent payment: <strong style=\"color:#2ecc71\">+¥{subsidyAmt:man}/week</strong> (automatic)<br>\r\n<span style=\"color:#aaa\">Ends once popularity rises another <strong style=\"color:#fff\">{remaining}pt</strong></span><br><br>\r\n<span style=\"color:#aaa;font-size:11px\">After it ends, sponsor income rises from<br>¥100k to <strong style=\"color:#fff\">¥300k/week</strong></span>",
+    "key": "<strong style=\"color:var(--gold)\">🏛️ 地域振興助成金</strong><br>\n現在の支給額: <strong style=\"color:#2ecc71\">+{subsidyAmt}万/週</strong>（自動）<br>\n<span style=\"color:#aaa\">人気があと<strong style=\"color:#fff\">{remaining}pt</strong>上がると打ち切り</span><br><br>\n<span style=\"color:#aaa;font-size:11px\">打ち切り後はスポンサー収入が<br>10万 → <strong style=\"color:#fff\">30万/週</strong>に増えます</span>",
+    "en": "<strong style=\"color:var(--gold)\">🏛️ Regional Development Grant</strong><br>\nCurrent payment: <strong style=\"color:#2ecc71\">+¥{subsidyAmt:man}/week</strong> (automatic)<br>\n<span style=\"color:#aaa\">Ends once popularity rises another <strong style=\"color:#fff\">{remaining}pt</strong></span><br><br>\n<span style=\"color:#aaa;font-size:11px\">After it ends, sponsor income rises from<br>¥100k to <strong style=\"color:#fff\">¥300k/week</strong></span>",
     "files": [
       "ui-render.js"
     ],
@@ -4842,6 +4818,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}コーチ招聘中 残り{n}週",
+    "en": "Guest coach on site: {name} — weeks left: {n}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}優位 +{diff}",
     "en": "{name} ahead +{diff}",
     "files": [
@@ -7523,6 +7509,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "……もう、止めても無駄だと思います。両方とも、リングで決着つける覚悟です",
+    "en": "...I don't think there's any stopping it now. Both sides are ready to settle it in the ring.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "派閥イベントF08(全面抗争、showFactionF08Modal)の取次文(_factionReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
     "key": "……もう、話し合いでは済まない。あの人とは、リングの上でしか答えが出ない。",
     "en": "...Talking won't settle this anymore. With her, the only answer is in the ring.",
     "files": [
@@ -10104,6 +10102,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "あの2組、もう揉めてませんよ。先週の合同練習でも、普通に挨拶してました",
+    "en": "Those two groups aren't feuding anymore. At joint practice last week, they were greeting each other like normal.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "派閥イベントF06(和解の兆し、showFactionF06Modal)の取次文(_factionReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
     "key": "あの人と同じ旗は、もう掲げられない",
     "en": "I can't raise that banner without her.",
     "files": [
@@ -12246,6 +12256,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "どの選手を送り出しますか？",
+    "en": "Who are we sending out?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "他団体からの挑戦状(B3)の代表選手選択(_buildB3Step2)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
     "key": "どりゃ!",
     "en": "Hup!",
     "files": [
@@ -13887,6 +13909,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "休暇の週数を選んでください",
+    "en": "How many weeks off should she get?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "社長室のリフレッシュ休暇の週数選択(showLeaveWeeksModal)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
+    "key": "処置を選んでください",
+    "en": "How would you like to handle it?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "社長室の派閥への裁定(showFactionDecreeModal: 解散/禁止/解禁)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
     "key": "出番表に名前があった",
     "en": "Her name was on the card",
     "files": [
@@ -13909,6 +13955,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "団体全体に対して発令します。内容をご確認ください",
+    "en": "This one goes out to the whole roster. Please look over the details.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "社長室の団体書類(慰労会・合宿)の実行確認(showDecisionConfirmModal)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
     "key": "対立が何度も重なってきた二人に使える。慢性化する前に手を打てば、亀裂が修復可能になることもある。",
     "en": "For two wrestlers whose clashes keep piling up. Act before it turns chronic, and the rift can still be mended.",
     "files": [
@@ -13920,6 +13978,18 @@
     "source": [
       "DECISION_DOCS.relationship_repair.recommendation"
     ]
+  },
+  {
+    "key": "対象となる選手を選んでください",
+    "en": "Which wrestler is this for?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "社長室の個人書類の対象選手選択(showDecisionTargetModal)とコーチ招聘の対象選手選択(showInviteTargetModal)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
   },
   {
     "key": "成功すれば、二人の間のわだかまりがいくらか解ける。失敗しても関係は変わらない。",
@@ -13975,6 +14045,54 @@
     "hasProperNoun": false
   },
   {
+    "key": "招聘するコーチを選んでください",
+    "en": "Which coach should we bring in?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "社長室のコーチ招聘の候補選択(showInviteCoachModal)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
+    "key": "支給額を選んでください",
+    "en": "How much should the bonus be?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "社長室のボーナス支給額の選択(showBonusProposalModal)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
+    "key": "本人が直接お話ししたいそうです",
+    "en": "She'd like to speak with you directly.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択肢付きeventPopup(_showEventPopupAsChoice)のreporter文の既定値(opts.reporterLine || …)(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
+    "key": "決着がつきました",
+    "en": "It's been settled.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選手間の深刻な対立(B2)の結果コマ(_buildB2Step3)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
     "key": "白紙に戻った",
     "en": "Wiped clean",
     "files": [
@@ -13983,6 +14101,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "社長。お耳に入れておきます。あの組、中で軋みが出てるみたいです",
+    "en": "President, just so you're aware — there seems to be friction inside that group.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "派閥イベントF05(派閥内に火種、showFactionF05Modal)の取次文(_factionReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
+    "key": "社長。ひとつ、事実としてお伝えしておくべきことが",
+    "en": "President. There's something I should pass along — just what happened.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "派閥イベントF04(ロッカールーム報告・移籍、showFactionF04Modal)の取次文(_factionReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
   },
   {
     "key": "続けさせる",
@@ -14005,6 +14147,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "試合、終わりました",
+    "en": "The match is over.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "他団体からの挑戦状(B3)の結果コマ(_buildB3Step3)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
+    "key": "試合で決着をつけさせることにしました。社長の立ち位置を決めてください",
+    "en": "We're letting them settle it in a match. Where do you stand, President?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選手間の深刻な対立(B2)の2コマ目「どう立ち会いますか」(_buildB2Step2)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
     "key": "話は最後まで聞いてくれた。けれど、表情は硬いままだ",
     "en": "She heard you out to the end. But her face never softened",
     "files": [
@@ -14025,6 +14191,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "関係修復を試みるペアを選んでください",
+    "en": "Which two should we try to reconcile?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "社長室の関係修復のペア選択(showDecisionPairModal)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
   },
   {
     "key": "集客力とグッズ売上にボーナス。興行出場で人気が上がりやすい",
@@ -18631,7 +18809,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "ロッカールームに満ちていた争いの空気は、<br>\r\n        <em>{winner}</em>と<em>{loser}</em>という、はっきりとした形に決着した。",
+    "key": "ロッカールームに満ちていた争いの空気は、<br>\n        <em>{winner}</em>と<em>{loser}</em>という、はっきりとした形に決着した。",
     "en": "The tension that filled the locker room has settled into a clear shape:<br>\n an <em>{winner}</em> and a <em>{loser}</em>.",
     "files": [
       "ui-common.js"
@@ -28324,7 +28502,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "対立が始まって以来、両派閥のリーダー<span class=\"marker\">{a}</span>と<span class=\"marker\">{b}</span>の間にあった棘は、\r\n            ここ数週間で<span class=\"marker peace\">{softened}</span>いる。",
+    "key": "対立が始まって以来、両派閥のリーダー<span class=\"marker\">{a}</span>と<span class=\"marker\">{b}</span>の間にあった棘は、\n            ここ数週間で<span class=\"marker peace\">{softened}</span>いる。",
     "en": "Ever since the conflict began, the friction between faction leaders <span class=\"marker\">{a}</span> and <span class=\"marker\">{b}</span> has <span class=\"marker peace\">{softened}</span> these past few weeks.",
     "files": [
       "ui-common.js"

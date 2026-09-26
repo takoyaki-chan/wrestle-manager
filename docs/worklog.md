@@ -19,6 +19,86 @@
 - `node test/ui-walkthrough/care-last-warning-lines-check.js`・`node test/ui-walkthrough/dojo-heat-self-bubble-check.js` ALL CHECKS PASS
 - `node test/ui-baseline-guard-test.js` ok・`npm test` 312/312 PASS・UI 走破1本 `npm run test:ui:walkthrough` PASS(1季・345操作・Issues 0)
 
+## 2026-09-26 コーチの能力名などが英語で日本語のまま出ていた4画面(Claude/Opus 5.5・worktree)
+
+1つ下の節の「残」の2つ目。英語表示だけの変更で、日本語の画面は変わらない。
+
+### 直したもの
+コーチ招聘の候補カード(1つ下の節)と同じ引き方 — 表の値(JA)を表示の直前に `t()` を1回、並べる区切りは JA=「・」/ それ以外=", "(道場のコーチ能力 P7-60 と同じ)。能力名・効果説明・`{tier}級` は辞書に既にあった。
+- **コーチのツールチップ** `showCoachTooltip`(ui-common.js): 等級「B級」→ `t('{tier}級')`、能力名のタグ、「特殊能力」欄の能力名・等級「(S級)」・効果説明
+- **選手ポップアップ** `showFighterPopup`(ui-common.js): 担当コーチの行の能力名/招聘中のコーチの行(名前が生の JA のまま文に直結 → `'{name}コーチ招聘中 残り{n}週'` の1テンプレに畳んだ。JA の出力は畳む前と同じ)/ピークを過ぎた選手の見出しの「ピーク」(直書き)/派閥バッジの「派閥名・役職」の中黒(EN は " · ")
+- **選手詳細** `_renderRosterDetailPanel`(ui-render.js): 育成タブのコーチ効果の能力名/開発率のラベル(「開花中」等。ポップアップは t() 済みだった)/招聘中の重点のステ名(「テクニック」)
+- **データベースのコーチ一覧** `_renderDbCoaches`(ui-render.js): 等級・能力名
+- **コーチの顔画像の alt**(`coachPortraitImg`、data.js): 生の JA 名 → `WM_I18N.pn`(i18n.js の無い node 実行では原文のまま。ポップアップ・DB・育成画面など全部の呼び出し元に効く)
+
+### 足した英訳(1行。ui-ledger に手で追加 → `node test/i18n-build-dict.js`、4793キー全訳)
+| JA | EN |
+|---|---|
+| {name}コーチ招聘中 残り{n}週 | Guest coach on site: {name} — weeks left: {n} |
+- 抽出器を試しに回すと、キーの集合・この行の中身は手で足したものと完全一致(並びと無関係なメタ情報が約700行動くので、回した結果は捨てた)
+
+### 検証
+- 一回限りの実UI確認(scratchpad の Playwright。fixture season-1-week-1-seed42 にコーチ4人の雇用と割り当て・招聘中1人(重点あり)・ピーク超え1人・合成の派閥2つ): ツールチップ35人全員/ポップアップ 自団体全員×タブ3・他団体各3人とフリー4人×タブ2/選手詳細 全員/DBのコーチ一覧 を JA/EN で開いた。**EN は日本語0(特性の1字の漢字アイコンは B-1 裁定で据え置き)・i18n-miss 0・例外0**。**JA の108画面の HTML は変更前(HEAD)と完全一致**
+- `npm test` 312/312・`node test/i18n-ratchet.js` 増加なし・`node test/ja-golden.js` 一致・`node test/i18n-ledger-consistency-test.js` ok
+
+**残(直していない・英語の言い回し)**
+- DBのコーチ一覧の給与・雇用費は EN で「48×10k」(`{数}` + `t('万')`。単位だけ訳す既存の書き方)。ツールチップは同じ額を「¥480k」と出すので、そろえるなら `t('{v}万', { v })` に変える
+- ポップアップの派閥バッジの役職「メンバー」の訳が複数形の「Members」(辞書のキーを他の画面と共有)
+
+## 2026-09-26 取次の帯(モーダル上部のコーチ/古参選手の一言)の英訳+同じモーダルの英語の未訳(Claude/Opus 5.5・worktree)
+
+1つ下の節の「残」の12本を片付けた。英語表示だけの変更で、日本語の画面は変わらない。
+
+### 1. 取次の帯 16文(ui-ledger に `kept:true`+`note` で手追加 → `node test/i18n-build-dict.js`)
+帯の書き方(`_mdlAReporterStrip` / `_factionReporterStrip` / `_inviteCoachReporterStrip` と既定値 `opts.reporterLine || '…'`)で src を全部数えた: 生の日本語リテラル23か所のうち辞書に無いのが17か所=16文。前の節の12本に、派閥の報告カード4本(`_factionReporterStrip`)が加わった。変数で渡る帯(選択イベント・挑戦状の結果・派閥F07 など)は呼び出し元で t() 済みで問題なし。
+
+| JA | EN | どこ |
+|---|---|---|
+| 対象となる選手を選んでください | Which wrestler is this for? | 社長室の個人書類の対象選択・コーチ招聘の対象選択(2か所) |
+| 支給額を選んでください | How much should the bonus be? | ボーナス |
+| 処置を選んでください | How would you like to handle it? | 派閥への裁定 |
+| 休暇の週数を選んでください | How many weeks off should she get? | リフレッシュ休暇 |
+| 招聘するコーチを選んでください | Which coach should we bring in? | コーチ招聘 |
+| 団体全体に対して発令します。内容をご確認ください | This one goes out to the whole roster. Please look over the details. | 慰労会・合宿 |
+| 関係修復を試みるペアを選んでください | Which two should we try to reconcile? | 関係修復 |
+| 本人が直接お話ししたいそうです | She'd like to speak with you directly. | 選択肢付きの eventPopup(既定値) |
+| 試合で決着をつけさせることにしました。社長の立ち位置を決めてください | We're letting them settle it in a match. Where do you stand, President? | 選手間の対立(B2)2枚目 |
+| 決着がつきました | It's been settled. | B2 の結果 |
+| どの選手を送り出しますか？ | Who are we sending out? | 挑戦状(B3)の代表選択 |
+| 試合、終わりました | The match is over. | B3 の結果 |
+| 社長。ひとつ、事実としてお伝えしておくべきことが | President. There's something I should pass along — just what happened. | 派閥F04(移籍の報告) |
+| 社長。お耳に入れておきます。あの組、中で軋みが出てるみたいです | President, just so you're aware — there seems to be friction inside that group. | F05(派閥内に火種) |
+| あの2組、もう揉めてませんよ。先週の合同練習でも、普通に挨拶してました | Those two groups aren't feuding anymore. At joint practice last week, they were greeting each other like normal. | F06(和解の兆し) |
+| ……もう、止めても無駄だと思います。両方とも、リングで決着つける覚悟です | ...I don't think there's any stopping it now. Both sides are ready to settle it in the ring. | F08(対立ヒートアップ) |
+
+- 抽出器は回していない(回すと無関係な台帳のメタ情報が17行動く=件数・files の古さ)。キーの位置は抽出器の並び順に合わせて差し込んだ
+
+### 2. 同じモーダルに残っていた英語の未訳(`src/ui-common.js`、表示だけ)
+英語でモーダルを開いて見つけたもの。
+- コーチ招聘の候補カード: 指導タイプ・得意スタイル・能力名が生の JA → 各々 `t()`(招聘パネル ui-render.js と同じ引き方)
+- コーチ招聘の選手選択: 「重点を頼む」の選択肢と説明文の `{stat}` が `STAT_LABELS_JP` の生の JA → `t()`
+- 派閥への裁定: 説明文の `{names}` が「福浦派・小西派」の生の JA → `_factionDisplayName` を通し、区切りは JA=「・」/それ以外=", "
+- F04: 本文の `{faction}`(移籍先)が生の JA → `_factionDisplayName`
+- 対立(B2)1枚目・2枚目の2人の名前、B2 の結果の名前、B3 の結果の代表選手名・相手団体名 → `pn()`
+- B2 1枚目の帯: 既定の文を t() 済みで渡して帯の中でもう一度 t() していた(英語が i18n-miss に出る)→ `lineTranslated` を渡す
+
+### 3. CR 入りで死んでいた辞書キー6行(根本原因は抽出器)
+F05・F06 の本文の観察文が英語で日本語のまま → 台帳のキーに `\r\n` が入っていた。作業ツリーは CRLF(core.autocrlf)で、抽出器が複数行の t(`…`) を生のまま拾っていたが、実行時のテンプレートリテラルの値は LF。辞書に在っても一度も一致しない。同じ型が6行: F05/F06 の観察文・派閥抗争の決着(F02)の「ロッカールームに満ちていた争いの空気は…」・上部の情報バーの決裁枠ツールチップ2本・地域振興助成金のツールチップ。
+- 台帳の6キー(と訳文)を LF に直した。決裁枠の2本は LF 版が別の手追加行(訳「⚡ Decision Points」)として生きていたので、それを捨てて CR 版の新しい訳(「⚡ Approvals」=社長室のほかの表記と同じ)を残した。**英語の決裁枠ツールチップの見出しが Decision Points → Approvals に変わる**
+- `test/i18n-extract-ui.js`: JS ソースを LF に揃えてから走査する。直した抽出器を試しに回すと、この6キーを含めキーの集合は台帳と完全一致(新規0・消失0)
+- `test/i18n-build-dict.js`: 検査6「キーに CR があれば違反」を追加
+- specs `i18n-runtime-spec-v1.0.md` §5 に2項目(改行は LF/取次の帯の生リテラルは手追加)
+
+### 検証
+- 一回限りの実UI確認(scratchpad の Playwright スクリプト。fixture season-1-week-1-seed42 に合成の派閥2つ): 帯のある24画面(社長室の書類10・選択肢付き eventPopup・B2 の4コマ+引き分け・B3 の4コマ・F04/F05/F06/F08)を JA/EN で開き、**EN は帯が英訳・モーダル全体に日本語0・i18n-miss 0・例外0**、JA は帯が原文。**JA の24画面の HTML は変更前(HEAD の ui-common.js)と完全一致**
+- 決裁枠・助成金・F02 のツールチップ/段落は、直したキーがソースの t(`…`) と文字単位で一致することをスクリプトで確認
+- `npm test` 312/312・`node test/i18n-ratchet.js` 増加なし・`node test/ja-golden.js` 一致・`node test/i18n-ledger-consistency-test.js` ok・build-dict 4792キー全訳
+
+**残(直していない)**
+- B2 の結果コマ(「決着がつきました」)と B3 の結果コマ(「試合、終わりました」)は `showLargeEventModal(…, 2)` を呼ぶ経路が今は無い(B2 は `_renderB2MatchPreview`、B3 は次の興行への予約に変わった)。選択肢付き eventPopup(「本人が直接お話ししたいそうです」)も choices を渡す呼び出し元が無い。訳は入れたが実プレイでは出ない
+- 同じ型の生の JA がほかの画面に残っている(このモーダル群の外): コーチの能力名の列挙が t() なし——コーチのツールチップ `showCoachTooltip`(ui-common.js 2049。等級の「{grade}級」も直書き)・選手ポップアップ(ui-common.js 4535)・選手詳細のコーチ効果(ui-render.js 2407)・データベースのコーチ一覧(ui-render.js 10552)
+- 実機確認は `docs/実機確認バックログ.md` の先頭の節
+
 ## 2026-09-26 声かけの結果モーダルのマーカーの食い違い+決裁の結果モーダルの英語の未訳(Claude/Opus 5.5・worktree)
 
 1つ下の節(セリフ204本の流し込み)で見つけた2件。数値は変えていない(表示だけ)。
