@@ -425,7 +425,7 @@ async function main() {
         if (run.problems.length) console.log(`  ページ上のエラー/ダイアログ ${run.problems.length} 件: ${run.problems.slice(0, 3).join(' | ')}`);
         console.log(`  試合結果 engine=${JSON.stringify(analysis.matches.engine)}`);
         console.log(`  試合結果 app   =${JSON.stringify(analysis.matches.app)}`);
-        if (analysis.intrusion) console.log(`  乱入(実プレイのみ): ${JSON.stringify(analysis.intrusion)}`);
+        if (analysis.intrusion) console.log(`  乱入(実プレイの記録。第4段 4-A からエンジンも同じ判定): ${JSON.stringify(analysis.intrusion)}`);
         console.log(`  怪我 engine=${short(analysis.injuries.engine.map(i => [i.id, i.injury && i.injury.type, i.retireType || null]), 200)}`);
         console.log(`  怪我 app   =${short(analysis.injuries.app.map(i => [i.id, i.injury && i.injury.type, i.retireType || null]), 200)}`);
         if (opts.report || opts.verbose) {

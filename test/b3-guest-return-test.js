@@ -105,7 +105,7 @@ function runB3Show({ repIndex = 0, challengerExtra = {} } = {}) {
   let guestPost = null;
   const fin = Engine.show.finalize(begun.state, validMatches, results, {
     roster: begun.roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: G,
-    logStyle: 'structured', mqPath: 'App._finalizeShowImpl', rivalryBeforeTitles: true, intruderId: null,
+    logStyle: 'structured', mqPath: 'App._finalizeShowImpl', rivalryBeforeTitles: true, intrusion: null,
     f08AttendanceMark: true, nextMatchBuffCard: G.showCard || [], markDomeSellout: true, crossOrgRelationshipContext: true,
     resolveUnifiedTitle: false, dict: WM_I18N.t,
     hooks: {

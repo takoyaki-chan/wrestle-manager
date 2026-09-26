@@ -52,7 +52,9 @@ const showState = (() => {
 section('3-1: executeShow は beginShow → 試合のシミュレーション → Engine.show.finalize を呼ぶだけ', () => {
   const mgmt = readSource('src', 'management.js');
   const exe = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('\n  },\n', mgmt.indexOf('  executeShow(state) {')));
-  assert.ok(/const begun = Engine\.show\.beginShow\(repaired, validMatches\);/.test(exe), 'executeShow が Engine.show.beginShow を呼んでいない');
+  assert.ok(/const begun = Engine\.show\.beginShow\(intrusionOut\.state, validMatches\);/.test(exe), 'executeShow が Engine.show.beginShow を呼んでいない');
+  // 第4段 4-A(K1-A14): 乱入の判定と差し替えは試合のシミュレーションの前(実プレイの App.executeShow と同じ関数)
+  assert.ok(/const intrusionOut = Engine\.show\.rollIntrusion\(repaired, validMatches\);/.test(exe), 'executeShow が Engine.show.rollIntrusion を呼んでいない');
   assert.ok(/const fin = Engine\.show\.finalize\(s, validMatches, rawResults, \{/.test(exe), 'executeShow が Engine.show.finalize を呼んでいない');
   // 試合後の処理を executeShow の中に書き直していない(finalize の中にだけある)
   ['Engine.mq.finalize(', 'Engine.mq.updateRecord(', 'Engine.attendanceV2.calcAttendanceV2(', 'Engine.applyShowPopularity(',
@@ -80,7 +82,7 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
   assert.ok(/const begun = Engine\.show\.beginShow\(G, validMatches\);/.test(impl), '_finalizeShowImpl が Engine.show.beginShow を呼んでいない');
   assert.ok(/const fin = Engine\.show\.finalize\(begun\.state, validMatches, results, \{/.test(impl), '_finalizeShowImpl が Engine.show.finalize を呼んでいない');
   // 経路ごとの違い(第4段 4-A・第5段で寄せるまで残す指定)
-  ["logStyle: 'structured'", "mqPath: 'App._finalizeShowImpl'", 'rivalryBeforeTitles: true', 'f08AttendanceMark: true',
+  ["logStyle: 'structured'", "mqPath: 'App._finalizeShowImpl'", 'intrusion: App._intrusionData || null', 'rivalryBeforeTitles: true', 'f08AttendanceMark: true',
     'markDomeSellout: true', 'crossOrgRelationshipContext: true', 'resolveUnifiedTitle: false',
     'dict: WM_I18N.t', 'preShowState: G'].forEach(opt => {
     assert.ok(impl.includes(opt), `_finalizeShowImpl が ${opt} を渡していない`);

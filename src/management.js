@@ -16596,6 +16596,95 @@ const Engine = {
       return { state: s, events, presentations };
     },
 
+    // 王座戦への乱入の判定と差し替え(K-1 第4段 4-A / K1-A14。v1.2。以前は実プレイの App.executeShow だけにあった)。
+    // 防衛3回以上の王者の王座戦に、隣の順位の団体の上位選手が乱入して挑戦者と入れ替わる(Engine.intrusion.check。乱数 8888)。
+    // 試合のシミュレーションの前に呼ぶ。乱入者は isIntrusion の印をつけてロスターに一時的に入れ、カード(state.showCard)と
+    // validMatches の同じ王座戦(統一王座戦は除く)の挑戦者の側を乱入者に差し替える(入力は書き換えない。以前の実プレイは
+    // validMatches の isTitle の試合をすべてその場で書き換えていて、同じ興行に統一王座戦や奪還挑戦があると、その試合の
+    // 同じ側まで乱入者にしていた)。
+    // 戻り値: { state, validMatches, intrusion }(乱入なしなら intrusion は null で入力をそのまま返す)。intrusion は
+    // { intruder, fromOrgName, champName, champId, originalChallengerId, challengerSide }(finalize の ctx.intrusion と
+    // 実プレイの結果画面の乱入のポップアップが読む)
+    rollIntrusion(state, validMatches) {
+      const intrusionRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 8888));
+      const intrusion = Engine.intrusion.check(state, intrusionRng);
+      if (!intrusion) return { state, validMatches, intrusion: null };
+      const card = state.showCard || [];
+      const titleIdx = card.findIndex(m => m.isTitle && !m._unifiedTitleMatch && m.left > 0 && m.right > 0);
+      if (titleIdx < 0) return { state, validMatches, intrusion: null };
+      const tm = card[titleIdx];
+      const challengerSide = tm.left === intrusion.champId ? 'right' : 'left';
+      const originalChallengerId = tm[challengerSide];
+      const intruderId = intrusion.intruder.id;
+      const newCard = card.map((m, i) => (i === titleIdx ? { ...m, [challengerSide]: intruderId } : m));
+      // validMatches の中の同じ枠(同じ王座戦の2人)だけを差し替える
+      const newValidMatches = validMatches.map(m => ((m.isTitle && !m._unifiedTitleMatch && m.left === tm.left && m.right === tm.right)
+        ? { ...m, [challengerSide]: intruderId } : m));
+      return {
+        state: { ...state, showCard: newCard, roster: [...(state.roster || []), { ...intrusion.intruder, isIntrusion: true }] },
+        validMatches: newValidMatches,
+        intrusion: {
+          intruder: intrusion.intruder,
+          fromOrgName: intrusion.fromOrgName,
+          champName: intrusion.champName,
+          champId: intrusion.champId,
+          originalChallengerId,
+          challengerSide,
+        },
+      };
+    },
+
+    // 乱入のあった王座戦の清算(K-1 第4段 4-A / K1-A14。以前は実プレイの hooks.afterTitles だけにあった)。王座戦の結果の
+    // 直後に呼ぶ。乱入者が王座を奪ったら王座は空位(熱 −3〜−6、Hot 以上なら追加 −1〜−2。乱数 8889)・対戦pt −、王者が
+    // 退けたら団体人気 +2・対戦pt +。王者と乱入者の因縁 +12〜18(0xBE6F)。乱入者を作業中のロスターから外し、乱入の
+    // クールダウン(lastIntrusionWeek)を記録する。戻り値: { state, roster, titles, logs }(logs は { type, data, text })
+    resolveIntrusion(state, roster, titles, intrusion) {
+      let s = state;
+      let out = roster;
+      let outTitles = titles;
+      const logs = [];
+      const intruderId = intrusion.intruder.id;
+      const pt = (typeof BATTLE_POINT_CFG !== 'undefined' && BATTLE_POINT_CFG) ? BATTLE_POINT_CFG.intrusion : 0;
+      const intruderWon = outTitles.world.championId === intruderId;
+      if (intruderWon) {
+        // v1.x修正: 振れ幅再設計 — 基本 -3〜-6、現在Hot/On Fire(hs≥6)帯では追加 -1〜-2。On Fire→ギリWarm までで止める
+        const intRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 8889));
+        const basePenalty = -(3 + Engine.rng.int(intRng, 0, 3));
+        const hotExtra = (s.heatScore || 0) >= 6 ? -(1 + Engine.rng.int(intRng, 0, 1)) : 0;
+        const penalty = basePenalty + hotExtra;
+        outTitles = { ...outTitles, world: { ...outTitles.world, championId: null, defenses: 0 } };
+        s = { ...s, heatScore: Engine.util.clamp(Math.round(((s.heatScore ?? 0) + penalty) * 10) / 10, -10, 10) };
+        const bp = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+        bp.player = (bp.player || 0) - pt;
+        s = { ...s, battlePoints: bp };
+        logs.push({ type: 'intrusion_title_taken',
+          data: { fromOrgName: intrusion.fromOrgName, intruderName: intrusion.intruder.name, penalty, intrusionPt: pt },
+          text: `😱 ${intrusion.fromOrgName}の${intrusion.intruder.name}に王座を奪われた！ 王座は空位に… ヒート${penalty}、対戦pt-${pt}` });
+      } else {
+        // チャンピオン勝利 → 団体人気+2
+        s = { ...s, orgPop: Math.min(100, (s.orgPop || 0) + 2) };
+        const bp = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
+        bp.player = (bp.player || 0) + pt;
+        s = { ...s, battlePoints: bp };
+        logs.push({ type: 'intrusion_champion_defended',
+          data: { champName: intrusion.champName, intruderName: intrusion.intruder.name, intrusionPt: pt },
+          text: `👑 ${intrusion.champName}が乱入者${intrusion.intruder.name}を退けた！ 団体人気+2、対戦pt+${pt}` });
+      }
+      // §4.2: 乱入 rivalry +12〜+18(チャンピオン↔乱入者)。関係値を反映した状態には作業中のロスターが載る(以前と同じ)
+      if (s.relationships) {
+        const intRivalRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xBE6F));
+        const champId = intrusion.champId || (intruderWon ? null : outTitles.world?.championId);
+        if (champId && champId !== intruderId) {
+          s = Engine.relationships.applyToRoster({ ...s, roster: out }, intruderId, [champId], { min: 0, max: 0 }, { min: 12, max: 18 }, intRivalRng);
+          s = Engine.relationships.applyToRoster({ ...s, roster: out }, champId, [intruderId], { min: 0, max: 0 }, { min: 12, max: 18 }, intRivalRng);
+        }
+      }
+      // 乱入選手をrosterから除去・乱入のクールダウン計算用の週
+      out = out.filter(c => !c.isIntrusion);
+      s = { ...s, lastIntrusionWeek: Engine.util.absWeek(s.season, s.week) };
+      return { state: s, roster: out, titles: outTitles, logs };
+    },
+
     // 季節の統計(seasonStats)に通常興行1回分を足す(K-1 第2段 / K1-A03。以前は実プレイの _finalizeShowImpl だけにあった)。
     // 興行数+1、決着のついた試合数(wins)・引き分け(draws)、季の最高評価(bestMQ)とその試合の顔合わせ(bestMQMatch。
     // タッグは「A & B vs C & D」)。表彰のベストマッチ賞(Engine.awards.selectBestMatch)・季の振り返り・序章の節目が読む。
@@ -17252,7 +17341,7 @@ const Engine = {
           if (!champId || winnerId !== champId) {
             const crown = Engine.title.crownChampion(tempState, winnerId); titles = crown.titles; roster = crown.roster; events.push(crown.msg);
             // 王座移動を新聞へ(2026-07-27)。乱入者が奪った王座はすぐ空位にするので「新王者」の記事は出さない
-            const intruderTook = ctx.intruderId != null && winnerId === ctx.intruderId;
+            const intruderTook = ctx.intrusion != null && winnerId === ctx.intrusion.intruder.id;
             if (crown.newsEvent && !intruderTook) s = Engine.industryNews.push(s, crown.newsEvent);
             titleMatchOutcomes.push({ outcome: 'change', newChampId: winnerId, prevChampId: champId, challengerId });
           } else {
@@ -17261,6 +17350,15 @@ const Engine = {
           }
         }
       });
+      // 王座戦への乱入の清算(K-1 第4段 4-A / K1-A14。以前は実プレイの hooks.afterTitles の先頭)。ctx.intrusion は
+      // Engine.show.rollIntrusion の intrusion(エンジンは executeShow、実プレイは App.executeShow で試合の前に判定する)
+      if (ctx.intrusion) {
+        const ir = Engine.show.resolveIntrusion(s, roster, titles, ctx.intrusion);
+        s = ir.state;
+        roster = ir.roster;
+        titles = ir.titles;
+        ir.logs.forEach(l => log(l.type, l.data, l.text));
+      }
       callHook('afterTitles');
 
       // 集客v2: matchAppeals→showDraw→attendance算出
@@ -18003,7 +18101,7 @@ const Engine = {
     const repaired = Engine.saveDoctor?.repairProgressionState
       ? Engine.saveDoctor.repairProgressionState(state).state
       : state;
-    const validMatches = (repaired.showCard || []).filter(m =>
+    let validMatches = (repaired.showCard || []).filter(m =>
       m.matchType === 'tag'
         ? (m.teamA?.fighter1 > 0 && m.teamA?.fighter2 > 0 && m.teamB?.fighter1 > 0 && m.teamB?.fighter2 > 0)
         : (m.left > 0 && m.right > 0)
@@ -18028,8 +18126,13 @@ const Engine = {
       }
     }
 
+    // 王座戦への乱入の判定と差し替え(K-1 第4段 4-A / K1-A14。実プレイの App.executeShow と同じ Engine.show.rollIntrusion)
+    const intrusionOut = Engine.show.rollIntrusion(repaired, validMatches);
+    const intrusion = intrusionOut.intrusion;
+    if (intrusion) validMatches = intrusionOut.validMatches;
+
     // K-1 第3段: 興行の開始(興行数・weekPhase・休養願いの解除・F02① の火種)は実プレイと同じ Engine.show.beginShow
-    const begun = Engine.show.beginShow(repaired, validMatches);
+    const begun = Engine.show.beginShow(intrusionOut.state, validMatches);
     const s = begun.state;
     let roster = begun.roster;
     const rivalries = { ...s.rivalries };
@@ -18082,7 +18185,7 @@ const Engine = {
     // K-1 第3段 3-1: 試合後の処理は実プレイ(App._finalizeShowImpl)と同じ Engine.show.finalize を通す
     // (エンジンは経路ごとの違いの指定を何も渡さない=従来どおりの処理)
     const fin = Engine.show.finalize(s, validMatches, rawResults, {
-      roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: state,
+      roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: state, intrusion,
     });
     return { state: fin.state, results: fin.results, injuryResults: fin.injuryResults, events: fin.events, showRivalryResolutions: fin.showRivalryResolutions, presentations: fin.presentations, fp: fin.fp, venueHeat: fin.venueHeat, pressureFactor: fin.pressureFactor };
   },

@@ -36,27 +36,15 @@
 
 module.exports = [
   // ════════════════ シナリオ限定(特定の状況でだけ出る差) ════════════════
+  // K1-A14(王座戦への乱入が実プレイだけ)と、その tickWeek 後の受け皿 K1-A14B は K-1 第4段 4-A で解消したので外した
+  // (2026-09-26)。両経路が試合の前に Engine.show.rollIntrusion(乱数 8888)で判定・差し替えし、Engine.show.finalize が
+  // ctx.intrusion を Engine.show.resolveIntrusion で清算する。
   {
-    id: 'K1-A14', title: '王座戦への乱入(他団体選手への差し替え・熱/人気/バトルポイント・乱入CD)',
-    category: 'processing', side: 'app', impact: '数値', scenarios: ['intrusion'], checkpoints: ['A'],
-    patterns: [
-      'lastShowResults[*].**', 'h2h.*', 'h2h.*.**', 'rivalries.*', 'rivalries.*.*', 'battlePoints.player',
-      'lastIntrusionWeek', 'showCard[*].right', 'matchupLog', 'lastShowAttendance', 'orgPop',
-      '_rivalryResolvedThisWeek', 'n01CooldownWeeks.*', 'n06CooldownWeeks.*', 'roster[*].careerRecord.history[*].*',
-      'relationships.*', 'relationships.*.*', 'relationshipCounters.*', 'roster[*].*', 'roster[*].*.*', '_modalQueue',
-      // 2026-09-26 追加(fixture の更新で乱入者が王座を奪う結果になった): 王座・興行評価・熱
-      'titles.world.*', 'lastShowRating.*', 'heatScore',
-      // K-1 第2段: 季節の統計(K1-A03)と興行結果の新聞データ(K1-A04)を両経路が同じ関数で作るようになり、
-      // 乱入で別物になった試合結果がそのまま写る(季の最高評価・新聞の見出しと中身)
-      'seasonStats.*', 'currentNewspaper',
-    ],
-    mustAppear: true, refs: 'app.js:7004-7047(判定・差し替え), 7845-7890(結果処理) / エンジン側なし',
-    note: '乱入は App.executeShow の中でだけ判定される。王座戦の対戦相手そのものが変わるので、この興行の結果は全面的に別物になる。',
-  },
-  {
-    id: 'K1-A14B', title: '乱入シナリオの tickWeek 後(対戦相手が違うので全面的に別物)',
-    category: 'propagation', side: 'app', impact: '数値', scenarios: ['intrusion'], checkpoints: ['B'],
-    patterns: ['**'], mustAppear: false, refs: 'K1-A14 の波及',
+    id: 'K1-X15', title: '因縁の記録の時期(ctx.rivalryBeforeTitles。実プレイは王座戦・乱入の前に記録し、ロスターにいる乱入者のライバル体質が効く)',
+    category: 'formula', side: 'app', impact: '数値', scenarios: ['intrusion'], checkpoints: ['A', 'B'],
+    patterns: ['rivalries.*.matches', 'currentNewspaper', 'weeklyNewspaper'],
+    mustAppear: false, refs: 'management.js Engine.show.finalize(ctx.rivalryBeforeTitles)',
+    note: 'K1-A14(乱入)をそろえて見えた。第4段 4-A の ctx の統一でエンジンも王座戦の前に記録するようにして消す。',
   },
   // K1-E03(怪我による引退の処理一式が実プレイに無い)は K-1 第4段 4-B-6 で解消したので外した(2026-09-26)。
   // 両経路が Engine.show.resolveMatchInjury / applyInjuryRetirementAftermath / buildInjuryRetirementPresentations を通す。

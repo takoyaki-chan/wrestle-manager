@@ -148,7 +148,7 @@
     for (const seed of seeds) {
       tried++;
       if (criteria.intrusion) {
-        // 乱入は実プレイ経路(App.executeShow)だけが判定する。App と同じ乱数ストリームで
+        // 乱入は両経路が Engine.show.rollIntrusion で判定する(第4段 4-A。以前は実プレイの App.executeShow だけ)。同じ乱数ストリームで
         // Engine.intrusion.check を呼び、乱入が起きるシードを探す(判定関数そのものは純関数)
         const s = { ...clone(base), rngSeed: seed };
         const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 8888));
