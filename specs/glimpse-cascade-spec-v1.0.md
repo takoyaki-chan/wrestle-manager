@@ -24,10 +24,12 @@
 | 関係の小さな揺れ | 週次ティッカー(trustWarning 等・既存のまま) |
 | 退団を考えているという噂(danger) | **週次レポートに1行**「💬 {name}が退団を考えているという噂がある」(tickWeek、社長の実務情報として) |
 | 退団を決めかけているという噂(danger。信頼15を割った週。2026-09-26 第4回裁定8) | 20の噂と同じ: **週次レポートに1行**「💬 {name}が退団を決めかけているという噂がある」+道場の確定枠。20と同じ週に両方をまたいだら15の1回にまとめる。レポート行は `{ type: 'trust_departure_rumor', data: { name, variant } }`(GAMELOG_TEMPLATES。英訳つき) |
+| 噂の原因(2026-09-26 退団寸前の引き留め。`trust-system-spec-v2.1.md` §17) | 噂の glimpse に `cause` が付き、レポート行の data に `cause`(stage/bonds/air/pay/title のときだけ)→ 文の後ろに原因の一節。20の噂の本人の一言は原因が出番・人間関係なら原因の表から |
+| 応えてもらえた一言(2026-09-26 同上。出番の手当てが成立した週) | A層 `last_warning_answered`(tone positive・`milestone: true`)→ 道場の確定枠。セリフの表(`LAST_WARNING_ANSWERED_LINES`)で引けるときだけ出す。レポート行は無し |
 | いつでも確認 | データベースの相関図(既存のまま) |
 
 実装: `_isGlimpseTier1` が常に false → 全 Glimpse が Tier2 として weekLogFeed へ。
-確定枠は `_renderRosterDojoHeader` の rest picker。レポート行は tickWeek の A層生成直後。
+確定枠は `_renderRosterDojoHeader` の rest picker(A層の gold/danger 級と `milestone: true`)。レポート行は tickWeek の A層生成直後。
 旧表示経路(showGlimpseCascade / showGlimpseAModal / .gc-* CSS / #glimpseCascadeOverlay)は
 呼ばれないまま残置 — 撤去は別途クリーンアップタスクで行う(安全網テストの追随が要るため)。
 
