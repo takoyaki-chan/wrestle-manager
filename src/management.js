@@ -25081,7 +25081,7 @@ Engine.trust = {
       fighter: {
         ...fighter,
         trustStrain: nextStrain,
-        lastWarning: { ...lw, answered: true, answeredBy: by, answeredWeek: absWeek, relief: Math.round(relief * 10000) / 10000 },
+        lastWarning: { ...lw, answered: true, answeredBy: by, answeredWeek: absWeek, relief },
       },
       relief,
       answered: true,

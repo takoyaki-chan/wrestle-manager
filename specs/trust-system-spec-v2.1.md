@@ -45,6 +45,8 @@
 | `noAppearStreak` | int | 連続不出場回数（出場でリセット） |
 | `lastTitleShowWeek` | int | 最後にタイトル戦に出場した週 |
 | `trustCap` | `{value, expiresWeek}` | S4イベント後の一時的な上限 |
+| `trustStrain` | `{stage, pay, title, bonds, air, promise, faction, other}` | 退団寸前の引き留めの「原因の帳簿」(§17。自団体の選手だけ。無い=古いセーブ=空) |
+| `lastWarning` | `{cause, week, answered, answeredBy?, answeredWeek?, relief?}` | 退団の噂の状態(§17。噂が出た週に付き、信頼30で外れる) |
 
 ---
 
@@ -137,8 +139,9 @@ recoveryMult(trust) = trust >= 40 ? 1.0 : 0.35 + (trust / 40) × 0.65
 
 ### §5.3 適用範囲
 
-- **適用する**: 出場ベース値（+1.53）、舞台ボーナス（§3）
-- **適用しない**: ケアアクション（§6）— ケアは低帯から引き上げるための手段
+- **適用する**: 出場ベース値（+1.53）
+- **適用しない**: 舞台ボーナス（§3。実装は出場ベース値にだけ掛けている）、ケアアクション（§6）— ケアは低帯から引き上げるための手段
+- **外れる**: 退団の噂のあと原因に応えてもらえた選手(§17。`lastWarning.answered` のまま信頼30に戻るまで)
 
 ---
 
@@ -167,7 +170,7 @@ careOvrMult = 0.7 + (100 - OVR) / 100 × 0.9
 | コスチューム新調 | 80 | +5.36 | 個人への特別扱い |
 | 専属トレーナー | 160 | +5.97 | 最高コスト |
 | メディア露出 | 120 | +5.36 | 人気上昇効果もあり |
-| 声かけ | 0 | +0.77 | 無料だが効果小 |
+| 声かけ | 0 | +0.77 | 無料だが効果小。信頼25未満は帯の倍率(20以下 ×0.25。§17-1) |
 | リフレッシュ休暇 | 100 | +5.36 | 練習スキップあり |
 | 打ち上げ・慰労会 | 15/人 | +1.84/人 | 全体向け |
 | 合宿 | 40/人 | +1.84/人 | 成長ボーナスあり |
@@ -371,6 +374,7 @@ Bond/Rivalryシステム（relationship-system-spec参照）からの信頼変�
 - **ログ(2026-09-26 総点検 第4回裁定7)**: 実プレイの `_finalizeShowImpl` がログのタブに1行 `{ type: 'sudden_departure', data: { name, variant: 'org'|'free', orgName } }` を積む。文は `GAMELOG_TEMPLATES.sudden_departure`(「🚪 ○○が突然退団し、△△へ移籍した」/「🚪 ○○が突然退団し、フリーとなった」。英訳つき)。分類はイベント
 - **前兆(社長に見えるもの)**: 信頼40未満で所属タブのロスターカードと選手ポップアップに「💭よそよそしい」、選手ポップアップの「💬 声をかけに行く」がオレンジで脈打つ。信頼20を割った週に「退団を考えているという噂」(ログ1行+道場「休憩中の選手」の確定枠で本人の吹き出し。Glimpse A `trust_below_20`・確率100%・12週クールダウン・30を超えると再武装)。auto-sim 40季×2シードで信頼15未満に落ちた8人全員に、15未満になる1〜7週前に噂が出ていた
 - **臨界帯の前兆(2026-09-26 総点検 第4回裁定8)**: 信頼15を割った週(=突然の退団の判定が始まる帯に入った週)に「退団を決めかけているという噂」をもう一度出す。出し方は20の噂と同じ(ログ1行「💬 ○○が退団を決めかけているという噂がある」+道場の確定枠で本人の一言。一言はアーキタイプ第一×性格第二で実在の34セルを書き分けた `GLIMPSE_A_LINES.trust_below_15`)。Glimpse A `trust_below_15`・確率100%・12週クールダウン・25を超えると再武装。20と同じ週に両方をまたいだら15の噂1回にまとめる(20の発火の記録は残す)。率の抽選をせず、一言も専用の種で選ぶので、既存の噂・垣間見えの乱数の並び(共有の rng・Math.random)は変わらない。ログは両方とも `{ type: 'trust_departure_rumor', data: { name, variant: 'below20'|'below15' } }`(below20 は以前の文字列ログと同じ文。英訳つき)
+- **噂の原因(2026-09-26 退団寸前の引き留め §17)**: 噂には帳簿が選んだ「においわせる原因」が付く。ログは `data.cause`(stage/bonds/air/pay/title)を足し、文の後ろに原因の一節(§17-4)。原因がはっきりしない・約束・派閥と、cause の無い古いログは上の文のまま。選手ポップアップの声かけ欄は、噂の状態(`lastWarning`)が付いていて信頼20未満のとき理由を「退団の噂が耳に入っている。」にする(ボタン・色・脈打ちは同じ)
 
 ---
 
@@ -387,6 +391,13 @@ Bond/Rivalryシステム（relationship-system-spec参照）からの信頼変�
 9. 自然減衰加算（§8）
 10. trustCap適用（§13.2）
 11. clamp(0, 100)
+
+自団体の通常興行(`processSettlement` が `opts.ledger` を立てて呼ぶ)だけ、§17 の帳簿と手当てが加わる:
+0. 入口で帳簿 `trustStrain` を ×0.8(怪我中・休暇中の選手も)
+1'. 出場した噂の状態の選手は、ここで出番(王座戦なら王座)の手当ての成立を判定し、成立・成立済みなら 3. の recoveryMult を掛けない
+9'. この興行の減り(不出場・G1〜G4・R1/R2/R5・低MQ・自然減・維持コスト・士気の侵食)に帯の感度(§8 の後に掛かる trustSensitivity)を掛けて帳簿へ積む
+10'. 手当てが成立した分(帳簿のその原因の分 ×0.5)を、帯の感度を掛けた後の値にそのまま足す(trustCap の前)
+AI 団体の呼び出しは何も変わらない(帳簿を持たない)。
 
 ---
 
@@ -410,5 +421,92 @@ trust 40 → 割引0%、trust 100 → 割引8%（線形補間）。契約交渉�
 | 手がかり | 表情、態度、行動、噂、コーチ報告、会話で状態変化を示し、プレイヤーに推測させる |
 | 内部記録 | 判定・契約・イベント発火用には精度を保ったまま記録する |
 | 選手間関係との区別 | Bond/Rivalry は「相手との関係」「因縁」として数値表示可。所属団体への trust とは混同しない |
+
+---
+
+## §17 退団寸前の引き留め(2026-09-26 実装)
+
+設計: `docs/care-last-warning-design-v0.1.md`(Keisuke 承認 = §9 の10問すべて「おすすめ」。Q6 給与の猶予は付けない・Q8 セリフは標準204本)。
+数値はすべて `CARE_LAST_WARNING`(data.js)。仕組みは `Engine.trust` の `encourageBandMult / addStrain / decayStrain / pickWarningCause / isWarningLive / consumeWarningAnswer / answerWarning / lastWarningLinePool`。
+**画面に数値・原因の名前・倍率は出さない**(原因は噂のログの一節と本人の言葉だけで伝わる)。新しいボタンは作らない(手当てはすべて既存の手)。AI 団体は触らない。
+
+### §17-1 A: 言葉だけでは届かない帯
+
+声かけ(`execute('encourage')`)と S4「励ましの言葉」の信頼の伸びに、**声をかける前の信頼 t** で決まる倍率 m(t) を掛ける。
+
+| 信頼 | m(t) 🔧 |
+|---|---|
+| 25以上(`encourageHi`) | ×1(掛けない。1ビットも変えない) |
+| 20〜25 | 0.25 + 0.75 × s((t−20)/5)、s(x)=x²(3−2x) |
+| 20以下(`encourageLo`) | ×0.25(`encourageFloor`) |
+
+- スランプ・モチベ喪失の回復促進、本人→全員の絆 +1〜2、決裁枠0・資金0・週1回は帯の中でも変えない
+- 信頼20未満の声かけは反応の鍵が `encourage_last_warning`(本人が原因を口にする表。§17-5)。結果モーダルの地の文は「話は最後まで聞いてくれた。けれど、表情は硬いままだ」、「本人の様子(和らいだ等)」の行は出さない。20〜25 の坂の中は今の反応のまま
+- AI 団体の S4(`applyChoiceEffect(..., { ai: true })`)には掛けない
+
+### §17-2 B: 原因の帳簿(trustStrain)
+
+信頼を減らした力を原因のまとまり別に積む(帯の感度を掛けた後の実数)。**自団体の通常興行の信頼更新のたびに全まとまりを ×0.8(`strainDecay`)にしてから、その興行の減りを足す**。増えた分は引かない。
+
+| まとまり | 積む減り | 積む場所 |
+|---|---|---|
+| 出番 `stage` | 不出場・G4 | applyShowTrust |
+| 給与 `pay` | G1・G2・契約更改で下がった分 | applyShowTrust / contract.resolveNegotiation |
+| 王座 `title` | G3 | applyShowTrust |
+| 人間関係 `bonds` | R1・R2・R5・週次の関係の出来事・仲の良い選手の退団 | applyShowTrust / relationships.processWeeklyStoryEvents / applyDepartureTrustImpact |
+| 空気 `air` | 士気45未満の侵食 | applyShowTrust |
+| 約束 `promise` | 起用約束の破約 | shachoshitsu.settlePledge |
+| 派閥 `faction` | 派閥の出来事 | factions._applyTrustToMembers / processWeeklyMemberChanges |
+| その他 `other` | 自然減(メンタル)・高帯の維持コスト・低MQの不満 | applyShowTrust |
+
+- G1〜G4 はリーダー気質・コーチの軽減を掛けた後の値を、立ったフラグの素点(0.4/0.6/0.5/0.35)で按分する
+- イベント(S/E/B 系)の減りは積まない(原因の選択の分母に入らない。計測で全体の1%未満)
+- AI 団体の退団の波及は積まない(`applyDepartureTrustImpact(..., { ledger: false })`)。団体を移った選手は帳簿と噂の状態を持ち越さない(`Engine.orgTimeline.transfer` で消す)
+- 値は丸めない(信頼と同じ内部の実数)。薄まって 1e-6 以下になったまとまりは消す。validateGameState が「0以上の有限値・決まったまとまりの名前だけ」を毎週確かめる
+
+### §17-3 噂の原因と噂の状態(lastWarning)
+
+- 20割れ・15割れの噂(Glimpse A danger)が出た週に、帳簿で**その他を除いていちばん重いまとまり**を「においわせる原因」にする。それが帳簿全体の3割(`causeShare`)未満、帳簿が空(古いセーブ)なら `general`(はっきりしない)。同じ重さなら 出番→給与→王座→人間関係→空気→約束→派閥 の順
+- tickWeek が選手に `lastWarning = { cause, week, answered: false }` を付ける(20割れ・15割れのどちらかの噂が最初に出た週)。続いている間に次の噂が出たら、まだ応えていなければ原因をその時点の帳簿で選び直す(応えた後なら何もしない)
+- **信頼30(`clearAt`)に戻ったら外す**(tickWeek の毎週)
+
+### §17-4 原因に合った手当て
+
+噂の状態が生きている間(手当てを打つ前の信頼が30未満)に、原因に合った既存の手を打つと成立する。**帳簿のその原因の分 ×0.5(`relief`)がすぐ戻り(trustCap の内)、そのまとまりの帳簿は0に戻り、以後噂の状態が外れるまで出場時の recoveryMult が外れる**。応えられるのは噂1回につき1度。
+
+| 原因 | 成立する手 | 判定する場所 |
+|---|---|---|
+| 出番 | 通常興行のカードに入れる(どの試合でも。タッグも可。約束の形は問わない) | applyShowTrust(`answeredBy: 'card'`) |
+| 王座 | 王座戦に出す | applyShowTrust(`'titleMatch'`) |
+| 人間関係 | 慰労会(本人が出席)/ 関係修復斡旋の成功(本人が当事者) | execute party / relationship_repair(`'party'` / `'repair'`) |
+| 空気 | 慰労会 | execute party |
+| 給与 | ボーナス支給願を相場以上(r ≥ 0.8)/ 契約更改で昇給を受ける・引き留めに成功 / S4「待遇改善」 | execute bonus / resolveNegotiation / applyChoiceEffect S4(`'bonus'` / `'contract'` / `'s4'`) |
+| 約束・派閥・はっきりしない | 合う手は作らない | — |
+
+- その興行の試合で怪我をした噂の状態の選手も、カードに入れた手当ては成立する(興行の信頼の更新はしない既存の規則のまま、戻る分だけ足す)
+- 戻りの鈍りの解除は、その興行の信頼の更新の中で(0〜100 に丸める前に)効く。信頼0の選手の差し引きが負なら0のまま
+- 合わない有料の手当ては今の効き目のまま(上乗せが無いだけ)。給与の猶予(G1/G2 を止める)は付けない(Q6)
+- 戻る量は帳簿のその原因の分の半分を超えない。外し続けてから入れ直すと得をする抜け道は無い(外した分の半分しか戻らない)
+- `lastWarning` に `answered: true, answeredBy, answeredWeek, relief` を残す(計測・応えてもらえた一言の判定用。画面には出さない)
+
+### §17-5 見せ方(ログの一節・セリフの器)
+
+- **噂のログの一節**(`GAMELOG_TEMPLATES.trust_departure_rumor` の `{variant}_{cause}`。英訳つき): 出番「出番のない興行が続いている」(20)/「控室で出番表を見ていたという」(15)、人間関係「控室で浮いているらしい」(20)/「控室で誰とも口をきいていないという」(15)、空気「団体の空気に嫌気がさしているらしい」、給与「同じ格の選手との待遇の差を気にしているらしい」、王座「ベルトに挑む機会が回ってこないことに焦れているらしい」
+- **セリフの器**(data.js。形はどれも 原因 → アーキタイプ → 性格 → [セリフ]。実在34セル×各1本の想定。本文は下書きの承認後に流し込む):
+
+| 表 | 原因のキー | 使う場所 | 引けないとき |
+|---|---|---|---|
+| `LAST_WARNING_RUMOR_LINES` | stage / bonds | 20割れの噂の本人の一言(道場の確定枠) | 今の `GLIMPSE_A_LINES.trust_below_20` |
+| `LAST_WARNING_ENCOURAGE_LINES` | stage / bonds / general(給与・王座・空気・約束・派閥も general) | 信頼20未満の声かけの反応(`encourage_last_warning`) | 今の `CARE_REACTION_DIALOGUES.encourage` |
+| `LAST_WARNING_ANSWERED_LINES` | stage | 出番の手当てが成立した週に Glimpse A `last_warning_answered`(tone positive・`milestone: true`)→ 道場「休憩中の選手」の確定枠 | 出さない |
+
+- 引き方は `Engine.trust.lastWarningLinePool(kind, cause, fighter)`: セル → 同じアーキタイプの normal → null。**別の口調のセリフには落ちない**。道場の一言・応えてもらえた一言の文選びは Math.random・共有の乱数の引く回数を変えない(原因の表は同じ引き方、応えてもらえた一言は専用の種)
+- 15割れの一言(`trust_below_15`)は原因を問わずそのまま
+
+### §17-6 計測(auto-sim --remedy)
+
+- `node test/auto-sim.js <季> <seed> --remedy [--remedy-until=25]`: 噂の状態の選手に、自動プレイヤーが原因に合った既存の手を打つ(出番 → 次の通常興行のカードの後ろの方に必ず入れる / 人間関係・空気 → 慰労会 / それ以外 → ボーナス基準額×1.0)。決定論(乱数を引かない)。`--care` の動きと較正は変えない。出力の `[退団寸前]` 行に噂の状態・応えた回の件数(--remedy でなくても出る)
+- 大ロスター・格順の計測は `WM_FACTION_FIXTURE=1 node test/care-last-warning-probe.js 40 <seed> --book=merit [--remedy] [--enc=danger]`(本体実装後は --lw/--bmech は無視され、--remedy は auto-sim に渡る)
+- 不変条件の検算結果は `docs/worklog.md`(2026-09-26 退団寸前の引き留め)
 
 <!-- 再同期: 2026-04-06, 指示書: docs/specs-resync-instruction.md -->
