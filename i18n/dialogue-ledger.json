@@ -11317,6 +11317,20 @@
     }
   },
   {
+    "key": "……ありがと。……でも、控室の顔ぶれは、明日も同じ",
+    "en": "...Thanks. ...But tomorrow, the same faces will be in that locker room.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……ありがとう",
     "en": "...Thanks, everyone.",
     "files": [
@@ -11523,6 +11537,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "……ありがとう。でも、こうして話せる相手が社長しかいないってのが、今の私なんだよ",
+    "en": "...Thanks. But the fact that you're the only one I can talk to like this — that's where I am now.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "normal"
     }
   },
@@ -12418,6 +12446,20 @@
     }
   },
   {
+    "key": "……うん、聞いた。……でも、試合がなかったら、結果の出しようもないよ？",
+    "en": "...Mm, I heard you. ...But how do I get results without matches?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……うん、良かった",
     "en": "...Mm. That was good.",
     "files": [
@@ -13180,6 +13222,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "……お気持ちは、確かに。ただ、次の出番が決まるまでは、どうお返事したものか、決められません",
+    "en": "...I understand your intentions. But until my next match is set, I don't know how to answer you.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
     }
   },
   {
@@ -17122,6 +17178,20 @@
     }
   },
   {
+    "key": "……そっか。……話だけなら、前と同じだよ？",
+    "en": "...I see. ...Just talk, and nothing's any different, right?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……そっすか。……体は正直っすもんね。",
     "en": "...Right. ...The body doesn't lie, does it.",
     "files": [
@@ -19518,6 +19588,20 @@
     }
   },
   {
+    "key": "……ふふ。……ここでは、私の隣だけ空いてるの",
+    "en": "...Hehe. ...Around here, the seat next to me is always empty.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……ふふ。予想通りですわ。{rivalry}ごきげんよう、社長。",
     "en": "...My. Precisely as I expected.{rivalry} Good day to you, President.",
     "files": [
@@ -19536,6 +19620,20 @@
     "en": "...Mm. What falls, falls. ...That is all it is.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……ふふ。言葉だけ？",
+    "en": "...Hehe. Only words?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -20351,6 +20449,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "……まだ、足りない",
+    "en": "...Not enough. Not yet.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
     }
   },
   {
@@ -21717,6 +21829,20 @@
     }
   },
   {
+    "key": "……ようやく、計算が合ってきた",
+    "en": "...Things are finally adding up.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……ようやくか",
     "en": "...About time.",
     "files": [
@@ -21889,6 +22015,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent"
+    }
+  },
+  {
+    "key": "……わかったわ。でも、話し合いで済むことなら、とうに済んでいるもの",
+    "en": "...I understand. But if talking could settle this, it would have been settled long ago.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
     }
   },
   {
@@ -22333,6 +22473,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "……リングは、いい",
+    "en": "...The ring's good.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
     }
   },
   {
@@ -23570,6 +23724,20 @@
     }
   },
   {
+    "key": "……今週も、なし",
+    "en": "...Nothing again this week.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……仕方ありませんね。そこまでおっしゃるなら、もう少しだけお付き合いします。",
     "en": "...Well, there's no arguing. If you say that much, I'll stay on a while longer.",
     "files": [
@@ -24471,6 +24639,20 @@
     }
   },
   {
+    "key": "……出られた。……ちゃんと、応えたつもり。伝わった？",
+    "en": "...I got my match. ...I tried to live up to it. Did that come across?",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……出る",
     "en": "...I'll be there.",
     "files": [
@@ -24527,6 +24709,20 @@
     }
   },
   {
+    "key": "……出番、いただけましたね。考えていたことを、ようやく試せました",
+    "en": "...So I was given a match. I finally got to try out what I'd been thinking through.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……出番がない。ただそれだけが、重い",
     "en": "...No spot. That alone sits heavy.",
     "files": [
@@ -24552,6 +24748,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "……出番なし。……計算外ね",
+    "en": "...No match. ...That wasn't in my plans.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
     }
   },
   {
@@ -26669,6 +26879,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "……呼ばれない週が、続くね。……忘れられてる、ってことかな",
+    "en": "...Another week of not being called. ...Guess I've been forgotten.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
     }
   },
   {
@@ -29176,6 +29400,20 @@
     }
   },
   {
+    "key": "……承知しました。ですが、言葉で気持ちが動くところは、もう過ぎてしまいました",
+    "en": "...I understand. But I'm past the point where words can move me.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……承知しました。失礼いたしました。",
     "en": "...Understood. My apologies for asking.",
     "files": [
@@ -29464,6 +29702,62 @@
     "cell": {
       "archetype": "seductive",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "……控室。……居場所がない",
+    "en": "...Locker room. ...No place for me.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……控室では、話す相手を選ぶ必要もなくなりました。誰とも話さないので",
+    "en": "...I no longer need to choose who to talk with in the locker room. I don't talk with anyone.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……控室に戻れば、同じ",
+    "en": "...Back in the locker room, same as before.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……控室のことは、社長とお話ししても解決しません。そういう問題なんです",
+    "en": "...Our talk won't resolve things in the locker room. It's not that kind of problem.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
     }
   },
   {
@@ -29777,6 +30071,20 @@
     "hasPlaceholder": true,
     "hasProperNoun": false,
     "cell": null
+  },
+  {
+    "key": "……最後に試合をした日を、すぐには思い出せなくなっています",
+    "en": "...I can't recall the last time I wrestled without thinking hard.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
   },
   {
     "key": "……最後の一戦",
@@ -30464,6 +30772,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "……次のカード、楽しみにしてるわ",
+    "en": "...I'll be looking forward to the next card.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
     }
   },
   {
@@ -34496,6 +34818,20 @@
     }
   },
   {
+    "key": "……言葉より、試合",
+    "en": "...A match. Not words.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……託します",
     "en": "...I'm entrusting it to you.",
     "files": [
@@ -34655,6 +34991,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……話せて、よかった。……でも、控室じゃ、また黙ってるだけ",
+    "en": "...It was good to talk. ...Though in the locker room, I'll just go quiet again.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "quiet"
     }
   },
@@ -38099,6 +38449,20 @@
     "en": "...Um... I'm sorry... but... if it stays like this...",
     "files": [
       "data.js:CHOICE_EVENT_DIALOGUES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…あの…また、わたしの名前、なかったです…。練習、毎日してるのに……",
+    "en": "...Um... no name for me again... even though I practice every day...",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -44399,6 +44763,20 @@
     }
   },
   {
+    "key": "…お昼、いつも…ひとりで食べてます……。誘ってもらえるの、待ってるんですけど……",
+    "en": "...I always... eat lunch by myself... I keep waiting for someone to invite me...",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…お泣きにならないでください。みっともないですよ",
     "en": "...Please don't cry. It isn't a good look.",
     "files": [
@@ -45226,6 +45604,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "…ここでは、ずっと一人だ",
+    "en": "...Here, I'm always on my own.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
     }
   },
   {
@@ -55569,6 +55961,20 @@
     }
   },
   {
+    "key": "…は、はい…。でも…ごめんなさい…まだ、気持ちが…ついてこなくて……",
+    "en": "...Y-yes... But... I'm sorry... my heart just... isn't there yet...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…は、はい。…分かった。…ごめんなさい",
     "en": "...Y-yes. ...Understood. ...I'm sorry.",
     "files": [
@@ -56248,6 +56654,20 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": null
+  },
+  {
+    "key": "…はい、お話は…わかりました…。でも…わたし…まだ、ここに残るって…言えなくて……",
+    "en": "...Yes... I understand... But... I still can't say I'll stay...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
   },
   {
     "key": "…はい、すみません。",
@@ -57042,6 +57462,20 @@
     }
   },
   {
+    "key": "…ふーん。来てくれたのは、覚えとく。それだけ。",
+    "en": "...Hm. I'll remember you came. Nothing more.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…へえ、そういうことか。その気遣い、ありがたく乗らせてもらうよ。",
     "en": "...Huh, so that's the idea. I'll ride that kindness and be thankful.",
     "files": [
@@ -57766,6 +58200,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "…また名前なし。へぇ、そういうこと。",
+    "en": "...No name again. Huh. So that's how it is.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
     }
   },
   {
@@ -61316,6 +61764,20 @@
     }
   },
   {
+    "key": "…わ、わざわざ、すみません…。でも…出番、ほしいです…。このままじゃ、わたし……",
+    "en": "...S-sorry you had to come out here... But... I want a match... At this rate, I...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…わかった",
     "en": "...I hear you.",
     "files": [
@@ -61978,6 +62440,20 @@
     "en": "...I... I've pretty much decided... that I'm leaving...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…わたしの話、最後まで…聞いてもらえて…。でも…控室だと…声が、出なくなっちゃって……",
+    "en": "...You listened to me all the way through... But... in the locker room... my voice just won't come out...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -64680,6 +65156,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "…久しぶりにリングに立った。…悪くないかも。",
+    "en": "...Back in the ring for once. ...Not bad, I think.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
     }
   },
   {
@@ -73565,6 +74055,34 @@
     }
   },
   {
+    "key": "…控室、静かだわ。私がいる時だけ。",
+    "en": "...The locker room's quiet. Only when I'm in it.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…控室に入っても…どこに座ればいいのか、いつも迷います……。結局、隅っこです……",
+    "en": "...When I go into the locker room... I can never decide where to sit... I end up in the corner...",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…揉めたなら、リングで答えを出そうか。うちはそういう筋でやってきた。",
     "en": "...If it came to friction, let's get the answer in the ring. That's how we've always run things.",
     "files": [
@@ -75794,6 +76312,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "quiet"
+    }
+  },
+  {
+    "key": "…気にしてもらえるのは、うれしいです…。でも…試合がないと…わたし、何も見せられなくて……",
+    "en": "...It makes me happy that you worry about me... But... with no match... I have nothing to show you...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
     }
   },
   {
@@ -80706,6 +81238,20 @@
     }
   },
   {
+    "key": "…社長とは、お話しできるんです…。でも、控室のみんなとは…どうしても、うまく……",
+    "en": "...I can talk with you, at least... But with everyone in the locker room... I just can't seem to...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…社長に、ご迷惑をおかけしてしまいますわね。本当に、申し訳なく…",
     "en": "...I shall be causing you a great deal of trouble, President. I am truly sorry...",
     "files": [
@@ -83844,6 +84390,34 @@
     }
   },
   {
+    "key": "…試合、できました…。久しぶりすぎて、入場のとき…足が、ちょっと……。でも、うれしかったです……",
+    "en": "...I was in a match... It'd been so long my legs were wobbly on the way out... But I was really happy...",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…話すのは、社長となら平気。控室だと、そうはいかない。",
+    "en": "...Talking's easy with you. In the locker room, not so much.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…話にならない。断る",
     "en": "...There's nothing to discuss. No.",
     "files": [
@@ -83854,6 +84428,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…話はいいわ。次は、出られるの？",
+    "en": "...Skip the talk. Do I wrestle next time or not?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "quiet"
     }
   },
@@ -84975,6 +85563,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "quiet"
+    }
+  },
+  {
+    "key": "…貼り出されたカード…何回見ても、載ってなくて……。わ、わたし、何か…しちゃったのかな……",
+    "en": "...I kept checking the posted card... I wasn't on it... D-did I... do something wrong...?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
     }
   },
   {
@@ -90818,6 +91420,20 @@
     }
   },
   {
+    "key": "あ、あの…出してくださって、ありがとうございました…！ わたし、やっぱり…試合がしたいです……",
+    "en": "U-um... thank you for putting me in...! I... I really do want to keep wrestling...",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "あ、あの…団体として、挑戦させてください…",
     "en": "U-um... as a promotion, please let us challenge you...",
     "files": [
@@ -93292,6 +93908,20 @@
     }
   },
   {
+    "key": "あなたが来ても、控室のみんなの目つきは変わらないのよ。……それとも、あなたが睨み返してくれるの？",
+    "en": "Your visit won't change how everyone in there looks at me. ...Or will you glare back at them for me?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "あなたが見ていてくれるなら、何でもできる！",
     "en": "If you're watching, there's nothing I can't do!",
     "files": [
@@ -94044,6 +94674,20 @@
     }
   },
   {
+    "key": "あなたの考えは、理解したわ。……でも、何も変わっていないのに、気持ちだけ変えるのは無理よ",
+    "en": "I see what you're thinking. ...But nothing has actually changed, and I can't change how I feel on my own.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "あなたの背中、わたしが押すわ。さあ、ついてきて。",
     "en": "I'll push you from behind. Now come along.",
     "files": [
@@ -94095,6 +94739,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite"
+    }
+  },
+  {
+    "key": "あなたの話は、嫌いじゃないわ。……でも、控室では、また冷たい目に囲まれるの",
+    "en": "I don't mind your company. ...But in the locker room, it's cold stares all around again.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
     }
   },
   {
@@ -99257,6 +99915,20 @@
     }
   },
   {
+    "key": "あら、会いに来てくれたの？ ……でもね、試合一つの方が、百の励ましよりずっといいって知ってた？",
+    "en": "Oh, here to visit me? ...But did you know one match beats a hundred pep talks?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "あら、優勝しちゃったわ。当然だけどね",
     "en": "Oh my, I've gone and won it. Only natural, of course.",
     "files": [
@@ -99713,6 +100385,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "あら、気遣いは上手なのね。……でも、甘い言葉をもらうより、リングで出番をもらう方が、ずっと嬉しいのよ",
+    "en": "My, aren't you considerate. ...But a spot in the ring would please me far more than sweet words.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
     }
   },
   {
@@ -100283,6 +100969,20 @@
     }
   },
   {
+    "key": "あらあら、今週もお留守番ですって。……お稽古ばかりで、お披露目の日が来ないのね",
+    "en": "Goodness, sitting this week out as well. ...All rehearsal, and never a day to perform.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "あらあら、優勝しちゃったわ。素敵",
     "en": "My, my, I've won the whole thing. How lovely.",
     "files": [
@@ -100801,6 +101501,20 @@
     }
   },
   {
+    "key": "ありがたいお言葉です。けれど、わたくしがお応えできる場所は、リングの上にしかありません！",
+    "en": "Those are generous words. But the only place I can answer them is in the ring!",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "ありがたく頂いておくよ。期待はきっちり超えてみせるから、見てて。",
     "en": "I'll take that, thank you. We'll go past whatever you're expecting. Watch.",
     "files": [
@@ -100895,6 +101609,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "ありがとう…でも、でもね…！ 話してもらっても…まだ、苦しいの…",
+    "en": "Thank you... but, but...! Even after talking... it still hurts...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "emotional"
     }
   },
@@ -101512,6 +102240,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "ありがとうございます。……でも、話だけで踏みとどまれるほど、今は余裕がないんです",
+    "en": "Thank you. ...But right now, I don't have room to hang on just because we talked.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
     }
   },
   {
@@ -103175,6 +103917,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "あんたに愚痴ったって、控室の連中の態度は変わんねえんだよ",
+    "en": "Gripin' to you won't change how that locker room crowd treats me.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
     }
   },
   {
@@ -108767,6 +109523,20 @@
     }
   },
   {
+    "key": "うん、うん、わかった〜。……でも、それで、はい解決〜、ってわけにもいかなくてさ〜",
+    "en": "Uh-huh, got it~. ...But it's not like one chat and, ta-da, problem solved~.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "うん、それでいい。……変に庇われないのが、一番の敬意だからね。……さ、来季の話をしよう。",
     "en": "Yes, that's fine. ...Not being coddled is the highest respect. ...Now, let's talk next season.",
     "files": [
@@ -108809,6 +109579,20 @@
     }
   },
   {
+    "key": "うん、わかったよ。でも、試合に出られないうちは、何も始まらないよ",
+    "en": "Okay, I get it. But nothing's going to start until I'm in a match.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "うん、妥当だ。…変に庇われるほうが、よっぽど居心地が悪いからね。",
     "en": "Yes, that's fair. ...Being shielded would sit far worse with me.",
     "files": [
@@ -108820,6 +109604,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "うん、気持ちはもらっとく。……でも正直、それでどうにかなる感じじゃないんだよね",
+    "en": "Sure, I'll take the thought. ...But honestly, I don't see that doing much.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
     }
   },
   {
@@ -111088,6 +111886,20 @@
     }
   },
   {
+    "key": "えっと、元気づけてくれて、ありがとうございます。……でも、今回は、いつもの調子にはまだ戻れないかもです",
+    "en": "Um, thanks for trying to cheer me up. ...But this time, I don't think I'm back to my usual self yet.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "えっブランドコラボ！？ すごい！どんな商品になるの！？",
     "en": "Wait, a brand collab!? Amazing! What are they going to make!?",
     "files": [
@@ -112410,6 +113222,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "おっ、社長じきじき？ ……ありがてえけどさ、それより次の興行、出してくんねえかな",
+    "en": "Oh, the boss in person? ...Appreciate it, but how 'bout puttin' me on a show instead?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
     }
   },
   {
@@ -113982,6 +114808,20 @@
     }
   },
   {
+    "key": "お客さんの前に立てないまま、ずいぶんたったわね。……声援の聞こえ方、忘れそう",
+    "en": "It's been ages since I stood in front of a crowd. ...I'm forgetting what cheering sounds like.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "お客様と一緒に楽しい時間を作れたら",
     "en": "It would be lovely to make a good time of it together with the crowd.",
     "files": [
@@ -114006,6 +114846,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "お客様の前は、本当に楽しいわね。……つい、張り切りすぎてしまったかしら",
+    "en": "Performing for an audience really is a delight. ...I may have gotten a little carried away.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
       "personality": "easygoing"
     }
   },
@@ -114176,6 +115030,20 @@
     }
   },
   {
+    "key": "お心遣い、ありがとう。……でも、試合のない毎日では、ここでお茶を飲んでいるだけですもの",
+    "en": "Thank you for your kindness. ...But with no matches, all I do here is sip tea.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "お心遣い、ありがとうございます。ですが…この決断は変わりません。申し訳ございません。",
     "en": "Thank you for the thought, President. But... this decision stands. I'm sorry.",
     "files": [
@@ -114288,6 +115156,20 @@
     }
   },
   {
+    "key": "お気持ちは、うれしいです。……ただ、お話だけで、というのは……ごめんなさいね",
+    "en": "Your kindness means a lot. ...But if it's only talk, then... I'm sorry.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "お気持ちはありがたいのですが……この決断は、ずっと考え抜いた末のものです。申し訳ありません。",
     "en": "I'm grateful for the offer... but I reached this after a long time thinking. I'm sorry.",
     "files": [
@@ -114299,6 +115181,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "お気持ちは受け取りました。でも、要るのは励ましじゃなくて、試合です！",
+    "en": "I appreciate the thought. But what I need isn't encouragement — it's a match!",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
     }
   },
   {
@@ -114341,6 +115237,34 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "お気持ちは確かに受け取りました。……ですが、控室のどなたとも心が通わないままでは、何も変わりませんわ",
+    "en": "Thank you, truly. ...But while I remain a stranger to everyone in the locker room, nothing will change.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "お気遣いには感謝します。……でも、試合がなければ、研鑽は形にならないの",
+    "en": "I appreciate your concern. ...But without matches, all my training amounts to nothing.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
     }
   },
   {
@@ -114972,6 +115896,34 @@
     }
   },
   {
+    "key": "お言葉、うれしいです。……でも、リングで成果を出せない限り、前を向けそうにありません",
+    "en": "Your words mean a lot. ...But until I can prove myself in the ring, I can't look ahead.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "お言葉は結構。わたくしをリングに上げていただければ、それで足りますわ",
+    "en": "I have no need of words. Put me in the ring, and that will be quite enough.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "お許し、無駄にはしません。行ってまいります。",
     "en": "Your permission will not be wasted. We shall be on our way.",
     "files": [
@@ -114997,6 +115949,62 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "お話、胸にとめておきます。……でも、今のままでは、この先もここで、とはお約束できません",
+    "en": "I'll keep what you said in mind. ...But as things stand, I can't promise I'll be here down the line.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "お話はありがたいけれど。……明日もまた、控室で誰とも言葉を交わさない一日になるの",
+    "en": "I am grateful for the talk. ...But tomorrow will be another silent day in the locker room.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "お話は伺いました。……それで、何が変わるのかしら？",
+    "en": "I have heard you out. ...And what, exactly, is that meant to change?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "お話を聞いていただいて、少し気が楽になりました。……でも、控室で一人なのは、きっとこれからも同じなんです",
+    "en": "Having you listen eased things a little. ...But I'll probably still be alone in the locker room after this.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
     }
   },
   {
@@ -117833,6 +118841,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "こうして話すのも悪くないよ。……で、次のリングは？ 答えはそっちなんだよ",
+    "en": "Talking like this isn't bad. ...So, what about my next match? That's where the real answer is.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
     }
   },
   {
@@ -128859,6 +129881,20 @@
     }
   },
   {
+    "key": "ご心配をおかけしています。……でも、試合に出られないと、気持ちが続かないんです",
+    "en": "I'm sorry to worry you. ...But if I can't wrestle, I can't stay motivated.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "ご恩をお返しできず、申し訳ございません…新天地で必ず結果を出しますわ",
     "en": "That I leave without repaying you shames me... I shall deliver in the new place without fail.",
     "files": [
@@ -129932,6 +130968,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "しゃべるのは楽しいんだけどね〜。……控室のあの子とは、どうも噛み合わないんだよね〜",
+    "en": "I like chatting and all~. ...It's just, me and a certain someone in the locker room don't click.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
     }
   },
   {
@@ -132318,6 +133368,20 @@
     }
   },
   {
+    "key": "その気持ちだけで、十分だよ。……でも、ごめんね。言葉は届いても、残る理由にはならないんだ",
+    "en": "Your concern is plenty. ...But I'm sorry. The words reach me, but they aren't a reason to stay.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "その目、気に入らないわ。…来なさい。",
     "en": "I don't care for that look in your eye. ...Come.",
     "files": [
@@ -133666,6 +134730,20 @@
     }
   },
   {
+    "key": "ちゃんと聞きました。……でも、今は、励まされて持ち直せるところにいないの",
+    "en": "I listened, truly. ...But I'm not at a point where encouragement can turn me around.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "ちゃんと見てくれてるんだな。嬉しいよ",
     "en": "So I am being watched after all. That's nice.",
     "files": [
@@ -134500,6 +135578,20 @@
     }
   },
   {
+    "key": "で、話はそれだけか？ ……悪いけど、頭なでられて戻るほどガキじゃねえよ",
+    "en": "That all you came to say? ...Sorry, but I ain't a kid who comes back for a pat on the head.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "でかいのは正義。押し潰されたいなら何度でも来なよ",
     "en": "Big is right. Want to get flattened again? Come back any time.",
     "files": [
@@ -134525,6 +135617,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "で？ 話して、それで終わり？ ……悪いけど、それくらいじゃ気は変わらないわよ",
+    "en": "And? We talk and that's it? ...Sorry, but that's not going to change my mind.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
     }
   },
   {
@@ -137785,6 +138891,20 @@
     }
   },
   {
+    "key": "は？ 次の興行も出番なし？ ……控室で待ってるだけなら、私じゃなくてもいいでしょ",
+    "en": "Huh? No match at the next show either? ...Anyone can sit and wait in the locker room. Why keep me?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "は？ 話が違うじゃない。……アンタ、自分で言ったこと覚えてる？",
     "en": "Huh? That isn't what we agreed. ...Do you even remember what you said?",
     "files": [
@@ -138290,6 +139410,20 @@
     }
   },
   {
+    "key": "ふぅ……久しぶりの試合、全力でやれました！ 次も、呼んでください",
+    "en": "Phew... My first match in a while, and I gave it everything! Please call on me again.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "ふぅ……今日は、思い描いた通りに動けたわね",
     "en": "Phew... today I moved exactly as I had pictured it.",
     "files": [
@@ -138679,6 +139813,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "ふうん、そう。……で、あなたは私のために何をしてくれるの？",
+    "en": "Hmm, I see. ...So what are you actually going to do for me?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
     }
   },
   {
@@ -139593,6 +140741,20 @@
     }
   },
   {
+    "key": "ふふ、ここ、居心地悪くなっちゃった。……誰とも目が合わないの",
+    "en": "Hehe, this place got kind of uncomfortable. ...Nobody will meet my eyes.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "ふふ、これで終わりじゃないわよ",
     "en": "Mm. Don't imagine this is where I stop.",
     "files": [
@@ -140130,6 +141292,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "ふふ、社長ってばマメね♪ ……でも、それで気が済むほど、私、安い女じゃないわ",
+    "en": "Hehe, aren't you attentive ♪ ...But I'm not so cheap that a chat settles it.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
     }
   },
   {
@@ -141135,6 +142311,20 @@
     }
   },
   {
+    "key": "へへ、励ましサンキュ。……けどまあ、話しただけでスッキリするほど、軽い話じゃねえんだ",
+    "en": "Heh, thanks for the pep talk. ...But this ain't the kinda thing a chat clears up.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "へへ、考えると自然に気合入るんだわ",
     "en": "Heh. Just thinking about it gets me fired up.",
     "files": [
@@ -141634,6 +142824,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "ま、そっちの気持ちはわかった。……けど、話だけで丸く収まるほど、甘くねえってこと",
+    "en": "Well, I get where you're comin' from. ...But talk alone ain't gonna smooth this over.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
     }
   },
   {
@@ -142727,6 +143931,20 @@
     }
   },
   {
+    "key": "まあ、ご丁寧に。……でも、おしゃべりひとつで元どおり、とはいかないみたい",
+    "en": "My, how thoughtful. ...But it seems one chat will not put things back as they were.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "まあ、ご理解ありがとうございますわ〜。続けますわよ。",
     "en": "My, thank you for understanding~. I shall carry on, then.",
     "files": [
@@ -143453,6 +144671,20 @@
     }
   },
   {
+    "key": "また…また名前がない…！ 出たいのに…出たいだけなのに…っ",
+    "en": "Not again... my name's not there again...! I just want to wrestle... that's all I want...",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "また、どこかのリングで会えますように",
     "en": "I hope we meet again in some ring somewhere.",
     "files": [
@@ -143476,6 +144708,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed"
+    }
+  },
+  {
+    "key": "また、客席の後ろから試合を見ていました。……ここで何を目標にすればいいんでしょう",
+    "en": "I watched the matches from the back of the hall again. ...What am I supposed to be aiming for here?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
     }
   },
   {
@@ -143595,6 +144841,34 @@
     }
   },
   {
+    "key": "また出番なし！ ……準備して、テーピングまで巻いて待ってたのに！",
+    "en": "No match again! ...I got ready, even taped up, and waited for nothing!",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "また名前ないじゃん。……コスチューム、いつから着てないっけ",
+    "en": "My name's missing again. ...When did I last even put on my ring gear?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "また声がかかって嬉しいよ。今度は長くいたいね",
     "en": "Nice to get a call again. I'd like to stay a while this time.",
     "files": [
@@ -143619,6 +144893,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "また外したのね。……ねえ、誰がこんなカードを組んでるのかしら。顔が見てみたいわ",
+    "en": "Left me off again. ...Tell me, who's putting these cards together? I'd love to see their face.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
       "personality": "emotional"
     }
   },
@@ -143648,6 +144936,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "また私抜きの興行？ ……ずいぶん退屈な使い方をしてくれるのね",
+    "en": "Another show without me? ...What a dull way to use me.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
     }
   },
   {
@@ -144439,6 +145741,20 @@
     "en": "I'm still a work in progress. I'm going to get even stronger!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "まだまだ成長途中なのに、試合で確かめられないのは、つらいかな",
+    "en": "I'm still growing, and not getting to test that in the ring — that's hard.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -146792,6 +148108,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "みんな、警戒してるみたい。……いいわ、群れる気はないもの。でも、ここまで一人きりにされるなんてね",
+    "en": "Everyone seems wary of me. ...Fine, I don't run with packs. But being left this alone — that's new.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
     }
   },
   {
@@ -151177,6 +152507,20 @@
     }
   },
   {
+    "key": "やっと出番が回ってきたか。……久々に思いっきりやれて、スッとしたわ",
+    "en": "Finally my turn came around. ...Felt good to go all out again.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "やっと勝てた。……なのに、そんなに嬉しくねぇのはなんでだろな",
     "en": "Finally beat her. ...So why am I not happier about it.",
     "files": [
@@ -151188,6 +152532,34 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "やっと名前が載ったわね。……遅いのよ、ほんと。……でも、ちょっとだけ見直した",
+    "en": "About time my name went up. ...Way too slow, honestly. ...But I think a little better of you now.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "やっと呼んだか。……遅えんだよ。ま、今回は大目に見てやる",
+    "en": "Finally called me up, huh. ...Took your sweet time. I'll let it slide this time.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
     }
   },
   {
@@ -151300,6 +152672,34 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "やっと舞台を用意してくれたわね。……いいわ、ここから上がっていくから",
+    "en": "You finally gave me a stage. ...Good. I'll climb from here.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "やっと試合ができたわ。……歓声って、やっぱりいいものね",
+    "en": "A real match at last. ...There's nothing like a cheering crowd.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
     }
   },
   {
@@ -152399,6 +153799,20 @@
     }
   },
   {
+    "key": "ようやく、わたくしの使い道に気づいたのね。……遅すぎるくらいだけれど、覚えておくわ",
+    "en": "So you finally realized how to make use of me. ...Rather late, but I shall remember it.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "ようやく、自分の試合に集中できる。",
     "en": "Now I can finally concentrate on my own matches.",
     "files": [
@@ -152465,6 +153879,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "ようやくカードに戻してくれたのね。……ふん、これくらい当然よ。でも、少しだけ気が晴れたわ",
+    "en": "So you finally put me back on the card. ...Hmph. The least you could do. But I do feel a little better.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
     }
   },
   {
@@ -154611,6 +156039,20 @@
     }
   },
   {
+    "key": "わ〜、社長だ。……でもさ、話すより試合組んでくれた方が早くない？",
+    "en": "Oh~, it's you. ...But wouldn't it be quicker to just book me a match?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "わあ、ありがとうございます！ さすが社長です！ 今年も楽しくやらせてくださいね！",
     "en": "Wow, thank you! That's our President for you! Here's to another fun year!",
     "files": [
@@ -155142,6 +156584,20 @@
     }
   },
   {
+    "key": "わざわざありがと♪ ……でもさ、今いちばん欲しいのは、試合なの",
+    "en": "Thanks for stopping by ♪ ...But what I want most right now is a match.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "わざわざありがとう。…期待には応えるタイプだから",
     "en": "Thanks for coming to get me. ...I'm the type who delivers.",
     "files": [
@@ -155156,6 +156612,20 @@
     }
   },
   {
+    "key": "わざわざどうも。……けどさ、カードに入れてくんなきゃ、話になんないでしょ？",
+    "en": "Thanks for comin' by. ...But if I'm not on the card, what's there to talk about?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "わざわざ口説きに来るなんて。…物好きね、あなた。",
     "en": "Coming all this way to court me. ...You have odd taste.",
     "files": [
@@ -155166,6 +156636,48 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "わざわざ来たの！？ でも、試合させてもらえなきゃ、もやもやは晴れないって！",
+    "en": "You came!? But I won't feel right until I get a match!",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "わざわざ来てくれたのはいいけど。話すくらいなら、次のカードに名前を入れてよ",
+    "en": "Nice of you to come all this way. But instead of talking, just put me on the next card.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "わざわざ来なくていい。控室の件は、ここで話しても片付かない",
+    "en": "You didn't need to come. Talking here won't settle the locker room.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "normal"
     }
   },
@@ -156365,10 +157877,38 @@
     }
   },
   {
+    "key": "わー、来てくれたんですね！ ……でも、試合から遠ざかってると、どうも調子が出なくて",
+    "en": "Oh, you came! ...But being away from matches this long, I just can't get going.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "わーい、今日から仲間です！よろしくお願いします",
     "en": "Yay, we're teammates from today! It's a pleasure.",
     "files": [
       "data.js:EVENT_FA_WELCOME_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "わーい、社長とおしゃべり！ ……でも、控室には、こんなふうに話せる人がいなくて",
+    "en": "Yay, a chat with you! ...But in the locker room, there's nobody I can chat with like this.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -156713,6 +158253,20 @@
     }
   },
   {
+    "key": "アンタと話すのは別にいいのよ。問題は、控室に戻ったら口をきく相手がいないってこと",
+    "en": "Talking to you is fine. The problem is, back in the locker room there's nobody to talk to.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "アンタの覚悟、リングで見せてもらうわよ",
     "en": "Show me that resolve of yours in the ring.",
     "files": [
@@ -156920,6 +158474,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "カードに名前があって、ほっとしました。……リングに立つと、やっぱり落ち着きますね",
+    "en": "I was relieved to see my name on the card. ...Being in the ring really does put me at ease.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
     }
   },
   {
@@ -157793,6 +159361,20 @@
     }
   },
   {
+    "key": "スパーの相手を頼んでも、なかなか組んでもらえないんだ。……どうしたら打ち解けられるのか、考えてはいるんだけど",
+    "en": "When I ask for a sparring partner, nobody's ever free. ...I keep wondering how to get closer to people.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "スパーリング室の壁時計だけが回っている。誰も口を開かず、ただ受けて、返して、転がる。数字でしか測られない数日。",
     "en": "Only the wall clock moved. Nobody spoke: take it, give it back, hit the mat. Days measured in numbers.",
     "files": [
@@ -157829,6 +159411,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "セコンドに付くだけの週が、ずいぶん続いてるな。……人の試合ばかり見てるよ",
+    "en": "It's been a long stretch of just working the corner. ...All I do is watch other people's matches.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
     }
   },
   {
@@ -163290,6 +164886,20 @@
     }
   },
   {
+    "key": "リングに上げねえなら、上げてくれるとこに行くだけだ",
+    "en": "Won't put me in the ring? Then I'll just go where somebody will.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "リングに戻れたというのに…怖いわ",
     "en": "I have my place in the ring again, and still I am afraid.",
     "files": [
@@ -163318,6 +164928,34 @@
     }
   },
   {
+    "key": "リングに戻れたわ。……ふふ、こういう扱いなら、悪い気はしないわね",
+    "en": "Back in the ring. ...Hehe. Treatment like this, I could get used to.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "リングに立って、はっきりしたわ。……やっぱり私は、見る側より、見られる側なのよ",
+    "en": "Being back in the ring made one thing clear. ...I'm meant to be watched, not to watch.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "リングの上で、答えを出しましょう",
     "en": "Let us find the answer in the ring.",
     "files": [
@@ -163343,6 +164981,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "shy"
+    }
+  },
+  {
+    "key": "リングの上は、やはり違うわね。……試合でしか分からないことが、まだたくさんあるもの",
+    "en": "The ring really is different. ...There is still so much I can only learn in a match.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
     }
   },
   {
@@ -168084,6 +169736,76 @@
     }
   },
   {
+    "key": "久々に暴れた暴れた♪ ……やっぱこれだよな",
+    "en": "Got to cut loose at last ♪ ...Yeah, this is what it's about.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "久々のリング、疲れた〜。……でも、いい疲れってやつ？",
+    "en": "Back in the ring after ages, and I'm beat~. ...But it's the good kind of tired, you know?",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "久々の試合、マジ最高だった♪ ……やっぱ、見られてナンボだよね",
+    "en": "First match in forever, and it was the best ♪ ...Being seen is what it's all about.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "久しぶりに、試合をさせてもらったよ。……うん、いい汗をかけた",
+    "en": "Finally got to wrestle again, after all that waiting. ...Yeah. It felt good to work up a real sweat.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "久方ぶりに、全力をお見せできましたわ！ ……機会をいただけたこと、忘れません",
+    "en": "At long last, I could show you everything I have! ...I will not forget the chance you gave me.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "予想通りだ",
     "en": "Exactly as I predicted.",
     "files": [
@@ -170731,6 +172453,62 @@
     }
   },
   {
+    "key": "今週も、名前はなかったわね。……磨いた技を、誰にも見せられないまま",
+    "en": "No name again this week. ...And the moves I have polished go unseen by anyone.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "今週もお休みか〜。……頑張らないのは好きだけどさ、出番がないのは話が別でしょ〜",
+    "en": "Another week off~. ...I like taking it easy, sure, but no matches at all is a different story~.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "今週も出番なしかよ。……ま、いつものことだな。……いつものことに、なっちまったな",
+    "en": "No match again this week. ...Eh, same as always. ...Since when did it get to be \"always\"?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "今週も出番表に名前がなかった。……練習して帰るだけの毎日、いつまで続くのかな",
+    "en": "My name wasn't on the card again this week. ...How long is it going to be just practice and go home?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "仕事もプロレスも、全力で！",
     "en": "My day job, the ring — I go all out at both!",
     "files": [
@@ -172841,6 +174619,20 @@
     }
   },
   {
+    "key": "何しに来たの？ 同情？ ……だったら、次の興行で私を使って。それ以外は聞きたくないわ",
+    "en": "What did you come for? Pity? ...Then use me at the next show. I don't want to hear anything else.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "何だよ最近の扱いは。私を軽く見てるの？",
     "en": "What's with how I'm being treated lately. Am I being taken lightly?",
     "files": [
@@ -172893,6 +174685,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "何のためにここで汗かいてんだか。……出番表、見るのもやんなってきた",
+    "en": "What am I even sweatin' here for? ...Gettin' sick of even lookin' at the card.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
       "personality": "normal"
     }
   },
@@ -174207,6 +176013,20 @@
     }
   },
   {
+    "key": "優しいのね。でも言葉だけじゃ、私の気持ちは戻らないわ",
+    "en": "You're kind. But words alone won't win me back.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "優しくされるのが、今は耐えられませんの。",
     "en": "Being treated kindly is more than I can bear right now.",
     "files": [
@@ -175048,6 +176868,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "全力でぶつかる準備は、毎日整えております。……それなのに、名前が呼ばれないなんて",
+    "en": "Every day I prepare to meet my opponent with everything I have. ...And still my name is not called.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
       "personality": "earnest"
     }
   },
@@ -176004,6 +177838,20 @@
     }
   },
   {
+    "key": "出してもらえたからには、次はもっといい試合にします！ ……本当に、ありがとうございました",
+    "en": "Since you gave me the chance, I'll make the next one even better! ...Thank you, truly.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "出してもらえないのに練習して…何になるの…",
     "en": "Training when I never get booked... what does it give me...",
     "files": [
@@ -176096,6 +177944,34 @@
     "cell": {
       "archetype": "standard",
       "personality": "shy"
+    }
+  },
+  {
+    "key": "出られました！ 楽しかった！ ……試合がある週って、こんなに違うんですね！",
+    "en": "I got to wrestle! It was so fun! ...A week with a match feels completely different!",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "出れた…！ 出れたよ…！ ……リング、やっぱり好き…",
+    "en": "I got a match...! I really got one...! ...I still love the ring...",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
     }
   },
   {
@@ -176250,6 +178126,62 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "出番きた♪ ……やっと仕事させてくれるのね。ちゃんと稼いでくるわ",
+    "en": "Got a match ♪ ...Finally letting me work, huh. I'll earn my keep.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "出番すら回ってこないなんて。……上を目指すなら、場所を変えるのも手よね",
+    "en": "Not even a match coming my way. ...If I'm going for the top, moving elsewhere is always an option.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "出番なしでもお給料は出るし、ラクっちゃラクよね♪ ……ほんと、それだけの場所よ、今のここ",
+    "en": "No match, but the paycheck still comes, so it's easy money ♪ ...That's all this place is to me now.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "出番のない週を数えるのは、もうやめたわ。……数えたところで、気が滅入るだけだもの",
+    "en": "I've stopped counting the weeks without a match. ...Counting only makes it worse.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
     }
   },
   {
@@ -176802,6 +178734,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "別に仲良しごっこしに来たわけじゃないわよ。……でも、控室で毎日ひとりってのは、正直こたえる",
+    "en": "I'm not here to play best friends. ...But being alone in the locker room every day does get to you.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
     }
   },
   {
@@ -182035,6 +183981,20 @@
     }
   },
   {
+    "key": "友達に『次いつ出るの？』って聞かれても、最近、答えられないんですよね。……えっと、いつなんだろ",
+    "en": "When friends ask me when my next match is, I can't answer lately. ...Um, when is it, anyway?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "収穫の多い大会でしたわ。次はもっと上を目指します",
     "en": "A tournament with a rich harvest. Next time I aim higher.",
     "files": [
@@ -182727,6 +184687,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "口だけならいくらでも言えんだろ。次の興行、名前あんのかよ",
+    "en": "Talk's cheap. Is my name on the next show or not?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
     }
   },
   {
@@ -183758,6 +185732,34 @@
     }
   },
   {
+    "key": "名前、あった。……ちゃんと見ててくれたんだ",
+    "en": "My name was up there. ...So you were paying attention after all.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "名前が、また無いのね。……ふふ、この団体の目は曇っているようね",
+    "en": "My name is missing once more. ...Hehe. This promotion seems to have lost its eye for talent.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "名前を呼ばれたなら、応えないとね。",
     "en": "If someone calls my name, I ought to answer it.",
     "files": [
@@ -183867,6 +185869,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "吐き出したら、少しはすっきりしたよ。……でも、控室のピリピリは、一人で片付く話じゃないよ",
+    "en": "Letting it out helped a bit. ...But the tension in the locker room isn't something I can fix alone.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
     }
   },
   {
@@ -185257,6 +187273,20 @@
     }
   },
   {
+    "key": "基本からやり直して、毎日積み重ねてきました。……でも、試合で見てもらえないなら、報われません",
+    "en": "I went back to basics and built on them every day. ...But if no one sees it in a match, it never pays off.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "基本から学んで、一歩ずつ。着実に強くなってみせます！",
     "en": "From the basics, one step at a time. I'll get stronger for certain!",
     "files": [
@@ -185492,6 +187522,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "声をかけてくれて、ありがとう。……でも、今の自分がどこまでやれるか、試合の中で見せたいんだ",
+    "en": "Thanks for reaching out. ...But I want to show in a match how far I've come.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
     }
   },
   {
@@ -190023,6 +192067,20 @@
     }
   },
   {
+    "key": "待たせてくれたね。……ふぅ、でも、勘は鈍ってなかったよ",
+    "en": "You sure kept me waiting. ...Phew. But I hadn't lost my touch.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "待ちきれませんわね。次の方、早くいらして",
     "en": "I can hardly wait. Next, do hurry along.",
     "files": [
@@ -190801,6 +192859,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "心配かけちゃってるね。……でも、控室で一緒に笑える相手は、話しただけじゃ見つからないかな",
+    "en": "Sorry to make you worry. ...But talking won't find me someone to laugh with in the locker room.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
     }
   },
   {
@@ -194093,6 +196165,34 @@
     }
   },
   {
+    "key": "慰めてもらうために、ここにいるんじゃないわ。……のし上がる機会をくれないなら、話すことはないの",
+    "en": "I'm not here to be comforted. ...If you won't give me a chance to rise, we have nothing to discuss.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "慰めなど要りません。……周りと馴染めないのは、あなたの言葉でどうにかなる話ではないもの",
+    "en": "I do not require consolation. ...How I get on with the others is not something your words can mend.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "慰労会",
     "en": "Appreciation Dinner",
     "files": [
@@ -195332,6 +197432,202 @@
     }
   },
   {
+    "key": "控室で、あからさまに避けてくるやつがいんだよ。……いいけどね、別に",
+    "en": "There's someone in the locker room who goes outta her way to avoid me. ...Whatever. Fine by me.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "控室で、一人でいる時間が増えたな。……前は、もう少し話せてたんだけど",
+    "en": "I've been spending more time alone in the locker room. ...I used to talk with people a bit more.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "控室で、聞こえよがしに嫌味を言われてんだよ。……上等だよ",
+    "en": "Somebody in the locker room keeps takin' shots at me, loud enough to hear. ...Bring it on.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "控室で、話す相手がいない。それが普通になった",
+    "en": "No one to talk to in the locker room. That's just normal now.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "控室でうまく話せないのよね。……私のどこがいけないのか、ずっと考えてる",
+    "en": "I just can't seem to talk with anyone in the locker room. ...I keep wondering what I'm doing wrong.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "控室でお話ししようとしても、どなたもお忙しいみたいで。……あら、困りましたわね",
+    "en": "Whenever I try to chat in the locker room, everyone seems to be busy. ...Oh dear. What am I to do?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "控室でさー、みんなで写真撮ってたのに、私だけ呼ばれなかったんだけど。……え、なんで？ってかんじ",
+    "en": "So everyone in the locker room was taking pictures, and nobody called me over. ...Like, why?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "控室では、なるべく迷惑をかけないようにしてるんです。……でも、話しかけてもらえることは、めっきり減ってしまって",
+    "en": "I try not to get in anyone's way in the locker room. ...But hardly anyone talks to me anymore.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "控室では、自分から声をかけるようにしています。……それでも、どこか避けられているみたいで",
+    "en": "I make a point of speaking first in the locker room. ...Still, people seem to keep away.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "控室では、誰も話しかけてこないの。……馴れ合うつもりはないけれど、ここまで遠いとは思わなかった",
+    "en": "No one in the locker room speaks to me. ...I never sought closeness, but I did not expect this.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "控室でひとり、誰の声もかからない。……ふふ、嫌われたものね",
+    "en": "Alone in the locker room, and no one calls out to me. ...Hehe. Seems I'm not very well liked.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "控室でふざけても、誰も乗ってこねえの。……つまんねえな",
+    "en": "I goof around in the locker room and nobody plays along. ...Boring.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "控室でも、毎朝ちゃんと挨拶してます。でも、返ってこないんですよね。……正直、しんどいです",
+    "en": "I say good morning to everyone in the locker room. Nobody says it back. ...Honestly, it's wearing me down.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "控室で声かけても、みんな素っ気ないの！ ……こういうの、ほんと苦手なんだけど",
+    "en": "I talk to people in the locker room and they all brush me off! ...I'm really bad with stuff like this.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "控室で泣きました。うれしくて。…来年はもっと上で泣きます",
     "en": "I cried in the locker room. Out of happiness. ...Next year I'll cry somewhere higher up.",
     "files": [
@@ -195343,6 +197639,118 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "控室で盛り上げようとしても、なんか空回りしちゃうんです。……あはは、へこみますね",
+    "en": "I try to liven up the locker room, but it just falls flat. ...Haha. That stings a little.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "控室で睨まれるのは慣れてるよ。……でも、毎日となると、こっちも疲れるんだ",
+    "en": "I'm used to getting glared at in the locker room. ...But every single day? That wears me out.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "控室で話しかけても、すぐ会話が終わっちゃう。……ここ、居づらいな",
+    "en": "Every time I talk to someone in the locker room, it fizzles out right away. ...It's hard to be here.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "控室に入るのが、こわい…！ 誰も…誰もこっちを見てくれないの…",
+    "en": "I'm scared to walk into the locker room...! Nobody... nobody even looks at me...",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "控室の子たち、陰で何か言ってるの。……いいわよ、リングの上で黙らせてあげる",
+    "en": "The girls in the locker room talk about me behind my back. ...Fine. I'll shut them up in the ring.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "控室の方々は、遠巻きに見ているだけ。……構わないわ。ただ、居心地のよい場所とは言えないわね",
+    "en": "The others only watch me from afar. ...No matter. Though I would hardly call the locker room pleasant.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "控室の皆さまにも、礼は欠かさずにまいりました。……それでも、返ってくるのは沈黙ばかり",
+    "en": "I have always shown everyone in the locker room proper respect. ...Yet all that comes back is silence.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "控室を観察していれば分かるものよ。……どの輪にも入れていないことくらい",
+    "en": "Watch the locker room long enough and you see it. ...I'm not part of any circle in there.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
     }
   },
   {
@@ -198164,6 +200572,20 @@
     }
   },
   {
+    "key": "最近、打ち上げに声かかんないの〜。……ま、いっか、とはならないか〜",
+    "en": "Lately nobody invites me out after shows~. ...Can't exactly shrug that one off, huh.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "最近、目が合わなくなった気がする",
     "en": "We don't really catch each other's eye anymore.",
     "files": [
@@ -200027,6 +202449,20 @@
     }
   },
   {
+    "key": "本気で向き合ってくれてるのは、伝わったよ。……でも、今日の話だけで気持ちを決めるのは、まだ早い気がするんだ",
+    "en": "I can tell you're taking this seriously. ...But making up my mind off one talk feels too soon.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "本気で来いよ",
     "en": "Come at me for real.",
     "files": [
@@ -200223,6 +202659,48 @@
     }
   },
   {
+    "key": "来てくださって、ほっとしたわ。……けれど、控室ではやっぱり一人きりなの。そればかりは、ね",
+    "en": "What a relief that you came. ...But in the locker room, I am still all on my own. That part, well...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "来てくれたことは、ちゃんと受け止めるわ。……でも、問題は言葉じゃなくて、カードの方でしょう？",
+    "en": "I take your visit seriously. ...But the problem isn't words. It's the card, isn't it?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "来てくれたのはありがてえよ。でもさ、控室でみんなと顔合わせんのは、結局こっちなんだよな",
+    "en": "Appreciate you comin'. But in the end, I'm the one who's gotta face everybody in the locker room.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "来てくれた一人ひとりと、ちゃんと向き合うっす",
     "en": "Everyone who shows up gets my full attention.",
     "files": [
@@ -200234,6 +202712,34 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "来てくれて…うれしい、うれしいけど…！ 出番がないままじゃ、どうにもならないの…っ",
+    "en": "I'm glad you came... I am, but...! With no spot on the card, nothing gets better...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "来てくれてありがとう。……でも、社長と話しても、控室の空気は変わらないから",
+    "en": "Thanks for coming. ...But talking with you won't change the mood in the locker room.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
     }
   },
   {
@@ -203662,6 +206168,20 @@
     }
   },
   {
+    "key": "毎日、全力で準備してます。……試合がないなら、何のための全力なんですか",
+    "en": "I prepare at full effort every single day. ...If there's no match, what's all that effort for?",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "毎日お稽古に通うのが…こんなに辛いとは",
     "en": "That going to practice each day... could weigh this much.",
     "files": [
@@ -203879,6 +206399,20 @@
     }
   },
   {
+    "key": "気にかけてくれてるのは、わかってます。……でも、リングに上がれない日が続く限り、気持ちは離れていく一方なんです",
+    "en": "I know you care. ...But as long as I'm kept out of the ring, I'll just keep drifting further away.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "気になって仕方ないんだよね〜",
     "en": "I can't stop thinking about her, honestly~",
     "files": [
@@ -204051,6 +206585,34 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "気持ちは受け取ったわ。……でも、控室の関係は、外から声をかけて変わるものじゃないのよ",
+    "en": "I appreciate the thought. ...But relationships in the locker room don't change from the outside.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "気持ちは嬉しいわ。でもこれは、控室の中の問題なのよね。社長の一言で解ける話じゃないと思う",
+    "en": "That's sweet of you. But this is a locker room problem. I don't think a word from you will sort it out.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
     }
   },
   {
@@ -209058,6 +211620,20 @@
     }
   },
   {
+    "key": "真剣に聞いてくださったこと、忘れません。……でも、明日も控室に行くのは私なので。それを思うと、やっぱり気が重いです",
+    "en": "I won't forget how seriously you listened. ...But I'm the one walking in there tomorrow. It weighs on me.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "真剣勝負です…参りますわよ！",
     "en": "This is a serious contest... here I come!",
     "files": [
@@ -212677,6 +215253,20 @@
     "cell": null
   },
   {
+    "key": "社長、聞き上手じゃん♪ でもさ、控室戻ったら結局ぼっちだし",
+    "en": "You're a good listener, huh ♪ But once I'm back with the others, I'm flying solo.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "社長、要点だけ申し上げます。辞めます。もう決めましたの。",
     "en": "President, only the essentials. I am leaving. It is decided.",
     "files": [
@@ -213821,6 +216411,20 @@
     "en": "Bo-oss, say out loud that we did good, once in a while. Would you?",
     "files": [
       "data.js:F07_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "社長としゃべんのは楽しいよ。けど、明日また控室行ったら、誰も目ぇ合わせてこねえんだよな",
+    "en": "Talkin' with you's fun. But tomorrow in the locker room, nobody'll look me in the eye again.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -215922,6 +218526,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "私を遊ばせておくなんて、この団体、ずいぶん余裕があるんだね",
+    "en": "Leaving me idle like this — this place must have talent to spare.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
     }
   },
   {
@@ -219100,6 +221718,20 @@
     }
   },
   {
+    "key": "練習だけ積んで、試合では使いどころがない。……もう何週も",
+    "en": "Practice, practice, and no match to use it in. ...For weeks now.",
+    "files": [
+      "data.js:LAST_WARNING_RUMOR_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "練習って楽しい。もっとやりたいです",
     "en": "Training is fun. I want to do more.",
     "files": [
@@ -219724,6 +222356,20 @@
     "cell": {
       "archetype": "polite",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "耳には入れた。判断は、変えない",
+    "en": "Noted. My read on things hasn't changed.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
     }
   },
   {
@@ -222247,6 +224893,20 @@
     }
   },
   {
+    "key": "言いたいことは分かったよ。……それだけ？ 私を残したいなら、もうひと押し要るんじゃない？",
+    "en": "I get what you're saying. ...Is that it? If you want to keep me, won't it take more than that?",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "言いたいことは言いました。……届かなかっただけで、後悔はないです",
     "en": "I said what I wanted to say. ...It didn't land, but I have no regrets.",
     "files": [
@@ -222626,6 +225286,20 @@
     }
   },
   {
+    "key": "言葉で私をなだめられると思った？ ……欲しいのは、そんなものじゃないの",
+    "en": "Did you think words would calm me down? ...That's not what I'm after.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "言葉は、いらない。",
     "en": "No words needed.",
     "files": [
@@ -222977,6 +225651,20 @@
     }
   },
   {
+    "key": "試合、やっと来た。待つより、ずっといい",
+    "en": "Finally got a match. Beats waiting.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "試合したい…みんなと一緒に戦いたい…！",
     "en": "I want a match... I want to be fighting with everyone...!",
     "files": [
@@ -223005,6 +225693,20 @@
     }
   },
   {
+    "key": "試合できた！ やっぱり動いてる方が性に合ってるね！",
+    "en": "Had a match! Moving around out there just suits me better!",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "試合で得たインスピレーションが、仕事にも役立つのよね♪",
     "en": "The inspiration I pick up in matches feeds right back into my work ♪",
     "files": [
@@ -223030,6 +225732,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "試合に出られて、よかった。……ここでなら、もっと伸びていける。そう思えたよ",
+    "en": "Getting a match felt good. ...It made me think I can grow more here.",
+    "files": [
+      "data.js:LAST_WARNING_ANSWERED_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
     }
   },
   {
@@ -223143,6 +225859,34 @@
     }
   },
   {
+    "key": "話したところで、控室の敵は減らないわ。……敵だらけの場所じゃ、実力を見せる前に足を引っ張られるのよ",
+    "en": "Talking won't thin out my enemies in there. ...And with that many, someone always drags you down.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "話してくれて、ありがと！ ……でも、やっぱり納得できないんだ！",
+    "en": "Thanks for talking! ...But I just can't make peace with it!",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "話す価値もない。リングで会えば叩き潰すだけだ。",
     "en": "Not worth talking to. We meet in the ring, I break you. Nothing else.",
     "files": [
@@ -223153,6 +225897,34 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed"
+    }
+  },
+  {
+    "key": "話せて…ちょっとだけ楽になった…。でも、あの子たちの前に戻るの、やだ…やだよ…",
+    "en": "Talking helped, a little... But facing those girls again... I don't want to... I don't want to...",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "話せてスッキリした！ ……でも、控室の雰囲気までは、どうにもならないよね",
+    "en": "Talking cleared my head! ...But it won't fix how things feel in the locker room.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
     }
   },
   {
@@ -223184,6 +225956,20 @@
     }
   },
   {
+    "key": "話は分かった。必要なのは試合。それだけ",
+    "en": "Understood. What I need is a match. That's it.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "話は終わり。あとは、リングで。",
     "en": "Talking is over. The rest happens in the ring.",
     "files": [
@@ -223194,6 +225980,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool"
+    }
+  },
+  {
+    "key": "話は聞いた。……でも、それだけじゃ変わらない",
+    "en": "I heard you out. ...But that alone won't change anything.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
     }
   },
   {
@@ -223211,6 +226011,20 @@
     }
   },
   {
+    "key": "話を聞いてもらえたのは助かります。でも、控室でひとりなのは、どれだけ頑張っても変わらなかったんです",
+    "en": "It helps that you listened. But no matter how hard I tried, I was still alone in the locker room.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "話を通してくれたのね。ふふ、行ってくるわ。",
     "en": "So you pushed it through. Mm. Off we go.",
     "files": [
@@ -223222,6 +226036,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "話聞いてくれてありがと♪ ……控室じゃ、愛想をふりまく相手もいないのよね",
+    "en": "Thanks for listening ♪ ...In the locker room, I don't even have anyone to be nice to.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
     }
   },
   {
@@ -223529,6 +226357,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite"
+    }
+  },
+  {
+    "key": "誠意は伝わりました。……ただ、それだけで考えを改めるわけにはまいりません",
+    "en": "Your sincerity came through. ...But I cannot change my mind on that alone.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
     }
   },
   {
@@ -232491,6 +235333,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "顔を見に来てくれたんだ。……でも、何か返せるとしたら、リングの上だけだよ",
+    "en": "You came to see me. ...But if I've got anything to give back, the ring's the only place to do it.",
+    "files": [
+      "data.js:LAST_WARNING_ENCOURAGE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "normal"
     }
   },

@@ -449,6 +449,146 @@ section('古いセーブ(I-8): 帳簿・噂の状態の無い選手でも興行�
   assert.ok(!p.error, p.error);
 });
 
+// ══════════════════════════════════════════════════════════════════════════════
+//  セリフの表の本文(2026-09-26 Keisuke 承認の204本。docs/care-last-warning-lines-draft.md)
+//  表を合成せず、実際の表・実在の選手で「出る」ことを確かめる
+// ══════════════════════════════════════════════════════════════════════════════
+const LW_TABLES = [
+  ['rumor', 'LAST_WARNING_RUMOR_LINES', () => LAST_WARNING_RUMOR_LINES, ['stage', 'bonds']],
+  ['encourage', 'LAST_WARNING_ENCOURAGE_LINES', () => LAST_WARNING_ENCOURAGE_LINES, ['stage', 'bonds', 'general']],
+  ['answered', 'LAST_WARNING_ANSWERED_LINES', () => LAST_WARNING_ANSWERED_LINES, ['stage']],
+];
+const realCells = () => {
+  const set = new Set();
+  ALL_CHARS.forEach(c => set.add(`${c.archetype || 'standard'}/${c.personality || 'normal'}`));
+  return set;
+};
+const allLwLines = () => {
+  const out = [];
+  LW_TABLES.forEach(([, name, get, causes]) => causes.forEach(cause => {
+    Object.entries(get()[cause]).forEach(([a, byP]) => Object.entries(byP).forEach(([p, arr]) => arr.forEach(line => out.push({ name, cause, a, p, line }))));
+  }));
+  return out;
+};
+const fighterOf = (c, over = {}) => mk(c.id, { name: c.name, archetype: c.archetype, personality: c.personality, ...over });
+
+section('セリフの表(承認済み): 6つの原因の表がどれも実在の34セル×1本(計204本)。重複なし・プレースホルダなし', () => {
+  const cells = realCells();
+  assert.strictEqual(cells.size, 34, `実在のセルが ${cells.size}`);
+  LW_TABLES.forEach(([, name, get, causes]) => {
+    assert.deepStrictEqual(Object.keys(get()).sort(), causes.slice().sort(), `${name} の原因のキー`);
+    causes.forEach(cause => {
+      const got = new Set();
+      Object.entries(get()[cause]).forEach(([a, byP]) => Object.entries(byP).forEach(([p, arr]) => {
+        assert.ok(Array.isArray(arr) && arr.length === 1 && typeof arr[0] === 'string' && arr[0], `${name}.${cause}.${a}.${p} が1本でない`);
+        got.add(`${a}/${p}`);
+      }));
+      assert.deepStrictEqual([...got].sort(), [...cells].sort(), `${name}.${cause} のセルが実在の34セルと違う`);
+    });
+  });
+  const lines = allLwLines();
+  assert.strictEqual(lines.length, 204);
+  assert.strictEqual(new Set(lines.map(l => l.line)).size, 204, '同じ文が2か所にある');
+  lines.forEach(l => assert.ok(!/[{}]/.test(l.line), `プレースホルダ: ${l.line}`));
+  lines.forEach(l => assert.ok(!/[0-9０-９]/.test(l.line), `数字: ${l.line}`));
+});
+
+section('セリフの表(承認済み): 全127人が、3表のどの原因でも自分のセル(口調×性格)の1本を引く(normal への落ち・null なし)', () => {
+  ALL_CHARS.forEach(c => {
+    const f = fighterOf(c);
+    LW_TABLES.forEach(([kind, name, get, causes]) => causes.forEach(cause => {
+      const pool = Engine.trust.lastWarningLinePool(kind, cause, f);
+      assert.strictEqual(pool, get()[cause][c.archetype][c.personality], `${c.name}(${c.archetype}/${c.personality}) ${name}.${cause}`);
+    }));
+    // 声かけは stage/bonds 以外の原因(給与・王座・空気・約束・派閥・原因なし)を general の表で引く
+    ['pay', 'title', 'air', 'promise', 'faction', null].forEach(cause => {
+      assert.strictEqual(Engine.trust.lastWarningLinePool('encourage', cause, f), LAST_WARNING_ENCOURAGE_LINES.general[c.archetype][c.personality]);
+    });
+  });
+});
+
+section('セリフの表(承認済み): 20割れの噂の本人の一言・応えてもらえた一言・声かけの反応が、実在の選手で表の1本になる', () => {
+  // 口調の違う実在の選手を7人(アーキタイプごとに1人)
+  const picks = [...new Set(ALL_CHARS.map(c => c.archetype))].map(a => ALL_CHARS.find(c => c.archetype === a));
+  assert.strictEqual(picks.length, 7);
+  const abs = Engine.util.absWeek(2, 10);
+  // 噂の週: 出番(stage)・人間関係(bonds)が重い子は原因の表、はっきりしない子は今の20割れの表
+  ['stage', 'bonds'].forEach(cause => {
+    const roster = picks.map(c => fighterOf(c, { trust: 19, trustStrain: { [cause]: 9, other: 1 } }));
+    const prev = {}; roster.forEach(f => { prev[f.id] = 22; });
+    const out = Engine.glimpse.checkALayer(mkState(roster, { _glimpseAPrevTrust: prev }), Engine.rng.create(5));
+    roster.forEach(f => {
+      const g = out.glimpses.find(x => x.speakerId === f.id && x.type === 'trust_below_20');
+      if (!g) return;  // 20割れの噂は率の抽選(roll)がある。出た子だけ確かめる
+      assert.strictEqual(g.cause, cause);
+      assert.strictEqual(g.dialogue, LAST_WARNING_RUMOR_LINES[cause][f.archetype][f.personality][0], `${f.name} ${cause}`);
+    });
+    assert.ok(out.glimpses.some(x => x.type === 'trust_below_20'), `${cause}: 噂が1本も出ない(前提)`);
+  });
+  // 応えてもらえた一言(出番のみ): 応えた週の checkALayer に1本、道場の確定枠(tone positive・milestone)
+  const ansRoster = picks.map(c => fighterOf(c, { trust: 22, lastWarning: { cause: 'stage', week: abs - 4, answered: true, answeredBy: 'card', answeredWeek: abs } }));
+  const prevA = {}; ansRoster.forEach(f => { prevA[f.id] = 22; });
+  const outA = Engine.glimpse.checkALayer(mkState(ansRoster, { _glimpseAPrevTrust: prevA }), Engine.rng.create(5));
+  ansRoster.forEach(f => {
+    const g = outA.glimpses.find(x => x.speakerId === f.id && x.type === 'last_warning_answered');
+    assert.ok(g, `${f.name}: 応えてもらえた一言が出ない`);
+    assert.strictEqual(g.dialogue, LAST_WARNING_ANSWERED_LINES.stage[f.archetype][f.personality][0]);
+    assert.strictEqual(g.tone, 'positive');
+    assert.strictEqual(g.milestone, true);
+  });
+  // 声かけ(信頼20未満): execute の反応の鍵が encourage_last_warning、反応文は原因の表(給与などは general)
+  picks.forEach(c => {
+    [['stage', 'stage'], ['bonds', 'bonds'], ['pay', 'general'], [null, 'general']].forEach(([cause, table]) => {
+      const f = fighterOf(c, { trust: 17, lastWarning: cause ? { cause, week: abs - 2, answered: false } : undefined });
+      const e = Engine.shachoshitsu.execute('encourage', f.id, mkState([f, mk(9001), mk(9002)]));
+      assert.ok(!e.error, e.error);
+      assert.strictEqual(e.reactionKey, 'encourage_last_warning');
+      const text = Engine.shachoshitsu.getReactionText(e.reactionKey, fOf(e.roster, f.id));
+      assert.strictEqual(text, LAST_WARNING_ENCOURAGE_LINES[table][c.archetype][c.personality][0], `${c.name} ${cause}`);
+    });
+  });
+});
+
+section('tickWeek を通して(実表・実在の選手): 20を割った週の噂(出番)の本人の一言が原因の表の1本', () => {
+  const G0 = advanceUntil({ seed: 42, until: g => g.season === 2 && g.week === 5 && g.weekPhase === 'manage' && !g.offSeason });
+  const pool = G0.roster.filter(f => !f.isRental && !f.injury && !f.onLeave);
+  let hit = 0;
+  // 20割れの噂は率の抽選があるので、選手を替えて最初に出た1人で確かめる
+  for (const hero of pool) {
+    const roster = G0.roster.map(f => (f.id === hero.id ? { ...f, trust: 18, trustStrain: { stage: 9, bonds: 2, other: 1 } } : f));
+    const G = { ...G0, roster, _glimpseAPrevTrust: { ...(G0._glimpseAPrevTrust || {}), [hero.id]: 24 } };
+    const r = Engine.tickWeek(G);
+    const g = (r.state._pendingGlimpseA || []).find(x => x.speakerId === hero.id && x.type === 'trust_below_20');
+    if (!g) continue;
+    assert.strictEqual(g.cause, 'stage');
+    assert.strictEqual(g.dialogue, LAST_WARNING_RUMOR_LINES.stage[hero.archetype][hero.personality][0], `${hero.name}`);
+    hit++;
+    break;
+  }
+  assert.strictEqual(hit, 1, '噂が一度も出なかった(前提)');
+});
+
+section('EN: 204本すべてに英訳があり(日本語が残らない・吹き出し110字以内)、表示の t() で英語になる', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const vm = require('vm');
+  const srcDir = path.join(__dirname, '..', 'src');
+  const sandbox = { console };
+  sandbox.globalThis = sandbox;
+  vm.createContext(sandbox);
+  ['i18n.js', 'lang-en.js', 'lang-en-templates.js', 'lang-en-dialogue.js', 'lang-en-names.js'].forEach(f => {
+    new vm.Script(fs.readFileSync(path.join(srcDir, f), 'utf8'), { filename: f }).runInContext(sandbox);
+  });
+  const EN = sandbox.WM_I18N;
+  EN.setLang('en');
+  const JA_RE = /[぀-ヿ㐀-鿿]/;
+  allLwLines().forEach(l => {
+    const en = EN.t(l.line);
+    assert.ok(en !== l.line && !JA_RE.test(en), `EN が無い: ${l.name}.${l.cause}.${l.a}.${l.p} ${l.line} => ${en}`);
+    assert.ok(en.length <= 110, `EN が吹き出しの長さを超える(${en.length}): ${en}`);
+  });
+});
+
 if (failed > 0) {
   console.log(`\n${failed} section(s) FAILED`);
   process.exit(1);

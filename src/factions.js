@@ -5684,6 +5684,51 @@ Engine.factions = {
     return none;
   },
 
+  // ── 派閥が消えたときの週のログ(2026-09-26 Keisuke 承認「派閥が人数割れで消えたとき、ログに1行」) ──
+  // 派閥が消える処理の直前(before)と直後(after)の state を比べ、直前にあって直後に無い派閥ごとに1行を組む。
+  // 純関数・表示専用(state も乱数も触らない)。記事は出さない。
+  // 呼ぶのは、ほかに表示が無い経路だけ:
+  //   tickWeek の reconcileRoster(リーダー不在の後継判定で解散)と checkDissolutionConditions(人数割れ・一派閥の独占)、
+  //   季末の引退の確定(commitRetirements の reconcileRoster: 引退したリーダーの後継が立たず解散)
+  //   ※ F03(リーダー喪失の結果モーダル+業界ニュース)と社長の派閥解散命令(ログ「⚖️ 社長命令により…」+結果モーダル)は
+  //     それぞれ表示があるので呼ばない(二重にしない)
+  // 理由は直前の state から決める(checkDissolutionConditions / handleLeaderLoss と同じ規則):
+  //   リーダーが直後のロスターにいない → leader(残った者がいる)/ leader_alone(誰もいない)
+  //   直前にロスターの dissolveRatioThreshold 以上を抱えた派閥がある(一派閥の独占で全派閥が消えた)
+  //     → その派閥は dominance、ほかの派閥は dominance_other
+  //   それ以外(人数割れ)→ リーダーのもとに残った者が1人: members_last(その名前)/ 0人: members_alone / それ以外: members
+  // 戻り値: [{ type: 'faction_dissolved', data: { variant, factionName, leaderName?, remainName? } }, ...]
+  buildDissolutionLogs(before, after) {
+    const beforeF = (before && before.factions) || [];
+    if (!beforeF.length) return [];
+    const afterF = (after && after.factions) || [];
+    const afterIds = new Set(afterF.map(f => f.id));
+    const vanished = beforeF.filter(f => f && !afterIds.has(f.id));
+    if (!vanished.length) return [];
+    const roster = (after && after.roster) || [];
+    const byId = new Map(roster.map(c => [c.id, c]));
+    const beforeRosterSize = ((before && before.roster) || []).filter(c => !c.isRental).length;
+    const dominant = (afterF.length === 0 && beforeRosterSize > 0)
+      ? beforeF.find(f => (f.memberIds || []).length / beforeRosterSize >= FACTION_CONFIG.dissolveRatioThreshold) : null;
+    return vanished.map(f => {
+      const leader = byId.get(f.leaderId);
+      const others = (f.memberIds || []).filter(id => id !== f.leaderId && byId.has(id));
+      let data;
+      if (!leader) {
+        data = { variant: others.length ? 'leader' : 'leader_alone', factionName: f.name };
+      } else if (dominant) {
+        data = { variant: f.id === dominant.id ? 'dominance' : 'dominance_other', factionName: f.name };
+      } else if (others.length === 1) {
+        data = { variant: 'members_last', factionName: f.name, leaderName: leader.name, remainName: byId.get(others[0]).name };
+      } else if (others.length === 0) {
+        data = { variant: 'members_alone', factionName: f.name, leaderName: leader.name };
+      } else {
+        data = { variant: 'members', factionName: f.name };
+      }
+      return { type: 'faction_dissolved', data };
+    });
+  },
+
   // ── §4.3 F06 強制発火(40週の2択)— 派閥イベント F06_FORCE ──
   // checkRivalryResolution が返した forceClose から、画面とエンジン(auto-sim)が使う payload を組む。
   // 記録や派閥が無ければ null(呼び出し側はイベントを立てない)

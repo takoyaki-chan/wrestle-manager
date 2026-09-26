@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3600件、訳文あり3600件)
+//  生成元: i18n/template-ledger.json (総キー3607件、訳文あり3607件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3428,6 +3428,13 @@
     "🎤 ファンミーティングの企画提案": "🎤 A fan meeting proposal",
     "🎫 逸材特別交渉枠を使用しました": "🎫 Used your special standout negotiation slot",
     "🎬 ベストマッチ賞（試合評価 {mq}）": "🎬 Won Best Match (rated {mq})",
+    "🎭 {factionName}が解散した。まとめ役がいなくなり、あとに残る者もいなかった": "🎭 {factionName} has disbanded. Its leader was gone, and no one was left to carry on.",
+    "🎭 {factionName}が解散した。まとめ役を失い、メンバーは散り散りになった": "🎭 {factionName} has disbanded. With its leader gone, the members went their separate ways.",
+    "🎭 {factionName}が解散した。メンバーが抜けていき、{leaderName}のもとには誰も残らなかった": "🎭 {factionName} has disbanded. Its members drifted away until no one was left with {leaderName}.",
+    "🎭 {factionName}が解散した。メンバーが抜けていき、{leaderName}のもとに残ったのは{remainName}だけだった": "🎭 {factionName} has disbanded. Its members drifted away until only {remainName} was left with {leaderName}.",
+    "🎭 {factionName}が解散した。メンバーが抜けていき、派閥の形を保てなくなった": "🎭 {factionName} has disbanded. Its members drifted away until it could no longer hold together as a faction.",
+    "🎭 {factionName}が解散した。団体のほぼ全員がひとつの派閥に集まり、派閥の区切りそのものがなくなった": "🎭 {factionName} has disbanded. Nearly the whole roster had gathered in a single faction, and the lines between factions disappeared.",
+    "🎭 {factionName}が解散した。団体のほぼ全員が加わり、派閥の区切りそのものがなくなった": "🎭 {factionName} has disbanded. Nearly the whole roster had joined it, and the lines between factions disappeared.",
     "🎯 {name}が技の精度を上げてきた": "🎯 {name} has sharpened her execution",
     "🎯 目標: 業界1位の団体を超えてエンディングを目指せ！": "🎯 Goal: pass the number one promotion in the business and reach the ending!",
     "🏁 {name}({age}歳)が度重なる怪我により引退": "🏁 {name} ({age}) retired after repeated injuries",

@@ -8436,9 +8436,16 @@ const Engine = {
 
       // Keep faction membership consistent immediately; waiting for the next weekly
       // reconciliation lets retired members survive in a saved faction state.
+      // 引退したリーダーの後継が立たずに派閥が消えたら、引退の行の後にログを1行(2026-09-26 Keisuke 承認・表示だけ。
+      // この経路は F03 のモーダルも記事も出ないため)
+      let factionDissolvedLogs = [];
       if (Engine.factions?.reconcileRoster) {
         const factionRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, 0xFA47, s.season));
+        const factionBefore = s;
         s = Engine.factions.reconcileRoster(s, factionRng);
+        if (typeof Engine.factions.buildDissolutionLogs === 'function') {
+          factionDissolvedLogs = Engine.factions.buildDissolutionLogs(factionBefore, s);
+        }
       }
 
       // 3. O-04 関係値 (bond60+ → 引退者 bond -10〜-5)
@@ -8485,6 +8492,7 @@ const Engine = {
 
       // 7. events
       retiredWithRecords.forEach(c => events.push(`🏁 ${c.name}(${c.age}歳)が引退を表明`));
+      factionDissolvedLogs.forEach(l => events.push({ ...l, s: s.season, w: s.week }));
 
       // 8. validateChampion (王者引退時の王座空位化)
       const vc = Engine.title.validateChampion(s);
@@ -15152,6 +15160,15 @@ const Engine = {
         if (Engine.factions) s = Engine.factions.expireF02PendingIgnite(s);
         // v4 §2-1: F02② 仲裁 watch の期限切れ掃除
         if (Engine.factions) s = Engine.factions.sweepF02PeaceWatches(s);
+        // 派閥が消えた週のログ(2026-09-26 Keisuke 承認)。消える処理(後継判定・人数割れ/独占の消滅判定)の直前と直後を
+        // 比べて1派閥1行(Engine.factions.buildDissolutionLogs・表示だけ)。F03 と解散命令は別の表示があるのでここを通らない
+        const factionDissolvedLogs = [];
+        const noteDissolved = (before, after) => {
+          if (Engine.factions && typeof Engine.factions.buildDissolutionLogs === 'function') {
+            factionDissolvedLogs.push(...Engine.factions.buildDissolutionLogs(before, after));
+          }
+          return after;
+        };
         // 1) F03/F01/F02/F04-F08 いずれかの条件が成立していれば pending を立てて処理を保留
         const picked = Engine.factions ? Engine.factions.pickWeeklyEvent(s, evtRng) : {};
         if (Engine.factions && picked.eventId) {
@@ -15164,17 +15181,19 @@ const Engine = {
             s = Engine.factions.processFactionInfluenceOnRelationships(s, facRng);
             s = Engine.factions.processWeeklyHostilityDecay(s);
             s = Engine.factions.processWeeklyMomentumDecay(s);
-            s = Engine.factions.checkDissolutionConditions(s);
+            s = noteDissolved(s, Engine.factions.checkDissolutionConditions(s));
           }
         } else if (Engine.factions) {
           // イベント発動なし: 通常パイプライン
-          s = Engine.factions.reconcileRoster(s, facRng);
+          s = noteDissolved(s, Engine.factions.reconcileRoster(s, facRng));
           s = Engine.factions.processWeeklyMemberChanges(s, facRng);
           s = Engine.factions.processFactionInfluenceOnRelationships(s, facRng);
           s = Engine.factions.processWeeklyHostilityDecay(s);
           s = Engine.factions.processWeeklyMomentumDecay(s);
-          s = Engine.factions.checkDissolutionConditions(s);
+          s = noteDissolved(s, Engine.factions.checkDissolutionConditions(s));
         }
+        // 抗争の決着(相手の派閥の消滅で終わった記録のログ)より前に並べる
+        factionDissolvedLogs.forEach(l => events.push({ ...l, s: s.season, w: s.week }));
         // §6 FACE⇄HEEL 遷移：heelAlignment 週次 drift + 閾値判定（pending イベントの有無に関わらず実行）
         if (Engine.factions && typeof Engine.factions.driftHeelAlignmentWeekly === 'function') {
           s = Engine.factions.driftHeelAlignmentWeekly(s);

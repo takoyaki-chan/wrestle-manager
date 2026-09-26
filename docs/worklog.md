@@ -1,5 +1,56 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 退団寸前の引き留めのセリフ204本の流し込み+派閥が消えたときのログ1行(Claude/Opus 5.5・worktree)
+
+Keisuke 承認の2件。数値は変えていない(表示とログだけ)。
+
+### 1. 引き留めのセリフ204本(承認: 本文のまま・【迷い】6本はすべて1案目)
+| 何を | どこへ |
+|---|---|
+| 正本 `docs/care-last-warning-lines-draft.md` の6表(§2〜§7)の日本語1案目 | `src/data.js` の空の器: `LAST_WARNING_RUMOR_LINES` stage/bonds 各34・`LAST_WARNING_ENCOURAGE_LINES` stage/bonds/general 各34(下書きの「はっきりしない」= general)・`LAST_WARNING_ANSWERED_LINES` stage 34。形は 原因→アーキタイプ→性格→[1本]。セル名の対応 標準/お嬢様/クール/ヤンキー/丁寧/蠱惑/鷹揚 = standard/ojousama/cool/delinquent/polite/seductive/composed、ノーマル/強気/寡黙/内気/お気楽/真面目/感情的 = normal/bold/quiet/shy/easygoing/earnest/emotional |
+| 同じ表の英語1案目 | `i18n/dialogue-ledger.json` に204行(`node test/i18n-extract-dialogue.js` で行を立て、en を入れた)→ `node test/i18n-build-dialogue-dict.js` で `src/lang-en-dialogue.js` を再生成(機械検査 違反0・未訳0) |
+
+- **突き合わせ(スクリプト・差0件)**: 下書きを表ごとに読み、data.js を読み込んだ値・台帳の en・`WM_I18N.t()` の英訳(EN に切り替えた実物)と1本ずつ比べた。下書き204本/data.js 204本/差0件。data.js にだけあるセルも0
+- **全127人が自分のセルを引く**: 34セルはすべて実在の組。`Engine.trust.lastWarningLinePool` が全127人×3表6原因で自分のセルの1本を返す(normal への落ち・null なし)。同じ文の重複0・プレースホルダ0・数字0
+- **ワークブックの台帳**: `node tools/extract-dialogue.js` が 68/102/34 の ID(`LAST_WARNING_ENCOURAGE_LINES.general.polite.quiet[1]` など)を拾うことを確認。docs/dialogue/ の再生成は無関係な差分(既存の古さ)が大きいので戻した。xlsx の書き出しはしていない
+- **出ることの確認**: 回帰 `test/care-last-warning-test.js` に5節(34セル×6表/全127人/実在の7人で checkALayer の20割れの噂(出番・人間関係)・応えてもらえた一言(tone positive・milestone)・`execute('encourage')` → `encourage_last_warning` → 反応文(出番/人間関係/給与=general/原因なし=general)/tickWeek を通した噂の一言/EN 204本すべて英訳あり・110字以内)。実UI `node test/ui-walkthrough/care-last-warning-lines-check.js`(手動実行): fixture を加工し、道場の確定枠(噂 出番×2・人間関係・応えてもらえた)と声かけの結果モーダル(出番・人間関係・給与・原因なし)を JA/EN で踏んで 96 項目 OK(吹き出しの文が表の1本/その英訳・話し手・吹き出しが画像の上・名前を書かない・EN に日本語が残らない・地の文「表情は硬いまま」)
+- 数値: auto-sim 40季 seed42 の意味の指紋 **db9b0841(変更前と一致)**。噂の一言・反応文の文選びは Math.random を1回引く形のまま(表の本数に依らない)
+- i18n-ratchet: data.js +204(この204本)で基準を更新
+
+**流し込みで見つけたこと(直していない・裁定待ち)**
+- **吹き出しで「…」に切れる**: 道場の「休憩中の選手」の吹き出しは幅150px・2行で切る(`.dojo-rest-bubble`・`-webkit-line-clamp:2`)。実ブラウザで行数を数えると、道場に出る102本(噂68+応えてもらえた34)のうち **JA 89本・EN 92本が3行以上**で最後まで読めない(既存の信頼15割れの一言も 24/34)。声かけの結果モーダルの本人の吹き出しも2行で切れる(例 標準×真面目の出番「…気持ちは離れて…」)。UI の物差し(02-layouts「長文は2行程度で切る」)どおりの挙動なので触っていない。吹き出しを広げるか、確定枠だけ行数を増やすかは裁定
+- **マーカーの食い違い**: 信頼20未満の声かけでも、相性の倍率(`calcUncertainty`)で「深く刺さった」(EN: It really landed)のマーカーが出る。同じモーダルの地の文は「話は最後まで聞いてくれた。けれど、表情は硬いままだ」。`encourage_last_warning` のときマーカーを出さない(`suppressTone`)なら1行で直る
+- **確定枠に出ない週**: 道場の確定枠(噂・応えてもらえた一言)は、その子が同じ週の中央の練習の列(0〜3人の抽選)に選ばれると出ない(既存の `practicingIds` の除外)
+- **既存の未訳**: 社長室の決裁モーダルの取次の帯「決裁の結果をお伝えします」(と「対象となる選手を選んでください」「支給額を選んでください」ほか)が英語でも日本語のまま。`_mdlAReporterStrip` に生の日本語を渡していて辞書にも無い。この作業の範囲外
+
+### 2. 派閥が消えたとき週のログに1行(承認)。記事は出さない
+**派閥が消える経路(全部数えた)**
+| 経路 | 今までの表示 | 今回 |
+|---|---|---|
+| tickWeek `checkDissolutionConditions` §2.4 人数割れ(3人未満) | 無し(派閥画面から消えるだけ。抗争中の相手がいたときだけ「⚔ …相手の派閥の消滅で終わった」) | **1行**(`members_last` / `members_alone` / `members`) |
+| 同 §2.6 一派閥の独占(ロスターの8割で全派閥が消える。仕様の通知文は未実装だった) | 無し | **1行ずつ**(`dominance` / `dominance_other`) |
+| tickWeek `reconcileRoster` → `handleLeaderLoss` → `_dissolveFaction`(後継が立たない) | 無し(F03 が先に立つので実際にはほぼ通らない) | **1行**(`leader` / `leader_alone`) |
+| 季末の引退の確定 `commitRetirements` → `reconcileRoster`(引退したリーダーの後継が立たない) | 無し(F03 を通らない) | **1行**(引退の行の後) |
+| F03 の結果(`applyF03Result` dissolution / 後継なし) | 結果モーダル+業界ニュース `factionDissolution` | 出さない(二重にしない) |
+| 社長の派閥解散命令(`dissolveAllByDecree`) | ログ「⚖️ 社長命令により ○○派 を解散させた」+結果モーダル | 出さない(二重にしない) |
+
+- 仕組み: `Engine.factions.buildDissolutionLogs(before, after)`(消える処理の直前・直後の state を比べる純関数。表示専用・乱数も state も触らない)。理由は直前の state から決める(checkDissolutionConditions / handleLeaderLoss と同じ規則)。tickWeek は `reconcileRoster` と `checkDissolutionConditions` の前後で呼び、抗争の決着のログより前に並べる。`commitRetirements` は「🏁 引退を表明」の後に並べる
+- **文面(`GAMELOG_TEMPLATES.faction_dissolved`・分類 event・英訳つき)**:
+  - members_last: 🎭 {factionName}が解散した。メンバーが抜けていき、{leaderName}のもとに残ったのは{remainName}だけだった / 🎭 {factionName} has disbanded. Its members drifted away until only {remainName} was left with {leaderName}.
+  - members_alone: 🎭 {factionName}が解散した。メンバーが抜けていき、{leaderName}のもとには誰も残らなかった / 🎭 {factionName} has disbanded. Its members drifted away until no one was left with {leaderName}.
+  - members(リーダーが memberIds に居ない壊れた形の保険): 🎭 {factionName}が解散した。メンバーが抜けていき、派閥の形を保てなくなった / 🎭 {factionName} has disbanded. Its members drifted away until it could no longer hold together as a faction.
+  - leader: 🎭 {factionName}が解散した。まとめ役を失い、メンバーは散り散りになった / 🎭 {factionName} has disbanded. With its leader gone, the members went their separate ways.
+  - leader_alone: 🎭 {factionName}が解散した。まとめ役がいなくなり、あとに残る者もいなかった / 🎭 {factionName} has disbanded. Its leader was gone, and no one was left to carry on.
+  - dominance: 🎭 {factionName}が解散した。団体のほぼ全員が加わり、派閥の区切りそのものがなくなった / 🎭 {factionName} has disbanded. Nearly the whole roster had joined it, and the lines between factions disappeared.
+  - dominance_other: 🎭 {factionName}が解散した。団体のほぼ全員がひとつの派閥に集まり、派閥の区切りそのものがなくなった / 🎭 {factionName} has disbanded. Nearly the whole roster had gathered in a single faction, and the lines between factions disappeared.
+  - 🎭 は派閥画面の見出しと同じ印。派閥名は保存値「{surname}派」→ 表示時に言語別(EN「Abukuma Group」)
+- i18n: テンプレ台帳に7本、`src/lang-en-templates.js` 再生成。ratchet は data.js +7 で基準更新
+- 回帰: `test/faction-dissolution-log-test.js`(9節: 純関数の7通り/checkDissolutionConditions を通した人数割れと独占/JA の文面/EN の文面(日本語なし・Group・選手名の英語)/tickWeek で1行・抗争の決着より前・記事なし/ログの有無で tickWeek の state が1ビットも変わらない/引退の確定で引退の行の後に leader/解散命令と F03 の週では出ない)
+
+### 検証
+- `npm test` 312/312 PASS・`node test/auto-sim.js 40 42` ALL CLEAR・意味の指紋 db9b0841(変更前と一致。auto-sim の世界は派閥ができない)・`npm run test:k1:parity` PASS(未登録の差分0)・`node test/ja-golden.js` 基準と完全一致・`node test/i18n-ratchet.js` OK(基準更新後)・UI 走破1本 `npm run test:ui:walkthrough` PASS(1季・345操作・S2W1 着地)。最後に main(c36ed0a1 新聞1面の次回展望ほか)を取り込み、`npm test` 312/312 PASS・ratchet OK
+- specs: `trust-system-spec-v2.1.md` §13.3・§17-5(表の本文・既知の制約)、`faction-system-spec-v0.1.md` §2.4・§2.5・§2.6。実機確認は `docs/実機確認バックログ.md` の先頭の節
+
 ## 2026-09-26 新聞1面に「次回展望」の欄を戻した — 案B・黒田コラムの上に3行(Claude/Opus 5.5・worktree)
 
 Keisuke 裁定(09-26)「新聞1面に次回展望の欄を戻す(案B: 黒田コラムの上に、別の欄として3行)」。2026-04-26 の新聞 v3.1 で1面から外れ、黒田の `KURODA_PREVIEW` が未配線のまま残っていたもの。材料(`buildPreview` / `buildShowNewspaperData` の `preview`)は揃っており、因縁ペアは同日の修正(`pickPreviewRivalry`)で入るようになっていた。仕様の正は `specs/newspaper-spec-v1.0.md` §3-7(欄の決まりを表で追記)。**数値は変えていない(表示だけ)**。
