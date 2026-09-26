@@ -338,9 +338,10 @@ function repairState(inputState) {
       ...state.dormantPool.map(e => Number(e.id)),
     ].filter(Number.isFinite));
 
+    // K-4 S5: 休みはIDごと(注目の人生は15季・通常は5季)
     return state.retiredIds
       .filter(id => !blocked.has(id))
-      .filter(id => state.retiredSeasons[id] !== undefined && (state.season || 1) - state.retiredSeasons[id] >= RETIRED_COOLDOWN)
+      .filter(id => state.retiredSeasons[id] !== undefined && Engine.life.canReturn(state, id, false))
       .sort((a, b) => (state.retiredSeasons[a] || 0) - (state.retiredSeasons[b] || 0));
   };
 
@@ -353,8 +354,10 @@ function repairState(inputState) {
       ...state.dormantPool.map(e => Number(e.id)),
     ].filter(Number.isFinite));
 
+    // K-4 S5: 非常時に休みを無視するのは通常の人生だけ(注目の人生は戻さない)
     return state.retiredIds
       .filter(id => !blocked.has(id))
+      .filter(id => Engine.life.canReturn(state, id, true))
       .sort((a, b) => (state.retiredSeasons[a] || 0) - (state.retiredSeasons[b] || 0));
   };
 

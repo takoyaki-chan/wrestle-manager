@@ -168,10 +168,16 @@ const Engine = {
       (state.freeAgents || []).forEach(c => blocked.add(c.id));
       (state.scoutCandidates || []).forEach(c => blocked.add(c.id));
       (state.dormantPool || []).forEach(e => blocked.add(e.id));
+      // K-4 S5: 休みはIDごと(注目の人生は15季・通常は5季)。「重症」の非常補充(includeCooldownLocked)で
+      // 休みを無視するのは通常の人生だけで、注目の人生は非常時でも戻さない(Engine.life.canReturn)。
+      // 並びは休みを終えた人生を先に、それぞれ引退の古い順(通常の人生を先に使う)
+      const rs = state.retiredSeasons || {};
+      const withSeason = { ...state, retiredSeasons: Object.fromEntries((state.retiredIds || []).map(id => [id, rs[id] || 0])) };
+      const served = id => Engine.life.canReturn(withSeason, id, false);
       return (state.retiredIds || [])
         .filter(id => !blocked.has(id))
-        .filter(id => includeCooldownLocked || (((state.season || 1) - ((state.retiredSeasons || {})[id] || 0)) >= Engine.saveDoctor.RETIRED_COOLDOWN))
-        .sort((a, b) => (((state.retiredSeasons || {})[a] || 0) - ((state.retiredSeasons || {})[b] || 0)));
+        .filter(id => Engine.life.canReturn(withSeason, id, !!includeCooldownLocked))
+        .sort((a, b) => (Number(served(b)) - Number(served(a))) || ((rs[a] || 0) - (rs[b] || 0)));
     },
 
     _spawnFA(state, entries, salt) {
@@ -19186,7 +19192,7 @@ const Engine = {
           const RETURN_COUNT = DORMANT_POOL_CFG.annualRefillCap || 8;
           const FIFO_COUNT = Math.min(4, RETURN_COUNT);
           const RANDOM_COUNT = Math.max(0, RETURN_COUNT - FIFO_COUNT);
-          const COOLDOWN = DORMANT_POOL_CFG.retiredCooldown || 5;
+          // K-4 S5: 休みの長さはIDごと(注目の人生は15季・通常は5季。Engine.life.returnCooldown)
 
           const occupiedIds = new Set();
           (s.roster || []).forEach(c => occupiedIds.add(c.id));
@@ -19197,7 +19203,7 @@ const Engine = {
           const eligible = retiredIds.filter(id => {
             if (occupiedIds.has(id)) return false;
             const retSeason = retiredSeasons[id];
-            return retSeason !== undefined && s.season - retSeason >= COOLDOWN;
+            return retSeason !== undefined && s.season - retSeason >= Engine.life.returnCooldown(s, id);
           });
 
           const sorted = [...eligible].sort((a, b) => (retiredSeasons[a] || 0) - (retiredSeasons[b] || 0));
@@ -20656,6 +20662,34 @@ Engine.life = {
       titleReigns, crowned, alumni, hof: !!o.hof,
     };
   },
+  // ── 戻ってくるまでの休み(S5。設計書 §5) ──
+  /** 引退したIDの前の人生が「注目の人生」か: その人生で (a) 殿堂入りした (b) 王座を獲った(団体王座・
+   *  統一王座・天頂戦優勝) (c) 自団体に在籍した。retiredLives が無いとき(旧データ・欠落IDの救済)は、
+   *  殿堂(a)と年代記アーカイブ(c。自団体の引退者だけが載る)で判定する */
+  isNotableLife(state, id) {
+    const nid = Number(id);
+    const rl = state && state.retiredLives && state.retiredLives[nid];
+    if (rl && typeof rl === 'object') return !!(rl.hof || rl.crowned || rl.alumni);
+    const life = Engine.life.current(state, nid);
+    return !!(Engine.life.findHofEntry(state, nid, life) || Engine.life.findArchiveEntry(state, nid, life));
+  },
+  /** 引退したIDが休眠プールへ戻れるまでの季数(注目の人生は retiredCooldownNotable=15・通常は retiredCooldown=5)。
+   *  3つの転生経路(季末の補充・ロード時修復・CLI)で同じ判定を使う */
+  returnCooldown(state, id) {
+    const cfg = (typeof DORMANT_POOL_CFG !== 'undefined' && DORMANT_POOL_CFG) || {};
+    return Engine.life.isNotableLife(state, id)
+      ? (cfg.retiredCooldownNotable || 15)
+      : (cfg.retiredCooldown || 5);
+  },
+  /** 引退したIDが今季、休眠プールへ戻れるか。emergency(ロード時の「重症」の非常補充)は通常の人生だけ
+   *  休みを無視する。注目の人生は非常時でも休みを短縮しない */
+  canReturn(state, id, emergency) {
+    const retSeason = (state && state.retiredSeasons || {})[id];
+    const served = retSeason !== undefined && ((state.season || 1) - retSeason) >= Engine.life.returnCooldown(state, id);
+    if (served) return true;
+    return !!emergency && !Engine.life.isNotableLife(state, id);
+  },
+
   /** retiredLives に要約を書いた新しい state(summaries: Array<[id, summary]>) */
   recordRetiredLives(state, summaries) {
     if (!state || !Array.isArray(summaries) || summaries.length === 0) return state;

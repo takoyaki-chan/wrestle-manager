@@ -42,7 +42,10 @@ const P = {
   leaks: [],             // デビュー済み→休眠プール直行 { id, season, from }
   gate: { calls: 0, carried: 0, carriedStores: {}, debutedPrev: 0 },
   faRet: { seasons: new Set(), total: 0, ages: [], hofJudged: 0, inducted: 0, newsQueued: 0, printed: 0, pending: new Map() },
-  repair: { runs: 0, returned: 0, viaGate: 0 },
+  repair: { runs: 0, returned: 0, viaGate: 0, notableEarly: 0, notableReturned: 0 },
+  // S4/S5: 引退した人生(retiredLives の書き込み)と、転生の関所での前の人生の分類
+  lives: { retired: { notable: 0, normal: 0 }, reborn: { notable: 0, normal: 0, unknown: 0 },
+    gapNotable: [], gapNormal: [], earlyNotable: 0 },
 };
 const lineage = new Map(); // id -> { lin, debuted, lastSeenSeason, retiredSeen, where }
 let linCounter = 0;
@@ -73,6 +76,20 @@ function afterLoad() {
   if (E.life && typeof E.life.beginNewLife === 'function') {
     const orig = E.life.beginNewLife;
     E.life.beginNewLife = function probeBeginNewLife(state, id) {
+      // S5: 関所を通る直前に、前の人生が注目の人生だったかと、引退からの間隔を記録する
+      if (typeof E.life.isNotableLife === 'function') {
+        const rl = state && state.retiredLives && state.retiredLives[Number(id)];
+        if (rl) {
+          const notable = E.life.isNotableLife(state, Number(id));
+          const gap = (state.season || 1) - (Number(rl.endSeason) || 0);
+          P.lives.reborn[notable ? 'notable' : 'normal'] += 1;
+          (notable ? P.lives.gapNotable : P.lives.gapNormal).push(gap);
+          const cfg = global.DORMANT_POOL_CFG || {};
+          if (notable && gap < (cfg.retiredCooldownNotable || 15)) P.lives.earlyNotable += 1;
+        } else {
+          P.lives.reborn.unknown += 1;
+        }
+      }
       const out = orig.apply(this, arguments);
       P.gate.calls += 1;
       const prev = lineage.get(Number(id));
@@ -104,6 +121,17 @@ function afterLoad() {
       return out;
     };
   }
+  // S4: 引退した人生の要約の書き込み(注目/通常の引退数)
+  if (E.life && typeof E.life.recordRetiredLives === 'function') {
+    const orig = E.life.recordRetiredLives;
+    E.life.recordRetiredLives = function probeRecordRetiredLives(state, summaries) {
+      (summaries || []).forEach(([, sum]) => {
+        if (!sum) return;
+        P.lives.retired[(sum.hof || sum.crowned || sum.alumni) ? 'notable' : 'normal'] += 1;
+      });
+      return orig.apply(this, arguments);
+    };
+  }
   if (LOAD_REPAIR && E.saveDoctor && typeof E.saveDoctor.repairOnLoad === 'function') {
     // 観測側から呼ぶ(下の observe)。ここでは何もしない
   }
@@ -117,6 +145,12 @@ function observe(G) {
     P.seen.repair.add(season);
     const retiredBefore = new Set((G.retiredIds || []).map(Number));
     const serialBefore = { ...(G.lifeSerial || {}) };
+    const E = global.Engine;
+    const notableBefore = new Map();
+    if (E.life && typeof E.life.isNotableLife === 'function') {
+      retiredBefore.forEach(id => notableBefore.set(id, E.life.isNotableLife(G, id)));
+    }
+    const seasonsBefore = { ...(G.retiredSeasons || {}) };
     const rep = global.Engine.saveDoctor.repairOnLoad(G);
     P.repair.runs += 1;
     if (rep && rep.changed) {
@@ -128,6 +162,12 @@ function observe(G) {
         const b = serialBefore[id] != null ? serialBefore[id] : 1;
         const a = (after.lifeSerial || {})[id];
         if (a != null && a === b + 1) P.repair.viaGate += 1;
+        // S5: 注目の人生が15季より早く戻っていないか(非常補充を含む)
+        if (notableBefore.get(id)) {
+          P.repair.notableReturned += 1;
+          const cfg = global.DORMANT_POOL_CFG || {};
+          if (season - (Number(seasonsBefore[id]) || 0) < (cfg.retiredCooldownNotable || 15)) P.repair.notableEarly += 1;
+        }
       });
       G = after;
     }
@@ -267,7 +307,35 @@ function report() {
     lines.push('[フリーのまま引退] (このsrcには無い)');
   }
   if (LOAD_REPAIR) {
-    lines.push(`[ロード時修復] ${P.repair.runs}回 / 戻ったID ${P.repair.returned} / 関所を通った ${P.repair.viaGate}`);
+    lines.push(`[ロード時修復] ${P.repair.runs}回 / 戻ったID ${P.repair.returned} / 関所を通った ${P.repair.viaGate}`
+      + ` / うち注目の人生 ${P.repair.notableReturned}(15季未満で戻った ${P.repair.notableEarly})`);
+  }
+  if (global.Engine.life && typeof global.Engine.life.recordRetiredLives === 'function') {
+    const L = P.lives;
+    const rate = (a, b) => (b > 0 ? `${(100 * a / b).toFixed(0)}%` : '-');
+    lines.push(`[再デビュー率] 引退した人生 注目 ${L.retired.notable} / 通常 ${L.retired.normal} → 転生 注目 ${L.reborn.notable}(${rate(L.reborn.notable, L.retired.notable)})`
+      + ` / 通常 ${L.reborn.normal}(${rate(L.reborn.normal, L.retired.normal)}) / 要約なし ${L.reborn.unknown}`);
+    lines.push(`  引退→転生の間隔: 注目 最小 ${minOf(L.gapNotable)}・中央値 ${median(L.gapNotable)} / 通常 最小 ${minOf(L.gapNormal)}・中央値 ${median(L.gapNormal)}`
+      + ` / 注目の人生が15季未満で戻った ${L.earlyNotable}件`);
+  }
+  if (finalG) {
+    // S4: 殿堂・年代記アーカイブの人生番号
+    const hof = [];
+    Object.values(finalG.allHallOfFame || {}).forEach(l => { if (Array.isArray(l)) hof.push(...l); });
+    const arch = (finalG.chronicle && finalG.chronicle.fighterArchive) || [];
+    const dupCount = list => {
+      const seen = new Set(); let dup = 0;
+      list.forEach(e => { if (!e || e.lifeNo == null) return; const k = `${e.id}#${e.lifeNo}`; if (seen.has(k)) dup += 1; seen.add(k); });
+      return dup;
+    };
+    const multiIds = list => {
+      const m = new Map(); list.forEach(e => { if (e) m.set(e.id, (m.get(e.id) || 0) + 1); });
+      return [...m.values()].filter(n => n >= 2).length;
+    };
+    lines.push(`[恒久記録] 殿堂 ${hof.length}件(lifeNo 無し ${hof.filter(e => e && e.lifeNo == null).length} / (id,人生)の二重 ${dupCount(hof)} / 2つ以上の人生で殿堂入りしたID ${multiIds(hof)})`
+      + ` / 年代記アーカイブ ${arch.length}件(lifeNo 無し ${arch.filter(e => e && e.lifeNo == null).length} / 二重 ${dupCount(arch)} / 2つ以上の人生 ${multiIds(arch)})`);
+    const rl = finalG.retiredLives || {};
+    lines.push(`  retiredLives ${Object.keys(rl).length}件 / 引退枠 ${(finalG.retiredIds || []).length}ID(要約なし ${(finalG.retiredIds || []).filter(id => !rl[id]).length})`);
   }
   if (finalG) {
     const rr = ((finalG.relationshipHistory || {}).retiredRivalries || []);
