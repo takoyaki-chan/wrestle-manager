@@ -461,6 +461,17 @@ const Engine = {
       });
       if (before.missingRetiredSeasons.length > 0) changes.push(`retired_seasons_backfilled:${before.missingRetiredSeasons.length}`);
 
+      // K-4 S7: 既存セーブの人生番号の移行(1回だけ。設計書 §7)。引退の後始末(殿堂入りの確定)や
+      // 引退枠からの補充(転生の関所)より前に置く — 番号が数え直される前にそれらが番号を刻まないように
+      {
+        const mig = Engine.life.migrateLegacyLives(state);
+        if (mig.changed) {
+          state = mig.state;
+          const r = mig.report || {};
+          changes.push(`k4_lives_migrated:hof${r.hofStamped || 0}/archive${r.archiveStamped || 0}/multi${r.multiLifeIds || 0}/reborn${r.rebornLiving || 0}/hofDup${r.hofDupRemoved || 0}`);
+        }
+      }
+
       // A prior season's records can survive if year-end presentation was
       // interrupted. Preserve the recycle clock while removing only stale
       // presentation records.
@@ -20389,8 +20400,8 @@ const Engine = {
     if (skipDraft && initState.roster && initState.roster.length > 0) {
       initState = Engine.prologue.create(initState);
     }
-    // K-4(人生番号): 全員 1番目の人生。団体ロスターは第1季デビュー
-    initState = Engine.life.stamp({ ...initState, lifeSerial: {} });
+    // K-4(人生番号): 全員 1番目の人生。団体ロスターは第1季デビュー。新しいゲームは移行(§7)不要
+    initState = Engine.life.stamp({ ...initState, lifeSerial: {}, [Engine.life.MIGRATION_FLAG]: true });
     return initState;
   }
 };
@@ -20688,6 +20699,215 @@ Engine.life = {
     const served = retSeason !== undefined && ((state.season || 1) - retSeason) >= Engine.life.returnCooldown(state, id);
     if (served) return true;
     return !!emergency && !Engine.life.isNotableLife(state, id);
+  },
+
+  // ── 既存セーブの移行(S7。設計書 §7) ──
+  //   repairOnLoad から毎ロード呼ばれ、印 _migrated_k4_lives_v1 が無いセーブで1回だけ走る。
+  //   M1 lifeSerial を作る / M2 殿堂・年代記アーカイブを終わりの季で並べて 1..k の人生番号を刻む /
+  //   M3 生きた選手の人生(デビューの推定が最後の記録の終わりより後なら k+1、そうでなければ k)/
+  //   M4 休眠プールのIDは k+1 / M5 引退枠のIDは引退した人生の番号 / M6 休眠プールのIDの生きた記録を今閉じる /
+  //   M7 転生済みの現役の関係値は切り分けない / M8 転生済みの現役の newsSeen.retired を消す /
+  //   M9 始まりの信用できない旧AI殿堂に startUnknown(表示は「〜S9」)。
+  //   旧セーブの選手に S2 の印付けで付いた lifeNo(全員 1)は正しい値として扱わない。lifeSerial は
+  //   max(既存, 数え直した値) で合わせる(移行前に関所を通った転生の番号を下げない)。
+  MIGRATION_FLAG: '_migrated_k4_lives_v1',
+  _MIGRATION_SAME_LIFE_GAP: 2,
+  /**
+   * @returns {{ state, changed: boolean, report: object|null }} 入力は書き換えない。印があれば何もしない
+   */
+  migrateLegacyLives(state) {
+    if (!state || typeof state !== 'object' || state[Engine.life.MIGRATION_FLAG]) return { state, changed: false, report: null };
+    const GAP = Engine.life._MIGRATION_SAME_LIFE_GAP;
+    const season = Number(state.season) || 1;
+    const seasonEndDone = !!state.offSeason && (Number(state.offWeek) || 0) >= 1;
+    const curSerial = (state.lifeSerial && typeof state.lifeSerial === 'object' && !Array.isArray(state.lifeSerial)) ? state.lifeSerial : {};
+    const serial = { ...curSerial };
+    const report = { idsWithRecords: 0, multiLifeIds: 0, hofStamped: 0, archiveStamped: 0, rebornLiving: 0, dormantClosed: 0, startUnknown: 0, unifiedStamped: 0 };
+    const endOf = (e, kind) => Number(kind === 'hof'
+      ? (e.activeSeasonsEnd != null ? e.activeSeasonsEnd : e.inductionSeason)
+      : (e.careerSeasonsEnd != null ? e.careerSeasonsEnd : e.retiredSeason)) || 0;
+
+    // M2: 記録(殿堂の全団体の欄・年代記アーカイブ)をIDごとに集め、終わりの季で人生に束ねる
+    const allHof = (state.allHallOfFame && typeof state.allHallOfFame === 'object') ? state.allHallOfFame : {};
+    const nextHof = {};
+    Object.keys(allHof).forEach(k => { nextHof[k] = Array.isArray(allHof[k]) ? allHof[k].map(e => (e && typeof e === 'object') ? { ...e } : e) : allHof[k]; });
+    const hasAllHof = Object.values(nextHof).some(l => Array.isArray(l) && l.length > 0);
+    const legacyHof = Array.isArray(state.hallOfFame) ? state.hallOfFame.map(e => (e && typeof e === 'object') ? { ...e } : e) : null;
+    const nextArchive = ((state.chronicle && state.chronicle.fighterArchive) || []).map(e => (e && typeof e === 'object') ? { ...e } : e);
+    const recs = new Map();
+    const push = (e, kind) => {
+      if (!e || e.id == null) return;
+      const id = Number(e.id);
+      if (!recs.has(id)) recs.set(id, []);
+      recs.get(id).push({ e, kind, end: endOf(e, kind), hadLife: Engine.life.entryLife(e) != null });
+    };
+    Object.values(nextHof).forEach(list => (Array.isArray(list) ? list : []).forEach(e => push(e, 'hof')));
+    // 旧 hallOfFame は allHallOfFame.player の写し。allHallOfFame が空の旧セーブだけ独立の記録として数える
+    if (legacyHof && !hasAllHof) legacyHof.forEach(e => push(e, 'hof'));
+    nextArchive.forEach(e => push(e, 'arch'));
+    const lifeInfo = new Map(); // id -> { k, lastEnd, clusters: [{lifeNo, end}] }
+    const droppedHof = new Set();
+    recs.forEach((list, id) => {
+      list.sort((a, b) => a.end - b.end);
+      const clusters = [];
+      list.forEach(r => {
+        const last = clusters[clusters.length - 1];
+        if (last && r.end - last.end <= GAP) { last.members.push(r); last.end = Math.max(last.end, r.end); }
+        else clusters.push({ end: r.end, members: [r] });
+      });
+      // 同じ人生が殿堂に2度登録されている旧データ(同じ在籍年で別の季にもう一度殿堂入りした不具合)は、
+      // 最初の殿堂入りだけ残す(I-2: 同じ (id, 人生) の殿堂エントリは1件)
+      clusters.forEach(c => {
+        const hofs = c.members.filter(r => r.kind === 'hof');
+        if (hofs.length < 2) return;
+        hofs.sort((a, b) => (Number(a.e.inductionSeason) || 0) - (Number(b.e.inductionSeason) || 0));
+        hofs.slice(1).forEach(r => { droppedHof.add(r.e); });
+        c.members = c.members.filter(r => !droppedHof.has(r.e));
+      });
+      let prev = 0;
+      clusters.forEach(c => {
+        const known = c.members.map(r => Engine.life.entryLife(r.e)).filter(n => n != null);
+        const n = known.length > 0 ? Math.max(...known) : prev + 1;
+        c.lifeNo = Math.max(n, prev + 1);
+        prev = c.lifeNo;
+        c.members.forEach(r => {
+          if (r.hadLife) return;
+          r.e.lifeNo = c.lifeNo;
+          if (r.kind === 'hof') {
+            report.hofStamped += 1;
+            // M9: 始まりの信用できない旧AI殿堂(AI選手はデビュー記録が無く、常に S1 始まりだった)
+            if (r.e.orgId && r.e.orgId !== 'player' && (Number(r.e.activeSeasonsStart) || 1) <= 1) { r.e.startUnknown = true; report.startUnknown += 1; }
+          } else report.archiveStamped += 1;
+        });
+      });
+      report.idsWithRecords += 1;
+      if (clusters.length >= 2) report.multiLifeIds += 1;
+      lifeInfo.set(id, { k: prev, lastEnd: clusters.length ? clusters[clusters.length - 1].end : 0,
+        clusters: clusters.map(c => ({ lifeNo: c.lifeNo, end: c.end })) });
+    });
+    if (droppedHof.size > 0) {
+      Object.keys(nextHof).forEach(k => { if (Array.isArray(nextHof[k])) nextHof[k] = nextHof[k].filter(e => !droppedHof.has(e)); });
+      report.hofDupRemoved = droppedHof.size;
+    }
+    // 旧 hallOfFame は allHallOfFame.player の写し(書き手はいつも allHof.player を代入する)。同じ中身にそろえる
+    let nextLegacyHof = legacyHof;
+    if (legacyHof && hasAllHof) nextLegacyHof = Array.isArray(nextHof.player) ? nextHof.player.slice() : legacyHof;
+    else if (legacyHof && droppedHof.size > 0) nextLegacyHof = legacyHof.filter(e => !droppedHof.has(e));
+
+    // M3: 生きた選手(自団体・AI団体・FA・スカウト候補・引退直後)
+    const living = new Map(); // id -> { lifeNo, debut }
+    let seen = { ...((state.newsSeen && typeof state.newsSeen === 'object') ? state.newsSeen : {}) };
+    let seenRetired = (seen.retired && typeof seen.retired === 'object') ? { ...seen.retired } : null;
+    const markFighter = (f, inOrg) => {
+      if (!f || typeof f !== 'object' || f.id == null) return f;
+      const id = Number(f.id);
+      const info = lifeInfo.get(id) || { k: 0, lastEnd: 0 };
+      const debuted = Engine.life.hasDebuted(f);
+      const dS = Number(f.debutSeason);
+      const estDebut = Number.isFinite(dS) && dS >= 1 ? dS
+        : Math.max(1, season - (Number(f.careerSeasons) || 0) + (seasonEndDone ? 1 : 0));
+      // 同じ人生 = 最後の記録が終わる前にデビューしている(新しい人生のデビューは記録の終わりより後。
+      // K-4 以前のロード時の非常補充では引退の翌季に戻ることもあったので、余裕は取らない)
+      const sameLife = info.k >= 1 && debuted && estDebut <= info.lastEnd;
+      const computed = info.k === 0 ? 1 : (sameLife ? info.k : info.k + 1);
+      const already = living.get(id);
+      const cur = Number(curSerial[id]);
+      const lifeNo = already ? already.lifeNo : Math.max(computed, Number.isFinite(cur) && cur >= 1 ? cur : 1);
+      if (!already) {
+        living.set(id, { lifeNo, debut: debuted ? estDebut : null });
+        serial[id] = lifeNo;
+        if (info.k >= 1 && !sameLife) {
+          report.rebornLiving += 1;
+          // M8: 前の人生の引退が報道済みの印で、2度目の引退が記事にならないのを防ぐ
+          if (seenRetired && Object.prototype.hasOwnProperty.call(seenRetired, String(id))) delete seenRetired[String(id)];
+        }
+      }
+      const next = { ...f, lifeNo };
+      if (inOrg && f.debutSeason == null) next.debutSeason = estDebut;
+      return next;
+    };
+    const mapList = (list, inOrg) => (Array.isArray(list) ? list.map(f => markFighter(f, inOrg)) : list);
+    const roster = mapList(state.roster, true);
+    let aiOrgs = state.aiOrgs;
+    if (aiOrgs && typeof aiOrgs === 'object') {
+      const o = {};
+      Object.keys(aiOrgs).forEach(orgId => {
+        const od = aiOrgs[orgId];
+        o[orgId] = (od && Array.isArray(od.roster)) ? { ...od, roster: mapList(od.roster, true) } : od;
+      });
+      aiOrgs = o;
+    }
+    const freeAgents = mapList(state.freeAgents, false);
+    const scoutCandidates = mapList(state.scoutCandidates, false);
+    const retiredFighters = mapList(state.retiredFighters, false);
+    if (seenRetired) seen = { ...seen, retired: seenRetired };
+
+    // M4・M5: 生きていないID(休眠プール・引退枠)
+    const dormantIds = new Set((state.dormantPool || []).map(e => Number(e && e.id)).filter(Number.isFinite));
+    const retiredSeasons = state.retiredSeasons || {};
+    const retiredLifeOf = new Map();
+    (state.retiredIds || []).map(Number).filter(Number.isFinite).forEach(id => {
+      if (living.has(id) || dormantIds.has(id)) return;
+      const info = lifeInfo.get(id) || { k: 0, lastEnd: 0 };
+      const rs = Number(retiredSeasons[id]);
+      // 引退した人生が最後の記録の人生か(引退した季が記録の終わりに近い)。記録の無い人生の引退なら次の番号
+      const n = info.k === 0 ? 1 : ((Number.isFinite(rs) && rs > info.lastEnd + GAP) ? info.k + 1 : info.k);
+      const cur = Number(curSerial[id]);
+      serial[id] = Math.max(n, Number.isFinite(cur) && cur >= 1 ? cur : 1);
+      retiredLifeOf.set(id, { lifeNo: serial[id], season: rs });
+    });
+    dormantIds.forEach(id => {
+      if (living.has(id)) return;
+      const info = lifeInfo.get(id) || { k: 0 };
+      const cur = Number(curSerial[id]);
+      if (info.k >= 1 || (Number.isFinite(cur) && cur >= 2)) serial[id] = Math.max(info.k + 1, Number.isFinite(cur) && cur >= 1 ? cur : 1);
+    });
+
+    // 統一王座の履歴の旧項目に人物の人生番号を刻む(§4-3 の季による判定を移行時に確定させる)
+    const lifeAt = (id, s) => {
+      const nid = Number(id);
+      const lv = living.get(nid);
+      if (lv && (lv.debut == null || s >= lv.debut)) return lv.lifeNo;
+      const info = lifeInfo.get(nid);
+      const c = info && info.clusters.find(x => x.end >= s);
+      if (c) return c.lifeNo;
+      const rl = retiredLifeOf.get(nid);
+      if (rl && (!Number.isFinite(rl.season) || s <= rl.season)) return rl.lifeNo;
+      if (lv) return lv.lifeNo;
+      return null;
+    };
+    let unifiedTitle = state.unifiedTitle;
+    if (unifiedTitle && Array.isArray(unifiedTitle.history)) {
+      unifiedTitle = { ...unifiedTitle, history: unifiedTitle.history.map(ev => {
+        if (!ev || ev.lives) return ev;
+        const ids = [ev.championId, ev.challengerId, ev.winnerId, ev.loserId].filter(x => x != null);
+        if (ids.length === 0) return ev;
+        const lives = {};
+        ids.forEach(id => { const n = lifeAt(id, Number(ev.season) || 0); if (n != null) lives[Number(id)] = n; });
+        if (Object.keys(lives).length === 0) return ev;
+        report.unifiedStamped += 1;
+        return { ...ev, lives };
+      }) };
+    }
+
+    // 元の state に無かった欄は足さない
+    let s = { ...state, lifeSerial: serial };
+    const put = (key, val) => { if (Object.prototype.hasOwnProperty.call(state, key)) s[key] = val; };
+    put('roster', roster); put('aiOrgs', aiOrgs); put('freeAgents', freeAgents);
+    put('scoutCandidates', scoutCandidates); put('retiredFighters', retiredFighters);
+    put('allHallOfFame', nextHof); put('hallOfFame', nextLegacyHof); put('newsSeen', seen); put('unifiedTitle', unifiedTitle);
+    if (state.chronicle) s.chronicle = { ...state.chronicle, fighterArchive: nextArchive };
+    // M6: 休眠プールにいるIDの前の人生の生きた記録を今閉じる(次に出てくる新人は白紙で始まる)。
+    // K-4 以前はデビュー済みの選手も休眠プールへ入っていたので、記録の無いIDも含めて全員
+    dormantIds.forEach(id => {
+      const before = s;
+      s = Engine.life.closeLiveRecords(s, id);
+      if (s !== before) report.dormantClosed += 1;
+    });
+    // 年代記の章(毎季作り直すキャッシュ)を、人生番号つきで作り直す
+    if (s.chronicle && s.chronicle.chaptersCache) s = Engine.chronicle.refreshChapters(s);
+    s = { ...s, [Engine.life.MIGRATION_FLAG]: true };
+    return { state: s, changed: true, report };
   },
 
   /** retiredLives に要約を書いた新しい state(summaries: Array<[id, summary]>) */
