@@ -1,5 +1,43 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 裁定3件+1 — 宣戦布告を出す/派閥の試合前の画面はスキップしていても出す/他団体に残る休養の印を外す/持ち越した果たし状の怪我を見直す(Claude/Opus 5.5・worktree)
+
+1つ下の節の「見つけたこと」3件への Keisuke 裁定(09-26)と、関連の小さな不具合1件。コミットは項目ごと(1c7dfb9a / 6ecd96a0 / 5a0541dc / 674703c8 / ed27ab7c)。
+
+### 1. 因縁の宣戦布告を出す(裁定「出す」。表示だけ)
+- `showRivalryPopups(items, onAllDone, opts)` に `opts.overShowShell`(試合一覧の殻を排他の相手に数えない)・`opts.isStillValid` と、積まれたときの手綱 `{ isShown, tryNow, cancel }` を足した。表示済みの記録(宿怨の16週)と中身の受け取りは実際に出す時点へ(以前は呼んだ時点で付き、殻の後ろに積まれて出なかった分でも付いていた)。興行の後の決着の画面は opts なしで従来どおり
+- `App._runConfrontationForMatch(idx)` を新設(renderMatchPreview のフォーカスの 400ms 後)。宣戦布告を殻の上に出し、「見届ける」で閉じて 200ms 後に派閥の試合前の画面(`_runPreMatchFlavorForMatch`)へ1回だけ。殻以外の画面が開いていれば 0.5秒ごとに出られるか確かめ(殻がある間は汎用の待ち行列が流れない)、試合が始まれば取り下げ、出られないまま10秒で保険(`[WM] confrontation safety net fired`)。1試合1回・完了待ちの間の描き直しは素通り(`sp._confrontationInFlight`)
+- `_runPreMatchFlavorForMatch` は始まった試合には出さない(遅れて観戦の上に出ない)
+- 出る順番: フォーカスの時点に 宣戦布告 → 派閥の試合前の画面、「🎬 試合を観る」の後に 初対決 → 観戦(変えていない)
+- 宣戦布告をスキップ時に出すか: **出す(節目)**。宣戦布告→決着の2段の因縁劇の1段目(design-decisions)・B型の全面の画面・専用の効果音・本人の操作待ち・1興行1件で、自動で閉じる小さな演出(敗者の心・初対決=「挨拶であって事件ではない」)とは格が違う。コードも従来から `_suppressFlavor` を見ていなかった
+- specs/match-flavor-popup-spec-v0.1.md §4.2.2(新設)・faction-system-spec §9.8.1 の優先順の注記
+
+### 2. 派閥の試合前の画面はスキップしていても出す(裁定。表示だけ)
+- `sp._suppressFlavor` を廃止(`skipMatch` が立て、`_runPreMatchFlavorForMatch` だけが見ていた)。F08・F09・派閥内序列戦の試合前の画面は、前の試合を1試合スキップしていてもフォーカスが来たら出す。敗者の心(スキップした試合では出ない `skipFlavor`)・初対決(観戦を選んだ試合の前だけ)は変えていない。「残り全試合をスキップ」は以降の試合にフォーカスが来ないので出ない(従来どおり)
+- specs/faction-system-spec-v0.1.md §9.8.1
+- 見つけたこと(未修正・報告のみ): 派閥の**試合後**の画面のうち F09 の試合後と派閥内序列戦の試合後は `_runPostMatchFlavorForMatch` の中にあり、1試合スキップでは出ない。派閥内序列戦の試合後の材料 `G._pendingInternalChallengePostModal` はスキップすると消費されずに残り、次に観戦した派閥内序列戦の試合後に古い結果で出うる(F08 の試合後は清算の drain で常に出る)
+
+### 3. 他団体に残る休養の印を外す(裁定「直す」。数値が変わる)
+- **原因は報告と違った**: 残っていた印は「自団体にいた頃の印」ではなく、**AI団体自身の休養願い(選択型イベント S3)の受諾**で付く `forcedRest`。AI団体では誰も外さず、受諾した選手に何十週〜数季残っていた(seed 42 の大庭愛菜は S2W12 から 95週。5シード×8季の11人は全員、自団体に在籍したことが無い)。AI の組み合わせ(`generateAIMatchCard`)はこの印を見ないので AI の試合には出続け、効いていたのは団体の評価の層の厚み(`getDepthProfile`)と直訴の発火・予約(`_passesPrereq`・`getScheduledCard`)だけ
+- 直したこと: AI団体の通常興行の開始(`processAIWeek`)で休養の印を外す(自団体の `beginShow` と同じ「次の興行」まで=AI の仕組みは壊さず寿命だけ正す)/ 団体を離れる経路で外す(`Engine.util.stripRestMarkers` 新設。`releaseToMarket`・引き抜き2経路・契約満了と突然の退団の移籍・`claimDepartedStar`)/ ロード時の修復: フリーの選手と AI団体の `onLeave`・`suspended` は毎回、AI団体の `forcedRest` は印 `_migrated_rest_markers_v1` の無い古いセーブで1回だけ(直したセーブで毎回外すと保存→ロードで AI の休養が縮む。新しいゲームは印を持って始まる)/ validateGameState: フリーの選手の印・AI団体の `onLeave`/`suspended`
+- `suspended`(謹慎)は src のどこでも付けていない(読むだけ)。`onLeave` は自団体の休暇辞令だけ
+- **数値の変化**(`tools/rest-marker-leak-compare.js`・5シード×8季・headless、直訴は届いたらすぐ断る扱い): 他団体・フリーの選手が印を持っていた延べ週 **1442 → 19**(最長 307週 → 3週。残る19週は AI 自身の休養で次の興行まで)/ 印で直訴が出なくなった抽選週 **3 → 0**(320週中)・直訴が立った回数 125 → 126 / 印で評価が下がっていた団体×週 **1170(平均 -3.3・最大 -6)→ 19** / 団体の順位の並びが変わっていた週 **18 → 0**
+- auto-sim 40季 seed 42: ALL CLEAR・意味指紋 61ef0aa5 → **1c48cdb3**(S1〜S9 の集計は同じで、S10 から軌道が分かれる)
+- specs/rival-org-spec-v1.0.md §4.0(休養の印)・large-event-spec §4.3b・org-ranking-spec の注記
+
+### 4. 持ち越した果たし状の発起人の怪我を出す直前に見直す(表示だけ)
+- **再現**: 自然な発生は稀(headless 12シード×8季で、大型/派閥イベントとぶつかって持ち越した直訴・果たし状 49件のうち出る週に発起人・相手が出られなかったのは0件)。点火の新シナリオ `incoming-challenge-injured`(`incoming-challenge` と同じ果たし状+発起人に6週の怪我)で**変更前のコードで再現**: 週を処理 → 果たし状が出る → 受けて立つ → 次の興行の準備で予約が消える(`buildMatchCard` は発起人・相手の健康を見ずにカードを組み、`getScheduledCard` が解除)
+- `Engine.challengeRequest.dropUnplayablePending`(純関数)を新設: 発起人・相手が怪我・休養・謹慎なら取り下げる(予約の消化と同じ基準)。扱いは既存の `dropStalePending`(不在の打診)と同じ=CD・クォータを付けず通知も出さない(治って熱が残っていれば次の抽選でまた届きうる)。**呼ぶのは出す直前だけ**(`App.handleChallengeRequest` の頭・`App.processWeek` の出す判定の直前)。週次処理は変えないので auto-sim は不変
+- 持ち越し(治るまで待つ)にしなかった理由: 持ち越している打診は新しい直訴の抽選と統一王座「こちらの番」の表示を堰き止め続ける(08-14 の自浄と同じ理由)。抽選の時点では出られる2人しか選ばないので、「出られない打診」は抽選されなかったのと同じに扱う
+- specs/challenge-request-spec-v0.2.md(2026-09-26 追加)
+
+### 検証
+- 回帰テスト(新規・どれも**変更前のコードで失敗**を確認): `test/rivalry-confrontation-over-show-shell-test.js`(§1〜8 宣戦布告・§9 スキップ後の派閥の試合前の画面。`App.skipMatch` を本物のまま通す)/ `test/rest-marker-leak-test.js`(7節とも失敗)/ `test/challenge-request-unplayable-pending-test.js`。`test/poach-live-fighter-test.js` の形を合わせた
+- `npm test` **321/321** PASS・`node test/auto-sim.js 40 42` ALL CLEAR(指紋 1c48cdb3)・`npm run test:k1:parity` PASS(登録27・未登録0)・`node test/ui-baseline-guard-test.js` ok・UI 走破1本 PASS(1季・365操作・Issues 0・既知の警告なし)
+- 点火(新規3本): `rivalry-confrontation` PASS(前座を2試合スキップした後のメインのフォーカスで宣戦布告が殻の上に出た→見届ける→興行の最後まで)/ `faction-f08-skip` PASS(前座を1試合ずつスキップ→メインで F08 の試合前の画面→清算は faction-f08 と同じ値)/ `incoming-challenge-injured` PASS。3本とも変更前のコード(宣戦布告・F08 スキップ版は 13e9ac8d の app.js・ui-common.js、怪我の果たし状は項目4の前の app.js・relationships.js)で FAIL を確認
+- 点火(既存): `incoming-challenge` PASS・`b3-challenge` PASS・`b3-challenge-watch` PASS・`faction-f08` PASS(両リーダーの因縁 45.7/45.4 → 90.9/100)・`faction-common1` PASS・`faction-f07-main` PASS・`incoming-challenge-watch` は3回中1回 D2_FREEZE(3試合目の観戦 iframe が STANDBY のまま。同じ fixture の再実行2回は PASS=宣戦布告 → 見届ける → 観戦 → 2拍の結果・敗者の心3回)。走破の実時間の待ち(`hold.frameReady`)が iframe の読み込みより先に抜けるゆらぎで製品の不具合ではない(test/ui-walkthrough/README.md に記録)。この果たし状の3試合目は因縁92の2人なので、いまは観戦の前に宣戦布告が出る
+- ui-check: 7項目とも○(画像・吹き出し・隊列・勝敗は既存の宣戦布告の見た目のまま。待ちは時限+二重起動防止、進行ハンドラは始まった試合を弾く)
+
 ## 2026-09-26 裁定2件 — 挑戦状(B3)の挑戦者を試合の時点の本物から作る/「✨ 初対決」を判定を直して出す(Claude/Opus 5.5・worktree)
 
 1つ下の節で報告した未修正の2件(B3 の挑戦者が毎回必ず怪我をする・初対決の判定の食い違い)への Keisuke 裁定(09-26)。

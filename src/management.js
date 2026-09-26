@@ -69,6 +69,8 @@ const Engine = {
     DORMANT_MIN: 20,
     YOUTH_MIN: 12,
     RETIRED_COOLDOWN: 5,
+    // 他団体に残った古い休養の印(forcedRest)を1回だけ外した印(repairOnLoad。2026-09-26)
+    REST_MARKER_MIGRATION_FLAG: '_migrated_rest_markers_v1',
 
     _allIds() {
       return new Set((ALL_CHARS || []).map(c => c.id));
@@ -360,6 +362,35 @@ const Engine = {
         state.aiOrgs = Object.fromEntries(Object.entries(state.aiOrgs).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(strip) }]));
         state.freeAgents = state.freeAgents.map(strip);
         if (strippedGuests > 0) changes.push(`guest_markers_stripped:${strippedGuests}`);
+      }
+      // 2026-09-26: 休養の印(forcedRest / onLeave / suspended)が他団体・フリーの選手に残っていた既存セーブを直す
+      // (Keisuke 裁定「直す」。Engine.util.stripRestMarkers)。印は付けた団体の「次の興行」までのもので、以前は
+      // AI団体の興行でも団体を離れるときにも外れず、何十週〜数季残って直訴の発火と予約が出られる選手を出られない扱いにしていた。
+      // ・フリーの選手の印と AI団体の onLeave・suspended: 今の処理では付かないので毎ロード外す(直したセーブでは何もしない)
+      // ・AI団体の forcedRest: AI 自身の休養願いの受諾でも付き、次の AI の興行で外れる。古いセーブの残りと見分けられないので、
+      //   印 REST_MARKER_MIGRATION_FLAG の無いセーブで1回だけ全部外す(保存→ロードで AI の休養を毎回縮めないため)
+      {
+        const flag = Engine.saveDoctor.REST_MARKER_MIGRATION_FLAG;
+        const migrateAi = !state[flag];
+        let strippedRest = 0;
+        const stripAll = c => {
+          const out = Engine.util.stripRestMarkers(c);
+          if (out !== c) strippedRest++;
+          return out;
+        };
+        const stripAi = c => {
+          if (migrateAi) return stripAll(c);
+          if (!c || !(c.onLeave || c.suspended)) return c;
+          strippedRest++;
+          const out = { ...c };
+          delete out.onLeave;
+          delete out.suspended;
+          return out;
+        };
+        state.aiOrgs = Object.fromEntries(Object.entries(state.aiOrgs).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(stripAi) }]));
+        state.freeAgents = state.freeAgents.map(stripAll);
+        if (migrateAi) state = { ...state, [flag]: true };
+        if (strippedRest > 0) changes.push(`rest_markers_stripped:${strippedRest}`);
       }
       const baselineSeason = Math.max(1, (state.season || 1) - 10);
       const before = Engine.saveDoctor._diag(state);
@@ -837,6 +868,22 @@ const Engine = {
       pool.push({ id: fighter.id, age: fighter.age || 19 });
       return { ...state, dormantPool: pool };
     },
+    /**
+     * 休養の印(休養願いの受諾・休暇辞令の forcedRest / 休暇の onLeave / 謹慎 suspended)を外した写しを返す
+     * (印が無ければ同じ選手をそのまま返す)。2026-09-26 Keisuke 裁定「直す」。
+     * 印はその団体の「次の興行」までのもので、外れるのは自団体の週次処理・興行の開始と AI団体の興行
+     * (processAIWeek)だけ。団体を離れる選手(フリーへ・他団体へ)が持ち出すと、行き先では誰も外さず何十週も残り、
+     * 直訴の発火と予約の判定が出られる選手を出られない扱いにしていた。手放す経路(releaseToMarket・引き抜き・
+     * 契約満了/突然の退団の移籍・放出の獲得 claimDepartedStar)と AI団体の興行の開始・ロード時の修復で使う
+     */
+    stripRestMarkers(fighter) {
+      if (!fighter || !(fighter.forcedRest || fighter.onLeave || fighter.suspended)) return fighter;
+      const out = { ...fighter };
+      delete out.forcedRest;
+      delete out.onLeave;
+      delete out.suspended;
+      return out;
+    },
     /** K-4 R2: 手放した選手の行き先('fa' | 'dormant')。デビュー済みはFA上限に関係なくFA、
      *  見込み選手はFA上限(ROSTER_CFG.fa)の内ならFA・超えたら休眠プール */
     marketDestination(state, fighter) {
@@ -860,10 +907,11 @@ const Engine = {
       if (Engine.util.marketDestination(state, fighter) === 'dormant') {
         return Engine.util.redirectToDormantPool(state, fighter);
       }
-      let placed = fighter;
+      // 手放した団体の休養の印は持ち出さない(フリーの選手の印は誰も外さない。2026-09-26)
+      let placed = Engine.util.stripRestMarkers(fighter);
       if (Engine.life.hasDebuted(fighter)) {
         const from = (fromOrgId && fromOrgId !== 'fa') ? fromOrgId : Engine.life.lastOrgId(fighter);
-        placed = { ...fighter, faSince: state.season || 1, ...(from ? { faFromOrgId: from } : {}) };
+        placed = { ...placed, faSince: state.season || 1, ...(from ? { faFromOrgId: from } : {}) };
       }
       return { ...state, freeAgents: [...(state.freeAgents || []).filter(f => f && f.id !== fighter.id), placed] };
     },
@@ -11682,6 +11730,11 @@ const Engine = {
       roster = Engine.rival.tickAISeasonTrainerBuffs(roster);
 
       if (isRegularShow) {
+        // AI団体の休養の印(S3 休養願いの受諾 applyChoiceEffect で付く forcedRest)は、自団体と同じく「次の興行」まで。
+        // 興行の開始で外す(自団体の Engine.show.beginShow と同じ位置づけ)。以前は AI団体では誰も外さず、受諾した選手に
+        // 何十週〜数季残って(seed 42 で 95週)、直訴の発火と予約・団体の層の厚み(getDepthProfile)が出られない選手として
+        // 数えていた(2026-09-26 Keisuke 裁定「直す」)。AI の組み合わせ(generateAIMatchCard)は元からこの印を見ない
+        roster = roster.map(f => Engine.util.stripRestMarkers(f));
         const aiShowState = tierState();
         let matchCard = Engine.rival.generateAIMatchCard(roster, nextOrgData.matchupLog, nextOrgData.showCount, state);
 
@@ -13602,7 +13655,7 @@ const Engine = {
       }
 
       let transfer = Engine.popularity.applyTransferReset({
-        ...fighter,
+        ...Engine.util.stripRestMarkers(fighter), // 前の団体の休養の印は持ち出さない
         orgId: picked.org.id,
         trust: 50,
         salaryBonus: 0,
@@ -15869,7 +15922,7 @@ const Engine = {
           if (aiOrgs.length > 0) {
             const [orgId, org] = aiOrgs[Math.floor(Engine.rng.float(departureRng) * aiOrgs.length)];
             const absWeekNow = Engine.util.absWeek(s.season, s.week);
-            let transferred = { ...fighterWithHist, orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
+            let transferred = { ...Engine.util.stripRestMarkers(fighterWithHist), orgId, trust: 50, salaryBonus: 0, orgJoinWeek: absWeekNow };
             transferred = Engine.orgTimeline.transfer(transferred, orgId, s.season, s.week);
             delete transferred.trustCap; delete transferred.s4Count;
             // 写してから書く(以前は入力と共有している団体オブジェクトの roster をその場で差し替えていた)
@@ -18380,8 +18433,8 @@ const Engine = {
         const targetId = poach.org.id;
         const targetData = s.aiOrgs[targetId];
         if (targetData) {
-          // v1.0b: Transfer popularity reset
-          let resetFighter = Engine.popularity.applyTransferReset({ ...liveFighter, orgId: targetId });
+          // v1.0b: Transfer popularity reset(自団体の休養の印は持ち出さない)
+          let resetFighter = Engine.popularity.applyTransferReset({ ...Engine.util.stripRestMarkers(liveFighter), orgId: targetId });
           // Phase 3: orgJoinWeek設定
           resetFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
           // orgTimeline: 所属変更記録
@@ -18433,8 +18486,8 @@ const Engine = {
             funds: s.funds + poach.fee
           };
           if (targetData) {
-            // v1.0b: Transfer popularity reset
-            let resetFighter = Engine.popularity.applyTransferReset({ ...liveFighter, orgId: targetId });
+            // v1.0b: Transfer popularity reset(自団体の休養の印は持ち出さない)
+            let resetFighter = Engine.popularity.applyTransferReset({ ...Engine.util.stripRestMarkers(liveFighter), orgId: targetId });
             // Phase 3: orgJoinWeek設定
             resetFighter.orgJoinWeek = Engine.util.absWeek(s.season, s.week);
             // orgTimeline: 所属変更記録
@@ -21906,6 +21959,8 @@ const Engine = {
     }
     // K-4(人生番号): 全員 1番目の人生。団体ロスターは第1季デビュー。新しいゲームは移行(§7)不要
     initState = Engine.life.stamp({ ...initState, lifeSerial: {}, [Engine.life.MIGRATION_FLAG]: true });
+    // 新しいゲームには古い休養の印の残りが無い(ロード時の1回だけの取り外し saveDoctor.repairOnLoad は不要)
+    initState = { ...initState, [Engine.saveDoctor.REST_MARKER_MIGRATION_FLAG]: true };
     return initState;
   }
 };
@@ -30380,6 +30435,23 @@ Engine.validateGameState = function(G) {
     }
   }
 
+  // ── 休養の印が団体の外に持ち出されていないか(2026-09-26。Engine.util.stripRestMarkers) ──
+  // 印は付けた団体の「次の興行」までのもの。フリーの選手には付かない(手放す経路 releaseToMarket が外す)。
+  // AI団体の選手に付くのは AI 自身の休養願いの受諾の forcedRest だけ(次の AI の興行で外れる)で、休暇 onLeave・
+  // 謹慎 suspended は自団体の選手だけ。鳴ったら、団体を離れる経路のどれかが印を外していない
+  (G.freeAgents || []).forEach(f => {
+    if (f && (f.forcedRest || f.onLeave || f.suspended)) {
+      warn(`フリーの選手 "${f.name}" (id:${f.id}) に休養の印が残っている(forcedRest:${!!f.forcedRest}, onLeave:${!!f.onLeave}, suspended:${!!f.suspended})`);
+    }
+  });
+  Object.entries(G.aiOrgs || {}).forEach(([orgId, org]) => {
+    ((org && org.roster) || []).forEach(f => {
+      if (f && (f.onLeave || f.suspended)) {
+        warn(`AI団体 ${orgId} の選手 "${f.name}" (id:${f.id}) に自団体の休養の印が残っている(onLeave:${!!f.onLeave}, suspended:${!!f.suspended})`);
+      }
+    });
+  });
+
   // ── 呼び名の記録(givenNameCalls)の参照整合性(specs/call-name-spec-v1.0.md §3) ──
   // キーは '話し手id>相手id'(関係値と同じ形・方向あり)、値は true だけ。両者ともマスターデータの選手で、
   // 自分自身への記録は無い。絆<50 の記録は tickWeek が週次で消すので、ここでは絆の値までは見ない
@@ -31571,7 +31643,7 @@ Engine.contract = {
       const orgId = info.orgId;
       if (s.aiOrgs && s.aiOrgs[orgId]) {
         const orgData = s.aiOrgs[orgId];
-        let transferredFighter = { ...fighterWithHist, orgId, trust: 50, salaryBonus: 0 };
+        let transferredFighter = { ...Engine.util.stripRestMarkers(fighterWithHist), orgId, trust: 50, salaryBonus: 0 };
         transferredFighter = Engine.orgTimeline.transfer(transferredFighter, orgId, s.season, s.week);
         const newOrg = { ...orgData, roster: [...orgData.roster, transferredFighter] };
         s = { ...s, aiOrgs: { ...s.aiOrgs, [orgId]: newOrg } };

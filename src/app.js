@@ -7124,8 +7124,9 @@ const App = {
   skipMatch(idx) {
     const sp = App._showPreview;
     if (!sp || sp.results[idx]) return;
-    // 一度でもスキップを押したら、その興行の残り全試合で pre/post-match フレーバーを抑制する
-    sp._suppressFlavor = true;
+    // スキップした試合の試合後の小さな演出(敗者の心)は出さない(下の skipFlavor)。以前の「一度スキップしたら以降の
+    // 試合前の画面も出さない」(sp._suppressFlavor)は廃止: 派閥の試合前の画面と宣戦布告は物語の節目なので常に出し、
+    // 初対決は観戦を選んだ試合の前だけに出る(2026-09-26 Keisuke 裁定)
     const staleFilled = App._fillMissingShowPreviewResults();
     if (sp.results[idx]) { App._afterMatchSettle(idx, { skipFlavor: true }); return; }
     const m = sp.validMatches[idx];
@@ -8087,13 +8088,65 @@ const App = {
     return popups;
   },
 
-  // 試合前の画面を 1試合分流す。renderMatchPreview のフォーカスフック(宣戦布告の後)から呼ばれる。
+  // 因縁の宣戦布告(specs/match-flavor-popup-spec-v0.1.md §4.2.2。2026-09-26 Keisuke 裁定「出す」)。
+  // renderMatchPreview のフォーカスの 400ms 後に呼ばれ、この試合に宣戦布告があれば試合一覧の殻の上に出し、
+  // 閉じてから派閥の試合前の画面(_runPreMatchFlavorForMatch)へ1回だけ進む。無ければすぐ進む。
+  // ・以前は showRivalryPopups → _enqueuePopup を殻の例外なしで通していて、殻の後ろの待ち行列に積まれて興行中に
+  //   一度も出ず(表示済みの記録だけが付いた)、その完了を待つ派閥の試合前の画面も出ていなかった
+  // ・節目の演出なので、前の試合をスキップしていても出す(従来から _suppressFlavor を見ていない)。1試合1回(_shownConfrontations)
+  // ・殻以外の画面が開いていて出られないときは、0.5秒ごとに出られるか確かめ(殻がある間は汎用の待ち行列が流れないため)、
+  //   その試合が始まった・興行が終わったら取り下げて先へ。保険: 出られないまま 10秒で取り下げて先へ進む
+  //   (`[WM] confrontation safety net fired`)。出た後は「見届ける」を押すまで待つ(本人の操作待ち)
+  _runConfrontationForMatch(idx) {
+    const sp = App._showPreview;
+    if (!sp) return;
+    const conf = sp.confrontationMap ? sp.confrontationMap[idx] : null;
+    if (!sp._shownConfrontations) sp._shownConfrontations = new Set();
+    if (!sp._confrontationInFlight) sp._confrontationInFlight = new Set();
+    // 宣戦布告の完了を待っている間の描き直し: 何もしない(完了が派閥の試合前の画面へ進む。宣戦布告の下に重ねない)
+    if (sp._confrontationInFlight.has(idx)) return;
+    if (!conf || sp._shownConfrontations.has(idx)) { App._runPreMatchFlavorForMatch(idx); return; }
+    sp._shownConfrontations.add(idx);
+    sp._confrontationInFlight.add(idx);
+    const stillValid = () => App._showPreview === sp && Array.isArray(sp.results) && sp.results[idx] === null;
+    let settled = false;
+    let pollTimer = null;
+    const next = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(pollTimer);
+      sp._confrontationInFlight.delete(idx);
+      App._runPreMatchFlavorForMatch(idx);
+    };
+    const handle = showRivalryPopups([conf], next, { overShowShell: true, isStillValid: stillValid });
+    if (!handle || handle.isShown()) return;
+    // 積まれた(殻以外の画面が開いていた): 出られるようになったら出す。出られないまま時限を過ぎたら取り下げる
+    let polls = 0;
+    const poll = () => {
+      if (settled || handle.isShown()) return;
+      if (!stillValid()) { handle.cancel(); next(); return; }
+      if (handle.tryNow()) return;
+      polls += 1;
+      if (polls >= 20) {
+        console.warn('[WM] confrontation safety net fired');
+        handle.cancel();
+        next();
+        return;
+      }
+      pollTimer = setTimeout(poll, 500);
+    };
+    pollTimer = setTimeout(poll, 500);
+  },
+
+  // 試合前の画面を 1試合分流す。宣戦布告の後(App._runConfrontationForMatch)から呼ばれる。
   // ここで出すのは派閥の試合前の画面(派閥内序列戦・F08・F09)だけ。「✨ 初対決」は観戦を選んだ試合の前に
   // 出す(App._runFirstMeetBeforeWatch。2026-09-26 — 敗者の心と同じく観戦した試合だけ)
+  // 派閥の試合前の画面は物語の節目なので、前の試合をスキップしていても出す(2026-09-26 Keisuke 裁定。以前は一度スキップ
+  // すると `sp._suppressFlavor` で以降の試合に出なかった)。その試合が既に始まっていれば出さない(遅れて観戦の上に出ない)
   _runPreMatchFlavorForMatch(idx) {
     const sp = App._showPreview;
     if (!sp) return;
-    if (sp._suppressFlavor) return; // 一度スキップしたら以降のフレーバーは抑制
+    if (!Array.isArray(sp.results) || sp.results[idx] !== null) return;
     if (!sp._shownPreFlavor) sp._shownPreFlavor = new Set();
     if (sp._shownPreFlavor.has(idx)) return;
     sp._shownPreFlavor.add(idx);
@@ -10576,6 +10629,13 @@ const App = {
 
     // challenge-request-spec-v0.1 Phase 2: 挑戦試合直訴モーダル表示
     // 大型イベント・派閥イベントと衝突した場合は持ち越し（pendingThisWeek を残す）
+    // 出す週は、出す直前に発起人・相手がいま出られるかを見直し、出られない打診は取り下げる(2026-09-26。
+    // handleChallengeRequest と同じ dropUnplayablePending。ここで先に済ませ、取り下げた週は下の「こちらの番」を塞がない)
+    if (!pendingLargeEvent && !pendingFactionEvent && G.challengeRequest && G.challengeRequest.pendingThisWeek) {
+      const crBefore = G.challengeRequest.pendingThisWeek;
+      G = Engine.challengeRequest.dropUnplayablePending(G);
+      if (crBefore && !G.challengeRequest.pendingThisWeek) Storage.autoSave();
+    }
     const crPending = (G.challengeRequest && G.challengeRequest.pendingThisWeek) || null;
     if (crPending && !pendingLargeEvent && !pendingFactionEvent) {
       const crDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 700;
@@ -11760,6 +11820,19 @@ const App = {
   // NO  → CD延長 + 打診者 condition 一時悪化 + ティッカーセリフ
   handleChallengeRequest(payload) {
     if (!payload) return;
+    // 出す直前に、発起人・相手がいま出られるかを見直す(2026-09-26)。大型イベント・派閥イベントとぶつかって持ち越している
+    // 間に怪我・休養をした打診は、受けても次の興行で予約が解除されるだけなので出さずに取り下げる
+    // (Engine.challengeRequest.dropUnplayablePending。不在の打診の取り下げと同じ扱いで、通知は出さない)
+    {
+      const current = G.challengeRequest && G.challengeRequest.pendingThisWeek;
+      if (current && Engine.challengeRequest && typeof Engine.challengeRequest.dropUnplayablePending === 'function') {
+        G = Engine.challengeRequest.dropUnplayablePending(G);
+        if (!(G.challengeRequest && G.challengeRequest.pendingThisWeek)) {
+          Storage.autoSave();
+          return;
+        }
+      }
+    }
     if (typeof showChallengeRequestModal !== 'function') {
       // フォールバック: モーダル未読込時はクリアだけ
       G = Engine.challengeRequest.rejectPending(G);

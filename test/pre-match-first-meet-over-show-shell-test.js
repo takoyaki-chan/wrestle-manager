@@ -272,7 +272,7 @@ function build({ matchupLog = [], h2h = {}, match = { left: 1, right: 2 } } = {}
 // ── 5. 前の試合をスキップしていても、観戦を選んだ試合には出す ──
 {
   const t = build();
-  t.ctx.App._showPreview._suppressFlavor = true; // 前座をスキップした興行
+  t.ctx.App._showPreview._suppressFlavor = true; // 前座をスキップした興行(旧の印。2026-09-26 に廃止され、立っていても見ない)
   t.pressWatch(0);
   assert.strictEqual(t.shownName(), '左の子', '前座をスキップした興行でメインの初対決を出していない');
   t.advance(10000);
