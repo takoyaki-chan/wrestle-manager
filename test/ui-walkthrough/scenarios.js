@@ -275,12 +275,9 @@ function _pickB3Challenge(G) {
   return { state: { ...G, [IGNITE_TRANSIENTS]: { _pendingLargeEvent: event } }, reason: null };
 }
 
-// 挑戦状の試合で挑戦者(ゲスト)が怪我をすると、所属団体へ戻すときに体調が NaN になる(2026-09-26 発見・未修正・報告済み。
-// ゲストは挑戦状が届いた時点の写し event.challenger(体調・今季の伸び・自己最高評価などを持たない)から作られ、怪我の
-// 処理の Math.min(undefined, 30) が NaN を作り、App._finalizeHookGuests の { ...f, ...updatedGuest } が本物の選手の
-// 値を上書きする。K-1 第3段の前(2c87ae3d)でも同じ。直すと他団体の選手の数値が変わるので止めて報告)。
-// 後ろの経路(清算・対戦成績・ゲスト返却)を検査し続けるため既知扱いにする
-const B3_KNOWN_CONSOLE = [/^\[WM Debug\] .*AI団体 .* のconditionが不正値: NaN$/];
+// 挑戦状の試合で挑戦者(ゲスト)が怪我をすると所属団体の本物の選手の体調が NaN になっていた件は 2026-09-26 に修正
+// (返却は Engine.challengeRequest.mergeReturningGuest で「興行で起きたこと」だけを本物へ反映する)。
+// 以前はここで NaN の警告を既知扱いにしていた。いまは警告0で通り、下の stepProbe が本物の選手の値を検算する
 
 // 挑戦状の決断画面: 受けて立つ(data-choice="0")を選び、断る(同じトレイの"1")は封じる
 const _b3AcceptBoost = (candidate, all) => {
@@ -302,6 +299,10 @@ const B3_STEP_PROBE = `(() => {
     ? Engine.h2h.getRecord(G, memo.fighterId, memo.challengerId) : null;
   const sp = (typeof App !== 'undefined' && App._showPreview) || null;
   const main = sp && sp.validMatches && sp.validMatches[0];
+  // 挑戦者の所属団体にいる本物の選手(返却で壊れていないか。2026-09-26 の修正の検算)
+  const org = memo.orgId != null && G.aiOrgs ? G.aiOrgs[memo.orgId] : null;
+  const real = org && memo.challengerId != null ? (org.roster || []).find(f => f.id === memo.challengerId) : null;
+  const markers = ['isB3ChallengeGuest', '_b3GuestOrgId', 'isCRGuest', '_crGuestOrgId', 'isAwayChallengeGuest', 'isUnifiedTitleGuest', '_unifiedGuestOrgId'];
   return {
     season: G.season, week: G.week, phase: G.weekPhase, totalShows: G.totalShows,
     booked: !!booking, fighterId: memo.fighterId == null ? null : memo.fighterId,
@@ -311,6 +312,13 @@ const B3_STEP_PROBE = `(() => {
     h2hMatches: rec ? (rec.matches || 0) : 0,
     h2hLast: rec && rec.lastMatch ? [rec.lastMatch.season, rec.lastMatch.week] : null,
     lastB3ChallengeWeek: G.lastB3ChallengeWeek || 0,
+    real: real ? {
+      condition: typeof real.condition === 'number' ? (Number.isFinite(real.condition) ? real.condition : 'NaN') : String(real.condition),
+      careerBestMQ: real.careerBestMQ == null ? null : real.careerBestMQ,
+      injury: real.injury ? real.injury.type : null,
+      recentMatches: (real.recentMatches || []).length,
+      markers: markers.filter(k => k in real),
+    } : null,
   };
 })()`;
 
@@ -329,6 +337,21 @@ function _assertB3Resolved(steps) {
   // 挑戦状の試合は isCRMatch なので共通の対戦成績(recordShowH2h)は飛ばし、hooks.afterWriteback が1回だけ記録する
   if (last.h2hMatches !== before.h2hMatches + 1) fails.push(`代表と挑戦者の対戦成績が1試合分増えていない(${before.h2hMatches}→${last.h2hMatches})`);
   if (!(last.lastB3ChallengeWeek > 0)) fails.push('lastB3ChallengeWeek が記録されていない');
+  // 所属団体の本物の選手: 興行の前(予約中)と返却の後(2026-09-26 の修正)
+  const realBefore = before.real;
+  const realAfter = last.real;
+  console.log(`B3 本物の選手: 体調 ${realBefore && realBefore.condition}→${realAfter && realAfter.condition} / 自己最高評価 ${realBefore && realBefore.careerBestMQ}→${realAfter && realAfter.careerBestMQ} / 怪我 ${realAfter && realAfter.injury} / 直近戦績 ${realBefore && realBefore.recentMatches}→${realAfter && realAfter.recentMatches} / 一時印 ${realAfter ? JSON.stringify(realAfter.markers) : '-'}`);
+  if (!realAfter) fails.push('挑戦者が所属団体のロスターにいない');
+  else {
+    if (typeof realAfter.condition !== 'number') fails.push(`返却後の本物の体調が不正値(${realAfter.condition})`);
+    if (realAfter.markers.length > 0) fails.push(`返却後の本物に一時印が残っている(${realAfter.markers.join(', ')})`);
+    if (realBefore && realBefore.careerBestMQ != null && !(realAfter.careerBestMQ >= realBefore.careerBestMQ)) {
+      fails.push(`返却で本物の自己最高評価が下がった(${realBefore.careerBestMQ}→${realAfter.careerBestMQ})`);
+    }
+    if (realBefore && realAfter.recentMatches < Math.min(5, realBefore.recentMatches + 1)) {
+      fails.push(`返却で本物の直近戦績が減った(${realBefore.recentMatches}→${realAfter.recentMatches})`);
+    }
+  }
   return fails;
 }
 
@@ -1605,7 +1628,6 @@ module.exports = {
     walk: { seasons: 1, maxSteps: 160 },
     makeUntil: _untilWeeksAfterFixture(3),
     boost: _b3AcceptBoost,
-    knownConsole: B3_KNOWN_CONSOLE,
     stepProbe: B3_STEP_PROBE,
     ignition: [
       // 決断トレイつきの暗い A 型は直訴(CH-1)とも同じ形なので、受けた証跡は stepProbe(予約)で見る
@@ -1639,7 +1661,7 @@ module.exports = {
       return accept != null ? accept : _watchMatchBoost([0])(candidate, all);
     },
     hold: WATCH_HOLD,
-    knownConsole: [...WATCH_KNOWN_CONSOLE, ...B3_KNOWN_CONSOLE],
+    knownConsole: WATCH_KNOWN_CONSOLE,
     stepProbe: B3_STEP_PROBE,
     ignition: [
       { name: 'b3-offer', required: false, match: s => (s.overlays || []).some(o => /mdlAOverlay:.*mdl-a-decision-tray/.test(String(o)) && /danger/.test(String(o))) },

@@ -1,5 +1,28 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 挑戦状(B3)のゲストを所属団体へ戻すと本物の選手の体調が NaN になる不具合を修正(Claude/Opus 5.5・worktree)
+
+点火カタログの立て直し(下の項)で見つかった「未修正・報告」1件。確定仕様は `specs/large-event-spec-v1.0.md` §4.3b。
+
+### 原因
+- 受けた挑戦状の挑戦者(他団体の選手)は、挑戦状が届いた時点の写し `event.challenger`(id・名前・能力5つ・スタイル・役割・人気・特性だけ)に一時印を付けて自団体の興行に入る。興行の試合後の処理はこの写しの上で動く
+- 清算の最後 `App._finalizeHookGuests` が、処理後の写しを所属団体の本物へ `{ ...本物, ...ゲスト }` で丸ごと被せていた。写しが持たない欄は処理で「無い」ところから作られるので、本物の値が壊れた: 怪我の `Math.min(undefined, 30)` で**体調 NaN**(validateGameState が毎週違反)、**自己最高評価が今回の評価に下がる**(seed42 の再現で 67→36)、**今季の伸びが0に戻る**、**直近戦績が今回の1戦だけになる**、一時印 `isB3ChallengeGuest`/`_b3GuestOrgId` と信頼の即時ボーナス `_trustBonus`(写しの自己最高評価が無いので毎回付く)が残る。怪我をしなかった試合でも体調以外は同じく壊れていた
+- 一時印が残った選手は、後で自団体に入ると保存(`App.serialize`)とロード時の修復が「一時ゲスト」とみなしてロスターから消す(潜在的な選手の消失)。遠征(`isAwayChallengeGuest`)と直訴(`isCRGuest`)の返却も印を外していなかった。実セーブ棚の `prerefix_S12W45`(Keisuke の実プレイ)の AI団体に3人分の印が残っているのを確認
+
+### 直したこと(数値は壊れていたデータの扱いだけ)
+- `Engine.challengeRequest.mergeReturningGuest(本物, 写し, 興行後のゲスト)`(relationships.js・純関数)を新設。**この興行で起きたことだけ**を本物へ反映する: 怪我(体調は min(本物, 30)・怪我の前の人気・今季の怪我数・成長の減速は重い方=`Engine.injury.check` と同じ規則)/試合の記録(直近戦績は本物の末尾に足して5戦・最後の勝敗・連敗数・自己最高評価は大きい方・経歴の合流)/人気と能力は前後の差(能力は本物の trainCap まで、今季の伸びは足せた分だけ)/調子の波は本物がどれも持っていないときだけ。体調・契約・年齢・勝敗数・`_trustBonus` は本物のまま。一時印は必ず外す
+- `Engine.challengeRequest.stripGuestMarkers` を新設し、直訴・遠征の返却でも印を外す(中身は以前どおり。この2つのゲストは最新のロスターから作った写し)
+- 既存セーブ: `Engine.saveDoctor.repairOnLoad` が AI団体のロスターとフリーの選手に残った印を外す(`guest_markers_stripped:N`)。壊れた体調は保存で null になり、ロード後の AI の週次処理(`processAIWeek` の `condition ?? 50`/`?? 70`)で1週で数値に戻る(同じセッションの中では NaN のまま残っていた)。下がった自己最高評価・消えた今季の伸びと直近戦績は元の値が残っていないので戻せない
+- 点火 `b3-challenge` / `b3-challenge-watch` の NaN の既知扱い(`B3_KNOWN_CONSOLE`)を外し、`B3_STEP_PROBE` で本物の選手の体調・自己最高評価・直近戦績・一時印を読んで `_assertB3Resolved` で検算する
+
+### 見つけたこと(未修正・数値が変わるので裁定待ち)
+- **挑戦者は毎回必ず怪我をする**: 写しに体調が無いので怪我の確率が NaN になり、`Engine.injury.check` の `rng > NaN` が常に偽で怪我が確定する(点火でも2本とも中傷)。同じ理由で、関係値の「自己最高評価の試合」の判定・連敗の人気の罰・成長の年齢倍率(17歳扱い)も写しの上で決まる。また予約の後に本物が怪我をしても試合は行われる(`getScheduledSingleChallenge` の健康の確認が写しを見ている)。直すなら「予約の時点の本物(最新のロスター)からゲストを作る」(直訴・統一王座戦と同じ)で、挑戦状の試合の結果と他団体の選手の怪我が変わる
+
+### 検証
+- 回帰テスト `test/b3-guest-return-test.js`(7節): 本物の興行の処理(`Engine.show.finalize`+app.js から取り出した実プレイの hooks)を通して、ゲームと同じ写しの挑戦者(怪我あり)と体調を持たせた挑戦者(怪我なし)で本物の値を検算+validateGameState の違反なし/規則の合成データ/ロード時の修復/返却3経路の形。**変更前のコードで7節とも失敗**(「本物の体調が不正値(NaN)」「自己最高評価 67 / 36 → 36」ほか)
+- `npm test` **314/314**(コミット後に `git merge main` を取り込んでもう一度実行)・`node test/auto-sim.js 40 42` ALL CLEAR・意味指紋 **61ef0aa5**(変更前の HEAD と同じ。出力は Source 行以外一致)・`npm run test:k1:parity` PASS(未登録の差分0)
+- 点火: `b3-challenge` PASS・Issues 0・既知の警告0(本物の体調 100→怪我で30→週送り後43・自己最高評価 60→60・一時印なし)/ `b3-challenge-watch` PASS・Issues 0(NaN の警告0。残る既知は別件のフレーバーの保険のタイマー1件)/ 返却を触った `away-challenge`・`incoming-challenge` も PASS
+
 ## 2026-09-26 点火カタログの立て直しと K-1 第3段の確認 — 受けた挑戦状・派閥の予約の清算を実UIで検算(Claude/Opus 5.5・worktree)
 
 K-1 第3段の作業者が「main の時点で失敗」と挙げた点火2本(`incoming-challenge`・`faction-ignite`)を直し、差分テストが見ていない実プレイだけの清算を実UIで通した。数値は変えていない(製品の修正は画面の待ち行列の扱い1か所のみ)。使い方と仕組みは `test/ui-walkthrough/README.md`「受けた挑戦状・派閥の予約の清算」、カタログは `docs/rare-screen-ignition-catalog-design-v0.1.md` §10。

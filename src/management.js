@@ -346,6 +346,21 @@ const Engine = {
         state.aiOrgs = Object.fromEntries(Object.entries(state.aiOrgs).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(normTraits) }]));
         if (repairedTraits.length > 0) changes.push(`trait_mojibake_repaired:${repairedTraits.join('/')}`);
       }
+      // 2026-09-26: 挑戦試合の一時ゲストの印(isB3ChallengeGuest・isAwayChallengeGuest・isCRGuest ほか)が
+      // 所属団体へ戻した選手に残っていた既存セーブを直す(挑戦状・遠征・直訴の返却が印を外していなかった)。
+      // 印が残ったままの選手が後で自団体に入ると、保存とロード時の修復が一時ゲストとみなしてロスターから消す。
+      // AI団体のロスターとフリーの選手だけが対象(自団体のロスターの一時ゲストはロード時に別の修復が外す)
+      if (Engine.challengeRequest && typeof Engine.challengeRequest.stripGuestMarkers === 'function') {
+        let strippedGuests = 0;
+        const strip = c => {
+          const out = Engine.challengeRequest.stripGuestMarkers(c);
+          if (out !== c) strippedGuests++;
+          return out;
+        };
+        state.aiOrgs = Object.fromEntries(Object.entries(state.aiOrgs).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(strip) }]));
+        state.freeAgents = state.freeAgents.map(strip);
+        if (strippedGuests > 0) changes.push(`guest_markers_stripped:${strippedGuests}`);
+      }
       const baselineSeason = Math.max(1, (state.season || 1) - 10);
       const before = Engine.saveDoctor._diag(state);
       const occupied = new Set();

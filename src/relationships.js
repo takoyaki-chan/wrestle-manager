@@ -4329,6 +4329,150 @@ Engine.challengeRequest = {
     return { card: merged, scheduled, groupId };
   },
 
+  // 他団体の選手が自団体の興行に一時参加している間だけ付く印(挑戦状 B3・直訴・遠征・全国統一王座戦)。
+  // 興行が終わって所属団体へ戻すときに必ず外す。AI団体のロスターやフリーの選手に残ると、その選手が
+  // 後で自団体に入ったとき、保存(App.serialize)とロード時の修復が「一時ゲスト」とみなしてロスターから消す
+  GUEST_MARKER_KEYS: ['isB3ChallengeGuest', '_b3GuestOrgId', 'isCRGuest', '_crGuestOrgId',
+    'isAwayChallengeGuest', 'isUnifiedTitleGuest', '_unifiedGuestOrgId'],
+
+  /** 一時ゲストの印を外した写しを返す(印が無ければ同じ選手をそのまま返す) */
+  stripGuestMarkers(fighter) {
+    if (!fighter || typeof fighter !== 'object') return fighter;
+    const keys = Engine.challengeRequest.GUEST_MARKER_KEYS;
+    if (!keys.some(k => Object.prototype.hasOwnProperty.call(fighter, k))) return fighter;
+    const out = { ...fighter };
+    keys.forEach(k => { delete out[k]; });
+    return out;
+  },
+
+  /**
+   * 挑戦状(B3)のゲストを所属団体へ戻すときの、本物の選手の記録(2026-09-26)。
+   * ゲストは挑戦状が届いた時点の写し(event.challenger = 能力・人気・特性など試合に要る欄だけ)から作るので、
+   * 体調・自己最高評価・今季の伸び・直近戦績などを持たない。興行の処理(Engine.show.finalize と実プレイの hooks)は
+   * その写しの上で動くため、以前のように写しを本物へ丸ごと被せると本物の値が壊れた
+   * (怪我で体調が NaN・自己最高評価が今回の評価に下がる・今季の伸びが0に戻る・直近戦績が1戦だけになる・一時印が残る)。
+   * ここでは「この興行で起きたこと」だけを本物に反映する:
+   *   怪我      : 新しい怪我・体調は min(本物, 30)・怪我の前の人気(本物に記録が無いときだけ)・今季の怪我数・
+   *               成長の減速(重い方を残す)。どれも Engine.injury.check と同じ規則
+   *   試合の記録: 直近戦績(本物の末尾に足して5戦)・最後の勝敗・連敗数・自己最高評価(大きい方)・
+   *               経歴(careerRecord は重複を除いて合流、careerHistory・growthLog は末尾に足す)・プロモの蓄積
+   *   人気・能力: 興行の前後の差を本物に足す(能力は本物の上限 trainCap まで)。今季の伸びは能力に足せた分だけ
+   *   調子の波  : 絶好調・スランプ・モチベ喪失は、本物がどれも持っていないときだけ(エンジンもそういう選手にしか始めない)
+   * それ以外(体調・契約・年齢・信頼の即時ボーナス _trustBonus など)は本物のまま。一時印は必ず外す。
+   * 信頼の即時ボーナスは「自分の団体の舞台での出来事」への信頼なので、他団体の興行から持ち帰らない。
+   * @param real 所属団体の本物(戻す時点)
+   * @param pre  興行に入れたゲスト(写し)
+   * @param post 興行の処理を終えたゲスト(null なら本物から印を外すだけ)
+   * @returns 新しい本物(入力は書き換えない)
+   */
+  mergeReturningGuest(real, pre, post) {
+    const base = Engine.challengeRequest.stripGuestMarkers(real);
+    if (!base || !post) return base;
+    const before = pre || {};
+    const out = { ...base };
+    const num = v => typeof v === 'number' && Number.isFinite(v);
+    // 浮動小数の差の端数(0.1+0.2 型)を本物へ持ち込まない
+    const diff = (a, b) => Math.round((a - b) * 1e6) / 1e6;
+    const sig = e => JSON.stringify(e);
+    const appended = (preList, postList) => {
+      const seen = new Set((Array.isArray(preList) ? preList : []).map(sig));
+      return (Array.isArray(postList) ? postList : []).filter(e => !seen.has(sig(e)));
+    };
+    const STATS = ['pw', 'sp', 'te', 'st', 'mn'];
+
+    // 人気: 興行の前後の差(試合の人気・因縁の決着など)。範囲は applyMQPopularity と同じ 1〜100
+    if (num(before.popularity) && num(post.popularity) && num(base.popularity)) {
+      const d = diff(post.popularity, before.popularity);
+      if (d !== 0) out.popularity = Engine.util.clamp(base.popularity + d, 1, 100);
+    }
+
+    // 能力(試合の成長・ブレークスルー): 差を本物に足す。伸びは本物の上限まで(上限を超えている値は下げない)
+    const gained = {};
+    STATS.forEach(k => {
+      if (!num(before[k]) || !num(post[k]) || !num(base[k])) return;
+      const d = diff(post[k], before[k]);
+      if (d === 0) return;
+      const cap = (base.trainCap && base.trainCap[k]) || 100;
+      const next = d > 0 ? Math.max(base[k], Math.min(base[k] + d, cap)) : base[k] + d;
+      if (next !== base[k]) { out[k] = next; gained[k] = diff(next, base[k]); }
+    });
+    // 今季の伸び: 興行で足された分のうち、本物の能力に実際に足せた分
+    {
+      const sgPre = before.seasonGrowth || {};
+      const sgPost = post.seasonGrowth || {};
+      const add = {};
+      STATS.forEach(k => {
+        const d = diff(Number(sgPost[k]) || 0, Number(sgPre[k]) || 0);
+        if (d > 0 && (gained[k] || 0) > 0) add[k] = Math.min(d, gained[k]);
+      });
+      if (Object.keys(add).length > 0) {
+        const sg = { pw: 0, sp: 0, te: 0, st: 0, mn: 0, ...(base.seasonGrowth || {}) };
+        Object.keys(add).forEach(k => { sg[k] = (Number(sg[k]) || 0) + add[k]; });
+        out.seasonGrowth = sg;
+      }
+    }
+
+    // 怪我(Engine.injury.check と同じ規則を本物の値に当てる)
+    if (post.injury && sig(post.injury) !== sig(before.injury || null)) {
+      out.injury = { ...post.injury };
+      out.condition = num(base.condition) ? Math.min(base.condition, 30) : 30;
+      if (base.preInjuryPop == null && num(post.preInjuryPop)) {
+        // 怪我をした時点の人気 = 本物の人気 + (ゲストが怪我をした時点の人気 - 興行前の人気)
+        out.preInjuryPop = (num(before.popularity) && num(base.popularity))
+          ? Engine.util.clamp(base.popularity + diff(post.preInjuryPop, before.popularity), 1, 100)
+          : post.preInjuryPop;
+      }
+      const injuriesAdded = (Number(post.seasonInjuries) || 0) - (Number(before.seasonInjuries) || 0);
+      if (injuriesAdded > 0) out.seasonInjuries = (Number(base.seasonInjuries) || 0) + injuriesAdded;
+      if (post.growthPenalty && sig(post.growthPenalty) !== sig(before.growthPenalty || null)) {
+        const debuff = post.growthPenalty;
+        const existing = base.growthPenalty;
+        let applyNew = true;
+        if (existing && debuff.multiplier >= existing.multiplier) applyNew = debuff.remainingWeeks > existing.remainingWeeks;
+        if (applyNew) out.growthPenalty = { ...debuff };
+      }
+    }
+
+    // 試合の記録
+    if (post.lastMatchResult) out.lastMatchResult = post.lastMatchResult;
+    if (num(post.losingStreak)) {
+      out.losingStreak = post.losingStreak === 0
+        ? 0
+        : (Number(base.losingStreak) || 0) + Math.max(0, post.losingStreak - (Number(before.losingStreak) || 0));
+    }
+    if (num(post.careerBestMQ) && post.careerBestMQ > (Number(base.careerBestMQ) || 0)) out.careerBestMQ = post.careerBestMQ;
+    if (post.promoStack !== undefined && post.promoStack !== before.promoStack) out.promoStack = post.promoStack;
+    {
+      const added = appended(before.recentMatches, post.recentMatches);
+      if (added.length > 0) out.recentMatches = [...(base.recentMatches || []), ...added].slice(-5);
+    }
+    ['careerHistory', 'growthLog'].forEach(k => {
+      const added = appended(before[k], post[k]);
+      if (added.length > 0) out[k] = [...(base[k] || []), ...added];
+    });
+    if (post.careerRecord) {
+      // 経歴(以前の返却と同じ合流): 本物の欄を優先し、履歴は重複を除いて足す
+      const baseCareer = base.careerRecord || { history: [] };
+      const updatedCareer = post.careerRecord;
+      const history = [...(baseCareer.history || [])];
+      const keyOf = h => `${h.type}|${h.season}|${h.week}|${h.opponentName || ''}|${h.mq || ''}`;
+      const seen = new Set(history.map(keyOf));
+      (updatedCareer.history || []).forEach(entry => {
+        const key = keyOf(entry);
+        if (!seen.has(key)) { history.push(entry); seen.add(key); }
+      });
+      out.careerRecord = { ...updatedCareer, ...baseCareer, history };
+    }
+
+    // 調子の波: 本物がどれも持っていないときだけ(絶好調とスランプ・モチベ喪失はエンジンでも同時に持たない)
+    if (!base.hotStreak && !base.slump && !base.motivationLoss) {
+      ['hotStreak', 'slump', 'motivationLoss'].forEach(k => {
+        if (post[k] && !before[k]) out[k] = post[k];
+      });
+    }
+    return out;
+  },
+
   /** Remove stale reserved slots after a scheduled challenge becomes invalid. */
   clearReservedMatches(state, card) {
     const remaining = (Array.isArray(card) ? card : []).filter(slot => slot && !slot._crMatchLocked && !slot.isCRMatch);

@@ -8737,19 +8737,14 @@ const App = {
         const aiOrgs = { ...(s.aiOrgs || {}) };
         const guestOrg = aiOrgs[b3.orgId];
         if (updatedGuest && guestOrg?.roster) {
+          // ゲストは挑戦状が届いた時点の写し(b3.challenger)から作っていて体調・自己最高評価などを持たない。
+          // 写しを本物へ被せず、この興行で起きたこと(怪我・試合の記録・人気・成長)だけを本物に反映し、
+          // 一時印を外す(Engine.challengeRequest.mergeReturningGuest。2026-09-26 体調 NaN の修正)
           aiOrgs[b3.orgId] = {
             ...guestOrg,
-            roster: guestOrg.roster.map(f => {
-              if (f.id !== updatedGuest.id) return f;
-              const baseCareer = f.careerRecord || { history: [] };
-              const updatedCareer = updatedGuest.careerRecord || { history: [] };
-              const history = [...(baseCareer.history || [])];
-              for (const entry of (updatedCareer.history || [])) {
-                const signature = `${entry.type}|${entry.season}|${entry.week}|${entry.opponentName || ''}|${entry.mq || ''}`;
-                if (!history.some(h => `${h.type}|${h.season}|${h.week}|${h.opponentName || ''}|${h.mq || ''}` === signature)) history.push(entry);
-              }
-              return { ...f, ...updatedGuest, careerRecord: { ...updatedCareer, ...baseCareer, history } };
-            }),
+            roster: guestOrg.roster.map(f => (f.id === updatedGuest.id
+              ? Engine.challengeRequest.mergeReturningGuest(f, b3.challenger, updatedGuest)
+              : f)),
           };
         }
         roster = roster.filter(f => !b3GuestIds.has(f.id));
@@ -8784,7 +8779,8 @@ const App = {
               const signature = `${entry.type}|${entry.season}|${entry.week}|${entry.opponentName || ''}|${entry.mq || ''}`;
               if (!history.some(h => `${h.type}|${h.season}|${h.week}|${h.opponentName || ''}|${h.mq || ''}` === signature)) history.push(entry);
             }
-            return { ...f, ...updated, careerRecord: { ...updatedCareer, ...baseCareer, history } };
+            // 直訴のゲストは本物の写し(最新のロスターから作る)なので中身はそのまま戻す。一時印(isCRGuest 等)だけ外す
+            return Engine.challengeRequest.stripGuestMarkers({ ...f, ...updated, careerRecord: { ...updatedCareer, ...baseCareer, history } });
           }),
         };
       }
@@ -9719,7 +9715,8 @@ const App = {
     s = {
       ...s,
       roster: (s.roster || []).filter(f => !isTemporaryAwayGuest(f)).map(f => allById.get(f.id) || f),
-      aiOrgs: Object.fromEntries(Object.entries(s.aiOrgs || {}).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(f => allById.get(f.id) || f) }])),
+      // 相手団体の選手は遠征の一時印(isAwayChallengeGuest)を付けた写しで持っているので、戻すときに印を外す
+      aiOrgs: Object.fromEntries(Object.entries(s.aiOrgs || {}).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(f => (allById.has(f.id) ? Engine.challengeRequest.stripGuestMarkers(allById.get(f.id)) : f)) }])),
       matchupLog: [...(s.matchupLog || []), ...sp.validMatches.map(m => ({ leftId: m.left, rightId: m.right, showCount: s.totalShows, awayChallenge: true }))],
     };
     const card = {
