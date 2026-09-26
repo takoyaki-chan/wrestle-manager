@@ -3977,6 +3977,8 @@ function archiveRetiredRivalryState(state, fighter) {
       rivalry12: rel12?.rivalry ?? 0,
       rivalry21: rel21?.rivalry ?? 0,
       rivalryMeta: rivalryEntry ? { ...rivalryEntry } : null,
+      // K-4(S4): 2人の人生番号(相関図の過去の線は、表示中の2人の今の人生と一致するときだけ引く)
+      lives: Engine.life.livesFor(state, [id1, id2]),
     };
 
     const existingIdx = history.findIndex(entry =>

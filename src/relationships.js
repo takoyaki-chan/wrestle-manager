@@ -3175,6 +3175,8 @@ Engine.relationships = {
         betrayedBy: [...entry.byIds],
         forgiven: reactions.filter(r => r.forgiven).map(r => r.byId),
         notForgiven: reactions.filter(r => !r.forgiven).map(r => r.byId),
+        // K-4(S4): 当事者の人生番号
+        ...(Engine.life ? { lives: Engine.life.livesFor(state, [returner.id, ...entry.byIds]) } : {}),
       });
 
       // §3.8 betrayer エントリ削除
