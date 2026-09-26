@@ -23,14 +23,8 @@ const assert = require('assert');
 const { readSource } = require('./helpers/source.js');
 const { loadEngines, advanceUntil } = require('./ui-walkthrough/fixtures/headless-sim');
 
-// factions.js の結果文は派閥名を _factionDisplayName(WM_I18N.pn)に通す。headless-sim の既定スタブは t しか
-// 持たないので、auto-sim.js と同じ素通しのスタブを先に置く(loadEngines は既にあるものを使う)
-global.WM_I18N = { t(text, params) {
-  if (typeof text !== 'string' || !params) return text;
-  let out = text;
-  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
-  return out;
-}, pn(str) { return str; }, pnSurname(str) { return str; }, mv(str) { return str; }, mvShort(str) { return str; } };
+// factions.js の結果文は派閥名を _factionDisplayName(WM_I18N.pn)に通す。headless-sim は src/i18n.js を 'ja' で
+// 読み込む(test/helpers/wm-i18n-ja.js。以前の t だけのスタブを置き換えるための先置きは 2026-09-26 に不要になった)
 loadEngines();
 const { FACTION_F06_FORCE_AHEAD_LINES, FACTION_F06_FORCE_BEHIND_LINES } = require('../src/data-faction-dialogue.js');
 

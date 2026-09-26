@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { installWmI18nJa } = require('../../helpers/wm-i18n-ja');
 
 const srcDir = path.join(__dirname, '..', '..', '..', 'src');
 
@@ -17,26 +18,26 @@ let enginesLoaded = false;
 function loadEngines() {
   if (enginesLoaded) return;
   global.window = global.window || { IS_TRIAL: false };
-  // i18n Stage A P3a-4d: factions.js が WM_I18N.t() を呼ぶようになったため、
-  // i18n.js 本体は読み込まずスタブで賄う（ja では素通し+プレースホルダ置換）。
-  // 既知の差(2026-09-26 報告・裁定待ち): auto-sim.js のスタブと違い pn/pnSurname を持たないため、
-  // factions.js の _factionDisplayName(WM_I18N.pn)を通る F06/F07/F06_FORCE 等の選択の適用が例外になり、
-  // 下の autoHandleFactionEvent が黙って握りつぶす(F07 のクールダウンが付かず毎週 F07 が立つ)。
-  // 足すと k1-parity の基準 fixture の軌道が変わるので、ここでは直さない(docs/worklog.md 2026-09-26)
-  global.WM_I18N = global.WM_I18N || { t(text, params) {
-    if (typeof text !== 'string' || !params) return text;
-    let out = text;
-    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
-    return out;
-  } };
+  // WM_I18N はゲームと同じ src/i18n.js を 'ja' で動かす(test/helpers/wm-i18n-ja.js)。
+  // 2026-09-26 まではここに t() だけの手書きスタブがあり、pn を持たないため factions.js の
+  // _factionDisplayName(WM_I18N.pn)を通る F06/F07/F06_FORCE 等の選択の適用が毎回例外になって、
+  // 下の autoHandleFactionEvent に黙って捨てられていた(F07 のクールダウンが付かず毎週 F07 が立ち、
+  // その週は決着の判定・F09・派閥内挑戦が止まる)。呼び出し側が先に置いた WM_I18N があればそれを使う
+  installWmI18nJa();
+  // 読み込むエンジン側のファイルは index.html(と auto-sim.js)の順番どおり。
+  // coach-lines / data-faction-dialogue / flag-dialogue は台詞の表だけで、以前は読んでいなかった
+  // (エンジンは typeof で有無を見て空の台詞に落ちる。乱数は台詞専用のストリームなので数値は変わらない)
   const files = [
     'victory-lines.js',
     'data.js',
+    'coach-lines.js',
+    'data-faction-dialogue.js',
     'management.js',
     'match-engine.js',
     'relationships.js',
-    'draft-negotiation.js',
+    'flag-dialogue.js',
     'factions.js',
+    'draft-negotiation.js',
   ];
   for (const filename of files) {
     let code = fs.readFileSync(path.join(srcDir, filename), 'utf8');
@@ -122,6 +123,32 @@ function autoHandleLargeEvent(G, simRng) {
   return clean;
 }
 
+// 自動応答の中で起きて握りつぶした例外の記録(2026-09-26)。
+// 以前は catch で黙って捨てていたため、スタブの不足で派閥の選択が毎回失敗していても誰も気づかなかった。
+// 進行は止めない(auto-sim と同じ耐性)が、件数と中身を advanceUntil の呼び出し側が読めるようにする。
+// WM_HEADLESS_STRICT=1 のときは握りつぶさずに投げる(原因を追うとき用)。
+const swallowed = [];
+function recordSwallowed(where, G, detail, error) {
+  if (process.env.WM_HEADLESS_STRICT === '1') throw error;
+  swallowed.push({
+    where, detail, season: G && G.season, week: G && G.week,
+    message: String((error && error.message) || error),
+  });
+}
+function swallowedErrors() { return swallowed.slice(); }
+function resetSwallowedErrors() { swallowed.length = 0; }
+// 「どこで・何が」ごとに件数を畳んだ一覧(最初に起きた季・週つき)
+function summarizeSwallowedErrors(list = swallowed) {
+  const groups = new Map();
+  for (const e of list) {
+    const key = `${e.where}|${e.detail}|${e.message}`;
+    const g = groups.get(key) || { where: e.where, detail: e.detail, message: e.message, count: 0, first: `S${e.season}W${e.week}` };
+    g.count += 1;
+    groups.set(key, g);
+  }
+  return [...groups.values()].sort((a, b) => b.count - a.count);
+}
+
 // auto-sim.js の autoHandleFactionEvent から計測(census)を除いて移植
 function autoHandleFactionEvent(G, simRng) {
   if (!G._pendingFactionEvent) return G;
@@ -176,7 +203,10 @@ function autoHandleFactionEvent(G, simRng) {
       const r = Engine.factions.applyCommon4Result(s, fe.payload, rng);
       if (r && r.state) s = r.state;
     }
-  } catch (_e) { /* 設計意図としてはここに到達しない */ }
+  } catch (e) {
+    // 設計意図としてはここに到達しない。到達したら数えておく(上の recordSwallowed)
+    recordSwallowed('autoHandleFactionEvent', G, fe.eventId, e);
+  }
   const { _pendingFactionEvent: _, ...clean } = s;
   return clean;
 }
@@ -245,8 +275,10 @@ function clearTransients(G) {
 }
 
 // until(G) が true を返す週の頭(その週の興行・tickを処理する前)で停止して G を返す。
+// 自動応答で握りつぶした例外は、呼び出しごとに swallowedErrors() / summarizeSwallowedErrors() で読める。
 function advanceUntil({ seed, until, maxWeeks = 600 }) {
   loadEngines();
+  resetSwallowedErrors();
   let G = expandRosterForTest(Engine.createInitialState(seed, true));
   G = { ...G, debugLog: [], orgPop: Math.max(G.orgPop, 80) };
   const simRng = Engine.rng.create(Engine.rng.derive(seed, 0xABCD));
@@ -401,4 +433,7 @@ function toSaveState(G, note) {
   return saveState;
 }
 
-module.exports = { advanceUntil, clearTransients, collectValidationWarnings, loadEngines, toSaveState };
+module.exports = {
+  advanceUntil, clearTransients, collectValidationWarnings, loadEngines, toSaveState,
+  swallowedErrors, summarizeSwallowedErrors,
+};

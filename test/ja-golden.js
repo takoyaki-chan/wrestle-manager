@@ -121,10 +121,21 @@ function collectShowResult(G, showResult) {
     pushText(`${tag}/match${i}/finish`, Engine.formatFinish(r.finType, r.finMove));
   });
   (showResult.events || []).forEach((e, i) => pushText(`${tag}/event${i}`, e));
+  // 怪我による引退の演出データ。エンジンは次の引退まで state に残す(auto-sim は取り出さない。K1-T04)ので、
+  // この興行で作られたもの(興行前の G と別の配列)だけを採る(2026-09-26。以前は同じ引退を毎興行採り直していた)
   const pending = showResult.state && showResult.state._pendingInjuryRetirements;
-  (pending || []).forEach((ir, i) => {
+  if (!pending || pending === G._pendingInjuryRetirements) return;
+  pending.forEach((ir, i) => {
     pushText(`${tag}/retirement${i}/line`, ir && ir.line);
-    pushText(`${tag}/retirement${i}/summary`, ir && ir.summary);
+    // 経歴欄 summary は { icon, text } の配列(Engine.retirement.buildCareerSummary)。以前は String() で
+    // "[object Object]" になって中身を一度も照合していなかった(2026-09-26)。1行ずつ採る
+    const summary = ir && ir.summary;
+    if (Array.isArray(summary)) {
+      summary.forEach((item, j) => pushText(`${tag}/retirement${i}/summary${j}`,
+        item && typeof item === 'object' ? `${item.icon || ''} ${item.text || ''}` : item));
+    } else {
+      pushText(`${tag}/retirement${i}/summary`, summary);
+    }
     pushText(`${tag}/retirement${i}/championWorry`, ir && ir.championWorryLine);
   });
 }

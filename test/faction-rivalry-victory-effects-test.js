@@ -22,13 +22,7 @@ const assert = require('assert');
 const { readSource } = require('./helpers/source.js');
 const { loadEngines, advanceUntil } = require('./ui-walkthrough/fixtures/headless-sim');
 
-// factions.js の結果文は派閥名を WM_I18N.pn に通す。auto-sim.js と同じ素通しのスタブを先に置く
-global.WM_I18N = { t(text, params) {
-  if (typeof text !== 'string' || !params) return text;
-  let out = text;
-  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
-  return out;
-}, pn(str) { return str; }, pnSurname(str) { return str; }, mv(str) { return str; }, mvShort(str) { return str; } };
+// WM_I18N は headless-sim が src/i18n.js を 'ja' で読み込む(test/helpers/wm-i18n-ja.js)
 loadEngines();
 
 let failed = 0;

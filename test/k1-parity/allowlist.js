@@ -178,10 +178,11 @@ module.exports = [
     patterns: ['roster[*].slump.recoveryMomentum', 'roster[*].slump', 'roster[*].motivationLoss', 'roster[*].hotStreak', '_pendingGrowthEvents',
       'roster[*].careerRecord.history', 'roster[*].careerHistory'],
     // 2026-09-26: K-4 S1(休眠プールの規則)で fixture(seed 42・S2W14)の世界が変わり、この週にスランプ・好調・
-    // ブレークスルーに当たる選手がいなくなって、状態の差としては出なくなった(実プレイだけが判定する処理そのものは
-    // 残っている — 乱数ストリーム breakthrough/slump/slumpMomentum を実プレイだけが引いていることは --report で見える)。
-    // fixture 次第で出たり消えたりするので「消えた」判定から外す。A02 を一本化したら項目ごと外すこと
-    mustAppear: false, refs: 'app.js:8829-8941 / エンジン側なし(乱数ストリーム 0xB818/0x5C6/0x5C7/0x5C8 は実プレイだけが引く)',
+    // ブレークスルーに当たる選手がいなくなって、状態の差としては出なくなったため、一時 mustAppear: false にしていた。
+    // 2026-09-26 基準の取り直し3回目: headless 進行の WM_I18N スタブを直した(派閥の選択が効くようになった)fixture では、
+    // スランプ中の選手の回復モメンタム(slump.recoveryMomentum)が全16本で A=実プレイだけ・B=両方で違う として出る
+    // (dome はブレークスルーの経歴も)。元の強さ(mustAppear: true)に戻した。A02 を一本化したら項目ごと外すこと
+    mustAppear: true, refs: 'app.js:8829-8941 / エンジン側なし(乱数ストリーム 0xB818/0x5C6/0x5C7/0x5C8 は実プレイだけが引く)',
   },
   {
     id: 'K1-A03', title: '季節統計(seasonStats: 興行数・勝敗・最高評価)',
