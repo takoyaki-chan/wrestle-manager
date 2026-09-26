@@ -1,5 +1,39 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 点火で見つけた2件の裁定を反映 — 観戦の後の「敗者の心」を出す/F08 の両リーダーの因縁を効かせる(Claude/Opus 5.5・worktree)
+
+1つ下の節(点火カタログの立て直し)で報告した未修正の4件のうち、Keisuke 裁定(09-26)が出た2件。
+
+### 1. 「— 敗者の心 —」を出す(裁定: 出す。数値は不変)
+- 観戦した試合の結果画面を閉じた後の敗者の一言(`POST_MATCH_FLAVOR_LINES.loser`・1.8秒で自動で閉じる)が、`showEventPopup` → `_enqueuePopup` で興行中ずっと active な試合一覧の殻(`showResultOverlay`)の後ろに積まれ、**一度も表に出ていなかった**(保険のタイマー N×2.2秒+1.5秒が毎試合発火して `[WM] postMatchFlavor safety net fired`、積まれた一言は週送りの全消去で捨てられていた)
+- ui-common.js に `showPostMatchFlavorPopups(popups, onDone)` を新設。殻は排他の相手に数えない(`_isPopupActive({ ignoreShowResultOverlay: true })`。F08/F09 の試合後の画面と同じ例外)。汎用の `_eventPopupQueue` は通さない(殻の後ろで止まったままの試合前の「初対決」を先頭に抱えていることがあり、後ろに並ぶと出られない)。見た目は従来の C-3 と同じ mdl-c の小型カード(`.post-match-flavor`)+頭上の吹き出し(クリーム地・台詞だけ)+画像 M 132×194(敗者なので `is-loser` で減彩)+名前+「— 敗者の心 —」。1.8秒か OK で閉じ、200ms 後に完了を1回だけ返す(タイマーと OK が重なっても1回)
+- `App._runPostMatchFlavorForMatch` はこれを呼び、保険のタイマーは残した(殻以外の画面が本当に開いていて待ち行列で止まったときだけ発火し、出ていない一言を `cancel()` で取り下げて先へ進む=次の試合の上に遅れて出ない)
+- 出るのは観戦した試合だけ(1試合スキップ・全スキップは従来どおり省略)。タッグ・引き分けは出さない(従来どおり)。敗者の心が閉じてから試合一覧を描き直し、次の試合の試合前の画面はその 400ms 後なので重ならない。親画面に自動送りの設定は無く(観戦 iframe の「自動再生」は iframe の中だけ)、結果画面の「次の試合へ」を押してから流れるので崩れない
+- 点火 `incoming-challenge-watch` / `b3-challenge-watch` の `knownConsole` から保険の警告を外し、手ごとの読取りのついでに `#mdlCCard` を見張って敗者の心が出た回数を数える検査を足した(`WATCH_FLAVOR_OBSERVER` / `_assertFlavorSeen`。1.8秒で閉じるので手の後の読取りでは見えない)
+- specs/match-flavor-popup-spec-v0.1.md §4.6.1・`test/ui-walkthrough/README.md`・`docs/rare-screen-ignition-catalog-design-v0.1.md` §10・`docs/実機確認バックログ.md`
+
+### 検証(1)
+- 回帰テスト `test/post-match-flavor-over-show-shell-test.js`(新規): ui-common.js の待ち行列まわりと app.js の試合後の流れを本物のまま偽の DOM・偽の時計で動かす。殻だけが開いている→すぐ出る・中身は敗者の一言(減彩)・1.8秒で閉じ次へ1回・警告なし/汎用の列に止まった「初対決」がいても出る/OK の二度押し+タイマーでも1回/殻以外の画面が開いている→保険1回・取り下げた一言は後から出ない/タッグ・引き分けは出ない。**変更前のコードでは1つ目で失敗**(殻の後ろに積まれる)。`test/post-match-flavor-safety-net-test.js` は新しい形(汎用の列を待たない・保険が取り下げる)に合わせた
+- 点火 `incoming-challenge-watch` PASS(警告0・敗者の心 3回: 3試合とも)/ `b3-challenge-watch` PASS(敗者の心 1回・既知扱いは B3 のゲストの NaN だけ)
+- `npm test` 314/314 PASS・`node test/ui-baseline-guard-test.js` ok・UI 走破1本 PASS(1季・345操作・Issues 0・既知扱いの警告なし)
+
+### 2. F08 の直接対決の両リーダーの因縁を効かせる(裁定: 直す。変わる数値はこれだけ)
+- `App._finalizeHookFactionBookings` の F08 の清算が、両リーダーの関係値を `${a}|${b}` のキーで引いていた(本物は方向つきの `a>b`)ため、「両リーダー間 rivalry +30〜40」が一度も効いていなかった。`Engine.relationships._key(a, b)` / `_key(b, a)` にして**両方向に同じ量**を足す(コードの意図どおり。specs の §9.8 の表には書かれていなかったので書き足した)。足す量 `30 + floor(乱数×11)` と乱数の引き方(0xFA88 の3つ目、引き分けなら1つ目)は変えていない(以前も引いて捨てていた)
+- **`a|b` 型の引き間違いの棚卸し**(src 全体の `|` を区切りにしたキーと、関係値・因縁・対立度・派閥ポイントの表を引く箇所を全部): 引き間違いは **この1件だけ**。ほかの `|` のキーは、書く側と読む側が同じ関数で作る自前の表・重複除けで、形はそろっている — factions.js `_sortedPairKey`(F06/F08/F02④ のクールダウンのキー・`factionReconciliationStreak`・`factionEndlessStreak`・`f02MediationWatches`/`factionPendingIgnite` の突き合わせ。`checkF02EndlessCondition` の `split('|')` も同じ形)/ relationships.js 5739(第三者の証言のペアの重複除け。関係値は `a>b` で引いている)/ ui-render.js 14990(相関図の抗争の破線の重複除け。対立度は `a>b`)/ management.js 9167・33349、app.js 8748・9242、relationships.js 2854、ui-common.js 20052(重複除け・署名)。関係値(`relationships`)を `|`・`-`・`getRivalryKey`・`_pairKey` で引く箇所はほかに無い。派閥ポイントは `_pairKey`(`a-b`)で書く側・読む側(app.js 9071 を含む)がそろっている
+- 関連して見つけた別の型(未修正・報告のみ): 試合前の「✨ 初対決」(`App._collectPreMatchPopupsForMatch`)が `G.matchupLog` の項目を `e.left` / `e.right` で見ているが、項目は `leftId` / `rightId` なので**毎試合「初対決」と判定される**。こちらも殻の後ろに積まれて興行中に一度も出ていない(出す経路は敗者の心とは別。出すなら判定も直す必要がある)
+- 点火 `faction-f08` の検査に「両リーダーの因縁が両方向とも +30 以上」を足した(`_assertF08`)。回帰テスト `test/faction-f08-leader-rivalry-boost-test.js`(新規)
+- specs/faction-system-spec-v0.1.md §9.8(A の効果の表と1段落)
+
+### 検証(2)
+- 回帰テスト `test/faction-f08-leader-rivalry-boost-test.js`(新規・6本): 勝敗のついた直接対決で両方向に同じ量(乱数の3つ目から 30〜40)・ほかの組と bond は不変・勢いと対立度は従来どおり/右が勝っても同じ/引き分けは乱数の1つ目から/100 で頭打ち/リーダー同士の対決が無ければ動かない/キーの形の検査。**変更前のコードでは5本が失敗**(因縁が動かない)
+- 点火 `faction-f08` PASS: 両リーダーの因縁 45.7/45.4 → **90.9/100(+45.2/+54.6)**。修正前は同じ fixture で 56.9/70.4(+11.2/+25.0=試合の関係値と試合後の画面の +8〜12 だけ)だったので、F08 の加算は **+34**(B→A は 104.4 で 100 に頭打ち)。敗れた派閥(3人)の末端なし・試合後の画面あり・方針の消化は従来どおり
+- auto-sim は app.js を読まない(F08 の清算は実プレイの差し込み口 `App._finalizeHookFactionBookings` だけにある。auto-sim の世界では `_pendingF08Directive` は一時キーとして捨てられる)ので指紋は変わりようがない。`node test/auto-sim.js 40 42` ALL CLEAR・意味指紋 61ef0aa5(K-1 第3段の記録と同じ)
+- `npm run test:k1:parity` PASS(登録27・未登録0・消えた0。派閥の予約は差分テストのシナリオで空にしている)・`npm test` 315/315 PASS
+
+### main の取り込み(1つ下の節の B3 のゲストの NaN の修正)
+- 点火の既知扱いが両側で外れて衝突した(`b3-challenge-watch`: こちらは保険の警告、main は NaN)。両方外して `knownConsole` は無し、読取りは `_withFlavorObserver(B3_STEP_PROBE)`。これで点火の既知扱いは全シナリオで無くなった
+- 取り込み後: `npm test` 316/316 PASS・点火 `b3-challenge-watch` PASS(敗者の心 1回・既知の警告なし)/ `incoming-challenge-watch` PASS(3回)/ `faction-f08` PASS(両リーダーの因縁 45.7/45.4 → 90.9/100)。どれも Issues 0
+
 ## 2026-09-26 挑戦状(B3)のゲストを所属団体へ戻すと本物の選手の体調が NaN になる不具合を修正(Claude/Opus 5.5・worktree)
 
 点火カタログの立て直し(下の項)で見つかった「未修正・報告」1件。確定仕様は `specs/large-event-spec-v1.0.md` §4.3b。

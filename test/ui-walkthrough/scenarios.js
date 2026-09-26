@@ -218,10 +218,36 @@ const _watchMatchBoost = indexes => candidate => {
   if (/App\.(?:skipAllMatches|escapeBattle)\(\)/.test(onclick)) return -Infinity;
   return null;
 };
-// 観戦・1試合ずつの経路で、試合後のフレーバーのポップアップ(showEventPopup → _enqueuePopup)が興行中ずっと active な
-// showResultOverlay(試合一覧の殻)の後ろに積まれて出ず、_runPostMatchFlavorForMatch の保険のタイマーが毎回発火する
-// (2026-09-26 に観戦の点火で発見・未修正・報告済み)。観戦の後ろの経路(清算・結果)を検査し続けるため既知扱いにする
-const WATCH_KNOWN_CONSOLE = [/^\[WM\] postMatchFlavor safety net fired$/];
+// 観戦した試合の後の「敗者の心」(試合後のフレーバー。showPostMatchFlavorPopups)が出たことを数える。
+// 1.8秒で閉じるので手の後の読取り(2.2秒後)では見えない。手ごとの読取りのついでに #mdlCCard を見張り、
+// 中身に .post-match-flavor が入るたびに window.__wmFlavorSeen へ控える(画面の G には触らない)。
+// 2026-09-26 以前は試合一覧の殻(showResultOverlay)の後ろに積まれて一度も出ず、保険のタイマーの警告
+// ([WM] postMatchFlavor safety net fired)を既知扱いにしていた。いまは警告が出れば D1 で落ちる
+const WATCH_FLAVOR_OBSERVER = `(() => {
+  if (window.__wmFlavorObserver) return;
+  const card = document.getElementById('mdlCCard');
+  if (!card || typeof MutationObserver !== 'function') return;
+  window.__wmFlavorSeen = window.__wmFlavorSeen || [];
+  window.__wmFlavorObserver = new MutationObserver(() => {
+    const body = card.querySelector('.post-match-flavor');
+    if (!body || body.__wmSeen) return;
+    body.__wmSeen = true;
+    window.__wmFlavorSeen.push((body.textContent || '').replace(/\\s+/g, ' ').trim());
+  });
+  window.__wmFlavorObserver.observe(card, { childList: true });
+})()`;
+// 手ごとの読取り(probe)に見張りを足し、読んだ値に flavorSeen(出た敗者の心の文面)を添える。probe が null なら null のまま
+const _withFlavorObserver = probe => `(() => {
+  ${WATCH_FLAVOR_OBSERVER};
+  const value = ${probe};
+  return value === null ? null : { ...value, flavorSeen: (window.__wmFlavorSeen || []).slice() };
+})()`;
+function _assertFlavorSeen(steps) {
+  const values = (steps || []).map(entry => entry.value).filter(v => v && !v.probeError && Array.isArray(v.flavorSeen));
+  const seen = values.length ? values[values.length - 1].flavorSeen : [];
+  console.log(`敗者の心: ${seen.length}回 ${JSON.stringify(seen)}`);
+  return seen.length > 0 ? [] : ['観戦した試合の後に「敗者の心」(.post-match-flavor)が一度も出ていない'];
+}
 
 // 観戦 iframe(シングル battle-engine.html)は1コマずつ「次の攻防」(#nBtn)で進み、決着のコマはフォール等の
 // 「決めろ!」ボタン(#finishBtn.show)を押してカウントが進み、勝敗の演出の後の「試合終了」(#eBtn.visible)で
@@ -588,7 +614,7 @@ function _assertCommon1(probe, lang, steps) {
 }
 
 // F08 直接対決をメインに: 次の興行の先頭に両リーダーが組まれ(_f08Locked)、試合後に敗れた派閥の末端の
-// 信頼 −2〜4(感度つき)と試合後の画面(fevtF08PostOverlay)。方針は興行後に消える
+// 信頼 −2〜4(感度つき)・両リーダーの因縁 +30〜40(両方向)と試合後の画面(fevtF08PostOverlay)。方針は興行後に消える
 function _assertF08(probe, lang, steps) {
   const fails = [];
   const values = _stepValues(steps);
@@ -627,8 +653,17 @@ function _assertF08(probe, lang, steps) {
   }
   const hk = (x, y) => `${x}>${y}`;
   console.log(`F08: 対立度 ${_fmt(pre.hostility[hk(d.factionAId, d.factionBId)])}/${_fmt(pre.hostility[hk(d.factionBId, d.factionAId)])} → ${_fmt(post.hostility[hk(d.factionAId, d.factionBId)])}/${_fmt(post.hostility[hk(d.factionBId, d.factionAId)])}`);
-  if (pre.f08Rivalry && post.f08Rivalry) {
-    console.log(`F08: 両リーダーの因縁 ${JSON.stringify(pre.f08Rivalry.map(_fmt))}→${JSON.stringify(post.f08Rivalry.map(_fmt))}`);
+  // 両リーダーの因縁(rivalry)は両方向とも +30〜40(F08 の清算。2026-09-26 まで関係値を `a|b` で引いていて効いていなかった)。
+  // 試合そのものの関係値の変化と、試合後の画面の「敗者リーダー→勝者リーダー +8〜12」も同じ清算の窓に入るので、
+  // 下限の +30 を両方向で見る(修正前の seed42 は +11.2 / +25.0 だった)
+  if (!pre.f08Rivalry || !post.f08Rivalry || pre.f08Rivalry.some(v => v == null) || post.f08Rivalry.some(v => v == null)) {
+    fails.push('両リーダーの因縁(関係値 a>b / b>a)が読めない');
+  } else {
+    const deltas = post.f08Rivalry.map((v, i) => v - pre.f08Rivalry[i]);
+    console.log(`F08: 両リーダーの因縁 ${JSON.stringify(pre.f08Rivalry.map(_fmt))}→${JSON.stringify(post.f08Rivalry.map(_fmt))}(${deltas.map(v => (v >= 0 ? '+' : '') + _fmt(v)).join(' / ')})`);
+    deltas.forEach((v, i) => {
+      if (post.f08Rivalry[i] < 100 && v < 30) fails.push(`両リーダーの因縁(${i === 0 ? 'A→B' : 'B→A'})が +${_fmt(v)} しか深まっていない(F08 の +30〜40 が効いていない)`);
+    });
   }
   if (!values.some(v => v.shown && v.shown.f08Post)) fails.push('F08 の試合後の画面(fevtF08PostOverlay)が出ていない');
   return fails;
@@ -1587,7 +1622,7 @@ module.exports = {
     makeUntil: _untilWeeksAfterFixture(3),
     boost: _watchMatchBoost([0, 1, 2]),
     hold: WATCH_HOLD,
-    knownConsole: WATCH_KNOWN_CONSOLE,
+    stepProbe: _withFlavorObserver('({})'),
     ignition: [
       { name: 'incoming-gauntlet', required: true, match: s => overlayHit(s, 'hostile-arrival-overlay') },
       { name: 'watch-iframe', required: true, match: s => overlayHit(s, 'battleOverlay') },
@@ -1598,11 +1633,12 @@ module.exports = {
       accepted: (typeof G !== 'undefined' && G.challengeRequest) ? (G.challengeRequest.acceptedThisSeason || 0) : 0,
       guestsLeft: (typeof G !== 'undefined') ? (G.roster || []).filter(f => f.isCRGuest).length : -1,
     }))()`,
-    finalAssert: probe => {
+    finalAssert: (probe, lang, steps) => {
       const fails = [];
       if (!probe || probe.accepted < 1) fails.push('果たし状が受理されていない(acceptedThisSeason=0)');
       if (probe && probe.bookingLeft) fails.push('迎撃予約が残留している(シリーズが消化されていない)');
       if (probe && probe.guestsLeft !== 0) fails.push(`シリーズのゲストが自団体のロスターに残っている(${probe.guestsLeft})`);
+      fails.push(..._assertFlavorSeen(steps));
       return fails;
     },
   },
@@ -1661,15 +1697,14 @@ module.exports = {
       return accept != null ? accept : _watchMatchBoost([0])(candidate, all);
     },
     hold: WATCH_HOLD,
-    knownConsole: WATCH_KNOWN_CONSOLE,
-    stepProbe: B3_STEP_PROBE,
+    stepProbe: _withFlavorObserver(B3_STEP_PROBE),
     ignition: [
       { name: 'b3-offer', required: false, match: s => (s.overlays || []).some(o => /mdlAOverlay:.*mdl-a-decision-tray/.test(String(o)) && /danger/.test(String(o))) },
       { name: 'b3-pick', required: true, match: s => overlayHit(s, 'mdl-a-candidate-stage') },
       { name: 'watch-iframe', required: true, match: s => overlayHit(s, 'battleOverlay') },
     ],
     finalProbe: `(() => ({ booked: !!(typeof G !== 'undefined' && G._pendingIncomingB3Match) }))()`,
-    finalAssert: (probe, lang, steps) => _assertB3Resolved(steps),
+    finalAssert: (probe, lang, steps) => [..._assertB3Resolved(steps), ..._assertFlavorSeen(steps)],
   },
 
   // 派閥の予約の清算(K-1 第3段 3-3・§7 X05 で信頼・人気が効くようになった処理)。停止週の週送りの後に
