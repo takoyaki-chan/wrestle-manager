@@ -345,8 +345,11 @@ section('A04: 両経路が Engine.show.buildShowNewspaperData を呼ぶ(App の�
   const fin = finalizeBody();
   const exe = executeShowBody();
   const app = readSource('src', 'app.js');
-  assert.ok(fin.includes('Engine.show.buildShowNewspaperData(G, { titleOutcomes: titleMatchOutcomes, injuryResults, dict: WM_I18N.t })'), 'app.js が共通の関数を呼んでいない');
-  assert.ok(exe.includes('Engine.show.buildShowNewspaperData(s, { titleOutcomes: titleMatchOutcomes, injuryResults })'), 'management.js が共通の関数を呼んでいない');
+  // K-1 第4段 4-A: 新聞データはラストランの引退の後で finalize が組む(両経路1本。実プレイは画面の言語の辞書 ctx.dict を渡す)
+  assert.ok(exe.includes('Engine.show.buildShowNewspaperData(s, ctx.dict'), 'finalize が共通の関数を呼んでいない');
+  assert.ok(exe.includes('{ titleOutcomes: titleMatchOutcomes, injuryResults, dict: ctx.dict }') && exe.includes(': { titleOutcomes: titleMatchOutcomes, injuryResults });'),
+    '辞書の有無で引数を組み分けていない');
+  assert.ok(fin.includes('dict: WM_I18N.t,') && !fin.includes('Engine.show.buildShowNewspaperData(G,'), '実プレイが辞書を渡していない、または自前で新聞データを組んでいる');
   assert.ok(!app.includes('_buildShowResultNewspaperData()') && !app.includes('_generateNewspaperTexts(d)'), 'App の旧関数が残っている');
   assert.ok(app.includes('Engine.show.registerNewspaperTextPools(App._NEWSPAPER_HEADLINES, App._NEWSPAPER_ARTICLES);'), 'テンプレの登録が無い');
   assert.ok(app.includes('  _NEWSPAPER_HEADLINES: {') && app.includes('  _NEWSPAPER_ARTICLES: {'), 'テンプレの表は app.js に置いたまま(i18n の抽出が読む)');

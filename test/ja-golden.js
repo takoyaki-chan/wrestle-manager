@@ -121,10 +121,10 @@ function collectShowResult(G, showResult) {
     pushText(`${tag}/match${i}/finish`, Engine.formatFinish(r.finType, r.finMove));
   });
   (showResult.events || []).forEach((e, i) => pushText(`${tag}/event${i}`, e));
-  // 怪我による引退の演出データ。エンジンは次の引退まで state に残す(auto-sim は取り出さない。K1-T04)ので、
-  // この興行で作られたもの(興行前の G と別の配列)だけを採る(2026-09-26。以前は同じ引退を毎興行採り直していた)
-  const pending = showResult.state && showResult.state._pendingInjuryRetirements;
-  if (!pending || pending === G._pendingInjuryRetirements) return;
+  // 引退の演出データ(K-1 第4段 4-A から状態に積まず showResult.presentations で返る。この興行の分だけ)。
+  // 怪我による引退 → ラストランの引退(第4段 4-A でエンジンの経路でも起きるようになった)の順に採る
+  const pres = showResult.presentations || {};
+  const pending = [...(pres.injuryRetirements || []), ...(pres.lastRunRetirements || [])];
   pending.forEach((ir, i) => {
     pushText(`${tag}/retirement${i}/line`, ir && ir.line);
     // 経歴欄 summary は { icon, text } の配列(Engine.retirement.buildCareerSummary)。以前は String() で

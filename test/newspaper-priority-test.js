@@ -126,8 +126,10 @@ section('9. 王座移動は積み忘れようがない形にする', () => {
   // 作業中の状態 s に積む(G に積むと最後の書き戻しで消える。K-1 第1段 K1-E07)。乱入者が奪った王座は記事にしない
   assert.ok(/if \(crown\.newsEvent && !intruderTook\) s = Engine\.industryNews\.push\(s, crown\.newsEvent\);/.test(mgmt),
     '共通の処理で積んでいない');
-  assert.ok(/intruderId: App\._intrusionData && App\._intrusionData\.intruder \? App\._intrusionData\.intruder\.id : null,/.test(app),
-    '実プレイが乱入者を finalize に渡していない');
+  // K-1 第4段 4-A: 乱入は両経路が Engine.show.rollIntrusion で判定し、finalize に ctx.intrusion で渡す
+  assert.ok(/intrusion: App\._intrusionData \|\| null,/.test(app),
+    '実プレイが乱入を finalize に渡していない');
+  assert.ok(/preShowState: state, intrusion,/.test(mgmt), 'エンジンの経路が乱入を finalize に渡していない');
   assert.ok(!/App\._pushIndustryNews\(crown\.newsEvent\)/.test(app),
     'UI側が王座移動の記事を G に積んでいる(_finalizeShowImpl の最後の G = { ...s } で消える)');
 });

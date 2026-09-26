@@ -23,6 +23,10 @@
 //   node test/k1-parity/run.js --json <file>       生データを JSON で保存(既定: test/k1-parity/out/last-run.json)
 //   node test/k1-parity/run.js --dump <dir>        各シナリオの両経路の状態を丸ごと <dir>/<シナリオ>__<mode>.json に保存
 //                                                  (src を変える前後で取り、compare-dumps.js で「同じ経路の数値が動いていないか」を見る)
+//   node test/k1-parity/run.js --fixture-out <file>  作った fixture(セーブの JSON)を保存する
+//   node test/k1-parity/run.js --fixture-in <file>   fixture を作らずに保存したものを使う(2026-09-26 第4段 4-A で追加。
+//                                                  fixture は headless 進行=エンジンの経路で作るので、エンジンの興行後の処理を
+//                                                  変えると fixture の世界も変わる。実プレイの経路の前後比較は同じ fixture で取る)
 //
 // src の挙動は変えない。ページ側で行う計測の詳細は page-probe.js の冒頭を参照。
 
@@ -30,7 +34,7 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 const { startStaticServer } = require('../ui-walkthrough/server');
-const { advanceUntil, toSaveState, summarizeSwallowedErrors } = require('../ui-walkthrough/fixtures/headless-sim');
+const { advanceUntil, toSaveState, summarizeSwallowedErrors, loadEngines } = require('../ui-walkthrough/fixtures/headless-sim');
 const { scenarios } = require('./scenarios');
 const { diffStates, diffTwo, aggregate, short } = require('./diff');
 const allowlist = require('./allowlist');
@@ -48,6 +52,8 @@ function parseArgs(argv) {
     else if (a === '--scenario') opts.scenario = argv[++i];
     else if (a === '--json') opts.json = argv[++i];
     else if (a === '--dump') opts.dump = argv[++i];
+    else if (a === '--fixture-out') opts.fixtureOut = argv[++i];
+    else if (a === '--fixture-in') opts.fixtureIn = argv[++i];
     else if (a === '--fixture-seed') opts.fixtureSeed = Number(argv[++i]);
     else if (a === '--season') opts.season = Number(argv[++i]);
     else if (a === '--week') opts.week = Number(argv[++i]);
@@ -376,7 +382,20 @@ async function main() {
   const selected = opts.scenario ? scenarios.filter(s => s.name === opts.scenario) : scenarios;
   if (selected.length === 0) throw new Error(`no scenario named ${opts.scenario}. available: ${scenarios.map(s => s.name).join(', ')}`);
 
-  const fixture = buildFixture(opts);
+  let fixture;
+  if (opts.fixtureIn) {
+    loadEngines(); // シナリオの組み立て(scenarios.js)が Node 側の Engine を使う(fixture を作るときは advanceUntil が読み込む)
+    const text = fs.readFileSync(opts.fixtureIn, 'utf8');
+    const save = JSON.parse(text);
+    fixture = { text, ms: 0, season: save.season, week: save.week, roster: (save.roster || []).length, swallowed: [] };
+    console.log(`  fixture は保存したものを使う: ${opts.fixtureIn}`);
+  } else {
+    fixture = buildFixture(opts);
+  }
+  if (opts.fixtureOut) {
+    fs.mkdirSync(path.dirname(path.resolve(opts.fixtureOut)), { recursive: true });
+    fs.writeFileSync(opts.fixtureOut, fixture.text);
+  }
   console.log(`K-1 経路差分テスト — fixture seed=${opts.fixtureSeed} S${fixture.season}W${fixture.week} roster=${fixture.roster} (生成 ${fixture.ms}ms)`);
   const swallowedTotal = fixture.swallowed.reduce((n, g) => n + g.count, 0);
   console.log(`  headless 進行の自動応答で握りつぶした例外: ${swallowedTotal} 件`);
@@ -406,7 +425,7 @@ async function main() {
         if (run.problems.length) console.log(`  ページ上のエラー/ダイアログ ${run.problems.length} 件: ${run.problems.slice(0, 3).join(' | ')}`);
         console.log(`  試合結果 engine=${JSON.stringify(analysis.matches.engine)}`);
         console.log(`  試合結果 app   =${JSON.stringify(analysis.matches.app)}`);
-        if (analysis.intrusion) console.log(`  乱入(実プレイのみ): ${JSON.stringify(analysis.intrusion)}`);
+        if (analysis.intrusion) console.log(`  乱入(実プレイの記録。第4段 4-A からエンジンも同じ判定): ${JSON.stringify(analysis.intrusion)}`);
         console.log(`  怪我 engine=${short(analysis.injuries.engine.map(i => [i.id, i.injury && i.injury.type, i.retireType || null]), 200)}`);
         console.log(`  怪我 app   =${short(analysis.injuries.app.map(i => [i.id, i.injury && i.injury.type, i.retireType || null]), 200)}`);
         if (opts.report || opts.verbose) {

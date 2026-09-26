@@ -5,7 +5,7 @@
 //  2人のリーダーの因縁(rivalry)が両方向に +30〜40 深まる(2026-09-26 Keisuke 裁定「直す」)
 //
 //  ■ 何を守るか
-//    App._finalizeHookFactionBookings(実プレイの興行後の差し込み口 afterRelationships)の F08 の清算は、
+//    Engine.show.settleFactionBookings(興行後の派閥の予約の清算。第4段 4-A までは実プレイの hook)の F08 の清算は、
 //    リーダー同士の直接対決の後に 30 + floor(乱数×11) を両方向の rivalry に足す(乱数は派閥の 0xFA88 の3つ目。
 //    1つ目・2つ目は Engine.factions.applyMatchResult の勢いと対立度)。関係値のキーは方向つきの `a>b` で、
 //    2026-09-26 までは `a|b` で引いていたため一度も効いていなかった(点火 faction-f08 で発見)
@@ -25,12 +25,18 @@ const { loadEngines } = require('./ui-walkthrough/fixtures/headless-sim');
 loadEngines();
 
 const clone = v => JSON.parse(JSON.stringify(v));
-const app = readSource('src', 'app.js');
-const start = app.indexOf('\n  _finalizeHookFactionBookings(w) {');
-assert.ok(start >= 0, 'App._finalizeHookFactionBookings が無い');
-const method = app.slice(start, app.indexOf('\n  },\n', start) + 4);
-const hooks = new Function('Engine', 'FACTION_CONFIG', 'WM_I18N', '_factionDisplayName', 'wmDiag',
-  `return ({${method}\n});`)(Engine, FACTION_CONFIG, WM_I18N, n => n, () => {});
+// K-1 第4段 4-A(2026-09-26): 派閥の予約の清算は実プレイの hook から Engine.show.settleFactionBookings(両経路)へ移った
+const mgmt = readSource('src', 'management.js');
+const start = mgmt.indexOf('\n    settleFactionBookings(state, roster, validMatches, results) {');
+assert.ok(start >= 0, 'Engine.show.settleFactionBookings が無い');
+const method = mgmt.slice(start, mgmt.indexOf('\n    },\n', start) + 6);
+const hooks = {
+  _finalizeHookFactionBookings(w) {
+    const out = Engine.show.settleFactionBookings(w.s, w.roster, w.validMatches, w.results);
+    w.s = out.state;
+    w.roster = out.roster;
+  },
+};
 
 // 2派閥(リーダー+2人ずつ)。リーダーは各派閥の顔役(isLeaderOrExecutive)
 const ids = [1, 2, 3, 4, 5, 6];

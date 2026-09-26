@@ -38,8 +38,9 @@ assert.ok(mgmt.includes('rivalry processing skipped: card/result participants di
   'rivalry accumulation must reject mismatched card/result pairs');
 assert.ok(mgmt.includes('rivalry settlement skipped: card/result participants differ'),
   'rivalry settlement must reject mismatched card/result pairs');
-assert.ok(app.includes('rivalryBeforeTitles: true'),
-  'the live path must keep recording non-candidate rivalries before titles (Engine.show.finalize ctx)');
+// K-1 第4段 4-A: 両経路とも決着候補でない組の因縁を王座戦の前に記録する(以前は実プレイだけの ctx.rivalryBeforeTitles)
+assert.ok(mgmt.includes('const deferredRivalryIdx = new Set();') && !app.includes('rivalryBeforeTitles'),
+  'both paths must record non-candidate rivalries before titles (Engine.show.finalize)');
 assert.ok(common.includes('r, leftIsWinner, isDraw, `Match ${results.length - i}`, sourceMatch,'),
   'regular-show inline rivalry comments must receive the booked match for verification');
 assert.ok(common.includes("_queueRivalryMatchDialogue(r, leftIsWinner, isDraw, isMain ? WM_I18N.t('頂上決戦') : `Match ${matchNum}`, match)"),

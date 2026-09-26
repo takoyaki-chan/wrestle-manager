@@ -442,24 +442,37 @@ const FACTION_KIND = {
     // F07 はチーム・派閥ごとの CD と、incidentType の抽選がある。判定は CD を外した写しで行い
     // (セーブ側の CD は触らない)、DEMAND_MAIN が出るまで乱数を替える
     build(G) {
-      const s = {
+      // リーダーの信頼が足りない(F07 は信頼の下限 f07TrustMinThreshold 以上のリーダーの派閥だけ)ときは、リーダーの信頼を
+      // 下限+5 まで上げた状態で試す(入力の設定。セーブにも入れる。2026-09-26 K-1 第4段 4-A: auto-sim・headless 進行の
+      // 関係値の歪み(キャリアベストが毎試合入っていた)が直って、S2 の派閥のリーダーの信頼が60を割るようになった)
+      const minTrust = (typeof FACTION_CONFIG !== 'undefined' && FACTION_CONFIG.f07TrustMinThreshold) || 60;
+      const leaderIds = new Set((G.factions || []).map(f => f.leaderId));
+      const raised = {
         ...G,
-        _f07TeamCooldownUntil: 0,
-        factions: (G.factions || []).map(f => ({ ...f, _f07RecentIncidents: [], _f07DemandQuietUntil: 0, _f07DemandMoneyQuietUntil: 0, _f07PostRebukeQuietUntil: 0 })),
+        roster: (G.roster || []).map(c => (leaderIds.has(c.id) && (c.trust != null ? c.trust : 50) < minTrust ? { ...c, trust: minTrust + 5 } : c)),
       };
-      for (let k = 0; k < 400; k += 1) {
-        const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF07D, k));
-        const payload = Engine.factions.checkF07Conditions(s, rng);
-        if (payload.eligible && payload.incidentType === 'DEMAND_MAIN') return { state: G, payload };
+      for (const base of [G, raised]) {
+        const s = {
+          ...base,
+          _f07TeamCooldownUntil: 0,
+          factions: (base.factions || []).map(f => ({ ...f, _f07RecentIncidents: [], _f07DemandQuietUntil: 0, _f07DemandMoneyQuietUntil: 0, _f07PostRebukeQuietUntil: 0 })),
+        };
+        for (let k = 0; k < 400; k += 1) {
+          const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF07D, k));
+          const payload = Engine.factions.checkF07Conditions(s, rng);
+          if (payload.eligible && payload.incidentType === 'DEMAND_MAIN') return { state: base, payload };
+        }
       }
-      return { state: null, reason: 'F07 DEMAND_MAIN の候補派閥が無い(リーダーの信頼が60未満など)' };
+      return { state: null, reason: 'F07 DEMAND_MAIN の候補派閥が無い' };
     },
   },
   COMMON_1: {
     eventId: 'COMMON_1',
     // 派閥内の因縁(rivalry≥40)の2人が要る。無ければ派閥の先頭2人の因縁を60にする(セーブにも入れる)。
     // CD は写しで外す
-    build(G) {
+    // attempt: 0 は従来どおりの乱数、1 以上は別の乱数で候補(派閥ごとに1組)を選び直す(_pickFactionBooking が
+    // 翌週の興行で清算されない組を避けるため)
+    build(G, attempt = 0) {
       let base = G;
       const hasPair = (G.factions || []).some(f => {
         const ids = (f.memberIds || []).filter(id => (G.roster || []).some(c => c.id === id));
@@ -483,7 +496,9 @@ const FACTION_KIND = {
         _commonEventTeamCooldownUntil: 0,
         factions: (base.factions || []).map(f => ({ ...f, _commonEventLastWeek: 0, _commonEventCooldowns: {} })),
       };
-      const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xC0B0));
+      const rng = Engine.rng.create(attempt > 0
+        ? Engine.rng.derive(s.rngSeed, s.season, s.week, 0xC0B0, attempt)
+        : Engine.rng.derive(s.rngSeed, s.season, s.week, 0xC0B0));
       const payload = Engine.factions.checkCommon1Conditions(s, rng);
       if (!payload.eligible) return { state: null, reason: 'Common-1 の判定が通らない' };
       return { state: base, payload };
@@ -515,20 +530,66 @@ const FACTION_KIND = {
   },
 };
 
-function _pickFactionBooking(G, kind) {
+// 予約の2人をカードの先頭の枠に置く(ほかの枠からは外す)。Common-1 の fixture と、その試走に使う
+function _placePairInMainSlot(card, a, b) {
+  const rest = (card || []).map(m => (m.matchType === 'tag' ? m
+    : { ...m, left: (m.left === a || m.left === b) ? 0 : m.left, right: (m.right === a || m.right === b) ? 0 : m.right }));
+  const head = { left: a, right: b, isTitle: false };
+  return rest.length ? [head, ...rest.slice(1)] : [head];
+}
+
+// Common-1 の予約が翌週の興行で清算されるか(試走)。清算は予約の2人が試合の後も怪我をしていないことを見る
+// (isBookedCommon1Valid が作業中のロスター=この興行の怪我の後を読む。k1-parity-report §7 X19)ので、その試合で
+// 怪我をする組では清算されず繰り越される。2026-09-26 K-1 第4段 4-A で fixture の世界が変わり、S2 の唯一の停止週の
+// 組がこれに当たった
+// 実プレイの流れと同じ順で試走する: 週を処理(tick)→ 派閥イベントで A(予約)→ 次の週へ → 興行。
+// 乱数の種は fixture のセーブと同じもの(generate-scenario-fixture.js はセーブの rngSeed をシナリオの seed に置き換える。
+// headless 進行の G の種のままだと、試合の怪我が実プレイと食い違う)
+function _common1SettlesNextShow(state, pending, saveRngSeed) {
+  const opts = { lang: 'ja', dict: (typeof WM_I18N !== 'undefined' && WM_I18N.t) ? WM_I18N.t : undefined };
+  const save = Object.assign(toSaveState(state, 'dry-run'), { _pendingFactionEvent: pending });
+  if (saveRngSeed != null) save.rngSeed = saveRngSeed;
+  const tick = Engine.tickWeek(save, opts).state;
+  const payload = pending.payload;
+  const chosen = Engine.factions.applyCommon1Choice(tick, payload, 'A', Engine.rng.create(1)).state;
+  const { _pendingFactionEvent: _consumed, ...rest } = chosen;
+  let show = null;
+  try {
+    const next = Engine.advanceWeek(rest, opts).state;
+    const card = _placePairInMainSlot(next.showCard, payload.fighterAId, payload.fighterBId);
+    show = Engine.executeShow({ ...next, showCard: card, weekPhase: 'manage' });
+  } catch (_e) { show = null; }
+  return !!(show && !show.error && !show.state.bookedCommon1);
+}
+
+// faction-common1 の停止週の探索で弾いた理由(fixture が作れないときの説明に使う)
+const _common1StopWeekReasons = [];
+
+function _pickFactionBooking(G, kind, opts = {}) {
   const spec = FACTION_KIND[kind];
-  const built = spec.build(G);
-  if (!built.state) return { state: null, reason: built.reason };
-  const pending = { eventId: spec.eventId, payload: built.payload };
-  const { tick, next } = _dryRunWeek(built.state, { _pendingFactionEvent: pending });
-  if (tick._pendingLargeEvent) return { state: null, reason: '大型イベントが週次のモーダル枠を取る(派閥イベントは翌週へ)' };
-  if (!tick._pendingFactionEvent || tick._pendingFactionEvent.eventId !== spec.eventId) return { state: null, reason: '週送りで派閥イベントが消える' };
-  const blocked = _nextWeekBlocker(next);
-  if (blocked) return { state: null, reason: blocked };
-  const ids = kind === 'COMMON_1' ? [built.payload.fighterAId, built.payload.fighterBId]
-    : kind === 'F08' ? [built.payload.leaderAId, built.payload.leaderBId] : [];
-  if (!ids.every(id => _crHealthy((next.roster || []).find(c => c.id === id)))) return { state: null, reason: '対決の2人が翌週の興行に出られない' };
-  return { state: { ...built.state, [IGNITE_TRANSIENTS]: { _pendingFactionEvent: pending } }, reason: null };
+  // Common-1 は候補の組(派閥ごとに1組)を乱数を替えて選び直せる。翌週の興行で清算されない組は避ける
+  const attempts = kind === 'COMMON_1' ? 8 : 1;
+  let lastReason = null;
+  const tried = new Set();
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const built = spec.build(G, attempt);
+    if (!built.state) return { state: null, reason: built.reason };
+    const pairKey = kind === 'COMMON_1' ? `${built.payload.fighterAId}-${built.payload.fighterBId}` : String(attempt);
+    if (tried.has(pairKey)) continue;
+    tried.add(pairKey);
+    const pending = { eventId: spec.eventId, payload: built.payload };
+    const { tick, next } = _dryRunWeek(built.state, { _pendingFactionEvent: pending });
+    if (tick._pendingLargeEvent) return { state: null, reason: '大型イベントが週次のモーダル枠を取る(派閥イベントは翌週へ)' };
+    if (!tick._pendingFactionEvent || tick._pendingFactionEvent.eventId !== spec.eventId) return { state: null, reason: '週送りで派閥イベントが消える' };
+    const blocked = _nextWeekBlocker(next);
+    if (blocked) return { state: null, reason: blocked };
+    const ids = kind === 'COMMON_1' ? [built.payload.fighterAId, built.payload.fighterBId]
+      : kind === 'F08' ? [built.payload.leaderAId, built.payload.leaderBId] : [];
+    if (!ids.every(id => _crHealthy((next.roster || []).find(c => c.id === id)))) { lastReason = '対決の2人が翌週の興行に出られない'; continue; }
+    if (kind === 'COMMON_1' && !_common1SettlesNextShow(built.state, pending, opts.saveRngSeed)) { lastReason = '翌週の興行で予約の組が清算されない(試合中の怪我など)'; continue; }
+    return { state: { ...built.state, [IGNITE_TRANSIENTS]: { _pendingFactionEvent: pending } }, reason: null };
+  }
+  return { state: null, reason: lastReason || '候補の組が無い' };
 }
 
 // 宣戦布告(rivalry-confrontation): 停止週の週送りを試走し、翌週の通常興行のカード(停止週の showCard をそのまま使う)で
@@ -837,14 +898,20 @@ function _makeFactionIgniteBoost(fixture) {
 
 // スロット0に左 leftId・右 rightId を実クリックで組む誘導(派閥開戦のリーダー対決・Common-1 の予約で共用)
 function _makePairBookingBoost(leftId, rightId) {
-  const leaderA = { id: leftId };
-  const leaderB = { id: rightId };
   const rowRegex = (side, id) => new RegExp(`_spSelectFighter\\(0,\\s*'${side}',\\s*${id}\\)`);
   const openRegex = side => new RegExp(`_spOpenPicker\\(0,\\s*'${side}'\\)`);
   return (candidate, all) => {
     const openL = all.find(c => openRegex('left').test(c.onclick));
     const openR = all.find(c => openRegex('right').test(c.onclick));
     if (!openL && !openR) return null; // 編成画面以外は通常スコア
+    // 向きはどちらでもよい(清算は左右を問わない)。2人のどちらかがもう先頭の枠の片側にいるときは、その側を残して
+    // 反対側にもう1人を入れる(2026-09-26 K-1 第4段 4-A: fixture の世界が変わり、自動編成が予約の1人を先頭の右に置いて、
+    // 左の選手の一覧にその選手が出ずに編成が空回りしていた)
+    const curL = openL ? String(openL.spFighterId || '') : '';
+    const curR = openR ? String(openR.spFighterId || '') : '';
+    const swap = curR === String(leftId) || curL === String(rightId);
+    const leaderA = { id: swap ? rightId : leftId };
+    const leaderB = { id: swap ? leftId : rightId };
     const rowA = all.find(c => rowRegex('left', leaderA.id).test(c.onclick));
     const rowB = all.find(c => rowRegex('right', leaderB.id).test(c.onclick));
     // P7-51: 表示名(WM_I18N.pn()でEN化される)ではなく _spFighterInfo が付与する
@@ -1909,13 +1976,24 @@ module.exports = {
     fixture: {
       seed: 42,
       until: G => {
-        if (G.season > 2) throw new Error('S2 のうちに Common-1 を置ける週が見つからない');
-        return _isPlainStopWeek(G) && !!_pickFactionBooking(G, 'COMMON_1').state;
+        const reasons = _common1StopWeekReasons;
+        if (G.season > 2) throw new Error(`S2 のうちに Common-1 を置ける週が見つからない(${reasons.map(r => `S${r.season}W${r.week}: ${r.reason}`).join(' / ') || '停止週なし'})`);
+        if (!_isPlainStopWeek(G)) return false;
+        const picked = _pickFactionBooking(G, 'COMMON_1', { saveRngSeed: 42 });
+        if (!picked.state && reasons.length < 6) reasons.push({ season: G.season, week: G.week, reason: picked.reason });
+        return !!picked.state;
       },
       engineer: G => {
-        const picked = _pickFactionBooking(G, 'COMMON_1');
+        const picked = _pickFactionBooking(G, 'COMMON_1', { saveRngSeed: 42 });
         if (!picked.state) throw new Error(`Common-1 を置けない: ${picked.reason}`);
-        return picked.state;
+        // 予約の2人を持ち越しのカードの先頭の枠に置いておく(入力の設定。2026-09-26 K-1 第4段 4-A: fixture の世界が
+        // 変わり、予約の1人が OVR の低い選手になって、編成の選手の一覧の画面外に出て boost が選べず空回りしていた)。
+        // カードは翌週の興行準備へ持ち越されるので、boost は「もう組んである」と見てそのまま開催へ進む
+        const p = (picked.state[IGNITE_TRANSIENTS] && picked.state[IGNITE_TRANSIENTS]._pendingFactionEvent
+          && picked.state[IGNITE_TRANSIENTS]._pendingFactionEvent.payload) || {};
+        const a = p.fighterAId, b = p.fighterBId;
+        if (!(a > 0 && b > 0)) return picked.state;
+        return { ...picked.state, showCard: _placePairInMainSlot(picked.state.showCard, a, b) };
       },
       engineerSave: _moveIgniteTransients,
     },
@@ -1924,7 +2002,10 @@ module.exports = {
     // 予約の2人をスロット0に組む(枠は問わない仕様。組まないと清算されず次の興行へ繰り越される)
     makeBoost: fixture => {
       const p = (fixture._pendingFactionEvent && fixture._pendingFactionEvent.payload) || {};
-      return _makePairBookingBoost(p.fighterAId, p.fighterBId);
+      const pair = _makePairBookingBoost(p.fighterAId, p.fighterBId);
+      // 直訴・果たし状の打診は断る(受けると遠征・迎撃の試合が同じ週に入り、Common-1 の清算が繰り越される=仕様。
+      // 2026-09-26 K-1 第4段 4-A: fixture の世界が変わり、清算の週に打診が来るようになった)
+      return (candidate, all) => (candidate.dataChoice === 'NO' ? 9990 : pair(candidate, all));
     },
     stepProbe: FACTION_STEP_PROBE,
     ignition: [

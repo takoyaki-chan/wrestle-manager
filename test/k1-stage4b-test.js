@@ -180,13 +180,15 @@ section('E05: Common-1 で清算した試合は派閥内ポイントを二重に
 
 section('E05: 実プレイ(app.js)はエンジンと同じ Engine.show.accrueFactionPoints を呼ぶ(Common-1 の試合番号つき)', () => {
   const body = finalizeBody();
-  // K-1 第3段: 加点は Engine.show.finalize の中。Common-1 の清算(実プレイの hooks.afterRelationships)が番号を w に返す
-  assert.ok(/Engine\.show\.accrueFactionPoints\(s, validMatches, results, \{ common1MatchIdx: w\.common1MatchIdx \}\)/.test(body),
+  // K-1 第3段: 加点は Engine.show.finalize の中。第4段 4-A: Common-1 の清算も finalize の中(Engine.show.settleFactionBookings)で、
+  // 清算した試合の番号を common1MatchIdx で返す
+  assert.ok(/Engine\.show\.accrueFactionPoints\(s, validMatches, results, \{ common1MatchIdx \}\)/.test(body),
     '_finalizeShowImpl が Engine.show.accrueFactionPoints を呼んでいない');
-  assert.ok(/common1ResolvedIdx = c1Idx;/.test(body) && /w\.common1MatchIdx = common1ResolvedIdx;/.test(body), 'Common-1 を清算した試合の番号を控えていない');
   const mgmt = readSource('src', 'management.js');
+  assert.ok(/common1ResolvedIdx = c1Idx;/.test(mgmt) && /common1MatchIdx: common1ResolvedIdx, presentations \}/.test(mgmt)
+    && /common1MatchIdx = fb\.common1MatchIdx;/.test(mgmt), 'Common-1 を清算した試合の番号を控えていない');
   const ex = engineShowBody(); // K-1 第3段: executeShow → Engine.show.finalize
-  assert.ok(/Engine\.show\.accrueFactionPoints\(s, validMatches, results, \{ common1MatchIdx: w\.common1MatchIdx \}\)/.test(ex), 'executeShow が Engine.show.accrueFactionPoints を呼んでいない');
+  assert.ok(/Engine\.show\.accrueFactionPoints\(s, validMatches, results, \{ common1MatchIdx \}\)/.test(ex), 'executeShow が Engine.show.accrueFactionPoints を呼んでいない');
 });
 
 // ── 3. §7 X03 怪我判定に渡す情報 ──

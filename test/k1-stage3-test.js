@@ -52,7 +52,9 @@ const showState = (() => {
 section('3-1: executeShow は beginShow → 試合のシミュレーション → Engine.show.finalize を呼ぶだけ', () => {
   const mgmt = readSource('src', 'management.js');
   const exe = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('\n  },\n', mgmt.indexOf('  executeShow(state) {')));
-  assert.ok(/const begun = Engine\.show\.beginShow\(repaired, validMatches\);/.test(exe), 'executeShow が Engine.show.beginShow を呼んでいない');
+  assert.ok(/const begun = Engine\.show\.beginShow\(intrusionOut\.state, validMatches\);/.test(exe), 'executeShow が Engine.show.beginShow を呼んでいない');
+  // 第4段 4-A(K1-A14): 乱入の判定と差し替えは試合のシミュレーションの前(実プレイの App.executeShow と同じ関数)
+  assert.ok(/const intrusionOut = Engine\.show\.rollIntrusion\(repaired, validMatches\);/.test(exe), 'executeShow が Engine.show.rollIntrusion を呼んでいない');
   assert.ok(/const fin = Engine\.show\.finalize\(s, validMatches, rawResults, \{/.test(exe), 'executeShow が Engine.show.finalize を呼んでいない');
   // 試合後の処理を executeShow の中に書き直していない(finalize の中にだけある)
   ['Engine.mq.finalize(', 'Engine.mq.updateRecord(', 'Engine.attendanceV2.calcAttendanceV2(', 'Engine.applyShowPopularity(',
@@ -65,7 +67,9 @@ section('3-1: executeShow は beginShow → 試合のシミュレーション �
   const body = engineShowBody();
   ['resolvedRivalryEntry', 'applyMatchPopularity', 'resetPromoStacks', 'resolveMatchInjury', 'applyInjuryRetirementAftermath',
     'accrueFactionPoints', 'applyMatchGrowth', 'accumulateSeasonStats', 'recordShowH2h', 'applySuddenDepartures',
-    'buildInjuryRetirementPresentations', 'buildShowNewspaperData'].forEach(fn => {
+    'buildInjuryRetirementPresentations', 'buildShowNewspaperData',
+    // 第4段 4-A(実プレイだけにあった処理をエンジンへ)
+    'applyGrowthEvents', 'recordCareerMarks', 'settleFactionBookings'].forEach(fn => {
     assert.ok(body.includes(`Engine.show.${fn}(`), `エンジンの経路が Engine.show.${fn} を通っていない`);
   });
 });
@@ -77,18 +81,27 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
   const impl = app.slice(implStart, app.indexOf('\n  },\n', implStart));
   assert.ok(/const begun = Engine\.show\.beginShow\(G, validMatches\);/.test(impl), '_finalizeShowImpl が Engine.show.beginShow を呼んでいない');
   assert.ok(/const fin = Engine\.show\.finalize\(begun\.state, validMatches, results, \{/.test(impl), '_finalizeShowImpl が Engine.show.finalize を呼んでいない');
-  // 経路ごとの違い(第4段 4-A・第5段で寄せるまで残す指定)
-  ["logStyle: 'structured'", "mqPath: 'App._finalizeShowImpl'", 'rivalryBeforeTitles: true', 'f08AttendanceMark: true',
-    'markDomeSellout: true', 'crossOrgRelationshipContext: true', 'resolveUnifiedTitle: false', 'buildNewspaper: false',
-    'injuryPresentationDict: WM_I18N.t', 'preShowState: G'].forEach(opt => {
+  // 経路ごとの違い(第4段 4-A の後に残るのはログの型・評価の名札と、乱入・辞書のデータだけ)
+  ["logStyle: 'structured'", "mqPath: 'App._finalizeShowImpl'", 'intrusion: App._intrusionData || null',
+    'dict: WM_I18N.t', 'preShowState: G'].forEach(opt => {
     assert.ok(impl.includes(opt), `_finalizeShowImpl が ${opt} を渡していない`);
   });
-  const hookNames = ['afterTitles: w => App._finalizeHookSpecialBouts(w)', 'afterRelationships: w => App._finalizeHookFactionBookings(w)',
-    'afterGrowth: w => App._finalizeHookGrowthEvents(w, pendingGrowthEvents)', 'beforeKaigan: w => App._finalizeHookCareerMarks(w)',
-    'afterWriteback: w => App._finalizeHookGuests(w, pendingGrowthEvents)'];
+  // 第4段 4-A で両経路にそろえた指定は、実プレイからも finalize からも消えている
+  const fb = finalizeBody();
+  ['rivalryBeforeTitles', 'f08AttendanceMark', 'nextMatchBuffCard', 'markDomeSellout', 'crossOrgRelationshipContext',
+    'resolveUnifiedTitle', 'buildNewspaper', 'injuryPresentationDict', 'intruderId'].forEach(opt => {
+    assert.ok(!impl.includes(opt), `_finalizeShowImpl に 4-A で寄せた指定 ${opt} が残っている`);
+    assert.ok(!new RegExp(`ctx\\.${opt}\\b`).test(fb.replace(/^\s*\/\/.*$/mg, '')), `finalize に 4-A で寄せた指定 ctx.${opt} が残っている`);
+  });
+  const hookNames = ['afterTitles: w => App._finalizeHookSpecialBouts(w)',
+    'afterWriteback: w => App._finalizeHookGuests(w)'];
   hookNames.forEach(h => assert.ok(impl.includes(h), `hooks に ${h} が無い`));
+  // 第4段 4-A でエンジンへ移した処理の hooks は残っていない
+  assert.ok(!/afterGrowth:/.test(impl) && !/_finalizeHookGrowthEvents/.test(app), '成長イベントの hook(第4段 4-A でエンジンへ移した)が残っている');
+  assert.ok(!/beforeKaigan:/.test(impl) && !/_finalizeHookCareerMarks/.test(app), '経歴の刻印の hook(第4段 4-A でエンジンへ移した)が残っている');
+  assert.ok(!/afterRelationships:/.test(impl) && !/_finalizeHookFactionBookings/.test(app), '派閥の予約の清算の hook(第4段 4-A でエンジンへ移した)が残っている');
   // 共通の処理を実プレイ側に書き直していない(_finalizeShowImpl と hooks のどこにも無い)
-  const hooks = ['_finalizeHookSpecialBouts', '_finalizeHookFactionBookings', '_finalizeHookGrowthEvents', '_finalizeHookCareerMarks', '_finalizeHookGuests']
+  const hooks = ['_finalizeHookSpecialBouts', '_finalizeHookGuests']
     .map(name => {
       const st = app.indexOf(`\n  ${name}(`);
       assert.ok(st >= 0, `App.${name} が無い`);
@@ -97,23 +110,19 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
   ['Engine.mq.finalize(', 'Engine.mq.updateRecord(', 'Engine.attendanceV2.calcAttendanceV2(', 'Engine.applyShowPopularity(',
     'Engine.title.crownChampion(', 'Engine.title.recordRivalry(', 'Engine.show.resolveMatchInjury(', 'Engine.relationships.applyMatchResult(',
     'Engine.relationships.applyShowContextEffects(', 'Engine.show.accrueFactionPoints(', 'Engine.show.applyMatchGrowth(',
-    'Engine.show.recordShowH2h(', 'Engine.pushRecentMatch(', 'Engine.kaigan.processMatchResults(', 'Engine.show.applySuddenDepartures(']
+    'Engine.show.recordShowH2h(', 'Engine.pushRecentMatch(', 'Engine.kaigan.processMatchResults(', 'Engine.show.applySuddenDepartures(',
+    'Engine.growthEvents.checkAndApplyBreakthrough(', 'Engine.growthEvents.checkSlump(', 'Engine.growthEvents.updateSlumpMomentumAfterMatch(',
+    'Engine.factions.applyCommon1MatchResult(', 'Engine.factions.applyF09SweepBonus(', 'Engine.factions.applyInternalChallengeResult(', 'Engine.factions.applyF08PostMatchExtraEffects(']
     .forEach(call => {
       assert.ok(!impl.includes(call), `_finalizeShowImpl に共通の処理(${call})が残っている`);
       assert.ok(!hooks.includes(call), `実プレイの hooks に共通の処理(${call})が入っている`);
     });
 });
 
-// ── 3-3 派閥の予約の清算の信頼が書き戻しで消えない(§7 X05) ──
+// ── 3-3 派閥の予約の清算の信頼が書き戻しで消えない(§7 X05)。第4段 4-A からは Engine.show.settleFactionBookings(両経路) ──
 section('3-3: 派閥の予約の清算(F07 メイン推薦)の信頼の変化が作業中のロスターに残る(状態の roster は興行前のまま返す)', () => {
-  const app = readSource('src', 'app.js');
-  const start = app.indexOf('\n  _finalizeHookFactionBookings(w) {');
-  assert.ok(start >= 0, 'App._finalizeHookFactionBookings が無い');
-  const method = app.slice(start, app.indexOf('\n  },\n', start) + 4);
-  assert.ok(/let s = \{ \.\.\.w\.s, roster: w\.roster \};/.test(method), '派閥の関数に作業中のロスターを渡していない');
-  assert.ok(/w\.roster = s\.roster;/.test(method), '派閥の関数が変えたロスターを受け取っていない');
-  const hooks = new Function('Engine', 'FACTION_CONFIG', 'WM_I18N', '_factionDisplayName', 'wmDiag',
-    `return ({${method}\n});`)(Engine, FACTION_CONFIG, WM_I18N, n => n, () => {});
+  assert.ok(typeof Engine.show.settleFactionBookings === 'function', 'Engine.show.settleFactionBookings が無い');
+  assert.ok(finalizeBody().includes('Engine.show.settleFactionBookings('), 'finalize が Engine.show.settleFactionBookings を呼んでいない');
   const base = clone(showState);
   const leader = base.roster.find(c => !c.injury && !c.isRental && c.trust != null && c.trust > 30 && c.trust < 90);
   const members = base.roster.filter(c => c.id !== leader.id).slice(0, 2).map(c => c.id);
@@ -121,20 +130,22 @@ section('3-3: 派閥の予約の清算(F07 メイン推薦)の信頼の変化が
   const preShowRoster = base.roster;
   const working = base.roster.map(c => ({ ...c, popularity: (c.popularity || 0) + 1 })); // 作業中のロスター(興行で変わった)
   const others = base.roster.filter(c => !fac.memberIds.includes(c.id)).map(c => c.id);
-  const w = {
-    s: { ...base, factions: [...(base.factions || []), fac], _pendingF07Directive: { type: 'DEMAND_MAIN', factionId: 901, remainingShows: 3 } },
-    roster: working,
-    validMatches: [{ left: others[0], right: others[1] }], // メインに派閥の選手がいない → リーダーの信頼 −2
-    results: [{ winner: 'left', left: { id: others[0] }, right: { id: others[1] }, hpLeft: { final: 50, max: 100 }, hpRight: { final: 0, max: 100 } }],
-  };
-  hooks._finalizeHookFactionBookings(w);
+  const state = { ...base, factions: [...(base.factions || []), fac], _pendingF07Directive: { type: 'DEMAND_MAIN', factionId: 901, remainingShows: 3 } };
+  const stateBefore = clone(state);
+  const out = Engine.show.settleFactionBookings(state,
+    working,
+    [{ left: others[0], right: others[1] }], // メインに派閥の選手がいない → リーダーの信頼 −2
+    [{ winner: 'left', left: { id: others[0] }, right: { id: others[1] }, hpLeft: { final: 50, max: 100 }, hpRight: { final: 0, max: 100 } }]);
+  assert.deepStrictEqual(state, stateBefore, 'settleFactionBookings が入力の状態を書き換えた');
   const before = working.find(c => c.id === leader.id).trust;
-  const after = w.roster.find(c => c.id === leader.id).trust;
+  const after = out.roster.find(c => c.id === leader.id).trust;
   assert.ok(after < before, `リーダーの信頼が下がっていない(${before} → ${after})`);
-  assert.strictEqual(w.roster.find(c => c.id === leader.id).popularity, working.find(c => c.id === leader.id).popularity,
+  assert.strictEqual(out.roster.find(c => c.id === leader.id).popularity, working.find(c => c.id === leader.id).popularity,
     '作業中のロスターの他の値(人気)が興行前の値に戻った');
-  assert.strictEqual(w.s.roster, preShowRoster, '状態の roster を興行前のロスターに戻していない');
-  assert.strictEqual(w.s._pendingF07Directive.remainingShows, 2, '残り興行数が減っていない');
+  assert.strictEqual(out.state.roster, preShowRoster, '状態の roster を興行前のロスターに戻していない');
+  assert.strictEqual(out.state._pendingF07Directive.remainingShows, 2, '残り興行数が減っていない');
+  assert.strictEqual(out.common1MatchIdx, -1);
+  assert.deepStrictEqual(out.presentations, { common1Result: null, f08Aftermath: [], f09Ending: null }, '予約の無い演出データが出た');
 });
 
 // ── finalize の中身 ──
@@ -203,13 +214,8 @@ section('finalize: hooks は決まった順に1回ずつ、作業中の値の入
   const mk = name => w => {
     calls.push(name);
     ['s', 'roster', 'titles', 'rivalries', 'events', 'titleMatchOutcomes', 'validMatches', 'results'].forEach(k => assert.ok(w[k], `${name}: w.${k} が無い`));
-    if (name === 'afterGrowth') {
-      const wb = w.writeback();
-      assert.strictEqual(wb.roster, w.roster, 'writeback のロスターが作業中のロスターでない');
-      assert.strictEqual(wb.lastShowResults, w.results);
-    }
   };
-  const names = ['afterTitles', 'afterRelationships', 'afterGrowth', 'beforeKaigan', 'afterWriteback'];
+  const names = ['afterTitles', 'afterWriteback'];
   const hooks = Object.fromEntries(names.map(n => [n, mk(n)]));
   const plain = runFinalize().fin;
   const hooked = runFinalize({ hooks }).fin;
@@ -220,7 +226,7 @@ section('finalize: hooks は決まった順に1回ずつ、作業中の値の入
 
 section('finalize: hooks が作業中の値を差し替えると、その後の処理はそれを使う', () => {
   const run = runFinalize({ hooks: {
-    afterRelationships: w => { w.common1MatchIdx = 0; w.s = { ...w.s, _stage3HookMark: 1 }; },
+    afterTitles: w => { w.s = { ...w.s, _stage3HookMark: 1 }; },
     afterWriteback: w => {
       assert.strictEqual(w.s.roster, w.roster, 'afterWriteback の時点で書き戻しが済んでいない');
       w.s = { ...w.s, _stage3AfterWriteback: true };
@@ -266,6 +272,70 @@ section('finalize: ctx.logStyle — 省略時は文字列、structured は実プ
   assert.ok(structured.some(e => e && (e.type === 'show_rating_org_pop_update' || e.type === 'show_rating_org_pop_update_small_venue')),
     '実プレイの★の構造化ログが無い');
   assert.ok(!structured.some(e => typeof e === 'string' && e.startsWith('📊 ★')), '構造化ログに文字列の★が混ざった');
+});
+
+// ── 第4段 4-A: 実プレイだけにあった処理がエンジンの経路でも起きる ──
+section('4-A K1-A01: キャリア最高評価の更新と信頼ボーナス(+1.2)が finalize で付く(両経路共通)', () => {
+  const run = runFinalize();
+  let checked = 0;
+  run.results.forEach((r, i) => {
+    const m = run.validMatches[i];
+    const ids = m.matchType === 'tag' ? [m.teamA.fighter1, m.teamA.fighter2, m.teamB.fighter1, m.teamB.fighter2] : [m.left, m.right];
+    ids.forEach(id => {
+      const before = run.input.roster.find(c => c.id === id);
+      const after = run.fin.state.roster.find(c => c.id === id);
+      if (!before || !after || !(r.mq > (before.careerBestMQ || 0))) return;
+      checked++;
+      assert.strictEqual(after.careerBestMQ, r.mq, `選手${id}のキャリア最高評価が更新されていない`);
+      assert.ok((after._trustBonusSources || []).includes('careerBestMQ'), `選手${id}に最高評価の信頼ボーナスが付いていない`);
+    });
+  });
+  assert.ok(checked > 0, 'fixture に最高評価を更新する出場者がいない(検査にならない)');
+});
+
+section('4-A K1-A02: ブレークスルー・スランプの判定は finalize の中(Engine.show.applyGrowthEvents)。演出データは _pendingGrowthEvents', () => {
+  const body = finalizeBody();
+  assert.ok(body.includes('Engine.show.applyGrowthEvents('), 'finalize が Engine.show.applyGrowthEvents を呼んでいない');
+  // 出場者の多い興行を何本か回し、ブレークスルー・スランプの演出データが状態に載ることを確かめる(乱数の種を変える)
+  let events = 0;
+  for (let k = 0; k < 12 && events === 0; k++) {
+    const input = clone(showState);
+    input.rngSeed = 1000 + k;
+    const validMatches = input.showCard.filter(m => m.matchType === 'tag' || (m.left > 0 && m.right > 0));
+    const begun = Engine.show.beginShow(input, validMatches);
+    let roster = begun.roster;
+    const results = validMatches.map(m => {
+      if (m.matchType === 'tag') {
+        const f = id => roster.find(c => c.id === id);
+        const tag = Engine.showTagMatch.simulate({ ...begun.state, roster }, { fighter1: f(m.teamA.fighter1), fighter2: f(m.teamA.fighter2) }, { fighter1: f(m.teamB.fighter1), fighter2: f(m.teamB.fighter2) });
+        roster = tag.roster;
+        return tag.result;
+      }
+      const rng = Engine.rng.create(Engine.rng.derive(input.rngSeed, input.season, input.week, m.left, m.right));
+      return Engine.battle.simulateMatch(roster.find(c => c.id === m.left), roster.find(c => c.id === m.right), rng, 1, {});
+    });
+    const fin = Engine.show.finalize(begun.state, validMatches, results, { roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: input });
+    const ge = fin.state._pendingGrowthEvents || [];
+    ge.forEach(e => assert.ok(['breakthrough', 'slump_start', 'motivation_loss_start'].includes(e.type), `知らない成長イベント ${e.type}`));
+    events += ge.length;
+  }
+  assert.ok(events > 0, '12本回してブレークスルー・スランプが一度も起きない(エンジンの経路で判定していない疑い)');
+});
+
+section('4-A K1-A10・§7 X07: ドーム興行の経歴・ドーム回数・初ドームの節目と MVP 用の大試合が finalize で付く', () => {
+  const dome = Engine.show.recordCareerMarks(
+    { ...clone(showState), showVenue: 9, domeShowsThisSeason: 0, milestones: {} },
+    clone(showState.roster),
+    [{ left: showState.showCard[0].left, right: showState.showCard[0].right }, { left: showState.showCard[1].left, right: showState.showCard[1].right }],
+    [{ winner: 'left', mq: 90 }, { winner: 'right', mq: 40 }]);
+  assert.strictEqual(dome.state.domeShowsThisSeason, 1, 'ドーム回数が増えていない');
+  assert.strictEqual(dome.state.milestones.first_dome_show, true, '初ドームの節目が立っていない');
+  const main = dome.roster.find(c => c.id === showState.showCard[0].left);
+  const hist = main.careerRecord.history.filter(e => e.season === showState.season && e.week === showState.week);
+  assert.ok(hist.some(e => e.type === 'domeMain' && e.result === 'win' && e.matchType === 'main'), 'メインの勝者に domeMain が無い');
+  assert.ok(hist.some(e => e.type === 'bigMatch' && e.mq === 90), '評価85以上の試合に bigMatch が無い');
+  const second = dome.roster.find(c => c.id === showState.showCard[1].left);
+  assert.ok(!(second.careerRecord?.history || []).some(e => e.season === showState.season && e.week === showState.week), 'メインでも王座戦でもない試合に経歴を刻んだ');
 });
 
 if (failed > 0) {

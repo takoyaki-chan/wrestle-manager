@@ -2013,6 +2013,103 @@ Engine.relationships = {
     return { ...state, relationships: newRels };
   },
 
+  /**
+   * 引退者の関係値と因縁の整理(K-1 第4段 4-A / K1-A16。以前は app.js の archiveRetiredRivalryState だけにあった)。
+   * 引退者を含む関係値の組を消し、因縁(rivalries)とあわせて relationshipHistory.retiredRivalries へ移す
+   * (相関図の過去の線・引退した選手との因縁の記録が読む)。同じ選手で2回呼んでも同じ(消した組は2回目に残っていない)。
+   * 通常興行の怪我引退・ラストランの引退は Engine.show.finalize の最後(新聞データの後)で、モチベ喪失と季末の引退は
+   * 画面の処理から呼ぶ。
+   */
+  archiveRetiredRivalryState(state, fighter) {
+    if (!state || !fighter || fighter.id == null) return state;
+
+    const relationships = { ...(state.relationships || {}) };
+    const rivalries = { ...(state.rivalries || {}) };
+    const historyStore = Engine.relationships.normalizeHistoryStore(state.relationshipHistory);
+    const history = [...historyStore.retiredRivalries];
+    const fighterId = fighter.id;
+    const fighterMap = new Map();
+    const register = candidate => {
+      if (candidate && candidate.id != null) fighterMap.set(candidate.id, candidate);
+    };
+
+    (state.roster || []).forEach(register);
+    (state.retiredFighters || []).forEach(register);
+    (state.freeAgents || []).forEach(register);
+    Object.values(state.aiOrgs || {}).forEach(org => (org.roster || []).forEach(register));
+    register(fighter);
+
+    const pairKeys = new Set();
+    Object.keys(relationships).forEach(key => {
+      const sepIdx = key.indexOf('>');
+      const idA = Number(key.substring(0, sepIdx));
+      const idB = Number(key.substring(sepIdx + 1));
+      if (idA !== fighterId && idB !== fighterId) return;
+      if (Number.isFinite(idA) && Number.isFinite(idB) && idA !== idB) {
+        pairKeys.add(Engine.title.getRivalryKey(idA, idB));
+      }
+      delete relationships[key];
+    });
+
+    Object.keys(rivalries).forEach(pairKey => {
+      const ids = pairKey.split('-').map(Number);
+      const id1 = ids[0];
+      const id2 = ids[1];
+      if (id1 !== fighterId && id2 !== fighterId) return;
+      pairKeys.add(pairKey);
+    });
+
+    pairKeys.forEach(pairKey => {
+      const ids = pairKey.split('-').map(Number);
+      const id1 = ids[0];
+      const id2 = ids[1];
+      if (!Number.isFinite(id1) || !Number.isFinite(id2) || id1 === id2) return;
+
+      const rel12 = (state.relationships || {})[String(id1) + '>' + String(id2)] || null;
+      const rel21 = (state.relationships || {})[String(id2) + '>' + String(id1)] || null;
+      const rivalryEntry = (state.rivalries || {})[pairKey] || null;
+      if (!rel12 && !rel21 && !rivalryEntry) return;
+
+      const fighter1 = fighterMap.get(id1) || null;
+      const fighter2 = fighterMap.get(id2) || null;
+      const archiveEntry = {
+        id1,
+        id2,
+        reason: 'retirement',
+        retiredFighterId: fighterId,
+        season: state.season || 1,
+        week: state.week || 1,
+        age1: fighter1?.age ?? null,
+        age2: fighter2?.age ?? null,
+        bond12: rel12?.bond ?? 50,
+        bond21: rel21?.bond ?? 50,
+        rivalry12: rel12?.rivalry ?? 0,
+        rivalry21: rel21?.rivalry ?? 0,
+        rivalryMeta: rivalryEntry ? { ...rivalryEntry } : null,
+        // K-4(S4): 2人の人生番号(相関図の過去の線は、表示中の2人の今の人生と一致するときだけ引く)
+        lives: Engine.life.livesFor(state, [id1, id2]),
+      };
+
+      const existingIdx = history.findIndex(entry =>
+        entry &&
+        entry.reason === 'retirement' &&
+        entry.retiredFighterId === fighterId &&
+        ((entry.id1 === id1 && entry.id2 === id2) || (entry.id1 === id2 && entry.id2 === id1))
+      );
+      if (existingIdx >= 0) history[existingIdx] = archiveEntry;
+      else history.push(archiveEntry);
+
+      delete rivalries[pairKey];
+    });
+
+    return {
+      ...state,
+      relationships,
+      rivalries,
+      relationshipHistory: { ...historyStore, retiredRivalries: history },
+    };
+  },
+
   /** G-07: モチベ喪失自動引退 — bond60+→本人 bond -5~-8 */
   applyAutoRetireEffect(state, fighterId, rng) {
     if (!state.relationships) return state;
