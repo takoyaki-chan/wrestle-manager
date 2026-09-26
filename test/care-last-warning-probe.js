@@ -23,6 +23,12 @@
 //      --trace         : 応えた後の選手の軌跡を stderr に出す(調査用)
 //    何も付けなければ auto-sim と同じ軌道(意味の指紋が一致する)。
 //
+//  ■ 本体に実装した後(2026-09-26〜。Engine.trust.consumeWarningAnswer がある src)
+//    A・B は本体が行うので、--lw / --bmech は何もしない(付けても無視する)。--remedy は auto-sim の --remedy
+//    (--until は --remedy-until)にそのまま渡し、自動プレイヤーの手は auto-sim 側が打つ。噂の原因・応えた回・応えた後の
+//    行方は、本体が選手に付ける噂の状態(f.lastWarning)から読む。WM_SOURCE_REF で実装前の src を読めば従来どおり
+//    (計測器の仮の実装が動く)。
+//
 //  出す数字:
 //    - 信頼20未満・15未満に入った回数(のべ)と人数、突然の退団の件数、契約更改での退団(信頼30未満)
 //    - 20を割ったときの直近12週の信頼の減り方を原因別に(出番なし・待遇不満G1〜G4・関係・自然減・
@@ -55,6 +61,20 @@ const WARN_CLEAR = 30;                                            // 噂の状�
 const TRACE = flags.includes('--trace');                          // 応えた後の軌跡を stderr に出す(調査用)
 const WINDOW = 12; // 週。20を割ったときに振り返る期間(= 通常興行6回)
 const BOOK = flagVal('book', 'random');
+// 本体に A・B が実装されているか(読み込む src の management.js の文面で判定。WM_SOURCE_REF にも従う)
+const ENGINE_B = (() => {
+  const fsx = require('fs');
+  let txt;
+  if (process.env.WM_SOURCE_REF) {
+    txt = require('child_process').execFileSync('git', ['show', `${process.env.WM_SOURCE_REF}:src/management.js`],
+      { cwd: path.join(__dirname, '..'), encoding: 'utf-8', maxBuffer: 64 * 1024 * 1024 });
+  } else {
+    txt = fsx.readFileSync(path.join(__dirname, '..', 'src', 'management.js'), 'utf8');
+  }
+  return txt.includes('consumeWarningAnswer(fighter, cause, by, absWeek)');
+})();
+// 本体の原因のキー → この計測器のまとまりの名前
+const ENGINE_CAUSE_JA = { stage: '出番', pay: '給与', title: '王座', bonds: '人間関係', air: '空気', promise: '約束', faction: '派閥', general: 'general' };
 const bookStats = { shows: 0, eligible: 0, slots: 0 };
 
 // ── 集計 ──
@@ -221,8 +241,14 @@ function decomposeShowTrust(E, roster, results, titles, state, newRoster) {
     const mn = f.mn || 50;
     const old = f.trust != null ? f.trust : 50;
     const comp = {};
+    // 本体の B: この興行で出番・王座の手当てが成立した(応えた週がこの週)/すでに応えてもらえた噂の状態の選手は、戻りの鈍りが外れる
+    const nowAbs = E.util.absWeek(state.season || 1, state.week || 1);
+    const nlw = ENGINE_B ? nf.lastWarning : null;
+    const answeredNow = !!(nlw && nlw.answered && nlw.answeredWeek === nowAbs && (nlw.answeredBy === 'card' || nlw.answeredBy === 'titleMatch')
+      && !(f.lastWarning && f.lastWarning.answered));
+    const answeredBefore = !!(ENGINE_B && f.lastWarning && f.lastWarning.answered && old < 30);
     if (participated.has(f.id)) {
-      const base = 1.53 * E.trust.recoveryMult(old);
+      const base = 1.53 * ((answeredNow || answeredBefore) ? 1 : E.trust.recoveryMult(old));
       let extra = 0;
       if (mainF.has(f.id)) extra += 1.07;
       if (titleF.has(f.id)) extra += 1.84;
@@ -270,13 +296,15 @@ function decomposeShowTrust(E, roster, results, titles, state, newRoster) {
     if (morale < 45) comp.moraleErosion = -(45 - morale) / 100;
     const sumPre = Object.values(comp).reduce((a, b) => a + b, 0);
     const sens = E.trust.trustSensitivity(old);
-    let expected = E.util.clamp(old + sumPre * sens, 0, 100);
+    const engineRelief = answeredNow ? (nlw.relief || 0) : 0;
+    let expected = E.util.clamp(old + sumPre * sens + engineRelief, 0, 100);
     if (f.trustCap && !(currentWeek >= f.trustCap.expiresWeek) && expected > f.trustCap.value) expected = f.trustCap.value;
     const actual = nf.trust != null ? nf.trust : 50;
     P.decompChecks++;
     if (Math.abs(expected - actual) > 1e-6) P.decompMismatch++;
     let acc = 0;
     for (const [k, v] of Object.entries(comp)) { attribute(f.id, k, v * sens); acc += v * sens; }
+    if (engineRelief) { attribute(f.id, 'remedy', engineRelief); acc += engineRelief; }
     const clip = (actual - old) - acc;
     if (Math.abs(clip) > 1e-9) attribute(f.id, 'clampCap', clip);
     // この興行で立っていた不満フラグ(20/15を割った時点の集計用)
@@ -396,12 +424,13 @@ function afterLoad() {
     return r;
   };
   const oAST = E.trust.applyShowTrust;
-  E.trust.applyShowTrust = function (roster, results, titles, state) {
+  // 第5引数(opts。本体実装後は { ledger: true } で帳簿と手当てが動く)も必ず渡す
+  E.trust.applyShowTrust = function (roster, results, titles, state, opts) {
     const isPlayer = state && titles === state.titles && roster.some(f => playerIds.has(f.id));
-    if (!isPlayer || !results || results.length === 0) return oAST.call(this, roster, results, titles, state);
+    if (!isPlayer || !results || results.length === 0) return oAST.call(this, roster, results, titles, state, opts);
     capture.active = true; capture.griev.clear(); capture.rel.clear();
     let out;
-    try { out = oAST.call(this, roster, results, titles, state); } finally { capture.active = false; }
+    try { out = oAST.call(this, roster, results, titles, state, opts); } finally { capture.active = false; }
     // 入れ子の親(tickWeek 内の他の包み)へ生の差を渡す
     const parent = frameStack[frameStack.length - 1];
     // 原因の帳簿は興行ごとに薄れる(この興行の減りを積む前に)
@@ -410,7 +439,7 @@ function afterLoad() {
       for (const k of Object.keys(st.strain)) st.strain[k] *= STRAIN_DECAY;
     }
     decomposeShowTrust(E, roster, results, titles, state, out.roster);
-    if (BMECH) out = { ...out, roster: applyStageAnswer(E, roster, results, state, out.roster) };
+    if (BMECH && !ENGINE_B) out = { ...out, roster: applyStageAnswer(E, roster, results, state, out.roster) };
     if (parent) {
       const nb = new Map(out.roster.map(f => [f.id, f]));
       for (const f of roster) if (playerIds.has(f.id) && nb.has(f.id)) {
@@ -438,7 +467,7 @@ function afterLoad() {
   E.shachoshitsu.execute = function (docId, fighterId, state, options) {
     const before = trustMapFrom(state);
     let out = oExec.call(this, docId, fighterId, state, options);
-    if (out && !out.error && docId === 'encourage' && LW && before && before.has(fighterId)) {
+    if (out && !out.error && docId === 'encourage' && LW && !ENGINE_B && before && before.has(fighterId)) {
       const t0 = before.get(fighterId);
       const mult = lwEncourageMult(t0);
       if (mult < 1) {
@@ -453,7 +482,7 @@ function afterLoad() {
         if (Math.abs(d) > 1e-9) attribute(id, docId === 'encourage' ? 'encourage' : 'care', d);
       }
     }
-    if (BMECH && out && !out.error && out.roster) out = applyDocAnswer(docId, fighterId, state, options, out);
+    if (BMECH && !ENGINE_B && out && !out.error && out.roster) out = applyDocAnswer(docId, fighterId, state, options, out);
     return out;
   };
 
@@ -513,12 +542,14 @@ function closeEpisodes(id, how) {
     add(P.closedByCause, st.ep20.warnCause || '(前の噂が続く)', 1);
     if (how === 'sudden' || how === 'contract') {
       add(P.departGroup, st.ep20.group || '(不明)', 1);
-      if (st.warn && st.warn.answered) add(P.remedyCount, '応えたのに退団', 1);
+      if ((st.warn && st.warn.answered) || st.lwAnswered) add(P.remedyCount, '応えたのに退団', 1);
     }
     st.ep20 = null;
   }
   st.warn = null;
   st.strain = {};
+  st.lwAnswered = false;
+  st.answeredKey = null;
 }
 
 // 週の入口(auto-sim のループの各周の先頭)
@@ -559,8 +590,16 @@ function observe(G) {
       if (topG) add(P.primaryGroup, topG[0], 1);
       st.ep20.group = topG ? topG[0] : null;
       recordFlags(P.flagsAt20, st.lastFlags);
+      // 本体実装後: 噂の状態は本体が付ける(この週の tickWeek で付いている)。原因をそのまま記録する
+      if (ENGINE_B) {
+        const lw = f.lastWarning;
+        const cause = lw ? (ENGINE_CAUSE_JA[lw.cause] || lw.cause) : '(噂なし)';
+        add(P.warnCause, cause, 1);
+        st.ep20.warnCause = cause;
+        if (st.ep20.group === cause) P.causeAgree++;
+      }
       // 噂(20割れ)の週に、帳簿のいちばん重い原因を「においわせる原因」として決める
-      if (!st.warn) {
+      if (!ENGINE_B && !st.warn) {
         const cause = pickCause(st.strain);
         st.warn = { cause, answered: false, tick };
         add(P.warnCause, cause, 1);
@@ -570,6 +609,20 @@ function observe(G) {
       }
     }
     if (st.warn && t >= WARN_CLEAR) st.warn = null;
+    // 本体実装後: 応えた回を噂の状態から拾い、応えた時点からの行方を追う(t0 = 応えた週の前の信頼、t1 = 応えた週の直後)
+    if (ENGINE_B) {
+      const lw = f.lastWarning;
+      st.lwAnswered = !!(lw && lw.answered);
+      if (lw && lw.answered) {
+        const key = `${lw.week}`;
+        if (st.answeredKey !== key) {
+          st.answeredKey = key;
+          add(P.remedyCount, `応えた:${lw.answeredBy || '?'}`, 1);
+          st.answerTrack = { tick: tick - 1, t0: st.prevTrust, relief: lw.relief || 0, t1: t };
+          P.answers.push(st.answerTrack);
+        }
+      }
+    }
     if (st.prevTrust != null && st.prevTrust >= 15 && t < 15 && !st.ep15) {
       P.crossings15++; P.fighters15.add(f.id);
       st.ep15 = { startTick: tick, shows: 0 };
@@ -583,7 +636,7 @@ function observe(G) {
         P.outcomes20.recovered++;
         add(P.recoveredByCause, st.ep20.warnCause || '(前の噂が続く)', 1);
         add(P.closedByCause, st.ep20.warnCause || '(前の噂が続く)', 1);
-        if (st.warn && st.warn.answered) P.recoveredAnswered++;
+        if ((st.warn && st.warn.answered) || st.lwAnswered) P.recoveredAnswered++;
         P.weeksToRecover.push(tick - st.ep20.startTick);
         st.ep20 = null;
       }
@@ -600,7 +653,7 @@ function observe(G) {
   // ── 自動プレイヤーの追加の手(変種) ──
   if (!G.offSeason && G.weekPhase === 'manage') {
     if (ENC === 'all' || ENC === 'danger') G = autoEncourage(G);
-    if (REMEDY) G = autoRemedy(G);
+    if (REMEDY && !ENGINE_B) G = autoRemedy(G);  // 本体実装後は auto-sim の --remedy が打つ
   }
   return G;
 }
@@ -678,7 +731,7 @@ function report() {
   const L = [];
   L.push('');
   L.push('══ 退団寸前の計測(care-last-warning-probe) ══');
-  L.push(`条件: ${SEASONS}季 seed=${SEED} book=${BOOK} care=${CARE ? 'on' : 'off'} enc=${ENC} lw=${LW ? `on(mult ${LW_MULT} ${LW_HI}→${LW_LO})` : 'off'} remedy=${REMEDY ? 'on' : 'off'} bmech=${BMECH ? `on(relief ${RELIEF})` : 'off'} fixture=${process.env.WM_FACTION_FIXTURE === '1' ? '大ロスター' : '通常'}`);
+  L.push(`条件: ${SEASONS}季 seed=${SEED} book=${BOOK} care=${CARE ? 'on' : 'off'} enc=${ENC} lw=${ENGINE_B ? '本体' : (LW ? `on(mult ${LW_MULT} ${LW_HI}→${LW_LO})` : 'off')} remedy=${REMEDY ? `on(〜${REMEDY_UNTIL})` : 'off'} bmech=${ENGINE_B ? '本体' : (BMECH ? `on(relief ${RELIEF})` : 'off')} fixture=${process.env.WM_FACTION_FIXTURE === '1' ? '大ロスター' : '通常'}`);
   if (bookStats.shows) L.push(`通常興行 ${bookStats.shows}回: 出場可能 平均${(bookStats.eligible / bookStats.shows).toFixed(1)}人 / 出番の枠 平均${(bookStats.slots / bookStats.shows).toFixed(1)}人`);
   L.push(`分解の検算: ${P.decompChecks}件中 不一致 ${P.decompMismatch}件`);
   L.push(`在籍のべ週: ${P.rosterWeeks}(季あたり ${per(P.rosterWeeks)}) / 信頼20未満の週 ${(100 * P.weeksBelow20 / P.rosterWeeks).toFixed(2)}% / 15未満の週 ${(100 * P.weeksBelow15 / P.rosterWeeks).toFixed(2)}%`);
@@ -771,7 +824,9 @@ global.__WM_CLW_CARD_ORDER = function (G, roster, simRng, effectiveMax) {
 
 global.__WM_AUTOSIM_HOOKS = { afterLoad, observe, final };
 process.on('exit', report);
-process.argv = [process.argv[0], path.join(__dirname, 'auto-sim.js'), String(SEASONS), String(SEED), ...(CARE ? ['--care'] : [])];
+process.argv = [process.argv[0], path.join(__dirname, 'auto-sim.js'), String(SEASONS), String(SEED), ...(CARE ? ['--care'] : []),
+  // 本体実装後は、原因に合った手当ての自動プレイヤーを auto-sim の --remedy に任せる
+  ...(REMEDY && ENGINE_B ? ['--remedy', `--remedy-until=${REMEDY_UNTIL}`] : [])];
 {
   const Module = require('module');
   const fsx = require('fs');

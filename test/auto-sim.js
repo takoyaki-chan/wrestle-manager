@@ -47,6 +47,15 @@ const targetSeasons = parseInt(positionalArgs[0], 10) || 100;
 const userSeed = positionalArgs[1] ? parseInt(positionalArgs[1], 10) : (Date.now() ^ 0xABCD1234);
 // --care: 自動プレイヤーが毎週ケア書類(決裁書類)を決裁枠・資金の許す限り実行する
 const CARE_MODE = cliFlags.includes('--care');
+// --remedy: 退団の噂が出た選手に、自動プレイヤーが原因に合った既存の手を打つ(docs/care-last-warning-design-v0.1.md §2-1 の C3/C4)。
+//   出番 → 次の通常興行のカードに必ず入れる(枠の後ろの方) / 人間関係・空気 → 慰労会 / それ以外 → ボーナス支給願(基準額×1.0 の案)。
+//   噂の状態(lastWarning)が生きていて、信頼が --remedy-until(既定25)未満の間だけ打つ。--care の動きと較正は変えない
+const REMEDY_MODE = cliFlags.includes('--remedy');
+const REMEDY_UNTIL = (() => {
+  const f = cliFlags.find(a => a.startsWith('--remedy-until='));
+  const v = f ? parseFloat(f.split('=')[1]) : NaN;
+  return Number.isFinite(v) ? v : 25;
+})();
 
 // Some non-match simulation paths still use Math.random(). Seed those calls as
 // well so commit-to-commit measurements with the same CLI seed are comparable.
@@ -794,12 +803,15 @@ function autoSetupShowCard(G, simRng) {
   const effectiveMax = Math.min(isSpecial ? maxMatches + 1 : maxMatches, 8);
 
   // ロスターをシャッフル
+  // (この1行は test/care-last-warning-probe.js がカード編成の方針を差し替える目印。形を変えないこと)
   const shuffled = [...roster].sort(() => Engine.rng.float(simRng) - 0.5);
+  // --remedy: 出番が原因の噂の選手を、出番の枠の後ろの方に必ず入れる(乱数は引かない。--remedy なしなら並びはそのまま)
+  const ordered = remedyCardOrder(shuffled, effectiveMax);
   const card = [];
-  for (let i = 0; i + 1 < shuffled.length && card.length < effectiveMax; i += 2) {
+  for (let i = 0; i + 1 < ordered.length && card.length < effectiveMax; i += 2) {
     card.push({
-      left: shuffled[i].id,
-      right: shuffled[i + 1].id,
+      left: ordered[i].id,
+      right: ordered[i + 1].id,
       isTitle: false,
     });
   }
@@ -1575,6 +1587,97 @@ function autoExecutePledge(G) {
   return G;
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+//  退団寸前の引き留め(docs/care-last-warning-design-v0.1.md): --remedy の自動プレイヤーと計装
+//  噂の状態(f.lastWarning。エンジンが噂の週に付け、信頼30で外す)の原因に合った既存の手を打つ。
+//  すべて決定論(Math.random・simRng は使わない)。--remedy なしのときは何もしない(軌道は1ビットも変わらない)
+// ══════════════════════════════════════════════════════════════════════════════
+const remedyStats = {
+  warnings: {},          // 噂の状態が付いた回(選手×噂の週)の原因別
+  answered: {},          // 応えてもらえた回の手当て別(card / titleMatch / party / bonus / repair / contract / s4)
+  cardPriority: 0,       // 出番: カードに優先して入れた人数(興行×人数)
+  party: 0,              // 人間関係・空気: 慰労会
+  bonus: 0,              // それ以外: ボーナス支給願
+  spend: 0,
+  dp: 0,
+};
+const remedySeenWarnings = new Set();
+const remedySeenAnswers = new Set();
+let remedyPriorityIds = new Set();
+
+// 噂の状態の件数を数える(--remedy でなくても採る。読み取りのみ)
+function observeLastWarnings(G) {
+  (G.roster || []).forEach(f => {
+    const lw = f && f.lastWarning;
+    if (!lw) return;
+    const key = `${f.id}@${lw.week}`;
+    if (!remedySeenWarnings.has(key)) {
+      remedySeenWarnings.add(key);
+      remedyStats.warnings[lw.cause] = (remedyStats.warnings[lw.cause] || 0) + 1;
+    }
+    if (lw.answered && !remedySeenAnswers.has(key)) {
+      remedySeenAnswers.add(key);
+      const by = lw.answeredBy || '?';
+      remedyStats.answered[by] = (remedyStats.answered[by] || 0) + 1;
+    }
+  });
+}
+
+// 1週分の手当て(manage フェーズ・興行前)。出番はカード編成(autoSetupShowCard → remedyCardOrder)で打つ
+function autoRemedy(G) {
+  remedyPriorityIds = new Set();
+  if (!REMEDY_MODE) return G;
+  if (G.offSeason || G.weekPhase !== 'manage') return G;
+  const live = (G.roster || []).filter(f => careEligible(f) && !f.isUnifiedTitleGuest);
+  let partyWanted = false;
+  const bonusWanted = [];
+  for (const f of live) {
+    if (!Engine.trust.isWarningLive(f) || (f.trust != null ? f.trust : 50) >= REMEDY_UNTIL) continue;
+    const c = f.lastWarning.cause;
+    if (c === 'stage') remedyPriorityIds.add(f.id);
+    else if (c === 'bonds' || c === 'air') partyWanted = true;
+    else bonusWanted.push(f);
+  }
+  const applyDoc = (docId, r) => {
+    G = { ...G,
+      roster: r.roster, funds: r.funds,
+      lockerRoomMorale: r.lockerRoomMorale != null ? r.lockerRoomMorale : G.lockerRoomMorale,
+      decisionPoints: r.decisionPoints != null ? r.decisionPoints : G.decisionPoints,
+      _decisionWeekUsed: r._decisionWeekUsed || G._decisionWeekUsed || {},
+      _decisionDoneThisWeek: [...(G._decisionDoneThisWeek || []), docId],
+      gameLog: [],
+    };
+    if (r.relationships) G = { ...G, relationships: r.relationships };
+    if (r._partyAfterglowWeeks) G = { ...G, _partyAfterglowWeeks: r._partyAfterglowWeeks };
+    remedyStats.spend += r.cost || 0;
+    const doc = Engine.shachoshitsu.getDoc(docId);
+    remedyStats.dp += (doc && doc.decisionCost) || 0;
+  };
+  const avail = new Set(Engine.shachoshitsu.getAvailableDocs(G).map(d => d.id));
+  if (partyWanted && avail.has('party') && !(G._decisionDoneThisWeek || []).includes('party')) {
+    const r = Engine.shachoshitsu.execute('party', null, G);
+    if (r && !r.error) { applyDoc('party', r); remedyStats.party++; }
+  }
+  for (const f of bonusWanted) {
+    if (!avail.has('bonus')) break;
+    const r = Engine.shachoshitsu.execute('bonus', f.id, G, { presetIndex: 1 });
+    if (r && !r.error) { applyDoc('bonus', r); remedyStats.bonus++; }
+  }
+  return G;
+}
+
+// 出番が原因の噂の選手を、出番の枠(effectiveMax×2人)の後ろの方に入れる。メインは空けない
+function remedyCardOrder(order, effectiveMax) {
+  if (!REMEDY_MODE || remedyPriorityIds.size === 0) return order;
+  const pri = order.filter(f => remedyPriorityIds.has(f.id));
+  if (!pri.length) return order;
+  const rest = order.filter(f => !remedyPriorityIds.has(f.id));
+  const slots = Math.min(order.length, effectiveMax * 2);
+  const head = rest.slice(0, Math.max(0, slots - pri.length));
+  remedyStats.cardPriority += pri.length;
+  return [...head, ...pri, ...rest.slice(head.length)];
+}
+
 // 履行/破約/失効の実発火カウント(「書いてあるのに出ていない」検出用)。
 // tickWeek 直後に呼ぶ。_pendingPledgeResult は UI が消費する前にここで読む。
 let _pledgeWatchId = null;
@@ -2040,6 +2143,9 @@ function runSimulation(seed, seasons) {
         G = autoHandleContractNegotiation(G, simRng);
       }
 
+      // ── 退団寸前の手当て (--remedy) ── 噂の状態の数を数え(読み取りのみ)、--remedy なら原因に合った手を打つ
+      observeLastWarnings(G);
+      G = autoRemedy(G);
       // ── ケア自動実行 (--care) ── 実プレイと同じく manage フェーズ・興行前に決裁する
       G = autoExecuteCare(G);
       G = autoExecutePledge(G);
@@ -3469,6 +3575,17 @@ if (process.env.WM_FACTION_FIXTURE === '1') {
 {
   const avg = a => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
   console.log('--------------------------------------');
+  // 退団寸前の引き留め(docs/care-last-warning-design-v0.1.md): 噂の状態と、原因に応えた回(--remedy でなくても採る)
+  {
+    const fmt = o => Object.entries(o).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' / ') || '0';
+    const nW = Object.values(remedyStats.warnings).reduce((a, b) => a + b, 0);
+    const nA = Object.values(remedyStats.answered).reduce((a, b) => a + b, 0);
+    console.log(`[退団寸前] 噂の状態 ${nW}件(${fmt(remedyStats.warnings)}) / 原因に応えた ${nA}件(${fmt(remedyStats.answered)})`);
+    if (REMEDY_MODE) {
+      console.log(`  --remedy(信頼${REMEDY_UNTIL}未満の間): カードに優先 ${remedyStats.cardPriority}人・回 / 慰労会 ${remedyStats.party} / ボーナス ${remedyStats.bonus}`
+        + ` / 支出 ${Math.round(remedyStats.spend)}万(${(remedyStats.spend / targetSeasons).toFixed(0)}万/season) / 決裁枠 ${remedyStats.dp}`);
+    }
+  }
   console.log(`[ケア計装] mode: ${CARE_MODE ? '--care (自動決裁ON)' : 'ケアなし(従来)'}`);
   console.log(`  平均trust(自団体・週次平均):        ${avg(careStats.trustSamples).toFixed(2)}`);
   {
