@@ -7830,6 +7830,10 @@ function _npMatchupFlavorText(m, d, seasonNum, weekNum) {
   const second = pickFrom('style', axes.style, 0xC2A2) || (axes.age ? pickFrom('age', axes.age, 0xC2A3) : '');
   const parts = [first, second].filter(Boolean);
   if (parts.length === 0) return '';
+  // 英語の寸評はピリオド等で終わるので「。」を足さず、2文は空白でつなぐ(JAの出力は従来どおり)
+  if (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en') {
+    return parts.map(s => (/[.!?。！？]$/.test(s) ? s : s + '.')).join(' ');
+  }
   return parts.map(s => (/[。！？]$/.test(s) ? s : s + '。')).join('');
 }
 
