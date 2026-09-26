@@ -179,7 +179,7 @@ const Engine = {
       return entries.map(entry => {
         const template = ALL_CHARS.find(c => c.id === entry.id);
         if (!template) return null;
-        const fighter = Engine.rival.makeAIFighter(template, rng, null, entry.age || 19);
+        const fighter = Engine.rival.makeAIFighter(template, rng, null, entry.age || 19, undefined, { season: state.season || 1, week: state.week || 1 });
         return {
           ...fighter,
           orgId: null,
@@ -304,6 +304,9 @@ const Engine = {
     },
 
     repairOnLoad(rawState) {
+      // K-4: 人生番号(lifeSerial)の無い旧セーブか。末尾の印付けで debutSeason を在籍季数から推定する
+      // (途中の転生の関所が lifeSerial を作るので、判定は入口で取っておく)
+      const legacyLives = !(rawState && rawState.lifeSerial && typeof rawState.lifeSerial === 'object');
       let state = {
         ...rawState,
         // task-68: archetype 'normal' → 'standard' 移行(旧セーブ互換)。
@@ -495,12 +498,14 @@ const Engine = {
         }
       }
 
+      // 引退枠→休眠プール(転生の経路 A2)。K-4: 必ず転生の関所 Engine.life.beginNewLife を通す
       const addDormantEntries = (ids, age) => {
         ids.forEach(id => {
           if (state.dormantPool.some(e => e.id === id)) return;
           state.dormantPool.push({ id, age });
           state.retiredIds = state.retiredIds.filter(rid => rid !== id);
           delete state.retiredSeasons[id];
+          state = Engine.life.beginNewLife(state, id);
         });
       };
       const curYouth = () => state.dormantPool.filter(e => {
@@ -591,6 +596,11 @@ const Engine = {
         state = clean;
         changes.push('ticker_items_removed');
       }
+
+      // K-4(人生番号): 印付け(移行 §7 は後の段で、この前に置く)。旧セーブは lifeSerial を初期化し、
+      // 団体ロスターの debutSeason を在籍季数から推定する
+      state = Engine.life.stamp(state, { estimateDebut: legacyLives });
+      if (legacyLives) changes.push('life_serial_initialized');
 
       return {
         state,
@@ -784,11 +794,129 @@ const Engine = {
     },
     /** FA上限チェック: ROSTER_CFG.fa 未満なら true */
     canAddToFA(state) { return (state.freeAgents || []).length < ROSTER_CFG.fa; },
-    /** FA上限超過時の退避先: dormantPoolに現ageで返却 */
+    /** FA上限超過時の退避先: dormantPoolに現ageで返却。
+     *  K-4(2026-09-26): まだデビューしていない見込み選手だけに使う。デビュー済みの選手は
+     *  releaseToMarket でFAへ(休眠プールに入ると同じIDが別人として作り直されるため) */
     redirectToDormantPool(state, fighter) {
       const pool = [...(state.dormantPool || [])];
       pool.push({ id: fighter.id, age: fighter.age || 19 });
       return { ...state, dormantPool: pool };
+    },
+    /** K-4 R2: 手放した選手の行き先('fa' | 'dormant')。デビュー済みはFA上限に関係なくFA、
+     *  見込み選手はFA上限(ROSTER_CFG.fa)の内ならFA・超えたら休眠プール */
+    marketDestination(state, fighter) {
+      if (Engine.life.hasDebuted(fighter)) return 'fa';
+      return Engine.util.canAddToFA(state) ? 'fa' : 'dormant';
+    },
+    /**
+     * K-4 R2(docs/fun-audit-v0.1/k4-separate-lives-design.md §6): 選手を手放すとき(放出・契約満了・
+     * 解雇・押し出し・レンタル帰還・突然の退団)の唯一の行き先。
+     * - デビュー済み: FAへ(上限なし)。FAに入った季を faSince に刻む(丸1季拾われなければ
+     *   オフ第1週に「フリーのまま引退」= retireUnsignedFreeAgents)
+     * - 見込み選手: FA上限の内ならFA、超えたら休眠プール(従来どおり)
+     * fighter は呼び出し側がFAに置く形(orgTimeline の 'fa' 項目・trust 等)に整えてから渡す。
+     * fromOrgId は手放した団体('player' | 'org_s' など)。デビュー済みの選手に faFromOrgId として刻み、
+     * 「フリーのまま引退」の殿堂の欄と記事の所属(前所属)に使う(AI団体のドラフト獲得者は所属歴に
+     * 団体の項目が無いことがあるため、所属歴だけでは前所属が分からない)。
+     * 新しい state を返す(入力は書き換えない)。
+     */
+    releaseToMarket(state, fighter, fromOrgId) {
+      if (!state || !fighter || fighter.id == null) return state;
+      if (Engine.util.marketDestination(state, fighter) === 'dormant') {
+        return Engine.util.redirectToDormantPool(state, fighter);
+      }
+      let placed = fighter;
+      if (Engine.life.hasDebuted(fighter)) {
+        const from = (fromOrgId && fromOrgId !== 'fa') ? fromOrgId : Engine.life.lastOrgId(fighter);
+        placed = { ...fighter, faSince: state.season || 1, ...(from ? { faFromOrgId: from } : {}) };
+      }
+      return { ...state, freeAgents: [...(state.freeAgents || []).filter(f => f && f.id !== fighter.id), placed] };
+    },
+    /**
+     * K-4 R3「フリーのまま引退」(設計書 §6-1。scout-system-spec §9.3)。オフ第1週に呼ぶ。
+     * デビュー済みのFAのうち、FAに入ったのが今季より前(丸1季どこにも拾われなかった)選手を年齢に
+     * 関係なく引退させる。引退の記録(retire・retiredIds/retiredSeasons)、殿堂判定(最後に所属した
+     * 団体の欄。自団体なら player)、新聞(AI団体の引退と同じ格付け記事。所属は前所属)を行う。
+     * faSince の無いデビュー済みFA(旧セーブ)は今季をFA入りの季として刻み、今回は引退させない。
+     * @returns {{ state, events: string[], retired: Array<{id, name, age, lastOrgId, hofJudged, inducted, newsQueued}> }}
+     */
+    retireUnsignedFreeAgents(state) {
+      const season = state.season || 1;
+      const events = [];
+      const retired = [];
+      let stamped = false;
+      const keep = [];
+      const leaving = [];
+      (state.freeAgents || []).forEach(f => {
+        if (!f || !Engine.life.hasDebuted(f)) { keep.push(f); return; }
+        if (f.faSince == null) { keep.push({ ...f, faSince: season }); stamped = true; return; }
+        if (f.faSince < season) leaving.push(f); else keep.push(f);
+      });
+      if (leaving.length === 0) {
+        return { state: stamped ? { ...state, freeAgents: keep } : state, events, retired };
+      }
+      let s = { ...state, freeAgents: keep };
+      const retiredIds = [...(s.retiredIds || [])];
+      const retiredSeasons = { ...(s.retiredSeasons || {}) };
+      const allHof = { ...(s.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] }) };
+      const aiOrgs = s.aiOrgs ? { ...s.aiOrgs } : null;
+      const names = [];
+      let playerInducted = false;
+      leaving.forEach(f0 => {
+        const f = Engine.career.ensureRetireEvent(f0, season, undefined, 'freeAgent');
+        if (!retiredIds.includes(f.id)) retiredIds.push(f.id);
+        retiredSeasons[f.id] = season;
+        names.push(`${f.name}(${f.age}歳)`);
+        const lastOrgId = Engine.life.lastOrgId(f);
+        const isPlayer = lastOrgId === 'player';
+        const isAi = !!(lastOrgId && aiOrgs && aiOrgs[lastOrgId]);
+        const orgName = isPlayer ? (s.orgName || 'あなたの団体')
+          : isAi ? Engine.contract._getOrgName(lastOrgId, s) : null;
+        const rec = { id: f.id, name: f.name, age: f.age, lastOrgId: lastOrgId || null,
+          hofJudged: false, inducted: false, newsQueued: false };
+        if (isPlayer || isAi) {
+          // 殿堂判定(最後に所属した団体の欄)
+          rec.hofJudged = true;
+          const inductees = Engine.awards.checkNpcHallOfFame([f], lastOrgId, orgName, s);
+          if (inductees.length > 0) {
+            rec.inducted = true;
+            allHof[lastOrgId] = [...(allHof[lastOrgId] || []), ...inductees];
+            if (isPlayer) playerInducted = true;
+            if (isAi) {
+              const od = aiOrgs[lastOrgId];
+              aiOrgs[lastOrgId] = { ...od, _npcInductees: [...(od._npcInductees || []), ...inductees] };
+            }
+            events.push(`🏛️ ${orgName}: ${inductees.map(h => h.name).join('、')} が殿堂入り`);
+          }
+          // 新聞: AI団体の引退と同じ格付け記事(所属は前所属)
+          const cs = Engine.newspaper._retirementCareerStats(f);
+          if (isAi) {
+            const od = aiOrgs[lastOrgId];
+            aiOrgs[lastOrgId] = { ...od, _newsRetirements: [...(od._newsRetirements || []), {
+              orgName, id: f.id, name: f.name, age: f.age,
+              ovr: Engine.util.ov(f), seasons: f.careerSeasons || 1,
+              peakOVR: cs.peakOVR, reigns: cs.reigns, wasChampion: cs.wasChampion, freeAgent: true,
+            }] };
+          } else {
+            s = Engine.industryNews.push(s, {
+              type: 'retirementDeclare', characterId: f.id,
+              data: {
+                name: f.name, org: s.orgName || _NP_PLAYER_ORG_FALLBACK_JA, orgMissing: !s.orgName,
+                age: f.age || '', seasons: (f.careerSeasons || 0) + 1,
+                reigns: cs.reigns, peakOVR: cs.peakOVR, wasChampion: cs.wasChampion,
+                retiredSeason: season, freeAgent: true,
+              },
+            });
+          }
+          rec.newsQueued = true;
+        }
+        retired.push(rec);
+      });
+      s = { ...s, retiredIds, retiredSeasons, allHallOfFame: allHof,
+        ...(playerInducted ? { hallOfFame: allHof.player } : {}),
+        ...(aiOrgs ? { aiOrgs } : {}) };
+      events.push(`📋 フリーのまま${leaving.length}名が引退: ${names.join('、')}`);
+      return { state: s, events, retired };
     },
     // Backward-compatible name used by dedicated-event presentation code.
     isSpecialShow(w) { return this.isSeasonSpecialEventWeek(w); },
@@ -5004,6 +5132,30 @@ const Engine = {
      *  で max(count) を取って合算する。_collectCandidates と同じ思想。
      *  count が無いイベント形式のセーブのため、レインごとに max が 0 のときは
      *  そのレイン内の titleDefense 件数で代替する。 */
+    /** K-4: 転生の関所で退避した前の人生どうしの対戦(retiredRivalries の reason 'lifeEnd' の h2h.bySeason)を、
+     *  章の季の窓 [seasonStart, seasonEnd] で数える。生きた h2h は転生で消えるので、これを読まないと
+     *  過去の章の「度重なる対戦」の一文が転生の後で変わる。組ごとに1件(同じ相手でも人生が違えば別の件)
+     *  @returns {Array<{otherId, count}>} */
+    _archivedPairCountsInWindow(state, fighterId, seasonStart, seasonEnd) {
+      const hs = state && state.relationshipHistory;
+      const list = Array.isArray(hs) ? hs : ((hs && Array.isArray(hs.retiredRivalries)) ? hs.retiredRivalries : []);
+      const fid = Number(fighterId);
+      const out = [];
+      list.forEach(e => {
+        if (!e || e.reason !== 'lifeEnd' || !e.h2h || !e.h2h.bySeason) return;
+        const a = Number(e.id1);
+        const b = Number(e.id2);
+        if (a !== fid && b !== fid) return;
+        let count = 0;
+        Object.keys(e.h2h.bySeason).forEach(sk => {
+          const sn = Number(sk);
+          if (sn >= seasonStart && sn <= seasonEnd) count += Number(e.h2h.bySeason[sk]) || 0;
+        });
+        if (count > 0) out.push({ otherId: a === fid ? b : a, count });
+      });
+      return out;
+    },
+
     _countChapterDefensesForAce(ace, chapter, state) {
       const full = Engine.chronicle._resolveFullFighter(ace, state) || ace;
       const hist = ((full && full.careerRecord) || {}).history || [];
@@ -5152,6 +5304,15 @@ const Engine = {
             || (typeof ALL_CHARS !== 'undefined' && ALL_CHARS.find(c => c.id === otherId));
           if (r) topRivalSurname = Engine.chronicle._chapterSurname(r, cast);
         }
+      });
+      // K-4: 転生で生きた h2h から消えた前の人生どうしの対戦も、退避した要約で章の窓に数える
+      Engine.chronicle._archivedPairCountsInWindow(state, ace.id, chapter.seasonStart, chapter.seasonEnd).forEach(({ otherId, count }) => {
+        if (count <= topRivalCount) return;
+        topRivalCount = count;
+        const r = (state.roster || []).find(c => c.id === otherId)
+          || ((state.chronicle && state.chronicle.fighterArchive) || []).find(a => a.id === otherId)
+          || (typeof ALL_CHARS !== 'undefined' && ALL_CHARS.find(c => c.id === otherId));
+        if (r) topRivalSurname = Engine.chronicle._chapterSurname(r, cast);
       });
       const topRivalClause = topRivalCount >= 2 && topRivalSurname
         ? clause(CL.topRivalMany, { rival: topRivalSurname })
@@ -6783,6 +6944,13 @@ const Engine = {
           const r = resolveOther(otherId);
           if (r) topRivSurnameByVal = Engine.chronicle._chapterSurname(r, cast);
         }
+      });
+      // K-4: 転生で生きた h2h から消えた前の人生どうしの対戦も、退避した要約で章の窓に数える
+      Engine.chronicle._archivedPairCountsInWindow(state, peer.id, chapter.seasonStart, chapter.seasonEnd).forEach(({ otherId, count }) => {
+        if (count <= topRivalCount) return;
+        topRivalCount = count;
+        const r = resolveOther(otherId);
+        if (r) topRivalSurname = Engine.chronicle._chapterSurname(r, cast);
       });
 
       // ── seed 抽選 (peer.id ベース、同一選手は不変・別選手は変動)
@@ -10042,7 +10210,8 @@ const Engine = {
         lastTitleShowWeek: 0,  // Phase 2: タイトル戦出場週追跡
         orgJoinWeek: 0,      // Phase 3: 団体加入時の絶対週
         contractPop: 0,  // 契約時人気（給与固定用、initAIOrgsで正式セット）
-        orgTimeline: [{ orgId: orgId || 'fa', fromSeason: 1, fromWeek: 1 }],
+        // K-4(在籍履歴の季): 作られた季から始める(呼び出し側が opts.season/week を渡す。無ければ従来どおり第1季)
+        orgTimeline: [{ orgId: orgId || 'fa', fromSeason: opts.season || 1, fromWeek: opts.week || 1 }],
         devLabelOffset: Engine.rng.int(rng, -7, 7),
         mediaRevSeason: 0,    // 年間メディア収入個人貢献累計（PPV/JT/プロモ連動）
         talentRevSeason: 0,   // 年間タレント活動収入累計（cm/variety/gravure/brand バフ分）
@@ -12054,16 +12223,12 @@ const Engine = {
             nextOrgData.orgPop = Engine.util.clamp((nextOrgData.orgPop ?? 50) + aiEventResult.orgPopDelta, 0, 100);
           }
           // AI放出選手をFA/dormantに振り分け（state直接変更パターン — 既存AI退団処理L4911と同様）
+          // K-4 R2: 行き先は releaseToMarket に一本化(デビュー済みはFA上限に関係なくFA)
           if (aiEventResult.departedFighters && aiEventResult.departedFighters.length > 0) {
             for (const dep of aiEventResult.departedFighters) {
-              if (Engine.util.canAddToFA(state)) {
-                if (!state.freeAgents) state.freeAgents = [];
-                state.freeAgents.push(dep);
-              } else {
-                const pool = [...(state.dormantPool || [])];
-                pool.push({ id: dep.id, age: dep.age || 20 });
-                state.dormantPool = pool;
-              }
+              const released = Engine.util.releaseToMarket(state, dep, org.id);
+              state.freeAgents = released.freeAgents;
+              state.dormantPool = released.dormantPool;
             }
           }
           // AI練習怪我ニュースフラグ蓄積
@@ -12330,20 +12495,18 @@ const Engine = {
           }
         }
 
-        // FA化（上限チェック: 超過時はdormantPoolへ退避）
+        // FA化（K-4 R2: releaseToMarket。デビュー済みはFA上限に関係なくFA、見込み選手だけ上限超過で休眠プール）
         if (destination === 'fa') {
-          if (Engine.util.canAddToFA(state)) {
+          if (Engine.util.marketDestination(state, f) === 'fa') {
             if (f.orgTimeline) {
               f.orgTimeline = [...(f.orgTimeline || []), { orgId: 'fa', fromSeason: state.season + 1, fromWeek: 1 }];
             }
-            if (!state.freeAgents) state.freeAgents = [];
-            state.freeAgents.push({ ...f, trust: 50 });
           } else {
-            const pool = [...(state.dormantPool || [])];
-            pool.push({ id: f.id, age: f.age || 19 });
-            state.dormantPool = pool;
             destination = 'dormant';
           }
+          const released = Engine.util.releaseToMarket(state, { ...f, trust: 50 }, orgId);
+          state.freeAgents = released.freeAgents;
+          state.dormantPool = released.dormantPool;
         }
 
         // ロスターから除去
@@ -12422,19 +12585,21 @@ const Engine = {
       }
       if (released.length === 0) return { roster, released };
 
-      // 出したぶんは FA へ（上限を超えたら休眠プールへ退避。既存の契約退団と同じ扱い）
+      // 出したぶんは FA へ（K-4 R2: releaseToMarket。デビュー済みはFA上限に関係なくFA。
+      // 見込み選手だけ上限超過で休眠プールへ — 既存の契約退団と同じ扱い）
       released.forEach(f => {
         if (f.orgTimeline) {
           const last = f.orgTimeline[f.orgTimeline.length - 1];
           if (last && !last.toSeason) { last.toSeason = state.season; last.toWeek = 48; }
         }
-        if (Engine.util.canAddToFA(state)) {
-          if (!state.freeAgents) state.freeAgents = [];
+        {
           const ft = { ...f, trust: 50 };
-          if (ft.orgTimeline) ft.orgTimeline = [...ft.orgTimeline, { orgId: 'fa', fromSeason: state.season + 1, fromWeek: 1 }];
-          state.freeAgents.push(ft);
-        } else {
-          state.dormantPool = [...(state.dormantPool || []), { id: f.id, age: f.age || 19 }];
+          if (ft.orgTimeline && Engine.util.marketDestination(state, ft) === 'fa') {
+            ft.orgTimeline = [...ft.orgTimeline, { orgId: 'fa', fromSeason: state.season + 1, fromWeek: 1 }];
+          }
+          const rel = Engine.util.releaseToMarket(state, ft, orgId);
+          state.freeAgents = rel.freeAgents;
+          state.dormantPool = rel.dormantPool;
         }
         next = Engine.trust.applyDepartureTrustImpact(next, f.id, state.relationships,
           { name: f.name, reason: 'AI世代交代' });
@@ -13245,7 +13410,13 @@ const Engine = {
             if (fr.grudge) firedFighter = { ...worstFighter, grudge: fr.grudge };
           }
           newAiOrgs[org.id].roster = roster.filter(f => f.id !== worstFighter.id);
-          dormantPool.push({ id: firedFighter.id, age: firedFighter.age || 20, grudge: firedFighter.grudge || null });
+          // K-4 R2: 戦力外はFAへ(デビュー済みなら上限なし)。遺恨を持ったまま同じ人物として市場に残る
+          {
+            const faShaped = Engine.orgTimeline.transfer({ ...firedFighter, orgId: null, trust: 50 }, 'fa', state.season || 1, state.week || 1);
+            const rel = Engine.util.releaseToMarket({ ...state, freeAgents, dormantPool }, faShaped, org.id);
+            freeAgents = rel.freeAgents || freeAgents;
+            dormantPool = rel.dormantPool || dormantPool;
+          }
           events.push(`📋 ${org.name}が${worstFighter.name}を戦力外に`);
         }
 
@@ -13301,6 +13472,7 @@ const Engine = {
 
       const orgData = newAiOrgs[picked.org.id];
       let dormantPool = [...(state.dormantPool || [])];
+      let freeAgents = state.freeAgents;
       let ejected = null;
       const cfg = AI_SCOUT_CFG[picked.org.tier] || AI_SCOUT_CFG.B;
       let nextRels = state.relationships;
@@ -13315,7 +13487,11 @@ const Engine = {
           if (fr.grudge) ejected = { ...picked.weakest, grudge: fr.grudge };
         }
         orgData.roster = orgData.roster.filter(f => f.id !== picked.weakest.id);
-        dormantPool.push({ id: ejected.id, age: ejected.age || 20, grudge: ejected.grudge || null });
+        // K-4 R2: 押し出された選手はFAへ(デビュー済みなら上限なし)。遺恨を持ったまま市場に残る
+        const faShaped = Engine.orgTimeline.transfer({ ...ejected, orgId: null, trust: 50 }, 'fa', state.season || 1, state.week || 1);
+        const rel = Engine.util.releaseToMarket({ ...state, freeAgents, dormantPool }, faShaped, picked.org.id);
+        freeAgents = rel.freeAgents;
+        dormantPool = rel.dormantPool || dormantPool;
       }
 
       let transfer = Engine.popularity.applyTransferReset({
@@ -13344,6 +13520,7 @@ const Engine = {
         ...state,
         aiOrgs: { ...(state.aiOrgs || {}), ...newAiOrgs },
         dormantPool,
+        ...(freeAgents !== state.freeAgents ? { freeAgents } : {}),
         ...(nextRels !== state.relationships ? { relationships: nextRels } : {}),
       };
       return {
@@ -14356,6 +14533,9 @@ const Engine = {
         week: state.week, season: state.season, type: 'invariant_violation', message: msg, timestamp: Date.now(),
       }] };
     }
+    // K-4(人生番号): 週の入口で選手に lifeNo / debutSeason の印を付ける(何度呼んでも同じ・乱数に触れない)。
+    // 季中の入口はここ、オフは advanceWeek の入口(別々に呼ばれるので両方に置く)
+    state = Engine.life.stamp(state);
     // 呼び名(specs/call-name-spec-v1.0.md): 下の名前で呼ぶ記録を週の入口でも更新する。
     // 興行など tickWeek の外で絆が85へ届いた方向を、週内の減衰で85を割る前に拾うため(末尾でもう一度更新)。
     // 絆・乱数には触れない。入力の state は書き換えず、変化があれば新しい state を返す
@@ -14724,8 +14904,11 @@ const Engine = {
       let pool = [...(s.dormantPool || [])];
       const faRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 9999));
       // Remove up to 2 from FA (random, back to pool)
-      const removeCount = Math.min(2, fa.length);
-      const shuffledFA = [...fa].sort(() => Engine.rng.float(faRng) - 0.5);
+      // K-4 R4: 休眠プールへ戻すのはまだデビューしていない見込み選手だけ。デビュー済みのFAは
+      // 同じ人物として市場に残る(拾われなければオフ第1週に「フリーのまま引退」)
+      const rotatable = fa.filter(f => !Engine.life.hasDebuted(f));
+      const removeCount = Math.min(2, rotatable.length);
+      const shuffledFA = [...rotatable].sort(() => Engine.rng.float(faRng) - 0.5);
       const removed = shuffledFA.slice(0, removeCount);
       fa = fa.filter(f => !removed.some(r => r.id === f.id));
       for (const r of removed) {
@@ -14758,7 +14941,7 @@ const Engine = {
         const template = ALL_CHARS.find(c => c.id === cid);
         if (!template || !entry) continue;
         const age = entry.age || 19;
-        const fighter = Engine.rival.makeAIFighter(template, faRng, null, age);
+        const fighter = Engine.rival.makeAIFighter(template, faRng, null, age, undefined, { season: s.season || 1, week: s.week || 1 });
         fa.push(fighter);
         added.push(fighter);
         pool = pool.filter(e => e.id !== cid);
@@ -15530,12 +15713,11 @@ const Engine = {
         } else {
           let faFighter = { ...fighterWithHist, trust: 50, salaryBonus: 0, orgId: undefined };
           delete faFighter.trustCap; delete faFighter.s4Count;
-          if (Engine.util.canAddToFA(s)) {
+          // K-4 R2: releaseToMarket(デビュー済みはFA上限に関係なくFA)
+          if (Engine.util.marketDestination(s, faFighter) === 'fa') {
             faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
-            s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
-          } else {
-            s = Engine.util.redirectToDormantPool(s, faFighter);
           }
+          s = Engine.util.releaseToMarket(s, faFighter, 'player');
         }
       });
       s = { ...s, _pendingSuddenDepartures: departureResult.departed };
@@ -17175,14 +17357,10 @@ const Engine = {
             if (rentalF) {
               const { isRental, rentalFromOrg, rentalSource, rentalWeeksLeft, ...cleanF } = rentalF;
               const cleanFWithHist = Engine.career.addEvent(cleanF, rentalOutEv);
-              if (freeAgents.length < ROSTER_CFG.fa) {
-                freeAgents = [...freeAgents, cleanFWithHist];
-              } else {
-                // FA上限超: dormantPoolに退避
-                const pool = [...(s.dormantPool || [])];
-                pool.push({ id: cleanFWithHist.id, age: cleanFWithHist.age || 19 });
-                s = { ...s, dormantPool: pool };
-              }
+              // K-4 R2: releaseToMarket(デビュー済みはFA上限に関係なくFA。見込み選手だけ上限超過で休眠プール)
+              const rel = Engine.util.releaseToMarket({ ...s, freeAgents }, cleanFWithHist);
+              freeAgents = rel.freeAgents || freeAgents;
+              if (rel.dormantPool !== s.dormantPool) s = { ...s, dormantPool: rel.dormantPool };
             }
           }
           events.push(`↩ ${rentalF ? rentalF.name : 'レンタル選手'}がレンタル期間満了で帰団`);
@@ -17433,7 +17611,7 @@ const Engine = {
         if (!template) continue;
         const entry = pool.find(e => e.id === cid);
         const age = entry ? (entry.age || 17) : 17;
-        const fighter = Engine.rival.makeAIFighter(template, rng, null, age);
+        const fighter = Engine.rival.makeAIFighter(template, rng, null, age, undefined, { season: state.season || 1, week: state.week || 1 });
         fighter.series = 'pool';
         fighter._notion = { pw: template.pw, sp: template.sp, te: template.te, st: template.st, mn: template.mn };
         fighter._isSeed = false;
@@ -18649,7 +18827,8 @@ const Engine = {
   // i18n Stage B P4-2(D-P4-2): 第2引数 opts は任意の { lang, dict }。シーズン開幕新年号発行
   // (Engine.newspaper.publish)へ素通しするだけ。省略時は従来どおりJA原文のまま不変。
   advanceWeek(state, opts) {
-    let s = { ...state };
+    // K-4(人生番号): 入口で印を付ける(オフは tickWeek を通らない週があるため、こちらにも置く)
+    let s = { ...Engine.life.stamp(state) };
     const events = [];
     // i18n Stage B P4-4: {entrySummary}/{championWatch}生成元用。dict/lang未指定(既定)時は
     // JA原文のまま(既存呼び出し元=auto-sim/ja-goldenは無改修で不変)。
@@ -18864,14 +19043,25 @@ const Engine = {
           }
           return next;
         });
-        const agedOutFA = agedFA.filter(f => f.age > 22);
-        const youngFA   = agedFA.filter(f => f.age <= 22);
+        // K-4 R5: 若返らせて休眠プールへ戻すのは、まだデビューしていない見込み選手だけ。
+        // デビュー済みのFA(AI団体の放出者など)は年齢のまま市場に残る(以前は17〜19歳に若返って
+        // 休眠プールへ入り、同じIDが別人として作り直されていた)
+        const agedOutFA = agedFA.filter(f => f.age > 22 && !Engine.life.hasDebuted(f));
+        const youngFA   = agedFA.filter(f => !(f.age > 22 && !Engine.life.hasDebuted(f)));
         if (agedOutFA.length > 0) {
           const faRecycleRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFA01));
           const recycledEntries = agedOutFA.map(f => ({ id: f.id, age: 17 + Engine.rng.int(faRecycleRng, 0, 2) }));
           s = { ...s, freeAgents: youngFA, dormantPool: [...(s.dormantPool || []), ...recycledEntries] };
         } else {
           s = { ...s, freeAgents: youngFA };
+        }
+
+        // K-4 R3「フリーのまま引退」: デビュー済みで丸1季どこにも拾われなかったFAを引退させる
+        // (記録・殿堂判定・新聞つき。旧「FA 22歳超→引退枠」を置き換える)
+        {
+          const faRet = Engine.util.retireUnsignedFreeAgents(s);
+          s = faRet.state;
+          events.push(...faRet.events);
         }
 
         // v1.5: orgPop 年次自然減衰 — orgPop帯に応じた可変減衰（施策B-1）
@@ -18911,26 +19101,19 @@ const Engine = {
           // Step 1: 加齢（全エントリ +1歳）
           pool = pool.map(entry => ({ ...entry, age: (entry.age || 17) + 1 }));
 
-          // Step 2: age 21超はdormantPoolから引退枠に戻す（ドラフト・FA適齢期を過ぎた）
+          // Step 2: age 21超(ドラフト・FA適齢期を過ぎた)は、その場で17〜19歳に戻す。
+          // K-4 R6: 休眠プールの子は全員まだデビューしていない(R1)ので別人にはならない。
+          // 以前は引退枠へ送って5季休ませていたが、休ませる理由が無く、世界を回る選手が減っていた
           const overAge = pool.filter(e => (e.age || 17) > 21);
-          pool = pool.filter(e => (e.age || 17) <= 21);
-          for (const e of overAge) {
-            if (!retiredIds.includes(e.id)) {
-              retiredIds.push(e.id);
-              retiredSeasons[e.id] = s.season; // 今シーズンからクールダウン開始
-            }
+          if (overAge.length > 0) {
+            const rejuvRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xFA04));
+            pool = pool.map(e => ((e.age || 17) > 21
+              ? { id: e.id, age: 17 + Engine.rng.int(rejuvRng, 0, 2) }
+              : e));
           }
 
-          // Step 3: FA市場からもage 22超を引退枠に戻す（FA膨張防止 — 冒頭FA加齢と同一閾値）
-          let fa = [...(s.freeAgents || [])];
-          const faOverAge = fa.filter(f => (f.age || 17) > 22);
-          fa = fa.filter(f => (f.age || 17) <= 22);
-          for (const f of faOverAge) {
-            if (!retiredIds.includes(f.id)) {
-              retiredIds.push(f.id);
-              retiredSeasons[f.id] = s.season;
-            }
-          }
+          // (旧 Step 3「FA 22歳超→引退枠」は K-4 R3 retireUnsignedFreeAgents / R5 に置き換えた)
+          const fa = [...(s.freeAgents || [])];
 
           // Step 4: refill dormantPool by age cohort targets with an annual cap
           const refillTargets = DORMANT_POOL_CFG.targetsByAge || { 16: 6, 17: 6, 18: 6, 19: 6, 20: 6 };
@@ -18975,11 +19158,11 @@ const Engine = {
             delete retiredSeasons[id];
           }
           s = { ...s, dormantPool: pool, freeAgents: fa, retiredIds, retiredSeasons };
+          // 転生の経路 A1(季末の補充)。K-4: 引退枠から戻るIDは必ず転生の関所を通す
+          // (前の人生の生きた記録を退避・消去し、人生番号を1つ進める)
+          returnees.forEach(id => { s = Engine.life.beginNewLife(s, id); });
           if (returnees.length > 0) {
             events.push(`🌱 新世代${returnees.length}名がプロ入りを目指して参入`);
-          }
-          if (overAge.length + faOverAge.length > 0) {
-            events.push(`📋 ${overAge.length + faOverAge.length}名がプロ入りの機会を逃し引退`);
           }
         }
 
@@ -20135,8 +20318,414 @@ const Engine = {
     if (skipDraft && initState.roster && initState.roster.length > 0) {
       initState = Engine.prologue.create(initState);
     }
+    // K-4(人生番号): 全員 1番目の人生。団体ロスターは第1季デビュー
+    initState = Engine.life.stamp({ ...initState, lifeSerial: {} });
     return initState;
   }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// K-4「同姓同名の別人」— 選手の人生(docs/fun-audit-v0.1/k4-separate-lives-design.md)
+//   人生 = あるIDの選手が初めてどこかの団体と契約してから引退するまで。
+//   一度もデビューしていない見込み選手(休眠プール・FA・スカウト候補)は、作り直されても同じ子。
+//   画面には番号を出さない。「二代目」のような呼び方もしない(襲名しない)。
+// ─────────────────────────────────────────────────────────────────────────────
+Engine.life = {
+  /** その選手は今の人生でデビュー済みか(R1: 見込み選手 = careerStage==='prospect' で debutSeason が無い) */
+  hasDebuted(f) {
+    if (!f) return false;
+    if (f.debutSeason != null) return true;
+    return f.careerStage !== 'prospect';
+  },
+  /** 最後に所属した団体('player' | 'org_s' など)。FAへ出たときの印(faFromOrgId)、無ければ
+   *  所属歴(orgTimeline)の 'fa' 以外の最後の項目、無ければ今の orgId。どれも無ければ null */
+  lastOrgId(f) {
+    if (f && f.faFromOrgId && f.faFromOrgId !== 'fa') return f.faFromOrgId;
+    const tl = (f && Array.isArray(f.orgTimeline)) ? f.orgTimeline : [];
+    for (let i = tl.length - 1; i >= 0; i--) {
+      const o = tl[i] && tl[i].orgId;
+      if (o && o !== 'fa') return o;
+    }
+    const cur = f && f.orgId;
+    return (cur && cur !== 'fa') ? cur : null;
+  },
+
+  // ── 人生番号(S2。設計書 §2) ──
+  //   state.lifeSerial = { [id]: n }  そのIDの「今の人生」の番号(無ければ 1)
+  //   fighter.lifeNo                 その選手が属する人生の番号(無ければ lifeSerial)
+  //   fighter.debutSeason            その人生で最初に団体に所属した季
+  //   番号を進めるのは転生の関所(beginNewLife)だけ。引退の時点ではなく転生の時点で進めるのは、
+  //   引退後に書かれる記録(年末の殿堂入り・翌季の引退記事・年代記)を引退した人生の番号で刻むため。
+
+  /** そのIDの今の人生の番号(lifeSerial。無ければ 1) */
+  current(state, id) {
+    const ls = state && state.lifeSerial;
+    const n = (ls && typeof ls === 'object') ? Number(ls[id]) : NaN;
+    return Number.isFinite(n) && n >= 1 ? n : 1;
+  },
+  /** 選手(またはID)が属する人生の番号。選手の lifeNo を優先し、無ければそのIDの今の人生 */
+  of(state, fighterOrId) {
+    if (fighterOrId && typeof fighterOrId === 'object') {
+      const n = Number(fighterOrId.lifeNo);
+      if (Number.isFinite(n) && n >= 1) return n;
+      return Engine.life.current(state, fighterOrId.id);
+    }
+    return Engine.life.current(state, fighterOrId);
+  },
+  /**
+   * 印付け(後付け処理)。何度呼んでも同じ結果になり、変化が無ければ同じ state を返す。
+   * - 自団体・AI団体・FA・スカウト候補・retiredFighters の選手で lifeNo が無い選手に lifeSerial[id] ?? 1
+   * - 団体ロスターにいて debutSeason が無い選手に、オフ中なら翌季・季中なら今季
+   *   (旧セーブ = lifeSerial が無い状態の最初の印付けでは、在籍季数から推定: max(1, 季 − careerSeasons)。
+   *    オフ第1週の季末処理で careerSeasons が1つ増えた後は +1 する)
+   * 置き場所: tickWeek の入口(呼び名の更新の直前)・advanceWeek の入口・repairOnLoad の末尾・createInitialState。
+   * 見込み選手のオブジェクトは捨てられては作り直されるので、番号はオブジェクトではなく lifeSerial から決める。
+   * @param {object} [opts] { estimateDebut: boolean } 旧セーブの推定を使うか(既定: lifeSerial が無いとき)
+   */
+  stamp(state, opts) {
+    if (!state || typeof state !== 'object') return state;
+    const hasSerial = state.lifeSerial != null && typeof state.lifeSerial === 'object' && !Array.isArray(state.lifeSerial);
+    const estimateDebut = (opts && opts.estimateDebut != null) ? !!opts.estimateDebut : !hasSerial;
+    const lifeSerial = hasSerial ? state.lifeSerial : {};
+    const probe = { lifeSerial };
+    const season = Number(state.season) || 1;
+    const nextDebut = state.offSeason ? season + 1 : season;
+    const seasonEndDone = !!state.offSeason && (Number(state.offWeek) || 0) >= 1;
+    const mark = (f, inOrg) => {
+      if (!f || typeof f !== 'object' || f.id == null) return f;
+      const n = Number(f.lifeNo);
+      const needLife = !(Number.isFinite(n) && n >= 1);
+      const needDebut = inOrg && f.debutSeason == null;
+      if (!needLife && !needDebut) return f;
+      const next = { ...f };
+      if (needLife) next.lifeNo = Engine.life.current(probe, f.id);
+      if (needDebut) {
+        next.debutSeason = estimateDebut
+          ? Math.max(1, season - (Number(f.careerSeasons) || 0) + (seasonEndDone ? 1 : 0))
+          : nextDebut;
+      }
+      return next;
+    };
+    let changed = !hasSerial;
+    const mapList = (list, inOrg) => {
+      if (!Array.isArray(list)) return list;
+      let any = false;
+      const out = list.map(f => { const g = mark(f, inOrg); if (g !== f) any = true; return g; });
+      if (!any) return list;
+      changed = true;
+      return out;
+    };
+    const roster = mapList(state.roster, true);
+    let aiOrgs = state.aiOrgs;
+    if (aiOrgs && typeof aiOrgs === 'object') {
+      let anyOrg = false;
+      const nextOrgs = {};
+      Object.keys(aiOrgs).forEach(orgId => {
+        const od = aiOrgs[orgId];
+        const r = od && Array.isArray(od.roster) ? mapList(od.roster, true) : null;
+        if (r && r !== od.roster) { nextOrgs[orgId] = { ...od, roster: r }; anyOrg = true; }
+        else nextOrgs[orgId] = od;
+      });
+      if (anyOrg) aiOrgs = nextOrgs;
+    }
+    const freeAgents = mapList(state.freeAgents, false);
+    const scoutCandidates = mapList(state.scoutCandidates, false);
+    const retiredFighters = mapList(state.retiredFighters, false);
+    if (!changed) return state;
+    const out = { ...state, lifeSerial };
+    if (roster !== state.roster) out.roster = roster;
+    if (aiOrgs !== state.aiOrgs) out.aiOrgs = aiOrgs;
+    if (freeAgents !== state.freeAgents) out.freeAgents = freeAgents;
+    if (scoutCandidates !== state.scoutCandidates) out.scoutCandidates = scoutCandidates;
+    if (retiredFighters !== state.retiredFighters) out.retiredFighters = retiredFighters;
+    return out;
+  },
+  /**
+   * 転生の関所(唯一)。引退枠から休眠プールへ戻すIDは、3つの転生経路(季末の補充 advanceWeek・
+   * ロード時修復 saveDoctor.repairOnLoad・CLI tools/save-doctor.js)とも必ずここを通す。
+   * 前の人生の生きた記録を退避・消去し(closeLiveRecords)、そのIDの人生番号を1つ進める。
+   * 新しい state を返す(入力は書き換えない)。
+   */
+  beginNewLife(state, id) {
+    const nid = Number(id);
+    if (!state || !Number.isFinite(nid)) return state;
+    const s = Engine.life.closeLiveRecords(state, nid);
+    const next = Engine.life.current(state, nid) + 1;
+    return { ...s, lifeSerial: { ...((s.lifeSerial && typeof s.lifeSerial === 'object') ? s.lifeSerial : {}), [nid]: next } };
+  },
+
+  // ── 転生の関所: 前の人生の「生きた記録」(S3。設計書 §3-A) ──
+  //   「今の関係」を表し読み手が多い記録は、読み手を人生対応にするより関所で白紙にするほうが確実で安い。
+  //   意味のある関係(対戦1回以上・競争意識20以上・絆が50から±10以上・因縁の段位あり)は
+  //   relationshipHistory.retiredRivalries に1組1件で退避する(reason 'lifeEnd'・lives・h2h の要約)。
+  //   引退時の扱い(自団体UI経路の退避・エンジン経路の凍結・AIは何もしない)の不揃いは、ここで吸収する。
+
+  _pairOf(key, sep) {
+    const s = String(key);
+    const i = s.indexOf(sep);
+    if (i <= 0) return [null, null];
+    const a = Number(s.slice(0, i));
+    const b = Number(s.slice(i + sep.length));
+    return [Number.isFinite(a) ? a : null, Number.isFinite(b) ? b : null];
+  },
+  _arrowHas(key, id) { const [a, b] = Engine.life._pairOf(key, '>'); return a === id || b === id; },
+  // Glimpse A 層のキー: `${閾値id}_${話し手}_${相手}` / `trust_${閾値id}_${選手}`(閾値idにも _ が入る)
+  _glimpseKeyHas(key, id) {
+    const t = String(key).split('_');
+    if (t[0] === 'trust') return Number(t[t.length - 1]) === id;
+    return Number(t[t.length - 1]) === id || Number(t[t.length - 2]) === id;
+  },
+  /** state[field](キー→値の表)から pred に当たるキーを除いた差分。変化が無ければ null */
+  _dropKeys(state, field, pred) {
+    const obj = state[field];
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
+    let hit = false;
+    const out = {};
+    Object.keys(obj).forEach(k => { if (pred(k)) hit = true; else out[k] = obj[k]; });
+    return hit ? { [field]: out } : null;
+  },
+  _dropMatchups(list, id) {
+    if (!Array.isArray(list)) return list;
+    const out = list.filter(e => !(e && (Number(e.leftId) === id || Number(e.rightId) === id)));
+    return out.length === list.length ? list : out;
+  },
+  _dropFromAssign(assign, id) {
+    if (!assign || typeof assign !== 'object') return assign;
+    let hit = false;
+    const out = {};
+    Object.keys(assign).forEach(c => {
+      const list = assign[c];
+      if (Array.isArray(list) && list.some(x => Number(x) === id)) { hit = true; out[c] = list.filter(x => Number(x) !== id); }
+      else out[c] = list;
+    });
+    return hit ? out : assign;
+  },
+  /** AI団体ごとの欄(matchupLog・coachAssign)に fn をかけた差分。変化が無ければ null */
+  _patchAiOrgs(state, field, fn) {
+    const orgs = state.aiOrgs;
+    if (!orgs || typeof orgs !== 'object') return null;
+    let hit = false;
+    const out = {};
+    Object.keys(orgs).forEach(orgId => {
+      const od = orgs[orgId];
+      const cur = od && od[field];
+      const next = cur == null ? cur : fn(cur);
+      if (next !== cur) { hit = true; out[orgId] = { ...od, [field]: next }; }
+      else out[orgId] = od;
+    });
+    return hit ? { aiOrgs: out } : null;
+  },
+  /** 関係フラグ: 当事者(targetId・fighterId・masterId・discipleId・idA/idB・fromId/toId)が転生したIDなら
+   *  項目ごと消す。「…Ids」配列(裏切られた側の一覧)に含まれるならそのIDだけ外し、空になれば項目ごと消す */
+  _clearFlags(flags, id) {
+    if (!flags || typeof flags !== 'object' || Array.isArray(flags)) return flags;
+    let anyType = false;
+    const out = {};
+    Object.keys(flags).forEach(type => {
+      const arr = flags[type];
+      if (!Array.isArray(arr)) { out[type] = arr; return; }
+      let changed = false;
+      const next = [];
+      arr.forEach(it => {
+        if (!it || typeof it !== 'object') { next.push(it); return; }
+        const own = Object.keys(it).some(k => (/Id$/.test(k) || /^id[AB12]?$/.test(k)) && Number(it[k]) === id);
+        if (own) { changed = true; return; }
+        let item = it;
+        let emptied = false;
+        Object.keys(it).forEach(k => {
+          if (/Ids$/.test(k) && Array.isArray(it[k]) && it[k].some(x => Number(x) === id)) {
+            const rest = it[k].filter(x => Number(x) !== id);
+            item = { ...item, [k]: rest };
+            changed = true;
+            if (rest.length === 0) emptied = true;
+          }
+        });
+        if (!emptied) next.push(item);
+      });
+      out[type] = changed ? next : arr;
+      if (changed) anyType = true;
+    });
+    return anyType ? out : flags;
+  },
+  /** 対戦成績の要約(全履歴は持たない)。aId は小さい方のID(h2h のキーの向き) */
+  _summarizeH2h(rec, aId) {
+    const hist = Array.isArray(rec.history) ? rec.history : [];
+    const bySeason = {};
+    let first = null;
+    let last = null;
+    hist.forEach(h => {
+      const sn = Number(h && (h.s != null ? h.s : h.season));
+      if (!Number.isFinite(sn)) return;
+      bySeason[sn] = (bySeason[sn] || 0) + 1;
+      if (first == null || sn < first) first = sn;
+      if (last == null || sn > last) last = sn;
+    });
+    const lm = rec.lastMatch && Number.isFinite(Number(rec.lastMatch.season)) ? Number(rec.lastMatch.season) : null;
+    return {
+      aId, matches: rec.matches || 0, winsA: rec.winsA || 0, winsB: rec.winsB || 0, draws: rec.draws || 0,
+      bestMQ: rec.bestMQ || 0, hadTitleMatch: !!rec.hadTitleMatch, hadPPV: !!rec.hadPPV,
+      firstSeason: first, lastSeason: lm != null ? Math.max(lm, last != null ? last : lm) : last, bySeason,
+    };
+  },
+  /** 退避する組(意味のある関係だけ)。関係値・因縁・対戦成績を消す前の状態から作る */
+  _lifeEndArchive(state, id) {
+    const rels = state.relationships || {};
+    const rivalries = state.rivalries || {};
+    const h2h = state.h2h || {};
+    const partners = new Set();
+    const collect = (obj, sep) => Object.keys(obj).forEach(k => {
+      const [a, b] = Engine.life._pairOf(k, sep);
+      if (a === id && b != null) partners.add(b);
+      else if (b === id && a != null) partners.add(a);
+    });
+    collect(rels, '>'); collect(rivalries, '-'); collect(h2h, '>');
+    partners.delete(id);
+    if (partners.size === 0) return [];
+    const ageOf = pid => {
+      const pools = [state.roster, state.freeAgents, state.retiredFighters,
+        ...Object.values(state.aiOrgs || {}).map(o => o && o.roster)];
+      for (const list of pools) {
+        const f = Array.isArray(list) ? list.find(x => x && Number(x.id) === pid) : null;
+        if (f) return f.age != null ? f.age : null;
+      }
+      return null;
+    };
+    const num = (v, dflt) => (Number.isFinite(Number(v)) ? Number(v) : dflt);
+    const season = state.season || 1;
+    const week = state.week || 1;
+    const out = [];
+    [...partners].sort((a, b) => a - b).forEach(p => {
+      const id1 = Math.min(id, p);
+      const id2 = Math.max(id, p);
+      const r12 = rels[`${id1}>${id2}`] || null;
+      const r21 = rels[`${id2}>${id1}`] || null;
+      const rv = rivalries[Engine.title.getRivalryKey(id1, id2)] || null;
+      const hr = h2h[`${id1}>${id2}`] || null;
+      const bond12 = num(r12 && r12.bond, 50);
+      const bond21 = num(r21 && r21.bond, 50);
+      const rivalry12 = num(r12 && r12.rivalry, 0);
+      const rivalry21 = num(r21 && r21.rivalry, 0);
+      const played = !!(hr && (hr.matches || 0) >= 1);
+      const meaningful = played
+        || Math.max(rivalry12, rivalry21) >= 20
+        || Math.abs(bond12 - 50) >= 10 || Math.abs(bond21 - 50) >= 10
+        || !!(rv && ((rv.lastBand || 0) > 0 || (rv.resolutionCount || 0) > 0 || rv.resolved));
+      if (!meaningful) return;
+      // 退避は転生のたびに約10組増える(40季で約2,800件)ので、セーブの肥大を抑える:
+      // 関係値は小数1桁に丸め、中身の無い因縁の欄(対戦0・段位0・決着0の初期値)は持たない
+      const r1 = v => Math.round(v * 10) / 10;
+      const rvHasContent = !!(rv && ((rv.matches || 0) > 0 || (rv.lastBand || 0) > 0 || (rv.resolutionCount || 0) > 0 || rv.resolved));
+      out.push({
+        id1, id2, reason: 'lifeEnd', retiredFighterId: id,
+        lives: { [id1]: Engine.life.current(state, id1), [id2]: Engine.life.current(state, id2) },
+        season, week, age1: ageOf(id1), age2: ageOf(id2),
+        bond12: r1(bond12), bond21: r1(bond21), rivalry12: r1(rivalry12), rivalry21: r1(rivalry21),
+        rivalryMeta: rvHasContent ? { ...rv } : null,
+        h2h: played ? Engine.life._summarizeH2h(hr, id1) : null,
+      });
+    });
+    return out;
+  },
+  /**
+   * 生きた記録の保存先(設計書 §3-A の19 + 実装時に見つけた2つ)。1項目が1つの保存先。
+   * clear(state, id) は、そのIDの記録を除いた差分({欄: 新しい値})を返す。変化が無ければ null。
+   * 検査側の物差しは test/helpers/k4-live-stores.js(この表を写さず、キーの形から独立に読む)。
+   */
+  LIVE_RECORD_STORES: [
+    // #1 関係値(a>b)— 両方向。意味のある組は _lifeEndArchive で退避済み
+    { name: 'relationships', clear: (s, id) => Engine.life._dropKeys(s, 'relationships', k => Engine.life._arrowHas(k, id)) },
+    // #2 関係値の逓減カウンタ(a>b:種別:段)
+    { name: 'relationshipCounters', clear: (s, id) => Engine.life._dropKeys(s, 'relationshipCounters', k => Engine.life._arrowHas(String(k).split(':')[0], id)) },
+    // #3 関係フラグ(裏切り・出戻り・師弟・同期・ライバル同期・憧れ・嫉妬)
+    { name: 'relationshipFlags', clear: (s, id) => {
+      const next = Engine.life._clearFlags(s.relationshipFlags, id);
+      return next !== s.relationshipFlags ? { relationshipFlags: next } : null;
+    } },
+    // #4 フラグの締め出し(master:a>b・admire:a>b)
+    { name: 'relationshipFlagLockouts', clear: (s, id) => Engine.life._dropKeys(s, 'relationshipFlagLockouts', k => Engine.life._arrowHas(String(k).split(':').pop(), id)) },
+    // #5 ポップアップの冷却(modal:M19:a>b・admireDraws:a>b・masterCandidate:a>b)
+    { name: 'relationshipFlagCounters', clear: (s, id) => Engine.life._dropKeys(s, 'relationshipFlagCounters', k => Engine.life._arrowHas(String(k).split(':').pop(), id)) },
+    // #6 呼び名の記録(話し手>相手)。関係値が消えても記録を残す仕様なので、明示的に消さないと前世の呼び方が続く
+    { name: 'givenNameCalls', clear: (s, id) => Engine.life._dropKeys(s, 'givenNameCalls', k => Engine.life._arrowHas(k, id)) },
+    // #7 王座因縁(a-b)— rivalryMeta として退避済み
+    { name: 'rivalries', clear: (s, id) => Engine.life._dropKeys(s, 'rivalries', k => { const [a, b] = Engine.life._pairOf(k, '-'); return a === id || b === id; }) },
+    // #8 対戦成績(小>大)— 要約(bySeason 等)を退避済み
+    { name: 'h2h', clear: (s, id) => Engine.life._dropKeys(s, 'h2h', k => Engine.life._arrowHas(k, id)) },
+    // #9 自団体の対戦ログ(初顔合わせ・接触判定)
+    { name: 'matchupLog', clear: (s, id) => {
+      const next = Engine.life._dropMatchups(s.matchupLog, id);
+      return next !== s.matchupLog ? { matchupLog: next } : null;
+    } },
+    // #10 AI団体の対戦ログ
+    { name: 'aiOrgs.matchupLog', clear: (s, id) => Engine.life._patchAiOrgs(s, 'matchupLog', list => Engine.life._dropMatchups(list, id)) },
+    // #11 タッグ経験(連携値)
+    { name: 'tagExp', clear: (s, id) => Engine.life._dropKeys(s, 'tagExp', k => Engine.life._arrowHas(k, id)) },
+    // #12 人気逆転の発火済み(先輩>後輩)
+    { name: 'popOvertakeTriggered', clear: (s, id) => Engine.life._dropKeys(s, 'popOvertakeTriggered', k => Engine.life._arrowHas(k, id)) },
+    // #13 W-1(険悪ペア)の発火回数(小_大)
+    { name: 'w1FireCount', clear: (s, id) => Engine.life._dropKeys(s, 'w1FireCount', k => { const [a, b] = Engine.life._pairOf(k, '_'); return a === id || b === id; }) },
+    // #14 伝染のクールダウン(a>b)
+    { name: '_contagionLastWeek', clear: (s, id) => Engine.life._dropKeys(s, '_contagionLastWeek', k => Engine.life._arrowHas(k, id)) },
+    // #15 N-06 のクールダウン(a>b)
+    { name: 'n06CooldownWeeks', clear: (s, id) => Engine.life._dropKeys(s, 'n06CooldownWeeks', k => Engine.life._arrowHas(k, id)) },
+    // #16 Glimpse A 層の前週スナップショット(a>b)
+    { name: '_glimpseAPrevValues', clear: (s, id) => Engine.life._dropKeys(s, '_glimpseAPrevValues', k => Engine.life._arrowHas(k, id)) },
+    // #17 スナップショットのクールダウン(pair_小_大・fighter_id)
+    { name: '_snapshotCooldowns', clear: (s, id) => Engine.life._dropKeys(s, '_snapshotCooldowns', k => String(k).split('_').slice(1).some(x => Number(x) === id)) },
+    // #18 報道済みの印(負傷・連勝・所属・引退・後追い)。所属の印が残ると新しい人生の入団が「移籍」記事になる
+    { name: 'newsSeen', clear: (s, id) => {
+      const seen = s.newsSeen;
+      if (!seen || typeof seen !== 'object') return null;
+      let hit = false;
+      const out = { ...seen };
+      ['injury', 'streak', 'org', 'retired', 'followUp'].forEach(sub => {
+        const m = seen[sub];
+        if (m && typeof m === 'object' && Object.prototype.hasOwnProperty.call(m, String(id))) {
+          const { [String(id)]: _gone, ...rest } = m;
+          out[sub] = rest;
+          hit = true;
+        }
+      });
+      return hit ? { newsSeen: out } : null;
+    } },
+    // #19 コーチの担当(自団体・AI団体の季節トレーナー)
+    { name: 'coachAssign', clear: (s, id) => {
+      const player = Engine.life._dropFromAssign(s.coachAssign, id);
+      const ai = Engine.life._patchAiOrgs(s, 'coachAssign', ca => Engine.life._dropFromAssign(ca, id));
+      if (player === s.coachAssign && !ai) return null;
+      return { ...(player !== s.coachAssign ? { coachAssign: player } : {}), ...(ai || {}) };
+    } },
+    // #20・#21(実装時に見つけた追加): Glimpse A 層の閾値の発火済み印とクールダウン。発火済み印は時間で消えない
+    { name: '_glimpseAFired', clear: (s, id) => Engine.life._dropKeys(s, '_glimpseAFired', k => Engine.life._glimpseKeyHas(k, id)) },
+    { name: '_glimpseACooldowns', clear: (s, id) => Engine.life._dropKeys(s, '_glimpseACooldowns', k => Engine.life._glimpseKeyHas(k, id)) },
+  ],
+  /**
+   * 転生の関所の前半(beginNewLife から呼ぶ)。前の人生の生きた記録を退避してから消した新しい state を返す
+   * (入力は書き換えない。何度かけても2回目以降は何も起きない)。休眠プールの項目の遺恨(grudge)も落とす
+   * (プールからの作り直しは id/age しか読まないので引き継がれていないが、念のため)。
+   */
+  closeLiveRecords(state, id) {
+    const nid = Number(id);
+    if (!state || !Number.isFinite(nid)) return state;
+    const archived = Engine.life._lifeEndArchive(state, nid);
+    let s = state;
+    Engine.life.LIVE_RECORD_STORES.forEach(store => {
+      const patch = store.clear(s, nid);
+      if (patch) s = { ...s, ...patch };
+    });
+    if (Array.isArray(s.dormantPool) && s.dormantPool.some(e => e && Number(e.id) === nid && e.grudge !== undefined)) {
+      s = { ...s, dormantPool: s.dormantPool.map(e => {
+        if (!e || Number(e.id) !== nid || e.grudge === undefined) return e;
+        const { grudge: _g, ...rest } = e;
+        return rest;
+      }) };
+    }
+    if (archived.length > 0) {
+      const hs = Engine.relationships.normalizeHistoryStore(s.relationshipHistory);
+      s = { ...s, relationshipHistory: { ...hs, retiredRivalries: [...hs.retiredRivalries, ...archived] } };
+    }
+    return s;
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -27910,6 +28499,22 @@ Engine.validateGameState = function(G) {
     });
   }
 
+  // ── K-4 I-1: 人生番号の整合(docs/fun-audit-v0.1/k4-separate-lives-design.md §2-5) ──
+  // 現役・FA・スカウト候補の選手が属する人生(lifeNo)は、そのIDの今の人生(lifeSerial)と一致する。
+  // 食い違うのは、転生の関所を通ったIDの古い選手オブジェクトが世界に残っている場合(=別人と同一人物の混線)
+  if (Engine.life && typeof Engine.life.of === 'function') {
+    const checkLife = (f, where) => {
+      if (!f || f.id == null) return;
+      const own = Engine.life.of(G, f);
+      const cur = Engine.life.current(G, f.id);
+      if (own !== cur) warn(`人生番号の不一致: ${f.name}(id:${f.id}) ${where} lifeNo=${own} / 今の人生=${cur}`);
+    };
+    (G.roster || []).forEach(f => checkLife(f, 'roster'));
+    Object.entries(G.aiOrgs || {}).forEach(([orgId, org]) => ((org && org.roster) || []).forEach(f => checkLife(f, orgId)));
+    (G.freeAgents || []).forEach(f => checkLife(f, 'freeAgents'));
+    (G.scoutCandidates || []).forEach(f => checkLife(f, 'scoutCandidates'));
+  }
+
   // ── 選手循環診断（長期プレイ安定性） ──
   // 厳密な追跡チェックは test/diag-fa.js で実行する（validateGameStateでは非実行）
   // ランタイムでの検出はコストが高く、一時プール(scoutCandidates/retiredFighters等)の
@@ -28721,13 +29326,13 @@ Engine.contract = {
       s = Engine.chronicle.applySpiritContribution(s, _depSnap);
       s = Engine.chronicle.refreshChapters(s);
     } else {
-      // freeAgent（FA上限チェック）
-      if (Engine.util.canAddToFA(s)) {
+      // freeAgent（K-4 R2: releaseToMarket。デビュー済みはFA上限に関係なくFA）
+      if (Engine.util.marketDestination(s, fighterWithHist) === 'fa') {
         let faFighter = { ...fighterWithHist, trust: 50, salaryBonus: 0, orgId: undefined };
         faFighter = Engine.orgTimeline.transfer(faFighter, 'fa', s.season, s.week);
-        s = { ...s, freeAgents: [...(s.freeAgents || []), faFighter] };
+        s = Engine.util.releaseToMarket(s, faFighter, 'player');
       } else {
-        s = Engine.util.redirectToDormantPool(s, fighterWithHist);
+        s = Engine.util.releaseToMarket(s, fighterWithHist, 'player');
       }
       // 年代記: FA / 休眠送りも player 在籍時の実績を残す
       const _depSnap = { ...fighterWithHist }; delete _depSnap.growthLog;

@@ -37,7 +37,9 @@ function makeFighter(extra = {}) {
   };
 }
 
-(function testAiDepartureFallsBackToDormantWhenFaIsFull() {
+// K-4 R2(2026-09-26): デビュー済みの選手は FA が満杯でも FA へ(休眠プールに入ると同じIDが
+// 別人として作り直されるため)。休眠プールへ退避するのは、まだデビューしていない見込み選手だけ。
+function runDeparture(fighterExtra) {
   const originalFloat = Engine.rng.float;
   const originalInt = Engine.rng.int;
   Engine.rng.float = (() => {
@@ -47,7 +49,7 @@ function makeFighter(extra = {}) {
   Engine.rng.int = () => 0;
 
   try {
-    const fighter = makeFighter();
+    const fighter = makeFighter(fighterExtra);
     const roster = [
       fighter,
       makeFighter({ id: 502, trust: 80 }),
@@ -70,15 +72,31 @@ function makeFighter(extra = {}) {
     };
 
     const result = Engine.rival.processAIContracts({}, roster.map(f => ({ ...f })), 'org_s', 'S', state);
-
-    assert.strictEqual(result.departures.length, 1, 'one low-trust fighter should depart');
-    assert.strictEqual(result.departures[0].destination, 'dormant', 'news payload should reflect dormant fallback');
-    assert.ok(state.dormantPool.some(entry => entry.id === fighter.id), 'fighter should be routed into dormantPool');
-    assert.strictEqual(state.freeAgents.some(entry => entry.id === fighter.id), false, 'fighter should not appear in FA list');
+    return { result, state, fighter };
   } finally {
     Engine.rng.float = originalFloat;
     Engine.rng.int = originalInt;
   }
+}
+
+(function testDebutedAiDepartureGoesToFaEvenWhenFaIsFull() {
+  const { result, state, fighter } = runDeparture({ careerStage: 'active' });
+  assert.strictEqual(result.departures.length, 1, 'one low-trust fighter should depart');
+  assert.strictEqual(result.departures[0].destination, 'fa', 'news payload should say FA');
+  const inFa = state.freeAgents.find(entry => entry.id === fighter.id);
+  assert.ok(inFa, 'debuted fighter should be in FA even though FA was full');
+  assert.strictEqual(state.freeAgents.length, ROSTER_CFG.fa + 1, 'FA cap does not apply to debuted fighters');
+  assert.strictEqual(inFa.faSince, 3, 'faSince should record the season the fighter entered FA');
+  assert.strictEqual(inFa.faFromOrgId, 'org_s', 'faFromOrgId should record the org the fighter left');
+  assert.strictEqual(state.dormantPool.some(entry => entry.id === fighter.id), false, 'debuted fighter must not enter dormantPool');
+})();
+
+(function testProspectDepartureStillFallsBackToDormantWhenFaIsFull() {
+  const { result, state, fighter } = runDeparture({ careerStage: 'prospect' });
+  assert.strictEqual(result.departures.length, 1, 'one low-trust fighter should depart');
+  assert.strictEqual(result.departures[0].destination, 'dormant', 'news payload should reflect dormant fallback');
+  assert.ok(state.dormantPool.some(entry => entry.id === fighter.id), 'prospect should be routed into dormantPool');
+  assert.strictEqual(state.freeAgents.some(entry => entry.id === fighter.id), false, 'prospect should not appear in FA list');
 })();
 
 console.log('ai-contract-dormant-routing-test: ok');

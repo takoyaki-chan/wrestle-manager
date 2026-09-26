@@ -114,6 +114,10 @@ module.exports = [
       'w1FireCount.*',
       // 2026-09-26(main 取り込み後の fixture)(B): 引退した選手あての挑戦試合の打診は週次処理で取り下げられる
       'challengeRequest.pendingThisWeek',
+      // 2026-09-26(K-4 S1 の休眠プールの規則で fixture の世界が変わった後)(B): 実プレイだけが引退者の関係値を
+      // 整理するので、週次の関係性ポップアップの積み方(M-19 の冷却・直近12週の件数)と派閥イベント F07 の
+      // 抽選が変わる。処理の差ではなく上の差の波及
+      '_modalQueue', 'relationshipFlagCounters.*.lastWeek', 'relModalWindow[*].other', '_pendingFactionEvent',
     ],
     mustAppear: true, refs: 'app.js:9272-9344(finalize)・10867-10970(closeShowResult 前半) / エンジン側なし',
   },
@@ -173,7 +177,11 @@ module.exports = [
     category: 'processing', side: 'app', impact: '数値', checkpoints: ['A', 'B'],
     patterns: ['roster[*].slump.recoveryMomentum', 'roster[*].slump', 'roster[*].motivationLoss', 'roster[*].hotStreak', '_pendingGrowthEvents',
       'roster[*].careerRecord.history', 'roster[*].careerHistory'],
-    mustAppear: true, refs: 'app.js:8829-8941 / エンジン側なし(乱数ストリーム 0xB818/0x5C6/0x5C7/0x5C8 は実プレイだけが引く)',
+    // 2026-09-26: K-4 S1(休眠プールの規則)で fixture(seed 42・S2W14)の世界が変わり、この週にスランプ・好調・
+    // ブレークスルーに当たる選手がいなくなって、状態の差としては出なくなった(実プレイだけが判定する処理そのものは
+    // 残っている — 乱数ストリーム breakthrough/slump/slumpMomentum を実プレイだけが引いていることは --report で見える)。
+    // fixture 次第で出たり消えたりするので「消えた」判定から外す。A02 を一本化したら項目ごと外すこと
+    mustAppear: false, refs: 'app.js:8829-8941 / エンジン側なし(乱数ストリーム 0xB818/0x5C6/0x5C7/0x5C8 は実プレイだけが引く)',
   },
   {
     id: 'K1-A03', title: '季節統計(seasonStats: 興行数・勝敗・最高評価)',
@@ -184,7 +192,10 @@ module.exports = [
   {
     id: 'K1-A04', title: '興行結果の新聞データ(currentNewspaper)→ 週刊新聞の興行記事',
     category: 'processing', side: 'app', impact: '表示', checkpoints: ['A', 'B'],
-    patterns: ['currentNewspaper', 'weeklyNewspaper'],
+    patterns: ['currentNewspaper', 'weeklyNewspaper',
+      // 2026-09-26(K-4 S1 後の fixture で見えた)(B): 実プレイの号は自団体の興行記事が枠を取るので、同じ週に積まれた
+      // 業界ニュース(mq-record では連敗の節目)が載りきらずに持ち越される。エンジンの号には載る
+      '_industryNewsEvents'],
     mustAppear: true, refs: 'app.js:9355-9363 / エンジン側なし(auto-sim の新聞には自団体の興行記事が載らない)',
   },
   {

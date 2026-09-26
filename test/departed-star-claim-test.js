@@ -72,7 +72,10 @@ function buildAiOrgs() {
   assert.ok(result.state.aiOrgs[result.orgId].roster.some(f => f.id === star.id), 'star should move to AI roster');
   assert.strictEqual(result.state.freeAgents.some(f => f.id === star.id), false, 'star should not remain in FA');
   assert.ok(result.ejected, 'full AI roster should eject its weakest fighter');
-  assert.ok(result.state.dormantPool.some(e => e.id === result.ejected.id), 'ejected fighter should leave active roster');
+  assert.strictEqual(result.state.aiOrgs[result.orgId].roster.some(f => f.id === result.ejected.id), false, 'ejected fighter should leave active roster');
+  // K-4 R2(2026-09-26): 押し出された選手はデビュー済みなのでFAへ(休眠プールに入ると別人として作り直される)
+  assert.ok(result.state.freeAgents.some(f => f.id === result.ejected.id), 'ejected (debuted) fighter should go to FA');
+  assert.strictEqual(result.state.dormantPool.some(e => e.id === result.ejected.id), false, 'ejected (debuted) fighter should not enter dormantPool');
 })();
 
 (function testLowerOvrDepartureIsNotClaimed() {
