@@ -61,9 +61,10 @@ function hostileState(week) {
 
 // 2) 先取100pt の決着(applyRivalryVictory)でも F08/F09 のクールダウンが判定側と同じキーで記録される
 {
-  const s = hostileState(20);
+  const s0 = hostileState(20);
   // 勝者が id の大きい派閥(=旧コードのキー "F09_2_1" が判定側 "F09_1_2" と食い違う組み合わせ)
-  Engine.factions.applyRivalryVictory(s, 2, 1, 'POINTS', Engine.rng.create(1));
+  // 2026-09-26: applyRivalryVictory は返却値で更新する純関数になった(勢い・信頼・対立度の取りこぼしの修正)
+  const s = Engine.factions.applyRivalryVictory(s0, 2, 1, 'POINTS', Engine.rng.create(1));
   const cds = s.factionEventCooldowns || {};
   assert.ok(cds[Engine.factions._f09Key(1, 2)], '決着後に F09 クールダウン(判定キー)が立つ');
   assert.ok(cds[Engine.factions._f08Key(1, 2)], '決着後に F08 クールダウン(判定キー)が立つ');

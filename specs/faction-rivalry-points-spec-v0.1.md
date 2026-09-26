@@ -182,7 +182,7 @@ v0.1 で導入予定だった「小さい方の派閥サイズによる救済倍
 ### §3.6 F09 後の状態
 
 - F09 で動いたポイントを `factionRivalryPoints` に加算後、§4 の決着判定を実行
-- F09 cooldown 52週セット(**2026-09-18 修正**: applyF09SweepBonus/applyRivalryVictory が純関数版 _markCooldown の戻り値を捨てていたため一度も記録されず、対抗戦の翌週に同じ2派閥で再発火していた。破壊的更新版 _markCooldownInPlace + 判定側と同じキー(_f09Key/_f08Key=min/max順)に統一。回帰: test/faction-f09-cooldown-test.js)
+- F09 cooldown 52週セット(**2026-09-18 修正**: applyF09SweepBonus/applyRivalryVictory が純関数版 _markCooldown の戻り値を捨てていたため一度も記録されず、対抗戦の翌週に同じ2派閥で再発火していた。破壊的更新版 _markCooldownInPlace + 判定側と同じキー(_f09Key/_f08Key=min/max順)に統一。回帰: test/faction-f09-cooldown-test.js。**2026-09-26**: applyRivalryVictory は返却値で更新する純関数に改め `_markCooldown` を使う(§5 実装メモ)。_markCooldownInPlace を使うのは applyF09SweepBonus だけ)
 - 抗争未決着の場合、抗争は継続（F09 だけで必ず決着するわけではない）
 
 ---
@@ -263,7 +263,7 @@ v0.3 で C 棚上げ削除。シンプル2択化。
 
 ### §5.4 reason別の効果分岐
 
-> **既知の不具合(2026-09-26 報告・裁定待ち。未修正)**: `applyRivalryVictory` は `applyMomentumChange` / `_applyTrustToMembers` / `_applyBondDirected` / `applyHostilityChange`(いずれも新しい状態を返す純関数)の戻り値を捨てているため、先取100(POINTS)の勝者・敗者の勢い・信頼・絆と両方向 hostility -40、派閥消滅(CONSOLATION)の残存側 hostility -40 が**実際には入っていない**(2026-09-18 に直したクールダウンの取りこぼしと同じ型)。その場で書き換える集客ボーナス・寝返り倍率・権威の喪失・タイムラインだけは入る。F06_RECONCILE は戻り値を使う形で実装したので影響なし
+> **2026-09-26 修正済み(Keisuke 裁定「派閥の決着の効果は仕様どおり効かせる」)**: 以前の `applyRivalryVictory` / `checkRivalryResolution` は state を直接書き換える形で、`applyMomentumChange` / `_applyTrustToMembers` / `_applyBondDirected` / `applyHostilityChange`(いずれも新しい状態を返す純関数)の戻り値を捨てていた。先取100(POINTS)の勝者・敗者の勢い・信頼・絆と両方向 hostility -40、派閥消滅(CONSOLATION)の残存側 hostility -40 が入らず、集客ボーナス(§5.1)と寝返り・亀裂の倍率(§5.2)は書くだけで読む処理が無かった。いまは下の実装メモのとおり入る。回帰: `test/faction-rivalry-victory-effects-test.js`
 
 | reason | 勝者効果 | 敗者効果 | hostility |
 |---|---|---|---|
@@ -271,6 +271,18 @@ v0.3 で C 棚上げ削除。シンプル2択化。
 | F06_RECONCILE（40週A和解） | なし | なし | -30(2026-09-26 実装。`applyF06ForceChoice`) |
 | CALM（自然沈静化） | なし | なし | 据置（既に20未満） |
 | CONSOLATION（派閥消滅） | なし | （消滅済み） | -40（残存側のみ） |
+
+### §5.5 実装メモ(2026-09-26)
+
+- **純関数**: `Engine.factions.checkRivalryResolution(state, rng)` は入力を書き換えず、常に `{ state, resolved, reason, winnerFactionId, loserFactionId, forceClose }` を返す(何も起きない週は `resolved: false, reason: null`、40週の2択だけなら `reason: 'FORCE_CLOSE_PENDING'`)。決着の効果・記録の削除・自然沈静化の週数(`naturalCalmStreak`)は返した `state` にだけ入り、tickWeek は `s = resolution.state` で受け取る。`applyRivalryVictory(state, win, los, reason, rng)` も新しい state を返す。呼ばれるのは tickWeek の派閥パイプラインだけ(§4 冒頭の「finalizeShow 直後」は実装していない)
+- **§5.1 集客(派閥抗争 appeal の持ち越し)**: `_factionAppealBoost[勝者ID] = { startSeason, startWeek, weeks: 12, untilAbs, appeal, opponentFactionId, factionCreatedSeason, factionCreatedWeek }`。
+  - 額 `appeal` = 決着の時点(hostility -40 の前)の両方向平均で決まる §6.2 の段(≥80 High / ≥60 Mid / ≥40 Low)。**下限は Low**: 抗争ポイントは対立度に関係なく派閥どうしの試合で貯まるので、対立度40未満のまま先取100に届く決着がある(headless 計測で3件中2件)。その勝者にも最初の段を持たせる(実装の解釈。Keisuke 確認待ち)
+  - 効く試合: 勝者の顔役(リーダー・幹部)と**他派閥の顔役**の試合(相手は敗者に限らない)。`isFactionFeudMatch` が対立度40未満でも真になり(興行準備の「🏴vs🏴」札も出る。数値は出さない)、`calcFactionFeudAppeal` の段は「今の対立度の段」と持ち越しの高い方(足し合わせない)。F08 の加算・rivalry との排他・feudSumCap 30 は従来どおり
+  - 期間: 決着の週の翌週から12週後の週まで(12週)。派閥IDは解散後に使い回されるので、結成の週が違う同じ番号の派閥には効かない
+- **§5.2 寝返り・亀裂 ×1.5**: `_factionDefectionBoost[敗者ID] = { ..., mult: 1.5, untilAbs, 結成の週 }`。`pickWeeklyEvent` の F04 は抜けられる側(`fromFactionId`)、F05 は亀裂の派閥が敗者なら確率 ×1.5(上限1)。期間・照合は §5.1 と同じ。乱数の引き数は変わらない(閾値だけが変わる)
+- **勢い**は抗争中の派閥(`type: 'rivalrous'` か `inHostility`)だけが持つ(`applyMomentumChange`・週の減衰は忠誠型を0に戻す。既存の設計)。忠誠型の派閥どうしの決着では勢いは動かず、信頼・絆・対立度・集客・F05 だけが効く
+- 画面: 決着専用の記事・モーダルは無い(派閥画面の抗争欄が消え、勢いの言葉・権威型の札が変わる。年表に RIVALRY_CLOSED)
+- 測定(headless 進行 6シード×30季。seed 42/7/1234/7919/2024/31337・pn 付きのスタブ。docs/worklog.md 2026-09-26): 40週の2択の自動応答を「続けさせる」に固定して先取100は3件。変更前は勢い・信頼・絆・対立度がすべて週の揺れの範囲(例 勝者の勢い 0→0・対立度 47.6→47.3)、変更後は勝者の勢い 0→40・敗者 0→-25・勝者の信頼平均 +3.5〜+4.1・敗者リーダー -5.6〜-6.1・対立度 → 0〜7。決着後12週の勝者の顔役の他派閥戦は全試合が派閥抗争マッチ(appeal 5)。F04/F05 は前後とも6シードで0回(条件が成立しない)
 
 ---
 
@@ -398,3 +410,4 @@ forceCloseHostilityDecayOnA: -30,  // A 和解選択時の hostility 減衰
 | v0.2 | 2026-05-01 | 補正を加算式に変更（メイン+0.3/タイトル+0.2/下剋上+0.2/タッグ-0.5）。派閥規模倍率を廃止。1興行ペア試合上限2 + 週次キャップ20pt を追加 |
 | v0.3 | 2026-05-01 | 決着優先順位確定（先取100最優先）。F09 hostility 70→65、後半補正1年目 1.0→1.1。F06 を A/B 2択化（C 削除）。敗者ペナルティ緩和（momentum -30→-25、trust リーダー-8/末端-3、F04・F05 ×2→×1.5）。F09 接近バッジ閾値 65→60。「抗争○週目」表示は出すと明記 |
 | 実装 | 2026-09-26 | 総点検 第4回の確認3・4(Keisuke 裁定): §2.7 メイン=興行カードの先頭(PPV の isSummit も従来どおり)。§4.3 40週の2択を派閥イベント F06_FORCE として実装(A 和解 F06_RECONCILE / B +20週)、40週の記録で判定が止まる不具合を修正。§5.4 の前に applyRivalryVictory の既知の不具合を記録 |
+| 実装 | 2026-09-26 | Keisuke 裁定「派閥の決着の効果は仕様どおり効かせる」: checkRivalryResolution / applyRivalryVictory を返却値で更新する純関数に。§5.1〜§5.3 の効果と CONSOLATION の -40 が入るように。§5.1 の集客の持ち越しと §5.2 の F04/F05 ×1.5 を読む処理を追加(§5.5 実装メモ) |

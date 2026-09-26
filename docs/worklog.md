@@ -1,5 +1,72 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 派閥抗争の先取100の決着の効果を仕様どおりに — 返却値で更新する純関数へ・集客の持ち越しと F04/F05 ×1.5 を読む処理(Claude/Opus 5.5・worktree)
+
+Keisuke 裁定(2026-09-26)「派閥の決着の効果は仕様どおり効かせる」。K-1 第4段で実プレイにも派閥ポイントが貯まるようになり、先取100の決着がこれから実際に起きるため。仕様の正は `specs/faction-rivalry-points-spec-v0.1.md` §5(実装メモ §5.5 を新設)。
+
+### 何が起きていたか
+- `applyRivalryVictory` は state を直接書き換える形で書かれていたのに、中で呼ぶ `applyMomentumChange` / `_applyTrustToMembers` / `_applyBondDirected` / `applyHostilityChange`(どれも新しい state を返す純関数)の戻り値を9か所で捨てていた。先取100の勝者の勢い+40・信頼+5・絆+5、敗者の勢い−25・信頼−8/−3、両方向の対立度−40 が一度も入っていなかった(09-18 に直したクールダウンと同じ型)
+- 呼び出し元 `checkRivalryResolution` も同じ型: 派閥消滅(CONSOLATION)の残存側の対立度−40 を捨て、記録の削除・自然沈静化の週数は入力の G の中身をその場で書き換えていた(tickWeek の「入力は書き換えない」に反する)
+- 勝者の集客ボーナス `_factionAppealBoost` と敗者の寝返り倍率 `_factionDefectionBoost` は書くだけで、読む処理がどこにも無かった
+- 同じファイルの関数群を全部見た(文として呼んで戻り値を使わない呼び出しを grep): 捨てていたのはこの2関数だけ。`applyF09SweepBonus`・`accrueRivalryPointsFromMatch` はその場で書き換える形のまま正しく入っている(呼び出し側が写してから渡す)ので触っていない
+
+### 変えたこと(src/factions.js・src/management.js)
+- `checkRivalryResolution(state, rng)` を純関数に。常に `{ state, resolved, reason, winnerFactionId, loserFactionId, forceClose }` を返す(以前は決着なしで `null`)。記録の表は書くときだけ写す。年表の項目のキーの並びは以前と同じ
+- `applyRivalryVictory` を純関数に(`s = helper(s, …)` で積む。権威の失墜は faction を写して、クールダウンは `_markCooldown`)
+- tickWeek: `if (resolution && resolution.state) s = resolution.state;`
+- §5.1 集客: `_factionAppealBoost[勝者] = { …, untilAbs, appeal, opponentFactionId, 結成の週 }`。`appeal` は決着の時点(−40 の前)の対立度の段(§6.2)で、**下限は Low(5)**(下の計測で3件中2件が対立度40未満の決着だったため。解釈として Keisuke 確認待ち)。`isFactionFeudMatch` は勝者の顔役と他派閥の顔役の試合なら対立度40未満でも真、`calcFactionFeudAppeal` は今の段と持ち越しの高い方(足さない)。F08 加算・rivalry との排他・feudSumCap は不変
+- §5.2: `pickWeeklyEvent` の F04(抜けられる側 `fromFactionId`)・F05(亀裂の派閥)が敗者なら確率 ×1.5(上限1)。乱数の引き数は同じ
+- 期間はどちらも決着の週の翌週〜12週後の週(`<= untilAbs`)。派閥IDは解散後に使い回される(createFaction は空いている最小の番号)ので、結成の週が違う同じ番号の派閥には効かない。旧版が書いた項目(untilAbs なし)は開始週+weeks で期限を見る
+- 勢いは抗争中の派閥だけが持つ既存の設計はそのまま(忠誠型どうしの決着では勢いは動かない)
+
+### 変更前後(1件の決着・対立度 70/60・信頼 50/70/80 vs 50/40/65)
+| | 変更前 | 変更後 |
+|---|---|---|
+| 勢い 勝/敗 | 10 / 10 | 50 / −15 |
+| 信頼 勝者3人 | 50 / 70 / 80 | 57.5 / 75 / 83.5(感度つき) |
+| 信頼 敗者 L/末端 | 50 / 40 / 65 | 38 / 36.1 / 62 |
+| 絆 メンバー→勝者L | 50 / 60 | 55 / 65 |
+| 対立度 | 70 / 60 | 30 / 20 |
+| 決着後の勝者L vs 敗者L | 抗争マッチ(対立度が下がらないので appeal 10 のまま) | 抗争マッチ(持ち越し appeal 10・12週) |
+| 敗者の F04/F05 倍率 | 読む処理なし | ×1.5 |
+
+### headless 進行(6シード×30季。seed 42/7/1234/7919/2024/31337。K-1 第4段・派閥の作業者と同じ方法)
+- 最初は headless-sim のスタブ(pn 無し)の修正が main に無かったので pn 付きのスタブを先に置いて計測。main 取り込み後に**直った版(src/i18n.js の 'ja')で前後とも取り直し、数値は全件一致**。F04/F05 の抽選と興行を包んで記録(計測スクリプトは scratchpad。リポジトリには置いていない)
+- 40週の2択の自動応答: 等確率(AB)と「続けさせる」固定(B)の2通り。先取100の無いシード(42/7/1234/31337)は前後で決着の件数・F04/F05 が完全に一致(先取100までは軌道が同じ)
+- B(先取100 3件)の決着週の前後:
+
+| 決着 | 変更前 | 変更後 |
+|---|---|---|
+| seed 7919 S17W41 | 勢い 勝0→0 敗0→0 / 信頼 勝avg 82.7→82.7・敗L 79.8→79.8 / 対立度 18.8→18.2 / 12週の勝者の顔役の他派閥戦 5試合・抗争マッチ0 | 勢い 0→40・0→−25 / 信頼 82.7→86.2・79.8→74.2・末端 76.1→73.7 / 絆 74.4→79.3 / 対立度 →0 / 5試合すべて抗争マッチ(appeal 5) |
+| seed 2024 S8W40 | 勢い 0→0 / 信頼 72.6→71.9・76→75.5 / 対立度 47.6→47.3 / 4試合・抗争マッチ4(appeal 5。対立度が下がらなかったため) | 勢い 0→40・0→−25 / 信頼 72.6→76.4・76→69.9 / 対立度 →7.3 / 4試合すべて抗争マッチ(appeal 5=持ち越し) |
+| seed 2024 2件目 | S16W16(対立度 14→14、効果なし・12週の抗争マッチ0/3) | S18W22(軌道が分かれた後。勢い 0→40・0→−25 / 対立度 →0 / 13試合すべて抗争マッチ) |
+
+- AB は先取100 2件(7919 S17W41・2024 S8W40)で同じ傾向
+- **F04/F05 は前後とも6シード×30季で0回**(敗者の12週に限らず一度も条件が揃わない)。×1.5 はテストの合成状態でだけ確認。F04 は対立度40以上の抗争中の2派閥と相手派閥への絆70以上の末端、F05 は忠誠型5人以上+リーダーへの絆35未満の2人組が要る
+- 決着の対立度は3件とも40台以下で、うち2件は40未満(=仕様どおりの「決着の時点の段」だけでは集客の持ち越しが0になる → 下限 Low を置いた)
+
+### 画面で確かめたこと(コード)
+- 先取100の決着を知らせる記事・モーダル・ログは**元から無い**。見えるのは派閥画面の抗争欄が消える・勢いの言葉(`getMomentumLabel`)・権威型の札の消失・年表 RIVALRY_CLOSED だけ。数値を新しく出す箇所は作っていない(信頼は画面に数値で出ない)
+- 興行準備の「🏴vs🏴 ○○派 vs △△派」札(`isFactionFeudMatch`)は、決着後12週の勝者の顔役の他派閥戦にも出る(集客に実際に入るのと一致)
+- **見つけた既存の不具合(未修正・報告)**: 派閥画面の抗争の年表(`_dfcRenderFeudTimeline`)は RIVALRY_CLOSED を `t('決着 ・ {reason}')` で出していて、reason の内部名(POINTS / CALM / CONSOLATION / F06_RECONCILE)がそのまま画面に出る。自分の組の決着は抗争欄ごと消えるので見えないが、3派閥以上で A–B の抗争中に A–C が閉じると A–B の年表に「決着 ・ CALM」が出る。直すには表示名の辞書(新しい i18n キーか既存の「決着」「和解」「消滅」「抗争の幕引き」の流用)が要り、i18n-ratchet の基準に触れるので今回は見送り
+
+### 検証
+- 新テスト `test/faction-rivalry-victory-effects-test.js`(8項目: 勝者・敗者の効果/§5.3/純関数/CALM/CONSOLATION/集客の持ち越し(12週・下限・結成し直し・calcMatchAppeal に入る)/F04・F05 ×1.5(pickWeeklyEvent)/tickWeek の配線): **変更前の src で 8 FAIL**、変更後 ALL PASS
+- 既存テスト3本を新しい返り値に合わせた: faction-f06-force-close-test(自然沈静化の確認を `r.state` で・入力が書き換わらないことも)・internal-challenge-regression-test(`null` → `resolved:false`)・faction-f09-cooldown-test(返り値を受け取る)
+- `npm test` **308/308 PASS** / `node test/auto-sim.js 40 42` ALL CLEAR・違反0・指紋 **d8ef55c5(main c53ac9be と同じ。auto-sim の世界は派閥ができない)** / `npm run test:k1:parity` **PASS(登録33・未登録0・消えた0)**
+- main(テスト用の仕組みの修正 a5aff204 ほか)取り込み後: `npm test` **308/308 PASS** / `npm run test:k1:parity` **PASS(登録33・未登録0・消えた0・fixture の握りつぶし0)** / `node test/ja-golden.js` 新しい基準と完全一致(99ce4637)/ `node test/save-regression.js` ALL CLEAR。基準ファイルには触っていない(自分の変更で出た差は無し)
+- i18n-ratchet は NG(management.js +7・ui-render.js +1)だが **main 時点から同じ本数**(main の src を同じ走査に掛けて 1358 / 975 で一致)。今回の変更は日本語のコメントだけで本数は増えていない。基準ファイルには触っていない
+
+### 触ったファイル
+- src/factions.js(checkRivalryResolution・applyRivalryVictory・_factionStamp・_activeVictoryEffect・_defectionProbMult・_victoryAppealCarry・_feudAppealByHostility・isFactionFeudMatch・calcFactionFeudAppeal・pickWeeklyEvent の F04/F05・_markCooldownInPlace のコメント)/ src/management.js(tickWeek 1行+コメント)
+- test: faction-rivalry-victory-effects-test.js(新)・faction-f06-force-close-test.js・internal-challenge-regression-test.js・faction-f09-cooldown-test.js
+- specs/faction-rivalry-points-spec-v0.1.md(§3.6 注記・§5.4 の既知の不具合 → 修正済み・§5.5 実装メモ新設・変更履歴)/ docs/ui/03-screens/faction-f06-force.md(未決事項)/ docs/実機確認バックログ.md / docs/game-system-roadmap.md
+
+### 残課題
+- Keisuke 確認: 集客の持ち越しの解釈(下限 Low・相手は敗者に限らず他派閥の顔役)
+- 年表の reason の内部名の露出(上記)。決着を知らせる演出が無い件(別件で検討)
+- F04/F05 が headless では一度も起きない(派閥イベントの条件の厳しさ。総点検 04-② Run B と同じ所見)
+
 ## 2026-09-26 テストの仕組みの後始末 — headless 進行のスタブ・k1-parity の基準の取り直し3回目・save-regression で移行まで・ja-golden の基準の取り直し(Claude/Opus 5.5・worktree・src 無変更)
 
 派閥 F06 と K-4 の作業で見つかった「テスト用の仕組みの不具合と基準の古さ」をまとめて片付けた。**src は1行も変えていない**。
