@@ -101,6 +101,7 @@ Keisuke 裁定(2026-09-26 第4回の確認、全ておすすめ)の 5〜8。K-1 
 - 手動チェック `node test/ui-walkthrough/injury-retire-departure-check.js`: ALL CHECKS PASS(怪我引退の週・ラストランの週・突然の退団の週。別れが最初・M-22 は出ない・ログの1行・トーストとログの行き先の一致)
 - `node test/ui-baseline-guard-test.js` ok。ui-check 7項目: 画像・顔・吹き出し・隊列・勝敗は新しい描画なし(○)/待ちの保険 ○(`_showFarewellsFirst`)/1操作=1進行 ○(状態の書き換えはその場のまま)
 - `node test/ja-golden.js` は作業前から基準と不一致(基準は P7-54 の頃のまま。以後の数値の変更で S1W2 から違う)。作業前後の出力のハッシュは同じ(e3615124…)なので、この作業による差は無い
+- main(第4回裁定3・4 の派閥)取り込み後: `npm test` **300/300 PASS** / auto-sim 40季 seed42 ALL CLEAR(68f7e5bd。派閥は auto-sim の世界ではできないので指紋は同じ)/ `npm run test:k1:parity` PASS(33件・未登録0)/ 手動チェック ALL CHECKS PASS(45項目)。衝突は worklog・実機確認バックログ・roadmap(両方残す)と生成物(lang-en.js / lang-en-dialogue.js は合流した台帳から再生成、ラチェットの基準は再採取)
 
 ### 触ったファイル
 - src/relationships.js(`flags.pruneModalQueue`・`glimpse._pickLineWithOwnSeed`・checkALayer の roll/supersedes)/ src/management.js(tickWeek: prune の呼び出し・噂のログ)/ src/app.js(closeShowResult・`_showFarewellsFirst`・`_maybeShowBigNewsPopup`・`_finalizeShowImpl` のログ・退団のトースト・`_suddenDepartureDestination`・deserialize)/ src/ui-common.js(`_drainFlagModalQueue` 削除・`_findFighterById`)/ src/data.js(GAMELOG_TEMPLATES・GAMELOG_TYPE_CATEGORY・GLIMPSE_A_THRESHOLDS・GLIMPSE_A_LINES.trust_below_15)/ src/lang-en.js・lang-en-dialogue.js・lang-en-templates.js(再生成)
