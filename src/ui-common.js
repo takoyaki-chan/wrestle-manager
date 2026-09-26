@@ -2823,14 +2823,46 @@ let _rivalryPopupCallback = null;
  *   宣戦布告: { phase:'confrontation', leftId, rightId, leftName, rightName, isFate }
  *   決着:     { phase:'resolution', winnerId, loserId, winnerName, loserName, isFate, isSecondResolution, popBonus, orgPopBonus }
  * @param {Function} onAllDone
+ * @param {Object} [opts]
+ *   opts.overShowShell : 興行中の試合一覧の殻(showResultOverlay)を排他の相手に数えない(殻の上に出す)。
+ *     フォーカスの時点の宣戦布告(App._runConfrontationForMatch)。F08/F09 の試合前後の画面・敗者の心と同じ例外
+ *   opts.isStillValid  : 出す直前に確かめる。偽なら出さずに onAllDone(その試合がもう始まった・興行が終わった)
+ * @returns {{ isShown: Function, tryNow: Function, cancel: Function }|null}
+ *   待ち行列に積まれたときの手綱。tryNow() は殻以外の画面が閉じていれば今すぐ出す(殻がある間は汎用の
+ *   _drainPopupQueue が流さないため)。cancel() は出る前なら取り下げる(後から待ち行列で呼ばれても出さない)
  */
-function showRivalryPopups(items, onAllDone) {
-  if (!items || items.length === 0) { if (onAllDone) onAllDone(); return; }
-  // 宿怨の試合前演出は表示開始時に、task-41 と同じ表示済み記録へ残す。
-  if (typeof _markRivalryMatchDialoguesSeen === 'function') _markRivalryMatchDialoguesSeen(items);
-  _rivalryPopupQueue = [...items];
-  _rivalryPopupCallback = onAllDone || null;
-  _enqueuePopup(() => _renderRivalryPopup());
+function showRivalryPopups(items, onAllDone, opts) {
+  if (!items || items.length === 0) { if (onAllDone) onAllDone(); return null; }
+  const overShowShell = !!(opts && opts.overShowShell);
+  const stillValid = () => !(opts && typeof opts.isStillValid === 'function') || !!opts.isStillValid();
+  let state = 'waiting'; // waiting → shown | cancelled(1回だけ遷移する)
+  const run = () => {
+    if (state !== 'waiting') { _drainPopupQueue(); return; }
+    if (!stillValid()) {
+      state = 'cancelled';
+      _drainPopupQueue();
+      if (onAllDone) onAllDone();
+      return;
+    }
+    state = 'shown';
+    // 宿怨の試合前演出は表示開始時に、task-41 と同じ表示済み記録へ残す(積まれたまま出なかった分は残さない)。
+    // 中身と完了の口もこの時点で自分のものにする(待っている間に別の呼び出しが上書きしない)
+    if (typeof _markRivalryMatchDialoguesSeen === 'function') _markRivalryMatchDialoguesSeen(items);
+    _rivalryPopupQueue = [...items];
+    _rivalryPopupCallback = onAllDone || null;
+    _renderRivalryPopup();
+  };
+  _enqueuePopup(run, overShowShell ? { ignoreShowResultOverlay: true } : undefined);
+  return {
+    isShown: () => state === 'shown',
+    tryNow() {
+      if (state !== 'waiting') return state === 'shown';
+      if (_isPopupActive(overShowShell ? { ignoreShowResultOverlay: true } : undefined)) return false;
+      run();
+      return state === 'shown';
+    },
+    cancel() { if (state === 'waiting') state = 'cancelled'; },
+  };
 }
 
 // U3統一(2026-07-25): 因縁ポップアップの顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。
@@ -5862,18 +5894,11 @@ function renderMatchPreview() {
     const nextEl = box.querySelector('[data-match-next="true"]');
     if (nextEl) setTimeout(() => nextEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
     // 試合前モーダル: 宣戦布告 → 派閥の試合前の画面(派閥内序列戦・F08・F09)の順に per-match 表示
-    // (specs/match-flavor-popup-spec-v0.1.md §4.2)。「✨ 初対決」は「🎬 試合を観る」を押した後(App._runFirstMeetBeforeWatch)
-    const cMap = sp.confrontationMap;
-    const hasConfrontation = cMap && cMap[nextIdx] && !sp._shownConfrontations.has(nextIdx);    if (hasConfrontation) {
-      sp._shownConfrontations.add(nextIdx);
-      setTimeout(() => showRivalryPopups([cMap[nextIdx]], () => {
-        if (typeof App !== 'undefined' && App._runPreMatchFlavorForMatch) App._runPreMatchFlavorForMatch(nextIdx);
-      }), 400);
-    } else {
-      setTimeout(() => {
-        if (typeof App !== 'undefined' && App._runPreMatchFlavorForMatch) App._runPreMatchFlavorForMatch(nextIdx);
-      }, 400);
-    }
+    // (specs/match-flavor-popup-spec-v0.1.md §4.2.2)。どちらも試合一覧の殻の上に出す(App._runConfrontationForMatch)。
+    // 「✨ 初対決」は「🎬 試合を観る」を押した後(App._runFirstMeetBeforeWatch)
+    setTimeout(() => {
+      if (typeof App !== 'undefined' && App._runConfrontationForMatch) App._runConfrontationForMatch(nextIdx);
+    }, 400);
   }
 }
 // ── Show Result Renderer ────────────────────────────────
