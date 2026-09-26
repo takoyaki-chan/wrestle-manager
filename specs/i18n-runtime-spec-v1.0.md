@@ -860,7 +860,7 @@ Fable裁定により演出として残さず英訳する方針が確定してい
 ### 25-6. 範囲外の新規発見(P7-7bでは修正していない)
 
 - **✅解決(P7-8、2026-09-04)** — **`div.np-show-article`の生JAフォールバック記事**(`ui-render.js` `_npRenderPlayerShow`内、`App._NEWSPAPER_ARTICLES`のプールが空のときのフォールバック文字列組み立て)。数文からなる長文テンプレをt()もpn()も通さず直接組み立てており、technique名だけでなく地の文全体がJAのまま出る。P7-5(技名)より大きい別枠の作業(複数文のテンプレ台帳化)が要るため、P7-7bのスコープ外として記録のみ → **実コールサイトを追ったところ真因はフォールバックではなく本体側だった**(§24)
-- **`App._generateNewspaperTexts`のMath.random()非決定性**(P7-7aで指摘済み・据え置き継続。generateHypeと同族の乱数シード原則からの逸脱)
+- **`App._generateNewspaperTexts`のMath.random()非決定性**(P7-7aで指摘済み・据え置き継続。generateHypeと同族の乱数シード原則からの逸脱)→ **2026-09-26 K-1 第2段で解消**: `Engine.show.generateShowNewspaperTexts`(management.js)へ移し、専用の乱数系列(季・週・0x9E75)で選ぶ
 
 ## 26. Stage B P7-9 — 観戦画面(iframe)の地の文層(2026-09-04追加)
 
@@ -2656,7 +2656,7 @@ P7-31 §44-5-発見1が起票した「財務タブの明細ラベルが6箇所�
 |---|---|---|
 | A. rngで選んだ完成文の1テンプレ+差し込み値 | 業界ニュース約65種(`NEWS_HEADLINE_TEMPLATES`)・AI団体イベント各種・引退variant・follow-up記事 | **§14-3の追加フィールド方式**。`headlineTpl`/`headlineVars`(・`bodyTpl`/`bodyVars`)を完成文の隣に併記。表示側は`WM_I18N.t(tpl, vars)`で組み直す |
 | B. 季/週/選手ID/併記データだけに依存する決定的な純関数(乱数を消費しない) | `composeChampionChangeBody`・`composeUnifiedTitleArticle`・`composeHallOfFameRetirement`(新設 `composeNpcHallOfFame` を含む)・`_buildPpvSummitStory` | **`_recompose`方式**(§18-1のMVPレース自己検証パターンの発展形。ただし検証なしで直接呼び直せる — 素材が完成文ではなく生値なので、常に「今の言語で正しい」)。`story._recompose = { kind, ...元の引数 }` を併記し、表示側が同じ関数を`WM_I18N.t`で呼び直す |
-| C. `Math.random()`で選ぶ(§14-3が「表示時再生成が使えない」と特定した型と同じ) | 自団体興行結果の見出し/本文(`App._generateNewspaperTexts`。`App._NEWSPAPER_HEADLINES`/`_NEWSPAPER_ARTICLES`から`Math.random()`で選ぶ) | **kurodaText系の抽出ヘルパーを拡張**。新設 `kurodaTextParts(entry, d, dict)`(kuroda-text.js)が完成文の隣に`{tpl, vars}`(=`kurodaTemplateOf`の正規化結果)も返す。生成側(app.js)はA/Bと同じ追加フィールド方式でheadlineTpl/headlineVars等を併記するだけでよい |
+| C. `Math.random()`で選ぶ(§14-3が「表示時再生成が使えない」と特定した型と同じ) | 自団体興行結果の見出し/本文(`App._generateNewspaperTexts`。`App._NEWSPAPER_HEADLINES`/`_NEWSPAPER_ARTICLES`から`Math.random()`で選ぶ) | **kurodaText系の抽出ヘルパーを拡張**。新設 `kurodaTextParts(entry, d, dict)`(kuroda-text.js)が完成文の隣に`{tpl, vars}`(=`kurodaTemplateOf`の正規化結果)も返す。生成側(app.js)はA/Bと同じ追加フィールド方式でheadlineTpl/headlineVars等を併記するだけでよい。**2026-09-26 K-1 第2段**: 生成は `Engine.show.buildShowNewspaperData`/`generateShowNewspaperTexts`(management.js。実プレイとエンジンが共通で呼ぶ)へ移り、文選びは専用の乱数系列(季・週・0x9E75)。テンプレの表は app.js に置いたまま `Engine.show.registerNewspaperTextPools` で登録(この抽出器・台帳の場所は変わらない)。`kurodaTextParts` は `typeof` で見て、無い環境(Node の検査)では完成文だけ |
 
 系統Bの `_recompose` kindは5種: `championChangeBody`(王座交代の本文のみ) / `unifiedTitleArticle`(統一王座、headline+body) / `hofRetirement`(殿堂入り引退特別号、headline+body+subhead+situation+captionExtra) / `npcHallOfFame`(NPC殿堂入り、headline+body。generate()から抽出して新設した`Engine.newspaper.composeNpcHallOfFame(h, dict)`を使う) / `ppvSummitStory`(PPV頂上決戦、headline+body+situation。`summitData`に元のsrがそのまま永続しているので追加の引数保存が要らない)。
 
@@ -2667,7 +2667,7 @@ P7-31 §44-5-発見1が起票した「財務タブの明細ラベルが6箇所�
 表示側(ui-render.js)に3つの補助フィールドを導入した:
 
 - **`headlineLabelVars`/`bodyLabelVars`**(値が1語のJA成形ラベルで、値としても辞書を引き直す必要があるキー名の配列。§14-2の`_wmDictLabel`と同趣旨・`labelVars`は§16-1の先例と同名)。Varsには**rawのJA語**(勝ち越し/決着つかず/敗北・名勝負/好勝負/…)を積み、表示側の`_npMaterializeVars`が`_wmDictLabel(WM_I18N.t, raw)`で引き直す
-- **`headlineDerive`/`bodyDerive`**(派生値の再計算指示の配列。`{key, kind, ...}`)。`kind`は4種: `injuryLabel`(`injuryLabel(raw, dict)`を呼び直す)/ `formatFinish`(`Engine.formatFinish(finType, finMove, false, dict)`を呼び直す)/ `milestoneWins`(`WM_I18N.t('{wins}勝', {wins})`のネストしたテンプレを組み直す)/ `dictLabel`(`_wmDictLabel`の汎用版。rivalLabel等)
+- **`headlineDerive`/`bodyDerive`**(派生値の再計算指示の配列。`{key, kind, ...}`)。`kind`は5種: `injuryLabel`(`injuryLabel(raw, dict)`を呼び直す)/ `formatFinish`(`Engine.formatFinish(finType, finMove, false, dict)`を呼び直す)/ `milestoneWins`(`WM_I18N.t('{wins}勝', {wins})`のネストしたテンプレを組み直す)/ `dictLabel`(`_wmDictLabel`の汎用版。rivalLabel等)/ `tpl`(`WM_I18N.t(tpl, vars)`。テンプレから組んだ成形済みの値。自団体の興行結果の興行名「第{n}回 定期興行」— 2026-09-26 K-1 第2段で追加。`Engine.show.buildShowNewspaperData` が `subheadlineDerive`・見出し/本文の derive に載せる)
 - **`situationSuffixJa`**(「定期興行」「対抗戦」「挑戦状」「PPV GRAND FINAL」等の種別ラベル。`_wmNewsStamp`の第4引数と同じ語彙)。`story.situation`(完成文のスタンプ)の隣に併記し、表示側が号(wp)の`season`/`week`と組み合わせて`_wmNewsStamp(WM_I18N.t, wp.season, wp.week, suffixJa)`を呼び直す。スタンプの数字自体は号を跨いでも変わらない(号の季/週=そのバックナンバーの季/週)ので、記事ごとにseason/weekを複製する必要は無い
 - 系統Aのうち「NEWS_HEADLINE_TEMPLATES約65種共有」経路は**生成時点の言語で一部フィールドを解決済みのdata**(`_wmResolvePreformattedIndustryData`が`injuryType`/`round`/`stage`/`championWatch`等を導出)を持つため、Vars自体をそのまま持ち回れない。story側に**未加工の`_industryRawData`**(`ev.data`)を併記し、表示側が同じ`_wmResolvePreformattedIndustryData({type, characterId, data: raw}, WM_I18N.t)`を呼び直してからテンプレへ充填する(§8「render時点再構築」を表示点でも使う形)
 
@@ -2683,7 +2683,7 @@ P7-31 §44-5-発見1が起票した「財務タブの明細ラベルが6箇所�
 
 `_npResolveWpStories(wp)`が`wp.topStory`/`wp.subStories`をまとめて解決し、`_npRenderPage1`が1面描画(`_npFrontLegacy`/`_npFrontV3`両方)へ渡す前に1回だけ呼ぶ。特集ページ(`wp.pages[1]`、ジュニアトーナメント/ドラフト総括)を描く`_renderNewspaperExtraPage`も同じ`_npResolveStory`へ委譲するよう置き換えた(旧P7-30時代の専用インライン処理は廃止)。**バックナンバー(`newspaperArchive`)も同じ`_npRenderPage1`→`_npResolveWpStories`経路を通る**ので、新旧の号を区別する特別なコードは無い。
 
-自団体興行結果(`wp.playerShowData` = `state.currentNewspaper`)は記事ではなく専用の詳細カードを持つため、別関数`_npResolvePlayerShowData(psd)`で headline/article に加え、**独立フィールドとして直接読まれる`finishLabel`**(`_npRenderPlayerShow`が`.np-vs-finish`等3箇所で`d.finishLabel`を直読みする)も`finType`/`finMove`から再計算する。
+自団体興行結果(`wp.playerShowData` = `state.currentNewspaper`)は記事ではなく専用の詳細カードを持つため、別関数`_npResolvePlayerShowData(psd)`で headline/article に加え、**独立フィールドとして直接読まれる`finishLabel`**(`_npRenderPlayerShow`が`.np-vs-finish`等3箇所で`d.finishLabel`を直読みする)も`finType`/`finMove`から再計算する。2026-09-26(K-1 第2段)から、ダイジェスト(`allMatches[*]`)も生キー `finType`/`finMove` を併記し、`_npResolvePlayerShowData` が各行の `finishLabel` を組み直す(以前は生成時の言語のまま。headless の新聞に自団体の興行記事が載るようになって `newspaper-lang-switch` の EN で見えた)。
 
 ### 52-4. `draftRoundup`(業界紙のドラフト総評)は新聞generate()の外にも同型の穴があった
 

@@ -1,5 +1,42 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 K-1 第2段 — 表示・記録だけの差を統一する(E08・A06・T01・A03・A04。許容リスト 33 → 28)(Claude/Opus 5.5・worktree)
+
+裁定 K-1「興行後の処理を一本化する(A・段階的)」の移行計画 第2段。実プレイ(`App._finalizeShowImpl`)にだけあった記録を `Engine.show` の純関数へ移し、エンジン(`Engine.executeShow` = auto-sim)と両方が同じ関数を呼ぶ形にした。**auto-sim の数値と実プレイの数値は不変**(変わるのは記録と表示の欄)。詳細は `docs/fun-audit-v0.1/k1-parity-report.md` の「改訂 その6」と §8 第2段の「第2段の実施結果」。
+
+### 移したもの(項目ごとにコミット)
+| 項目 | 関数 | コミット |
+|---|---|---|
+| K1-E08 因縁決着エントリ(エンジン=lastShowNumber/実プレイ=宿怨の勝者ID) | `Engine.show.resolvedRivalryEntry` — 両方の欄を持つ | 3611a474 |
+| K1-A06 対戦成績の印(元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦)と元同僚初対面の記事 | `Engine.show.recordShowH2h`・`Engine.show.buildMatchMeta`(旧 `App._buildMatchMeta`。対抗戦・PPV の呼び出しも付け替え) | 23a5fe63 |
+| K1-T01 `_pendingReclaim` の null | `Engine.saveDoctor.repairProgressionState` が予約の無い状態に null の欄を作らない | 45d837ef |
+| K1-A03 季節の統計(興行数・決着数・季の最高評価) | `Engine.show.accumulateSeasonStats` | 82dc9cee |
+| K1-A04 興行結果の新聞データ(currentNewspaper)→ 週刊新聞の自団体の興行記事 | `Engine.show.buildShowNewspaperData`・`generateShowNewspaperTexts`(旧 `App._buildShowResultNewspaperData`・`_generateNewspaperTexts`)。テンプレの表は app.js に置いたまま `Engine.show.registerNewspaperTextPools` で登録(i18n の抽出・セリフ台帳が app.js のその場所を読むため)。文選びは Math.random → 専用の乱数系列(季・週・0x9E75) | 39b8d29f |
+
+### 数値が変わらないことの確認
+- 一時プローブ(auto-sim の差し込み口から毎週の G をハッシュ、`Engine.rng.create/_next` と Math.random を数える)で変更前後を比較。記録の欄(seasonStats・seasonHistory・新聞一式・業界ニュース・newsSeen・h2h の印・因縁の2欄・_pendingReclaim の null/欠落)を除いて、**40季 seed 42・seed 7919 とも毎週の状態(2,120週)・全乱数ストリームの引き数(ストリーム別も)・Math.random の回数が一致**
+- 意味指紋(40季 seed42): d8ef55c5(a5aff204・main 1d65470a とも)→ ce22d902(差は上の記録の欄だけ)
+- **A03 の注意**: 季の最高評価は年末のベストマッチ賞の自団体の候補になる(実プレイと同じ)。自団体の季の最高評価が全他団体以上の季は、表彰→団体の実績点→順位が動く。上の2本80季では0回(最も近い季で2点差)。厳密な不変が要るなら 82dc9cee を戻して第4段 4-A へ
+- A04 は Node の検査ではテンプレが登録されないので、週刊新聞に既定の見出し「定期興行開催」+サブ見出しで載る(乱数は引かない)
+
+### 表示で変わること
+- 実プレイの興行結果の新聞の文選びが seed 由来に(同じ興行は同じ見出し)。因縁の決着エントリに lastShowNumber が増える(読む箇所なし)
+- 言語切替後の新聞: 既定の見出しに Tpl、興行名に組み直し指示(derive kind `tpl`・ui-render.js `_npMaterializeVars`)、ダイジェストの決着文を生キーから組み直す(`_npResolvePlayerShowData`)。headless の新聞に自団体の興行記事が載るようになり、EN の `newspaper-lang-switch` 点火で見えた JA 露出7件 → 0件
+
+### テスト
+- 回帰ガード `test/k1-stage2-test.js`(新規・14節): 共通関数の中身と、app.js / management.js が同じ関数を呼んでいること。`test/bitter-prematch-test.js` の決着戦勝者IDの検査を共通関数に合わせた
+- `npm run test:k1:parity`: 項目ごとに消えたことを確認して外した。乱入(A14)・ラストラン(A09)・F09(A13)の週に残る新聞・季の最高評価の差は各項目の写り込みとして場所を足した。未登録0・消えた0
+- `node test/ja-golden.js`: 基準を取り直した。新聞以外の2,607行は1字も変わらず、差は新聞だけ(350号に自団体の興行記事が載り、他団体の興行記事が押し出された)
+- UI 走破1季 PASS(Issues 0)。点火 `newspaper-lang-switch`(JA/EN)・`newspaper-mvprace`・`newspaper-mvprace-legacy`・`chronicle`(EN)PASS
+- main(1d65470a 派閥の決着の効果ほか)取り込み後(8a15ad7a): `npm test` **309/309 PASS** / `npm run test:k1:parity` **PASS(登録28・未登録0・消えた0・握りつぶし0)** / `node test/ja-golden.js` 取り直した基準と完全一致 / `node test/auto-sim.js 40 42` ALL CLEAR・意味指紋 ce22d902(main は d8ef55c5。プローブで記録の欄を除いた毎週の状態・乱数・Math.random が main と一致)
+
+### 持ち越し(移していない)
+- **K1-A07 タッグの直近戦績**: 実プレイは対角4組(1試合で各選手の直近5戦を2枠使う)、エンジンと他団体は記録しない。表示だけ。選択肢 ①エンジンを実プレイに ②実プレイをエンジンに(タッグは入れない)③1試合1枠(A1↔B1・A2↔B2、タッグの印つき)。推奨③。裁定待ち
+- **K1-T02 宣戦布告の既読**: 画面の演出のクールダウン記録。エンジンへ移す対象ではない
+- **K1-T03 興行ログ**: 文字列→構造化イベントの置き換え・人気の増減の知らせ(X08。数値の丸見せになるので裁定)・executeShow が gameLog に積むか(第3段の finalize の戻り値で決める)・ja-golden の採り方。第3段と同時に
+- **K1-C04 序章 / K1-C05 財務履歴と季の収支合計**: closeShowResult の週送り側にある → 第5段
+- 第3段へ残る差(許容リスト28件)の一覧は報告書 §8 第2段の表
+
 ## 2026-09-26 派閥抗争の先取100の決着の効果を仕様どおりに — 返却値で更新する純関数へ・集客の持ち越しと F04/F05 ×1.5 を読む処理(Claude/Opus 5.5・worktree)
 
 Keisuke 裁定(2026-09-26)「派閥の決着の効果は仕様どおり効かせる」。K-1 第4段で実プレイにも派閥ポイントが貯まるようになり、先取100の決着がこれから実際に起きるため。仕様の正は `specs/faction-rivalry-points-spec-v0.1.md` §5(実装メモ §5.5 を新設)。

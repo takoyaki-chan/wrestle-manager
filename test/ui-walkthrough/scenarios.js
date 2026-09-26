@@ -722,11 +722,12 @@ module.exports = {
   },
 
   // ── P7-58: 新聞1〜3面の言語切替点火 ──
-  // headless-simはapp.js(UI層)を読み込まないため、自団体興行結果(playerShowTitle/Normal。
-  // App._generateNewspaperTexts が Math.random() で選ぶ経路)は自然生成のfixtureには
-  // 一度も現れない。engineerでその形の記事(headlineTpl/headlineVars・bodyTpl/bodyVars・
+  // headless-simはapp.js(UI層)を読み込まないため、見出し・本文のテンプレ(App._NEWSPAPER_HEADLINES/
+  // ARTICLES)を使った自団体興行結果の記事は自然生成のfixtureには現れない(K-1 第2段 2026-09-26 から、
+  // エンジンの Engine.show.buildShowNewspaperData が組む記事は自然に載るが、テンプレが無いので既定の見出し
+  // 「定期興行開催」+サブ見出しの形)。engineerでテンプレ由来の形の記事(headlineTpl/headlineVars・bodyTpl/bodyVars・
   // bodyDerive[finishLabel]付き)を最新号と直近バックナンバー1件へ直接差し込み、
-  // 自然発生する業界ニュース各型(生成時にheadlineTpl/bodyTplを併記済み)と合わせて
+  // 自然発生する業界ニュース各型・既定の見出しの自団体の記事(生成時にheadlineTpl/bodyTplを併記済み)と合わせて
   // 「JAで発行された号をENで開く」を検査する。
   'newspaper-lang-switch': {
     description: '新聞1面の言語切替点火(P7-58): JAで進めた業界ニュース各種の自然発生セーブに、Math.random()経由(App._generateNewspaperTexts)の自団体興行結果1件をengineerで最新号+バックナンバー1件へ注入し、実UIでEN表示に切り替えて最新号+バックナンバー3件を巡回、日本語露出0(jaExposureScreens)を検査する。JAでは注入した記事の見出し/本文が1バイト不変で出ることを確認する',

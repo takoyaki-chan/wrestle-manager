@@ -37,6 +37,9 @@
 >   - [B] `factionRivalryPoints.*.naturalCalmStreak`(lastrun。両方で違う)→ K1-A09 の波及(派閥の抗争記録が fixture にできるようになって見えた)
 >   - [A][B] `rivalries.*.lastShowNumber`(factions。エンジンだけ)→ K1-E08(因縁決着エントリの記録欄。E08 はシナリオを title-defense・rivalry に限っている)
 >   - 消えた K1-A02 → 上のとおり、今の main では再び出る
+>
+> **改訂 2026-09-26 その6(第2段 — 表示・記録だけの差の統一)**
+> E08・A06・T01・A03・A04 を `Engine.show` の共通の関数(と進行の修復)で両経路そろえ、許容リストから外した(**33 → 28**)。auto-sim の数値は不変(記録の欄を除いた毎週の状態・全乱数ストリームの引き数・Math.random の回数が 40季 seed42/7919 で一致)。A03 だけは「年末のベストマッチ賞」を通って数値が動きうる道がある(この2本では0回)。A07・T02・T03 は持ち越し、C04・C05 は closeShowResult の後半にあるので第5段。実施結果と第3段へ残る差は §8 第2段の「第2段の実施結果」。
 
 ---
 
@@ -197,10 +200,10 @@ node test/k1-parity/run.js --scenario injury    # 1本だけ(「消えた既知�
 |---|---|---|---|---|
 | K1-A01 | キャリア最高評価(careerBestMQ)の更新と信頼ボーナス(+1.2) | 実プレイ(エンジンのコメントも「app.js で更新」と明記) | **中**。auto-sim では自団体選手の careerBestMQ が興行で伸びない。tickWeek 後の信頼が最大1.8違う。殿堂・引退の要約・関係性の「自己ベスト」判定にも波及する | app.js:8890-8897 / management.js:15193 / 全15本で appOnly |
 | K1-A02 | ブレークスルー・敗戦スランプ・スランプとモチベ喪失のモメンタム | 実プレイ(成長イベント v1.8) | **中**。auto-sim の成長曲線には、ブレークスルーの急伸・敗戦スランプ・試合後の回復の動きが入っていない | app.js:8829-8941 / 乱数 0xB818・0x5C6・0x5C7・0x5C8 は実プレイだけが引く |
-| K1-A03 | 季節統計(seasonStats: 興行数・勝敗・最高評価) | 実プレイ | 表示。auto-sim では0のまま。序章ハイライト(最高評価50/70/80)や季末の集計が読む | app.js:8809-8827 |
-| K1-A04 | 興行結果の新聞データ(currentNewspaper)→ 週刊新聞の興行記事 | 実プレイ | 表示。auto-sim の新聞には自団体の興行記事が載らない(一面の選ばれ方の計測に響く) | app.js:9355-9363 |
-| K1-A06 | 対戦成績の履歴メタ(元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦)と、元同僚初対面の記事 | 実プレイ(Phase 2-A) | 表示 | app.js:8957-8975, 11620-11644 / management.js:15445 は meta を渡さない |
-| K1-A07 | タッグ試合の直近戦績(recentMatches・対角4ペア) | **要確認**(エンジンのコメントは「タッグはスキップ」) | 表示(直近5戦の表示) | app.js:8979-8995 / management.js:15450-15455 |
+| K1-A03 | 季節統計(seasonStats: 興行数・勝敗・最高評価)<br>**→ 第2段で解消(2026-09-26・82dc9cee)**。両経路が `Engine.show.accumulateSeasonStats` を通す。季の最高評価はベストマッチ賞の自団体の候補になる(実プレイと同じ。§8 第2段) | 実プレイ | 表示。auto-sim では0のまま。序章ハイライト(最高評価50/70/80)や季末の集計が読む | app.js:8809-8827 |
+| K1-A04 | 興行結果の新聞データ(currentNewspaper)→ 週刊新聞の興行記事<br>**→ 第2段で解消(2026-09-26・39b8d29f)**。両経路が `Engine.show.buildShowNewspaperData` を通す(テンプレは app.js が登録) | 実プレイ | 表示。auto-sim の新聞には自団体の興行記事が載らない(一面の選ばれ方の計測に響く) | app.js:9355-9363 |
+| K1-A06 | 対戦成績の履歴メタ(元同僚の初対面・派閥抗争中・ロッカー荒廃中・奪還戦)と、元同僚初対面の記事<br>**→ 第2段で解消(2026-09-26・23a5fe63)**。両経路が `Engine.show.recordShowH2h`(印は `Engine.show.buildMatchMeta`)を通す | 実プレイ(Phase 2-A) | 表示 | app.js:8957-8975, 11620-11644 / management.js:15445 は meta を渡さない |
+| K1-A07 | タッグ試合の直近戦績(recentMatches・対角4ペア)<br>**→ 第2段では持ち越し**(どちらにそろえるかの選択肢は §8 第2段) | **要確認**(エンジンのコメントは「タッグはスキップ」) | 表示(直近5戦の表示) | app.js:8979-8995 / management.js:15450-15455 |
 | K1-A09 | ラストラン出場後の即引退(引退記録・年代記・関係値の凍結と整理・信頼) | 実プレイ(「4週待ちバグ修正」) | **中**。auto-sim では、ラストランの選手が季末のまとめ判定まで試合を続ける | app.js:9272-9344, 10867-10970 / management.js:17947-17969(季末だけ) |
 | K1-A10 | ドーム興行の経歴(domeMain)・ドーム回数・初ドームの節目 | 実プレイ(団体人気リバランス v1.1 §4/§5) | 小〜中。「ドームは年1回」の数え方が auto-sim では効かない | app.js:9046-9083, 13089-13107 |
 | K1-A11 | メディア密着取材の消化(人気+5・信頼・団体人気・関係値) | 実プレイ(v2.0 Phase1-6) | 小〜中。auto-sim では密着取材が終わらない。実プレイ側は団体人気の加算に clamp が無い(監査 §8 #18) | app.js:9250-9270 |
@@ -211,8 +214,8 @@ node test/k1-parity/run.js --scenario injury    # 1本だけ(「消えた既知�
 | K1-C01 | 王座の設立(titleEstablished) | 実プレイ(判定式は Engine.title.checkTitleEstablishment にあるが、呼ぶのは画面だけ) | **大**。auto-sim では王座が設立されず、王座戦が0になる | app.js:15277-15288 |
 | K1-C02 | 契約枠の拡大(rosterCap と通知) | 実プレイ | 中 | app.js:15162-15218 |
 | K1-C03 | サバイバル(赤字地獄ゲージ・卒業・直近4週の収支) | 実プレイ | 中。auto-sim の資金繰りの判定と別物 | app.js:1885-1915, 15143-15155 |
-| K1-C04 | 序章ハイライト | 実プレイ | 表示 | app.js:15223-15274 |
-| K1-C05 | 財務履歴と季節の収支合計(financeHistory / fundsHistory / seasonStats.total*) | 実プレイ | 表示(財務タブ) | app.js:11041-11050, 11663-11679 |
+| K1-C04 | 序章ハイライト<br>(第2段で確認: closeShowResult・processWeek などの週送り側 `App.checkPrologueHighlights` にある → **第5段**) | 実プレイ | 表示 | app.js:15223-15274 |
+| K1-C05 | 財務履歴と季節の収支合計(financeHistory / fundsHistory / seasonStats.total*)<br>(第2段で確認: closeShowResult の tickWeek の直後にある → **第5段**) | 実プレイ | 表示(財務タブ) | app.js:11041-11050, 11663-11679 |
 | K1-C07 | 節目(マイルストーン)のバフの消化(週数・興行数の減算、weekly_funds の資金) | 実プレイ | 小〜中。バフの付与も画面側だけなので、auto-sim の世界にバフは存在しない | app.js:11087-11090, 13189-13244 |
 
 ### 4.3 両方にあるが中身が違う
@@ -221,7 +224,7 @@ node test/k1-parity/run.js --scenario injury    # 1本だけ(「消えた既知�
 |---|---|---|---|---|
 | K1-E02 | 試合成長の式<br>**→ 第4段 4-B-4 で解消(2026-09-26・f456410c)**。両経路が `Engine.show.applyMatchGrowth` を通す(タッグの相手は2人の平均=裁定) | エンジン(git 8a70414f と v2.0 のコメント)。タッグの相手OVRは**裁定** | **大**。実プレイには年齢倍率・関係性倍率が無い。veteran シナリオでは、27〜33歳の出場者はエンジン側の伸びが0(倍率0)で、実プレイは +1(例: 31歳 pw 44→45、27歳 te 65→66)。19〜20歳(×1.15)や険悪ゾーンの選手(×1.2)は逆にエンジンの方が伸びる(例: te 65→67 対 65→66)。タッグの相手OVRは、エンジンが2人の平均、実プレイが高い方 | management.js:15294-15420 / app.js:8715-8805 |
 | K1-E06 | 歴代最高評価の記録(シングル/タッグ別)と記録更新の記事<br>**→ 第1段で解消(2026-09-26・53926df8)**。mq-record で両経路の記録・記事3本・経歴の刻印2件が一致 | エンジン(MQ再設計 P4 §5.4「記録シングル・タッグ分離」) | 表示。実プレイは matchType と勝者を渡さないので、タッグの評価をシングルの記録として比べる(タッグ記録は更新されない)。記事(mqAllTimeRecord / mqTagRecord)は勝者不明で出ない。mq-record シナリオでは、エンジンだけがタッグ記録35を刻み、記事2本を積んだ | management.js:14866-14894 / app.js:8146-8159 |
-| K1-E08 | 因縁決着エントリの記録欄 | どちらでもよい(両方持たせる) | 表示。エンジンは lastShowNumber(誰も読まない)を書き、実プレイは宿怨の勝者ID(試合前演出が読む)を書く | management.js:14920-14932 / app.js:8192-8204, 132 |
+| K1-E08 | 因縁決着エントリの記録欄<br>**→ 第2段で解消(2026-09-26・3611a474)**。両経路が `Engine.show.resolvedRivalryEntry` で作り、両方の欄を持つ | どちらでもよい(両方持たせる) | 表示。エンジンは lastShowNumber(誰も読まない)を書き、実プレイは宿怨の勝者ID(試合前演出が読む)を書く | management.js:14920-14932 / app.js:8192-8204, 132 |
 | K1-F01 | タッグの人気・連敗・勝敗の付け方<br>**→ 第4段 4-B-1 で解消(2026-09-26・3121fcae)**。両経路が `Engine.show.applyMatchPopularity` を通す。タッグにもメイン低評価の人気減・ヒール適性の加点(裁定) | エンジンの式。実プレイは**バグ** | **中**。実プレイは applyMQPopularity の left と right に同じ選手を入れて呼ぶので、どちらが勝っても勝者判定になる。タッグの敗者も勝利ボーナスの人気を得て、連敗がリセットされ、直近の結果が「勝ち」になる。tag-mixed では敗者の人気がエンジン 22.2 対 実プレイ 30.0(連敗 7 対 0)。一方、エンジンのタッグ式には、メイン低評価の人気減とヒール適性の加点が無い(**裁定**) | management.js:14990-15010 / app.js:8258-8271 |
 
 ### 4.4 実プレイだけの副作用(結果画面の先読み tickWeek)
@@ -234,9 +237,9 @@ node test/k1-parity/run.js --scenario injury    # 1本だけ(「消えた既知�
 
 | ID | 内容 | 根拠 |
 |---|---|---|
-| K1-T01 | `_pendingReclaim` の null 正規化(エンジンだけ saveDoctor の戻り値を毎回採用) | management.js:14588-14590, 275-298 |
-| K1-T02 | 宣戦布告ポップアップの既読(`_rivalryPopupSeen`) | app.js(興行準備〜試合前の演出) |
-| K1-T03 | 興行ログの形式。エンジンは文字列イベントを戻り値で返し、auto-sim は捨てる。実プレイは構造化イベント(i18n対応)を gameLog に積む。実プレイは試合ごとの人気の増減イベント(メイン低評価・連敗)を捨てている | management.js:15649 / app.js:9248 |
+| K1-T01 | `_pendingReclaim` の null 正規化(エンジンだけ saveDoctor の戻り値を毎回採用)<br>**→ 第2段で解消(2026-09-26・45d837ef)**。`repairProgressionState` が予約の無い状態に null の欄を作らない | management.js:14588-14590, 275-298 |
+| K1-T02 | 宣戦布告ポップアップの既読(`_rivalryPopupSeen`)<br>**→ 第2段では持ち越し**(画面の演出のクールダウン記録。エンジンへ移す対象ではない。§8 第2段) | app.js(興行準備〜試合前の演出) |
+| K1-T03 | 興行ログの形式。エンジンは文字列イベントを戻り値で返し、auto-sim は捨てる。実プレイは構造化イベント(i18n対応)を gameLog に積む。実プレイは試合ごとの人気の増減イベント(メイン低評価・連敗)を捨てている<br>**→ 第2段では持ち越し**(範囲と要る裁定は §8 第2段) | management.js:15649 / app.js:9248 |
 | K1-C06 | 表示キューの消化と週送りの準備(Glimpse・週ログ・大ニュース通知・カードの初期化・weekPhase) | app.js:11053-11298 |
 
 ### 4.6 tickWeek を通った波及・乱数ずれ(B)
@@ -402,6 +405,59 @@ B(tickWeek 後)の差が、A のどの差から来ているかを確かめた。
   - K1-E08(決着エントリは両方の欄を持つ)、K1-T01〜T03(ログは実プレイの構造化イベントに統一)。
 - 移すときは、画面側のコードを純関数としてエンジンへ移し、両経路が同じ関数を呼ぶ形にする。
 - ここまでで、残る差は数値に効くものだけになる。
+
+**第2段の実施結果(2026-09-26)** — 5件を解消。許容リスト **33 → 28**(E08・A06・T01・A03・A04 を外した)
+
+| 項目 | 関数(両経路が呼ぶ) | 呼び出し元 | コミット |
+|---|---|---|---|
+| K1-E08 因縁決着エントリ | `Engine.show.resolvedRivalryEntry(prevEntry, resolution, state, winnerId)` — lastShowNumber と宿怨の勝者IDの両方 | executeShow の決着判定 / `_finalizeShowImpl` の保留ペアの決着 | 3611a474 |
+| K1-A06 対戦成績の印と記事 | `Engine.show.recordShowH2h(state, validMatches, results)`・`Engine.show.buildMatchMeta(state, idA, idB, isReclaim)`(旧 `App._buildMatchMeta` を移した) | executeShow(`{ ...s, roster }` を渡す)/ `_finalizeShowImpl`。印だけは対抗戦(`finalizeWar`)・PPV も `Engine.show.buildMatchMeta` に付け替え | 23a5fe63 |
+| K1-T01 `_pendingReclaim` | `Engine.saveDoctor.repairProgressionState` が予約の無い状態に null の欄を作らない(読む側はどこも真偽で見る) | executeShow の冒頭の修復 / 実プレイの `App.repairProgressionState`・ロード時の修復 | 45d837ef |
+| K1-A03 季節の統計 | `Engine.show.accumulateSeasonStats(seasonStats, validMatches, results, roster)` | executeShow(成長の直後。`seasonStats` がある状態だけ)/ `_finalizeShowImpl` | 82dc9cee |
+| K1-A04 興行結果の新聞データ | `Engine.show.buildShowNewspaperData(state, { titleOutcomes, injuryResults, dict })`・`Engine.show.generateShowNewspaperTexts(d, rng, dict)`(旧 `App._buildShowResultNewspaperData` / `_generateNewspaperTexts` を移した)。テンプレの表は app.js に置いたまま `Engine.show.registerNewspaperTextPools` で登録 | executeShow の最後(王座戦の結果 `titleMatchOutcomes` もエンジンで控えるようにした)/ `_finalizeShowImpl` の最後 | 39b8d29f |
+
+**auto-sim の数値(不変の確認)** — プローブ(一時スクリプト。auto-sim の差し込み口 `__WM_AUTOSIM_HOOKS` から毎週の G をハッシュし、`Engine.rng.create/_next` と Math.random を数える)で、変更前と変更後を同じ seed で比べた。
+
+- 除いた欄(新しく持つ記録と、その写し): `seasonStats`・`seasonHistory`(季末の seasonStats の写し)・`currentNewspaper`・`weeklyNewspaper`・`newspaperArchive`・`_industryNewsEvents`・`newsSeen`・h2h の履歴の印(bt/fc/lc/rc)・因縁エントリの `bitterResolutionWinnerId`/`lastShowNumber`・`_pendingReclaim` の null と欠落の違い
+- **40季 seed 42・seed 7919 とも、毎週の状態ハッシュ(2,120週)・最終状態・全乱数ストリームの引き数(seed42: 6,618,788回 / seed7919: 6,631,684回。ストリーム別も全一致)・Math.random の回数(5,416 / 5,309)が一致**
+- 新しく持つ欄を含めた auto-sim の意味指紋(`Semantic fingerprint`、40季 seed42)は a5aff204 の d8ef55c5 → E08+A06 cae31b16 → T01 fe9e84be → A03 6c82b161 → A04 ce22d902(差は上の欄だけ)
+- **A03 の注意(数値が動きうる道)**: 季の最高評価は年末のベストマッチ賞(`Engine.awards.selectBestMatch`)の自団体の候補になる(実プレイと同じ)。自団体の季の最高評価が全他団体の最高以上になった季は、表彰 → 団体の実績点(`Engine.achievement`、ベストマッチ賞5点)→ 団体順位が動く。上の2本80季では0回(最も近い季で2点差・seed7919 は最も近くて13点差)。以前の auto-sim は自団体の最高評価が常に0で、この賞を争っていなかった。**厳密な不変が要るなら 82dc9cee を戻して第4段 4-A に回す**
+- A04 は Node の検査(auto-sim・headless・ja-golden)ではテンプレが登録されないので、見出し・本文は空で「定期興行開催」(既定の見出し)+サブ見出しで週刊新聞に載る。新しい乱数系列(0x9E75)は引かれない(テンプレが無いので文選びをしない)
+
+**実プレイで変わること(表示・記録だけ)**
+
+- 興行結果の新聞の見出し・本文の文選びが `Math.random` → 専用の乱数系列(季・週・0x9E75)。同じ興行は同じ見出しになる(ロードし直しても同じ)。数値には効かない
+- 因縁の決着エントリに `lastShowNumber` が増える(誰も読まない)。数値の変化なし
+- 言語を切り替えたあとの新聞: ダイジェストの決着文(`allMatches[*].finishLabel`)を生キー finType/finMove から組み直す(以前は生成時の言語のまま)。興行名を組み直す指示(derive kind `tpl`)を併記。headless の新聞に自団体の興行記事が載るようになり、EN の新聞点火(`newspaper-lang-switch`)で JA 露出7件として見えた(既定の見出し・サブ見出しの興行名・ダイジェストの決着文4件)。この3つで0件
+
+**差分テストの許容リスト**
+
+- 外した: K1-E08・K1-A06・K1-T01・K1-A03・K1-A04(33 → 28)
+- 既存項目に場所を足した(新しく両経路で作るようになった記録へ、上流の差がそのまま写るもの): K1-A14 に `seasonStats.*`・`currentNewspaper`(乱入で別物になった試合結果)、K1-A09 に `currentNewspaper`・`weeklyNewspaper`(実プレイは引退を済ませた状態で新聞データを組むので、次回展望から引退者が外れる)、K1-A13 に `weeklyNewspaper`(実プレイの号だけに F09 の決着記事)
+- 照合: 未登録0・向きの食い違い0・消えた0・実行エラー0・握りつぶし0
+
+**ja-golden**: 基準を取り直した。新聞以外の2,607行は1字も変わらず、差は新聞だけ(350号に自団体の興行記事「定期興行開催」が載り、優先度の低い他団体の興行記事が押し出された。採った号の数 605 → 607)。
+
+**持ち越し(第2段では移していない)**
+
+- **K1-A07 タッグの直近戦績**: 実プレイは対角4組を記録するので、タッグ1試合で各選手の直近5戦の枠を2つ使う(相手2人ぶん)。エンジン(と他団体の週次興行)はタッグを記録しない。読むのは選手ポップアップの「直近」の1行だけ(数値には効かない)。選択肢: ①エンジンを実プレイに合わせる(対角4組・1試合で2枠)/ ②実プレイをエンジンに合わせる(タッグは直近5戦に入れない。他団体と同じ)/ ③1試合1枠にする(相手はタッグの人気と同じ A1↔B1・A2↔B2 の組。`{ tag: true }` を付けて表示で「(タッグ)」と出す)。推奨は③(1試合が2枠を食わず、人気の組と同じ相手)。裁定待ち
+- **K1-T02 宣戦布告ポップアップの既読(`_rivalryPopupSeen`)**: 興行準備〜結果画面の因縁の台詞・宣戦布告を同じ組に何度も出さないための画面のクールダウン記録(ui-common.js `_getRivalryPopupSeen`・app.js の宿怨の再燃)。エンジンが持つ情報ではないので移さない。許容リストでは「画面側の状態」として残すのが妥当(第3段で finalize を切り出しても残る)
+- **K1-T03 興行ログの形式**: 統一には次が要る。①エンジンの文字列イベント(約12種)を実プレイの構造化イベント(`venue_heat_crowd`・`show_rating_org_pop_update`・`rivalry_resolution`・`heat_level_changed`・`injury_retirement`・`sudden_departure`・`unified_title_result` ほか)に置き換える、②エンジンだけにある人気の増減の知らせ(メイン低評価・連敗の節目 `popEvents`。§7 X08)を実プレイのログにも出すか捨てるか(**裁定**。「人気−3」のような数値の丸見せになる)、③ executeShow が `gameLog` に積むか(今は戻り値で返すだけ。実プレイは `_finalizeShowImpl` が積む)=第3段の finalize の戻り値の形で決める、④ ja-golden(executeShow の events を文字列で採っている)を `gameLogEntryText` で文にして採るように直す。第3段の finalize の切り出しと同時にやるのが自然
+- **K1-C04 序章ハイライト / K1-C05 財務履歴と季の収支合計**: どちらも興行後の処理(`_finalizeShowImpl`)ではなく、closeShowResult の週送り側(C04 は `App.checkPrologueHighlights` を closeShowResult・processWeek などが呼ぶ。C05 は closeShowResult の tickWeek の直後)。第5段(closeShowResult の後半を tickWeek へ)の対象として触っていない
+
+**第3段(`Engine.show.finalize` の切り出し)に向けて残る差(許容リスト28件)**
+
+| 種類 | 項目 | 第3段での扱いの見込み |
+|---|---|---|
+| 実プレイの finalize だけにある処理(数値) | A01 最高評価と信頼ボーナス / A02 ブレークスルー・スランプ / A09 ラストランの即引退 / A10 ドームの経歴 / A11 密着取材 / A12 F07 / A13 F09 の決着 / A14 乱入 / A16 引退者の関係値・因縁の整理 | 第4段 4-A(auto-sim の数値が動く)。finalize の中では「実プレイの追加処理」として当面残す |
+| 画面の段取り | T04 怪我引退の演出データの取り出し / A01B(A01 の持ち出し) | T04 は finalize の戻り値に演出データを載せれば消える。A01B は A01 と一緒に消える |
+| ログ・画面の状態 | T03 興行ログ / T02 宣戦布告の既読 | 上の持ち越しのとおり |
+| 表示(未決) | A07 タッグの直近戦績 | 裁定しだい |
+| closeShowResult の後半(C) | C01 王座設立 / C02 契約枠 / C03 サバイバル / C04 序章 / C05 財務履歴 / C06 表示キュー / C07 節目のバフ | 第5段 |
+| 波及(B) | A14B / B01〜B06 | 上流が消えれば消える |
+
+- ハーネスに出ないが finalize の切り出しで揃える必要のある違い: 集客の F08 印(§7 X04。実プレイだけが `isF08Match` を渡す)、試合の関係値の文脈(実プレイだけが `isCrossOrg`・`isChallengeShowMatch` を渡す。通常興行では同じ値)、統一王座の防衛戦の清算の引数(§7 X06)、MVP 用の大試合の記録(§7 X07、実プレイだけ)、超満員ドームの節目(§7 X10)、奪還挑戦・直訴・B3 の清算(実プレイだけ)
+- 両経路で中身は同じだが別々に書いてあるもの(共通化の候補): 王座戦の結果(`titleMatchOutcomes` も含めて同じ形になった)、集客・★・会場の熱、MQ の確定、歴代最高評価の記録、因縁の記録と決着判定、怪我と引退、試合の関係値と興行の文脈、F02 の火種と決着、matchupLog・tagExp、開眼、突然の退団
 
 ### 第3段: 共通の純関数を切り出す(数値不変を条件にする)
 
