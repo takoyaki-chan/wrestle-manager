@@ -8217,8 +8217,10 @@ const App = {
         // 両リーダー間 rivalry を +30〜40 の大幅ブースト（通常試合 +5〜10 の 4 倍程度）
         // → リーダー同士の因縁が強烈に深まり、次の F02/F03 への発展を加速
         const rivalryBoost = 30 + Math.floor(Engine.rng.float(f08Rng) * 11);
-        const keyAB = `${d.leaderAId}|${d.leaderBId}`;
-        const keyBA = `${d.leaderBId}|${d.leaderAId}`;
+        // 関係値のキーは方向つきの `a>b`(Engine.relationships._key)。2026-09-26 まで `a|b` で引いていて
+        // 一度も効いていなかった(点火 faction-f08 で発見。Keisuke 裁定「直す」)。両方向に同じ量を足す
+        const keyAB = Engine.relationships._key(d.leaderAId, d.leaderBId);
+        const keyBA = Engine.relationships._key(d.leaderBId, d.leaderAId);
         const rels = { ...(s.relationships || {}) };
         if (rels[keyAB] && rels[keyBA]) {
           const clamp = (v) => Math.max(-100, Math.min(100, v));

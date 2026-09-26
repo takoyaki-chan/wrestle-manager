@@ -591,7 +591,7 @@ function _assertCommon1(probe, lang, steps) {
 }
 
 // F08 直接対決をメインに: 次の興行の先頭に両リーダーが組まれ(_f08Locked)、試合後に敗れた派閥の末端の
-// 信頼 −2〜4(感度つき)と試合後の画面(fevtF08PostOverlay)。方針は興行後に消える
+// 信頼 −2〜4(感度つき)・両リーダーの因縁 +30〜40(両方向)と試合後の画面(fevtF08PostOverlay)。方針は興行後に消える
 function _assertF08(probe, lang, steps) {
   const fails = [];
   const values = _stepValues(steps);
@@ -630,8 +630,17 @@ function _assertF08(probe, lang, steps) {
   }
   const hk = (x, y) => `${x}>${y}`;
   console.log(`F08: 対立度 ${_fmt(pre.hostility[hk(d.factionAId, d.factionBId)])}/${_fmt(pre.hostility[hk(d.factionBId, d.factionAId)])} → ${_fmt(post.hostility[hk(d.factionAId, d.factionBId)])}/${_fmt(post.hostility[hk(d.factionBId, d.factionAId)])}`);
-  if (pre.f08Rivalry && post.f08Rivalry) {
-    console.log(`F08: 両リーダーの因縁 ${JSON.stringify(pre.f08Rivalry.map(_fmt))}→${JSON.stringify(post.f08Rivalry.map(_fmt))}`);
+  // 両リーダーの因縁(rivalry)は両方向とも +30〜40(F08 の清算。2026-09-26 まで関係値を `a|b` で引いていて効いていなかった)。
+  // 試合そのものの関係値の変化と、試合後の画面の「敗者リーダー→勝者リーダー +8〜12」も同じ清算の窓に入るので、
+  // 下限の +30 を両方向で見る(修正前の seed42 は +11.2 / +25.0 だった)
+  if (!pre.f08Rivalry || !post.f08Rivalry || pre.f08Rivalry.some(v => v == null) || post.f08Rivalry.some(v => v == null)) {
+    fails.push('両リーダーの因縁(関係値 a>b / b>a)が読めない');
+  } else {
+    const deltas = post.f08Rivalry.map((v, i) => v - pre.f08Rivalry[i]);
+    console.log(`F08: 両リーダーの因縁 ${JSON.stringify(pre.f08Rivalry.map(_fmt))}→${JSON.stringify(post.f08Rivalry.map(_fmt))}(${deltas.map(v => (v >= 0 ? '+' : '') + _fmt(v)).join(' / ')})`);
+    deltas.forEach((v, i) => {
+      if (post.f08Rivalry[i] < 100 && v < 30) fails.push(`両リーダーの因縁(${i === 0 ? 'A→B' : 'B→A'})が +${_fmt(v)} しか深まっていない(F08 の +30〜40 が効いていない)`);
+    });
   }
   if (!values.some(v => v.shown && v.shown.f08Post)) fails.push('F08 の試合後の画面(fevtF08PostOverlay)が出ていない');
   return fails;

@@ -15,7 +15,20 @@
 ### 検証(1)
 - 回帰テスト `test/post-match-flavor-over-show-shell-test.js`(新規): ui-common.js の待ち行列まわりと app.js の試合後の流れを本物のまま偽の DOM・偽の時計で動かす。殻だけが開いている→すぐ出る・中身は敗者の一言(減彩)・1.8秒で閉じ次へ1回・警告なし/汎用の列に止まった「初対決」がいても出る/OK の二度押し+タイマーでも1回/殻以外の画面が開いている→保険1回・取り下げた一言は後から出ない/タッグ・引き分けは出ない。**変更前のコードでは1つ目で失敗**(殻の後ろに積まれる)。`test/post-match-flavor-safety-net-test.js` は新しい形(汎用の列を待たない・保険が取り下げる)に合わせた
 - 点火 `incoming-challenge-watch` PASS(警告0・敗者の心 3回: 3試合とも)/ `b3-challenge-watch` PASS(敗者の心 1回・既知扱いは B3 のゲストの NaN だけ)
-- `npm test` 314/314 PASS・`node test/ui-baseline-guard-test.js` ok
+- `npm test` 314/314 PASS・`node test/ui-baseline-guard-test.js` ok・UI 走破1本 PASS(1季・345操作・Issues 0・既知扱いの警告なし)
+
+### 2. F08 の直接対決の両リーダーの因縁を効かせる(裁定: 直す。変わる数値はこれだけ)
+- `App._finalizeHookFactionBookings` の F08 の清算が、両リーダーの関係値を `${a}|${b}` のキーで引いていた(本物は方向つきの `a>b`)ため、「両リーダー間 rivalry +30〜40」が一度も効いていなかった。`Engine.relationships._key(a, b)` / `_key(b, a)` にして**両方向に同じ量**を足す(コードの意図どおり。specs の §9.8 の表には書かれていなかったので書き足した)。足す量 `30 + floor(乱数×11)` と乱数の引き方(0xFA88 の3つ目、引き分けなら1つ目)は変えていない(以前も引いて捨てていた)
+- **`a|b` 型の引き間違いの棚卸し**(src 全体の `|` を区切りにしたキーと、関係値・因縁・対立度・派閥ポイントの表を引く箇所を全部): 引き間違いは **この1件だけ**。ほかの `|` のキーは、書く側と読む側が同じ関数で作る自前の表・重複除けで、形はそろっている — factions.js `_sortedPairKey`(F06/F08/F02④ のクールダウンのキー・`factionReconciliationStreak`・`factionEndlessStreak`・`f02MediationWatches`/`factionPendingIgnite` の突き合わせ。`checkF02EndlessCondition` の `split('|')` も同じ形)/ relationships.js 5739(第三者の証言のペアの重複除け。関係値は `a>b` で引いている)/ ui-render.js 14990(相関図の抗争の破線の重複除け。対立度は `a>b`)/ management.js 9167・33349、app.js 8748・9242、relationships.js 2854、ui-common.js 20052(重複除け・署名)。関係値(`relationships`)を `|`・`-`・`getRivalryKey`・`_pairKey` で引く箇所はほかに無い。派閥ポイントは `_pairKey`(`a-b`)で書く側・読む側(app.js 9071 を含む)がそろっている
+- 関連して見つけた別の型(未修正・報告のみ): 試合前の「✨ 初対決」(`App._collectPreMatchPopupsForMatch`)が `G.matchupLog` の項目を `e.left` / `e.right` で見ているが、項目は `leftId` / `rightId` なので**毎試合「初対決」と判定される**。こちらも殻の後ろに積まれて興行中に一度も出ていない(出す経路は敗者の心とは別。出すなら判定も直す必要がある)
+- 点火 `faction-f08` の検査に「両リーダーの因縁が両方向とも +30 以上」を足した(`_assertF08`)。回帰テスト `test/faction-f08-leader-rivalry-boost-test.js`(新規)
+- specs/faction-system-spec-v0.1.md §9.8(A の効果の表と1段落)
+
+### 検証(2)
+- 回帰テスト `test/faction-f08-leader-rivalry-boost-test.js`(新規・6本): 勝敗のついた直接対決で両方向に同じ量(乱数の3つ目から 30〜40)・ほかの組と bond は不変・勢いと対立度は従来どおり/右が勝っても同じ/引き分けは乱数の1つ目から/100 で頭打ち/リーダー同士の対決が無ければ動かない/キーの形の検査。**変更前のコードでは5本が失敗**(因縁が動かない)
+- 点火 `faction-f08` PASS: 両リーダーの因縁 45.7/45.4 → **90.9/100(+45.2/+54.6)**。修正前は同じ fixture で 56.9/70.4(+11.2/+25.0=試合の関係値と試合後の画面の +8〜12 だけ)だったので、F08 の加算は **+34**(B→A は 104.4 で 100 に頭打ち)。敗れた派閥(3人)の末端なし・試合後の画面あり・方針の消化は従来どおり
+- auto-sim は app.js を読まない(F08 の清算は実プレイの差し込み口 `App._finalizeHookFactionBookings` だけにある。auto-sim の世界では `_pendingF08Directive` は一時キーとして捨てられる)ので指紋は変わりようがない。`node test/auto-sim.js 40 42` ALL CLEAR・意味指紋 61ef0aa5(K-1 第3段の記録と同じ)
+- `npm run test:k1:parity` PASS(登録27・未登録0・消えた0。派閥の予約は差分テストのシナリオで空にしている)・`npm test` 315/315 PASS
 
 ## 2026-09-26 点火カタログの立て直しと K-1 第3段の確認 — 受けた挑戦状・派閥の予約の清算を実UIで検算(Claude/Opus 5.5・worktree)
 
