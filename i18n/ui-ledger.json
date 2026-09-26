@@ -35286,6 +35286,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "決裁の結果をお伝えします",
+    "en": "Here's the outcome of what you approved.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "showDecisionResultModal(社長室の決裁の結果モーダル)のreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)。2026-09-26手追加"
+  },
+  {
     "key": "決裁完了",
     "en": "Approved",
     "files": [

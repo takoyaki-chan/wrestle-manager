@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4777件、訳文あり4777件)
+//  生成元: i18n/ui-ledger.json (総キー4778件、訳文あり4778件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3340,6 +3340,7 @@
     "決着時間 {time}": "Time: {time}",
     "決着！": "It's over!",
     "決裁": "Approval",
+    "決裁の結果をお伝えします": "Here's the outcome of what you approved.",
     "決裁完了": "Approved",
     "決裁枠": "Approvals",
     "決裁枠:": "Approvals:",

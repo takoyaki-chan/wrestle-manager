@@ -26644,7 +26644,13 @@ Engine.shachoshitsu = {
         f = applyTrust(f, encourageBandMult < 1 ? encourageGain * encourageBandMult : encourageGain);
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
         // 噂の帯(信頼20未満)では、本人が原因を口にする反応に切り替える(反応文は Engine.shachoshitsu.getReactionText)
-        if (curTrust < Engine.trust.lastWarningConfig().encourageLo) reactionKey = 'encourage_last_warning';
+        // この帯では不確実性トーンのマーカー(深く刺さった/あまり響かなかった)も出さない。信頼の伸びは帯の倍率(×0.25)で
+        // 決まっていて、性格×口調の倍率が high でも伸びは小さい(「深く刺さった」は地の文「表情は硬いまま」とも事実とも食い違う)。
+        // low も同じ理由で出さない — 「この子には響かなかった」は、別の子なら響いたかのような対比を作るが、この帯では誰にも響かない
+        if (curTrust < Engine.trust.lastWarningConfig().encourageLo) {
+          reactionKey = 'encourage_last_warning';
+          suppressTone = true;
+        }
         events.push(`💬 社長が${f.name}に声をかけた`);
       } else if (docId === 'pledge') {
         // care-rework2 P2-G: 「次の通常興行のメインで使う」と約束する。
@@ -27090,6 +27096,7 @@ Engine.shachoshitsu = {
     if (state._industryNewsEvents) result._industryNewsEvents = state._industryNewsEvents;
     // Phase 8: 個人書類のみトーン情報を返す (team書類は選手ごとに finalMult が異なるため無視)
     // care-rework v0.1: 侮辱帯(suppressTone)はマーカー非表示 — 「響かなかった」と怒りが混線するため
+    // 退団寸前の引き留め: 信頼20未満の声かけ(encourage_last_warning)も非表示 — 伸びは帯の倍率で決まり、トーンが事実と合わないため
     if (doc.effect && doc.effect.target === 'individual') {
       result.reactionTone = suppressTone ? null : Engine.shachoshitsu.classifyTone(currentFinalMult);
       result.finalMult = currentFinalMult;

@@ -108,18 +108,20 @@ const ENC_PROBE = `(args) => {
   let box = modal;
   while (box && !box.querySelector('.mdl-a-subject-speech')) box = box.parentElement;
   const bodyText = box ? box.textContent : '';
-  // 取次の帯(.mdl-a-reporter-strip「決裁の結果をお伝えします」)は社長室の決裁モーダル共通の既存の未訳(この作業の範囲外)。
-  // 検査は帯を除いた本体で行い、帯の文は別に報告する
-  const core = box ? box.cloneNode(true) : null;
-  let reporterText = '';
-  if (core) core.querySelectorAll('.mdl-a-reporter-strip').forEach(n => { reporterText += n.textContent.trim(); n.remove(); });
+  // 取次の帯(.mdl-a-reporter-strip「決裁の結果をお伝えします」)も含めてモーダル全体を見る(2026-09-26 英訳済み)
+  const reporter = box ? box.querySelector('.mdl-a-reporter-strip') : null;
+  const badge = box ? box.querySelector('.mdl-a-result-badge') : null;
   return {
     name: WM_I18N.pn(f.name), cell: f.archetype + '/' + f.personality, cause, raw, expected: WM_I18N.t(raw),
     text: speech ? speech.textContent : '',
     hardFace: bodyText.includes(WM_I18N.t('話は最後まで聞いてくれた。けれど、表情は硬いままだ')),
     // 「・」(U+30FB)は見出しの区切りなので日本語の判定から外す
-    bodyJa: ((core ? core.textContent : '').match(/[぀-ヺー-ヿ㐀-鿿][぀-ヿ㐀-鿿、。…！？]*/g) || []).slice(0, 8),
-    reporterText,
+    bodyJa: (bodyText.match(/[぀-ヺー-ヿ㐀-鿿][぀-ヿ㐀-鿿、。…！？]*/g) || []).slice(0, 8),
+    reporterExpected: WM_I18N.t('決裁の結果をお伝えします'),
+    reporterText: reporter ? reporter.textContent.replace(/\\s+/g, ' ').trim() : '',
+    // 不確実性トーンのマーカー: 信頼20未満の声かけでは出さない(性格×口調の倍率が high/low の子でも)
+    badge: badge ? badge.textContent.trim() : '',
+    toneIfOutsideBand: Engine.shachoshitsu.classifyTone(Engine.shachoshitsu.calcUncertainty('encourage', f)),
     modalOpen: !!modal,
   };
 }`;
@@ -194,9 +196,10 @@ const FIT_PROBE = `() => {
         check(`[${lang}] 声かけ ${cause}: 吹き出しが原因の表(${table})の1本`, r.text === r.expected, { text: r.text, expected: r.expected });
         check(`[${lang}] 声かけ ${cause}: 地の文「表情は硬いまま」`, r.hardFace, r);
         check(`[${lang}] 声かけ ${cause}: 吹き出しに選手名を書かない`, !r.text.includes(r.name), r.text);
+        check(`[${lang}] 声かけ ${cause}: トーンのマーカーを出さない(帯の外なら ${r.toneIfOutsideBand || 'なし'})`, r.badge === '', r.badge);
         if (lang === 'en') {
-          check(`[en] 声かけ ${cause}: モーダル(取次の帯を除く)に日本語が残らない`, r.bodyJa.length === 0, r.bodyJa);
-          if (JA_RE.test(r.reporterText)) console.log(`  (参考) 取次の帯が未訳のまま: 「${r.reporterText}」 — 社長室の決裁モーダル共通の既存の未訳。この作業の範囲外`);
+          check(`[en] 声かけ ${cause}: モーダル(取次の帯を含む)に日本語が残らない`, r.bodyJa.length === 0, r.bodyJa);
+          check(`[en] 声かけ ${cause}: 取次の帯が英語`, r.reporterText.includes(r.reporterExpected) && !JA_RE.test(r.reporterText), r.reporterText);
         }
         await page.screenshot({ path: path.join(OUT, `encourage-${cause || 'none'}-${heroIndex}-${lang}.png`) }).catch(() => {});
         await context.close();

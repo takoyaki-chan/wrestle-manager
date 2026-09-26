@@ -115,6 +115,35 @@ section('A: 信頼20以下の伸びは現行の ×0.25、坂の中は m(t) 倍�
   }
 });
 
+section('A: 信頼20未満の声かけは不確実性トーンのマーカーを出さない(high も low も)。20以上は今のまま。伸びは変えない', () => {
+  // 性格×口調の倍率が high / low になる組を表から探す(表の値に依存しない)
+  const combos = [];
+  Object.keys(DECISION_PERSONALITY_MULT).forEach(personality => {
+    ['standard'].concat(Object.keys(typeof DECISION_ARCHETYPE_MULT !== 'undefined' ? DECISION_ARCHETYPE_MULT : {})).forEach(archetype => {
+      const tone = Engine.shachoshitsu.classifyTone(Engine.shachoshitsu.calcUncertainty('encourage', { personality, archetype }));
+      combos.push({ personality, archetype, tone });
+    });
+  });
+  const hi = combos.find(c => c.tone === 'high');
+  const lo = combos.find(c => c.tone === 'low');
+  assert.ok(hi && lo, `high / low の組が表に無い(${JSON.stringify(combos)})`);
+  for (const c of [hi, lo]) {
+    const cell = { personality: c.personality, archetype: c.archetype };
+    for (const t of [8, 15, 19.9]) {
+      const { state, result } = encourageAt(t, cell);
+      assert.strictEqual(result.reactionKey, 'encourage_last_warning');
+      assert.strictEqual(result.reactionTone, null, `信頼${t}・${c.personality}/${c.archetype}(${c.tone}) でマーカーが出た`);
+      // マーカーを消しただけで、伸びは帯の倍率 × 性格×口調の倍率のまま
+      const base = encourageFormula(state.roster[0]) - t;
+      assert.ok(near(trustOf(result.roster, 1) - t, base * 0.25, 1e-12), `信頼${t}: 伸びが変わった`);
+      assert.strictEqual(result.finalMult, Engine.shachoshitsu.calcUncertainty('encourage', state.roster[0]));
+    }
+    for (const t of [20, 22.5, 35]) {
+      assert.strictEqual(encourageAt(t, cell).result.reactionTone, c.tone, `信頼${t}(帯の外)のマーカーが変わった`);
+    }
+  }
+});
+
 section('A(I-1 の対): スランプの回復促進と周りとの絆の微増は、帯の中でも帯の外と同じ', () => {
   const slump = { type: 'defeat', weeksLeft: 4, recoveryMomentum: 0 };
   const low = encourageAt(15, { slump }).result;

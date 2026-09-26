@@ -12,7 +12,7 @@
 > - 可視化レイヤー(P1)は `care-visibility-spec-v1.0.md` 参照
 >
 > **⚠️ v1.3 追記(2026-09-26・退団寸前の引き留め。設計 `docs/care-last-warning-design-v0.1.md`、仕組みの正は `trust-system-spec-v2.1.md` §17)**:
-> - **声かけ(encourage)**: 信頼の伸びに、声をかける前の信頼で決まる帯の倍率(25以上 ×1・20以下 ×0.25・間はなだらか)。スランプの回復促進・絆の微増・決裁枠0・資金0・週1回は不変。信頼20未満は `reactionKey: 'encourage_last_warning'`(`getReactionText` が原因別の表 `LAST_WARNING_ENCOURAGE_LINES` から引き、引けなければ今の `encourage` の反応文)と地の文「話は最後まで聞いてくれた。けれど、表情は硬いままだ」(「本人の様子」の行は出さない)
+> - **声かけ(encourage)**: 信頼の伸びに、声をかける前の信頼で決まる帯の倍率(25以上 ×1・20以下 ×0.25・間はなだらか)。スランプの回復促進・絆の微増・決裁枠0・資金0・週1回は不変。信頼20未満は `reactionKey: 'encourage_last_warning'`(`getReactionText` が原因別の表 `LAST_WARNING_ENCOURAGE_LINES` から引き、引けなければ今の `encourage` の反応文)と地の文「話は最後まで聞いてくれた。けれど、表情は硬いままだ」(「本人の様子」の行とトーンのマーカーは出さない)
 > - **原因に合った手当て**: 噂の状態(`lastWarning`)の原因が人間関係・空気の選手が出席した**慰労会**、給与の選手への**相場以上(r ≥ 0.8)のボーナス**、人間関係の選手が当事者の**関係修復の成功**で、帳簿のその原因の分の半分がすぐ戻る(書類そのものの効き目はそのまま。合わない書類は上乗せなし)
 > - S4「励ましの言葉」にも同じ帯の倍率(AI 団体の S4 には掛けない)。S4「待遇改善」は給与の手当て
 
@@ -583,6 +583,10 @@ finalMult = Math.max(0.5, Math.min(1.5, personalityMult × archetypeMult))
 | finalMult < 0.8 | **💤 あまり響かなかったようだ** | `.decision-result-tone.low` (灰色控えめ) |
 
 team 書類 (party/camp) はトーンマーカー **非表示** (選手ごとに finalMult が異なるため、一言でまとめられない)。
+
+個人書類でも次の2つはマーカー **非表示** (`execute` 内の `suppressTone` → `reactionTone: null`。`finalMult` は今までどおり返す):
+- ボーナスの侮辱帯 (`bonus_insult`) — 「響かなかった」と怒りが混線するため (care-rework v0.1)
+- 信頼20未満の声かけ (`encourage_last_warning`) — 伸びは帯の倍率 (×0.25) で決まり、性格×口調の倍率が high でも伸びは小さい。「深く刺さった」は地の文「表情は硬いまま」とも事実とも食い違い、「あまり響かなかった」も別の子なら響いたかのような対比を作るので、high/low とも出さない (2026-09-26)。20〜25 の坂の中は今までどおり出す
 
 #### trainer の予告文言 3段階 (Phase 7+8 連動)
 trainer は遅延発現するので、結果モーダルでトーンに応じて予告文言を出し分け:
