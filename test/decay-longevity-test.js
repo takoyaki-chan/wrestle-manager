@@ -147,6 +147,11 @@ function autoHandleFactionEvent(G, simRng) {
     else if (/^F02_/.test(fe.eventId)) {
       const map = { F02_RESOLUTION:'applyF02ResolutionResult', F02_ENDLESS:'applyF02EndlessResult', F02_IGNITE:'applyF02IgniteResult', F02_PEACE:'applyF02PeaceResult' };
       const fn = Engine.factions[map[fe.eventId]]; if (fn) { const r = fn.call(Engine.factions, s, fe.payload, rng); if (r&&r.state) s=r.state; }
+    } else if (fe.eventId === 'F06_FORCE') {
+      // 派閥抗争 §4.3 40週の2択(A 和解させる / B 続けさせる)。他の派閥イベントと同じく等確率で選ぶ
+      const f06ChoiceId = Engine.rng.float(simRng) < 0.5 ? 'A' : 'B';
+      const r = Engine.factions.applyF06ForceChoice(s, fe.payload, f06ChoiceId, rng);
+      if (r && r.state) s = r.state;
     } else if (fe.eventId === 'COMMON_4') { const r = Engine.factions.applyCommon4Result(s, fe.payload, rng); if (r&&r.state) s=r.state; }
     else {
       const fnName = `apply${fe.eventId}Choice`;

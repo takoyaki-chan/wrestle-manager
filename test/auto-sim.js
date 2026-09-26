@@ -1020,6 +1020,11 @@ function autoHandleFactionEvent(G, simRng) {
         const r = fn.call(Engine.factions, s, fe.payload, choiceId, rng);
         if (r && r.state) s = r.state;
       }
+    } else if (fe.eventId === 'F06_FORCE') {
+      // 派閥抗争 §4.3 40週の2択(A 和解させる / B 続けさせる)。他の派閥イベントと同じく等確率で選ぶ
+      const f06ChoiceId = Engine.rng.float(simRng) < 0.5 ? 'A' : 'B';
+      const r = Engine.factions.applyF06ForceChoice(s, fe.payload, f06ChoiceId, rng);
+      if (r && r.state) s = r.state;
     } else if (fe.eventId === 'COMMON_1' || fe.eventId === 'COMMON_5' || fe.eventId === 'COMMON_7') {
       const choices = ['A', 'B', 'C'];
       const choiceId = choices[Math.floor(Engine.rng.float(simRng) * 3)];
