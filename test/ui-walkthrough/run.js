@@ -218,7 +218,10 @@ async function main() {
     context = setup.context;
     const page = setup.page;
     // P6-5: D3_TEXTの内部トークン検査を言語別にするためlangを渡す(ja既定は従来どおり)
-    const detectors = new WalkthroughDetectors({ lang: options.lang });
+    const detectors = new WalkthroughDetectors({
+      lang: options.lang,
+      allowConsole: scenario && Array.isArray(scenario.knownConsole) ? scenario.knownConsole : [],
+    });
     detectors.attach(page);
     const reproductionCommand = scenario
       ? `node test/ui-walkthrough/run.js --mode ignite --scenario ${options.scenario} --seed ${effectiveSeed}`
@@ -288,7 +291,14 @@ async function main() {
         reproductionCommand,
         seasons: effectiveSeasons,
         seed: effectiveSeed,
-        until: scenario && scenario.until ? scenario.until : null,
+        // 手ごとに G を読む式(読取り専用)。結果は finalAssert の第3引数に渡る
+        stepProbe: scenario && scenario.stepProbe ? scenario.stepProbe : null,
+        // クリックせず時計だけ進める待ち(観戦 iframe の再生を最後まで見る等)
+        hold: scenario && scenario.hold ? scenario.hold : null,
+        // makeUntil は makeBoost と同じく fixture の実データ(開始週)に依存する終了条件を作る口
+        until: scenario && scenario.makeUntil && fixtureText
+          ? scenario.makeUntil(JSON.parse(fixtureText))
+          : (scenario && scenario.until ? scenario.until : null),
       }),
       timeout,
     ]);
@@ -345,8 +355,16 @@ async function main() {
       if (scenario.finalProbe) {
         const probe = await page.evaluate(scenario.finalProbe).catch(error => ({ probeError: String(error) }));
         console.log(`Final probe: ${JSON.stringify(probe)}`);
+        // stepProbe を宣言したシナリオは、手ごとの読取り(result.stepProbes)と fixture も finalAssert に渡す
+        const stepProbes = result.stepProbes || [];
+        if (scenario.stepProbe) {
+          const errors = stepProbes.filter(entry => entry.value && entry.value.probeError);
+          console.log(`Step probes: ${stepProbes.length}${errors.length ? ` (errors ${errors.length}: ${errors[0].value.probeError})` : ''}`);
+        }
         if (probe && probe.probeError) ignitionFailures.push(`finalProbe失敗: ${probe.probeError}`);
-        else if (scenario.finalAssert) ignitionFailures.push(...scenario.finalAssert(probe, options.lang));
+        else if (scenario.finalAssert) {
+          ignitionFailures.push(...scenario.finalAssert(probe, options.lang, stepProbes, fixtureText ? JSON.parse(fixtureText) : null));
+        }
       }
       if (ignitionFailures.length > 0 && !result.artifactDirectory) {
         const issue = detectors.record('IGNITION_MISFIRE', ignitionFailures.join(' / '), { scenario: options.scenario });
@@ -380,6 +398,12 @@ async function main() {
     console.log(`Recovered-by-retry: ${recoveries.length}`);
     for (const recovery of recoveries) {
       console.log(`  step ${recovery.step}: ${recovery.action} -> recovered by ${recovery.recoveredBy}`);
+    }
+    if (detectors.knownConsoleHits.length > 0) {
+      // シナリオの knownConsole(報告済みの既知の不具合)に一致した警告。失敗にはしないが件数を必ず出す
+      const counts = new Map();
+      for (const text of detectors.knownConsoleHits) counts.set(text, (counts.get(text) || 0) + 1);
+      console.log(`Known console (not failed, reported bug): ${[...counts].map(([text, n]) => `${text} ×${n}`).join(' / ')}`);
     }
     if (scenario) {
       console.log(`Observed overlays: ${[...seenOverlays].sort().join(', ') || 'none'}`);

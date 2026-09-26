@@ -1,5 +1,42 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 点火カタログの立て直しと K-1 第3段の確認 — 受けた挑戦状・派閥の予約の清算を実UIで検算(Claude/Opus 5.5・worktree)
+
+K-1 第3段の作業者が「main の時点で失敗」と挙げた点火2本(`incoming-challenge`・`faction-ignite`)を直し、差分テストが見ていない実プレイだけの清算を実UIで通した。数値は変えていない(製品の修正は画面の待ち行列の扱い1か所のみ)。使い方と仕組みは `test/ui-walkthrough/README.md`「受けた挑戦状・派閥の予約の清算」、カタログは `docs/rare-screen-ignition-catalog-design-v0.1.md` §10。
+
+### 失敗していた原因(どちらもテスト側)と直したこと
+- **incoming-challenge**: fixture を S2W6 の頭に置いた果たし状の発起人(seed42 の根岸・他団体)が、画面に出る前の W6 の他団体の試合で中傷 → W7 に受けて立つ(`buildMatchCard` は発起人の怪我を見ない)→ W8 の興行で `reserveScheduledMatches` が「出場メンバーが揃わない」で予約を解除 → シリーズも2拍の結果も来なかった。停止週を「S2 の非興行週で翌週が通常興行」に変え、その週の週送り(`tickWeek`→`advanceWeek`)を fixture 生成時に試走して、翌週の頭に画面に出て(大型/派閥イベント・対抗戦の申し入れに枠を取られない)6人とも翌週の興行に出られる組だけを使う(`_challengeFixture`/`_pickChallenge`。seed42 は S2W7)
+- **away-challenge も同じ原因で main で FAIL だった**(K-1 第3段の前 2c87ae3d でも同じ。報告に無かった): 相手の選手の怪我で W8 の遠征が黙って取り消され、自団体の興行だけが走っていた。同じ停止週の探し方で PASS
+- **faction-ignite**: 「S2W6 固定+シード固定」で、seed7 は S2 を通して派閥が1つしかできなくなっていた(P7-59 で 42→7 に替えた後に軌道が入れ替わった)。停止週を「S2〜S4 の W6〜W30 の通常興行週でリーダー健在の派閥が2つそろう最初の週」に探し、シードは42に戻した
+- 終了条件は開始週からの相対(`makeUntil`)に
+
+### 足した点火(6本)と確かめたこと
+- `incoming-challenge-watch`: 果たし状の3試合を観戦(iframe を最後まで)→2拍の結果→ゲストが残らない
+- `b3-challenge` / `b3-challenge-watch`: 挑戦状 → 受けて立つ → 代表を選ぶ → **次の通常興行のメインに固定** → スキップ/観戦 → 予約の消化・対戦成績がちょうど1試合分・`lastB3ChallengeWeek`・ゲストが自団体に残らない
+- `faction-f07-main`: F07 メインカード相談 → 推す → 翌週の興行で清算。メインに派閥の選手がいる週で**派閥4人の信頼が +1×感度 ちょうど**(68.15→69.15 ほか)・残り興行数 6→5
+- `faction-common1`: Common-1 → 予約の2人をカードに組む → 清算。勝者(リーダー)信頼 64.15→68.15(+4×1.0)・敗者 60.17→58.17 と帳簿「派閥」0→2・2人の因縁 69.4/67.8→0/0・結果の画面
+- `faction-f08`: F08 → 直接対決をメインに → 翌週の先頭に両リーダー → 清算・方針の消化・試合後の画面(敗れた派閥は3人で末端が無く、信頼が動かないことまで確認)
+- 仕組み(宣言しないシナリオと walk は不変): `stepProbe`(手ごとに G を読み、同じ週に `totalShows` が増えた手の前後=清算の前後を検算)/ `fixture.engineerSave`(持ち越し中の派閥イベント・今週立った挑戦状をセーブに置き直す。payload はエンジンの判定関数・`generateLargeEvent` が作る)/ `hold`(観戦 iframe の「次の攻防」「決めろ!」「試合終了」を押して進める。「試合を観る」の直後は iframe の読み込みを実時間で待つ)/ `knownConsole`(報告済みの不具合の警告は件数だけ出す)/ 候補に挑戦状の代表選手カード / `toSaveState` で季の第1週だけの減衰トーストの残骸を落とす
+
+### 見つけた製品の不具合
+- **直した — F08 の直接対決の興行が結果の手前で止まる**(K-1 第3段の前から): `showFactionF08AftermathModal` が興行中ずっと active な `showResultOverlay`(試合一覧の殻)を開いている画面と見なして待ち行列に積まれ、殻は試合後の画面の続きで結果を描くのを待つので止まっていた(F02③の決着が立たない向き=逆方向の対立度60未満のとき)。F09(6cbf231e)・直訴の結果と同じく `_isPopupActive({ ignoreShowResultOverlay: true })` に。同じ形の F08 試合前・派閥内序列戦の試合前/試合後も合わせた。`test/faction-f09-show-flow-guard-test.js` に4つ追加。specs/faction-system-spec-v0.1.md §9.8.1 に1段落
+- **未修正(数値が変わるので止めて報告)— 挑戦状のゲストが怪我をすると所属団体の選手の体調が NaN**: ゲストは挑戦状が届いた時点の写し `event.challenger`(体調・今季の伸び・自己最高評価を持たない)から作られ、怪我の `Math.min(undefined, 30)` が NaN になり、`App._finalizeHookGuests` の `{ ...f, ...updatedGuest }` が本物の選手の体調 100→NaN・今季の伸び→0・自己最高評価 60→49 を上書きし、一時印 `isB3ChallengeGuest`/`_b3GuestOrgId`/`_trustBonus` も残す。validateGameState が毎週違反を出す。2c87ae3d でも同じ
+- **未修正(画面の出し方の判断が要る)— 観戦・1試合ずつの経路の試合後のフレーバーのポップアップが出ない**: `showEventPopup` → `_enqueuePopup` が同じ殻の後ろに積み、`_runPostMatchFlavorForMatch` の保険のタイマー(N×2.2秒+1.5秒)が毎試合発火(`[WM]` 警告=フライトレコーダーの ⚠)、積まれたポップアップは週送りの全消去で捨てられる
+- **未修正(数値が変わる)— F08 の直接対決の「両リーダーの因縁 +30〜40」が効いていない**: `_finalizeHookFactionBookings` が関係値を `${a}|${b}` で引く(本物のキーは `a>b`)。実測で因縁 45.7/45.4→56.9/70.4(試合の関係値と F08 の試合後の +8〜12 だけ)
+- 観察(未確認): 観戦 iframe の読み込みが800msを超えると、親の再送の保険が先に発火して STANDBY のまま止まる作り(`App.watchMatch` の `sendOnce`)。ハーネスでは偽の時計でこれを踏んだ。実機の遅いPCで起こりうる
+
+### 乱入・奪還・直訴・統一王座の週(差分テストが通らない経路)
+- 直訴: `away-challenge`(自団体発・遠征)・`incoming-challenge`(相手発・3試合)とも PASS(上)
+- 統一王座: `unified-player-turn`(こちらの番→挑戦者→統一王座の遠征)PASS・`tenchosen`(初代統一王座の戴冠)PASS
+- 乱入・奪還: 点火シナリオも手動チェックも無い(未確認)
+
+### 検証
+- 点火 JA 全18本 PASS: incoming-challenge / incoming-challenge-watch / away-challenge / b3-challenge / b3-challenge-watch / faction-f07-main / faction-common1 / faction-f08 / faction-ignite / unified-player-turn / tenchosen / chronicle / war-decline / gameover / newspaper-mvprace / newspaper-mvprace-legacy / newspaper-lang-switch / opening-flow(`b3-challenge*` は既知の NaN 警告、`*-watch` は既知のフレーバーの保険の警告を件数表示)
+- 点火 EN: incoming-challenge / faction-ignite / away-challenge PASS
+- B3 の検算: 代表 105 vs 挑戦者 68、対戦成績 0→1(S2W8)、`lastB3ChallengeWeek` 56、ゲストは残らない
+- `npm test` 313/313 PASS(`test/faction-f09-show-flow-guard-test.js` に F08・派閥内序列戦の4画面)・`node test/ui-baseline-guard-test.js` ok・UI 走破1本 PASS(1季・345操作・Issues 0)
+- 比較のため一時 worktree で 2c87ae3d(K-1 第3段の前)と 66d37734(main)を回し、away-challenge の FAIL・B3 の NaN・F08 の止まりが第3段の前から同じであることを確かめた(一時 worktree は削除済み)
+
 ## 2026-09-26 K-1 第3段 — 通常興行の試合後の処理を `Engine.show.finalize` の1本に(Claude/Opus 5.5・worktree)
 
 裁定 K-1「興行後の処理を一本化する(A・段階的)」の移行計画の第3段。詳細・数値・残る差は `docs/fun-audit-v0.1/k1-parity-report.md`(改訂その7・§8 第3段の実施結果・§7 X13/X14)、確定仕様は新規 `specs/show-finalize-spec-v1.0.md`。

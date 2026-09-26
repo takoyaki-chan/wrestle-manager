@@ -63,6 +63,17 @@ if (warnings.length > 0) {
 
 const saveState = toSaveState(G, `ignition fixture: ${scenarioName}, seed=${seed}`);
 saveState.rngSeed = seed;
+// engineerSave(save): toSaveState が落とす一時キー(_pendingFactionEvent / _pendingLargeEvent)を
+// セーブへ置き直すための口。持ち越し中の派閥イベント・今週立った大型イベントの形(実プレイで
+// 週を処理した直後の状態)を作る。検査に通らない形はここで例外にする
+if (scenario.fixture.engineerSave) {
+  const saveFails = scenario.fixture.engineerSave(saveState) || [];
+  if (saveFails.length > 0) {
+    console.error(`Fixture engineerSave failed for ${scenarioName} (seed=${seed}):`);
+    for (const fail of saveFails) console.error(`  - ${fail}`);
+    process.exit(1);
+  }
+}
 
 const generatedDir = path.join(__dirname, 'generated');
 fs.mkdirSync(generatedDir, { recursive: true });

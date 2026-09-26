@@ -9,8 +9,14 @@
 //   fixture.maxWeeks  — headless進行の上限週(既定600=約11季。十数季かかるシナリオ用)
 //   fixture.engineer(G) — 停止後の状態加工(省略可)。正規セーブとして成立する形だけを作る
 //   fixture.assert(G) — fixtureとして成立している前提の検査。失敗文字列の配列を返す
+//   fixture.engineerSave(save) — toSaveState の後のセーブの加工(省略可)。toSaveState が落とす一時キー
+//                       (_pendingFactionEvent / _pendingLargeEvent)を置き直す(_moveIgniteTransients)。
+//                       失敗文字列の配列を返す
 //   walk              — 実UI走破の設定。seasonsは既定終了条件(開始季+seasonsの第1週)で使う
 //   until(snapshot)   — 既定終了条件を差し替える場合のみ(snapshotはdetectors.summarizeSnapshotの形)
+//   makeUntil(fixture) — until を fixture の実データ(開始週など)から作る場合(untilより優先)。
+//                       停止週を探索で決めるシナリオ用(_untilWeeksAfterFixture)
+//   boost / makeBoost(fixture) — 走破の候補スコアの差し替え(makeBoostはfixtureの実データ依存版)
 //   ignition[]        — 点火マーカー。required:trueが1つでも未観測ならIGNITION_MISFIRE
 //   tour              — 走破後の画面ツアー(P6-18)。`{ steps:[{label,selector,expectScreen?,probe?,required?}],
 //                       jaExposureScreens?:[画面id] }`。ランダム走がナビタブを踏まない設計のため
@@ -18,18 +24,33 @@
 //                       jaExposureScreens は **ENモードのときだけ** その画面のJA露出0を失敗条件にする
 //   tourAssert(probes, lang) — tourの各stopのprobe結果を検査。失敗文字列の配列を返す(=不発検出)
 //   finalProbe        — 走破終了後にページで1回evaluateする式(文字列)。Gの事後状態検証用
-//   finalAssert(probe) — finalProbeの結果を検査。失敗文字列の配列を返す
+//   finalAssert(probe, lang, stepProbes, fixture) — finalProbeの結果を検査。失敗文字列の配列を返す
+//   stepProbe         — 手ごとに1回 evaluate する式(読取り専用)。結果は finalAssert の stepProbes
+//                       ({ step, action, value } の配列。step 0 = 最初の手の前)。清算の前後の検算に使う
+//   hold              — { when(snapshot), ms, maxSteps, frameClick?, frameReady? }。when が真の間は
+//                       クリックせず時計を進める(観戦 iframe の再生待ち。WATCH_HOLD)
+//   knownConsole      — 報告済みの既知の不具合の警告(正規表現の配列)。D1 にせず件数だけレポートに出す
+
+const { toSaveState } = require('./fixtures/headless-sim');
 
 const overlayHit = (snapshot, token) =>
   (snapshot.overlays || []).some(entry => String(entry).includes(token));
 
+// 走破の終了条件を「fixtureの開始週から n 週後の週頭」にする(makeUntil)。fixtureの停止週を
+// 探索で決めるシナリオ(incoming-challenge / faction-ignite)は開始週が固定でないため、
+// 終了条件を絶対週で書けない
+const _untilWeeksAfterFixture = n => fixture => s => !!(s.state && (
+  s.state.season > fixture.season
+  || (s.state.season === fixture.season && !s.state.offSeason && s.state.week >= fixture.week + n)));
+
 // ── R3共通: 挑戦系の前提状態づくり ──
 // engineer はfixture生成プロセス(headless-simがEngine等をグローバルへロード済み)で走る。
-// 実在の最も熱いクロス団体ペアを使い、rivalryだけ92へ底上げ(computeHeatはrivalry92なら
+// 実在のクロス団体ペアを熱の高い順に試し(_pickChallenge)、rivalryだけ92へ底上げ(computeHeatはrivalry92なら
 // bondに関係なく90超え)してから、processWeeklyが作るのと同じ形のpendingThisWeekを直接置く。
-function _hottestCrossOrgPair(G) {
+// 候補の順は熱の高い順(同じ熱は走査順=以前の「最も熱い1組」の先着と同じ)
+function _crossOrgPairsByHeat(G) {
   const players = (G.roster || []).filter(f => !f.isRental && !f.injury && !f.forcedRest);
-  let best = null;
+  const pairs = [];
   for (const self of players) {
     for (const [orgId, org] of Object.entries(G.aiOrgs || {})) {
       if (!org || org.disbanded || !Array.isArray(org.roster)) continue;
@@ -39,17 +60,15 @@ function _hottestCrossOrgPair(G) {
         const rel = (G.relationships || {})[key];
         if (!rel) continue;
         const heat = Engine.challengeRequest.computeHeat(rel.rivalry, rel.bond);
-        if (!best || heat > best.heat) best = { self, other, orgId, key, rel, heat };
+        pairs.push({ self, other, orgId, key, rel, heat, order: pairs.length });
       }
     }
   }
-  return best;
+  return pairs.sort((a, b) => (b.heat - a.heat) || (a.order - b.order));
 }
 
-function _engineerChallengePending(G, inverse) {
-  let s = Engine.challengeRequest.ensureInit(G);
-  const pair = _hottestCrossOrgPair(s);
-  if (!pair) throw new Error('クロス団体の関係値ペアが1つも無い(シーズンが浅すぎる)。fixtureの停止週を後ろへ');
+function _placeChallengePending(G, pair, inverse) {
+  let s = G;
   const rel = { ...pair.rel, rivalry: Math.max(pair.rel.rivalry || 0, 92) };
   s = { ...s, relationships: { ...s.relationships, [pair.key]: rel } };
   const heat = Engine.challengeRequest.computeHeat(rel.rivalry, rel.bond);
@@ -85,6 +104,513 @@ function _assertChallengePending(G) {
   return fails;
 }
 
+// ── R3a/R3b: 直訴(自団体発)・果たし状(相手発)の停止週と組の選び方 ──
+// fixture は週の頭で止まるので、置いた直訴・果たし状が実UIに出るのは最初の週送りの後になる。
+// 週送りの間には他団体の試合・練習があり、そこで他団体の側の選手が怪我をすると、受けた後の
+// 最初の通常興行で予約が「出場メンバーが揃わない」で解除され(遠征は黙って取り消され自団体の興行へ)、
+// 3試合シリーズも2拍の結果画面も来ない(2026-09-26 seed42: S2W6 に置いた組の他団体の選手(根岸)が
+// W6 の他団体の試合で中傷→W7 に受けて W8 に解除。away-challenge・incoming-challenge とも)。
+// そこで停止週を「非興行週で、翌週が通常興行」に取り、その週の処理(実UIの週を処理と同じ
+// tickWeek→advanceWeek)を試走して、
+//   ・週次のモーダル枠を大型イベント/派閥イベントに取られず、翌週の頭に直訴・果たし状が出る
+//   ・受ければ翌週の興行で6人とも出られる(=予約がその週の遠征・興行で消化される)
+// 組だけを使う。試走の状態は捨てる(fixture に書くのは停止週の状態+直訴・果たし状だけ)
+const INCOMING_PAIR_TRIES = 20;
+const _crHealthy = f => !!(f && !f.injury && !f.forcedRest && !f.suspended);
+
+// 停止週: S2 の W6 以降で「非興行週・翌週が通常興行」。最初の操作が「週を処理」になり、
+// その週の週送りの直後に出る決断画面(果たし状・挑戦状・派閥イベント)を翌週の興行で清算する形
+function _isPlainStopWeek(G) {
+  if (G.offSeason || G.season !== 2) return false;
+  return G.week >= 6
+    && !Engine.util.isShowWeek(G.week)
+    && Engine.util.isRegularShowWeek(G.week + 1);
+}
+
+// 停止週の週送り(実UIの「週を処理」と同じ tickWeek→advanceWeek)を試走する。transients は
+// セーブに置き直す一時キー(engineerSave で置くのと同じもの)。試走の状態は捨てる
+function _dryRunWeek(s, transients) {
+  const opts = { lang: 'ja', dict: (typeof WM_I18N !== 'undefined' && WM_I18N.t) ? WM_I18N.t : undefined };
+  const save = Object.assign(toSaveState(s, 'dry-run'), transients || {});
+  const tick = Engine.tickWeek(save, opts).state;
+  const next = Engine.advanceWeek(tick, opts).state;
+  return { tick, next };
+}
+
+// 試走の翌週が「普通の通常興行の週」か。対抗戦の申し入れ(advanceWeek が W10/22/34 に weekPhase 'event'
+// で立てる)が入ると、決断画面の枠がそちらに取られて派閥イベント等が次の週へ回る(2026-09-26 に F08 で実測)
+function _nextWeekBlocker(next) {
+  if (next.offSeason || !Engine.challengeRequest.isEligibleHomeShow(next)) return '翌週が通常興行ではない';
+  if (next.weekPhase !== 'manage' || next.pendingEvent) return `翌週の頭に別の決断が入る(weekPhase=${next.weekPhase}${next.pendingEvent ? ` pendingEvent=${next.pendingEvent.type}` : ''})`;
+  return null;
+}
+
+// toSaveState は一時キー(_pendingFactionEvent / _pendingLargeEvent)を落とすので、engineer は
+// 置きたい一時キーをこの箱に入れて返し、engineerSave(_moveIgniteTransients)がセーブへ移す
+const IGNITE_TRANSIENTS = '__igniteTransients';
+function _moveIgniteTransients(save) {
+  const transients = save[IGNITE_TRANSIENTS];
+  delete save[IGNITE_TRANSIENTS];
+  if (!transients) return [`${IGNITE_TRANSIENTS} が無い(engineer が一時キーを置いていない)`];
+  Object.assign(save, transients);
+  return [];
+}
+
+function _challengeDryRun(s) {
+  const { tick, next } = _dryRunWeek(s);
+  if (tick._pendingLargeEvent) return '大型イベントが週次のモーダル枠を取る';
+  if (tick._pendingFactionEvent) return '派閥イベントが週次のモーダル枠を取る';
+  const blocked = _nextWeekBlocker(next);
+  if (blocked) return blocked;
+  if (!next.challengeRequest || !next.challengeRequest.pendingThisWeek) return '直訴・果たし状が週送りで取り下げられた';
+  const card = Engine.challengeRequest.buildMatchCard(next);
+  if (!card) return '受けてもカードが組めない';
+  if (![...card.teamA, ...card.teamB].every(_crHealthy)) return '発起人か相手が翌週の興行に出られない';
+  return null;
+}
+
+// inverse=true: 果たし状(相手発) / false: 直訴(自団体発)
+function _pickChallenge(G, inverse) {
+  const s = Engine.challengeRequest.ensureInit(G);
+  const reasons = [];
+  for (const pair of _crossOrgPairsByHeat(s).slice(0, INCOMING_PAIR_TRIES)) {
+    let placed;
+    try { placed = _placeChallengePending(s, pair, inverse); } catch (error) { reasons.push(error.message); continue; }
+    const reason = _challengeDryRun(placed);
+    if (!reason) return { state: placed, reasons };
+    reasons.push(`${pair.self.name}×${pair.other.name}: ${reason}`);
+  }
+  return { state: null, reasons };
+}
+
+// 停止週の探索つきの fixture(直訴・果たし状)
+const _challengeFixture = inverse => ({
+  seed: 42,
+  // S2 の「非興行週で翌週が通常興行」の週のうち、試走で直訴・果たし状が翌週の興行まで生き残る
+  // 組が見つかる最初の週(seed42 では W7)
+  until: G => {
+    if (G.season > 2) throw new Error('S2 のうちに直訴・果たし状を置ける週が見つからない(試走で全部の組が落ちた)。別シードで生成し直すこと');
+    return _isPlainStopWeek(G) && !!_pickChallenge(G, inverse).state;
+  },
+  engineer: G => {
+    const picked = _pickChallenge(G, inverse);
+    if (!picked.state) throw new Error(`直訴・果たし状を置ける組が無い: ${picked.reasons.join(' / ')}`);
+    return picked.state;
+  },
+  assert: G => {
+    const fails = _assertChallengePending(G);
+    const p = G.challengeRequest && G.challengeRequest.pendingThisWeek;
+    if (p && !!p._inverse !== inverse) fails.push(`pendingThisWeek の向きが違う(_inverse=${!!p._inverse})`);
+    if (Engine.util.isShowWeek(G.week)) fails.push(`停止週 W${G.week} が興行週(直訴・果たし状は週を処理した後に出る前提)`);
+    return fails;
+  },
+});
+
+// 観戦の走破: 興行は1試合ずつ進める。指定した番号の試合は「🎬 試合を観る」、ほかは「スキップ」(1試合)を押し、
+// 観戦 iframe の再生が終わる(MATCH_RESULT → App.receiveBattleResult → _afterMatchSettle)まで hold で待つ。
+// 「残り全試合をスキップ」と観戦の中断ボタンは押さない(全試合スキップは観戦を飛ばしてしまう)
+const _watchMatchBoost = indexes => candidate => {
+  const onclick = candidate.onclick || '';
+  const watch = /App\.watchMatch\((\d+)\)/.exec(onclick);
+  if (watch) return indexes.includes(Number(watch[1])) ? 9990 : -Infinity;
+  const skip = /App\.skipMatch\((\d+)\)/.exec(onclick);
+  if (skip) return indexes.includes(Number(skip[1])) ? -Infinity : 9985;
+  if (/App\.(?:skipAllMatches|escapeBattle)\(\)/.test(onclick)) return -Infinity;
+  return null;
+};
+// 観戦・1試合ずつの経路で、試合後のフレーバーのポップアップ(showEventPopup → _enqueuePopup)が興行中ずっと active な
+// showResultOverlay(試合一覧の殻)の後ろに積まれて出ず、_runPostMatchFlavorForMatch の保険のタイマーが毎回発火する
+// (2026-09-26 に観戦の点火で発見・未修正・報告済み)。観戦の後ろの経路(清算・結果)を検査し続けるため既知扱いにする
+const WATCH_KNOWN_CONSOLE = [/^\[WM\] postMatchFlavor safety net fired$/];
+
+// 観戦 iframe(シングル battle-engine.html)は1コマずつ「次の攻防」(#nBtn)で進み、決着のコマはフォール等の
+// 「決めろ!」ボタン(#finishBtn.show)を押してカウントが進み、勝敗の演出の後の「試合終了」(#eBtn.visible)で
+// 親へ MATCH_RESULT を送る。待ちの間はこの順に、見えていて押せるものを1つ押して進める(押すたびに1手)
+const WATCH_HOLD = {
+  when: s => (s.overlays || []).some(o => String(o).startsWith('battleOverlay')),
+  ms: 10000,
+  maxSteps: 60,
+  frameClick: { url: /battle-engine\.html/, selectors: ['#eBtn.visible', '#finishBtn.show', '#nBtn'] },
+  frameReady: { iframeSelector: '#battleIframe', onclick: /App\.watchMatch\(/ },
+};
+
+// ── 挑戦状(B3)→次の通常興行のメイン ──
+// 大型イベントの抽選は稀(seed42 は S2〜S4 で B3 が1回・天頂戦の前の週)なので、停止週の頭に
+// 「その週の週送りで挑戦状が立った」形を作る: エンジンの generateLargeEvent を B3 が出るまで
+// 乱数を替えて呼び、processManage(management.js「大型イベント (B1〜B4): セリフ付きで格納」)と
+// 同じ組み立てでセリフと文面を付けて _pendingLargeEvent に置く。試走で、その週の週送りが
+// 挑戦状を上書きせず翌週が通常興行であることを確かめる
+function _buildB3LargeEvent(G) {
+  // generateLargeEvent の CD(大型4週・B3専用16週)だけ外した写しで作る(セーブ側の CD は触らない)
+  const s = { ...G, lastLargeEventWeek: 0, lastB3ChallengeWeek: 0 };
+  const roster = (s.roster || []).filter(f => !f.injury && !f.isRental);
+  const dict = (typeof WM_I18N !== 'undefined' && WM_I18N.t) ? WM_I18N.t : undefined;
+  for (let k = 0; k < 400; k += 1) {
+    const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB3E1, k));
+    const raw = Engine.eventSystem.generateLargeEvent(rng, s, roster);
+    if (!raw || raw.type !== 'B3') continue;
+    const dialogue = Engine.eventSystem.getLargeEventDialogue(rng, raw, s.roster);
+    const vars = {
+      name: raw.name || '', name1: raw.name1 || '', name2: raw.name2 || '',
+      orgName: raw.orgName || '', outletName: raw.outletName || '',
+      subType: raw.subType || '', activityType: raw.activityType || '',
+    };
+    const textData = Engine.eventSystem.pickText(rng, raw.type, vars, dict);
+    return { ...raw, ...textData, dialogue, dialogue2: '' };
+  }
+  return null;
+}
+
+function _pickB3Challenge(G) {
+  const event = _buildB3LargeEvent(G);
+  if (!event) return { state: null, reason: 'generateLargeEvent が B3 を返さない(順位の隣の団体が無い等)' };
+  const { tick, next } = _dryRunWeek(G, { _pendingLargeEvent: event });
+  const kept = tick._pendingLargeEvent;
+  if (!kept || kept.type !== 'B3' || !kept.challenger || kept.challenger.id !== event.challenger.id) {
+    return { state: null, reason: 'その週の週送りで別の大型イベントが立ち、挑戦状が上書きされる' };
+  }
+  const blocked = _nextWeekBlocker(next);
+  if (blocked) return { state: null, reason: blocked };
+  if (!(next.roster || []).some(f => !f.isRental && _crHealthy(f))) return { state: null, reason: '翌週に出られる代表がいない' };
+  return { state: { ...G, [IGNITE_TRANSIENTS]: { _pendingLargeEvent: event } }, reason: null };
+}
+
+// 挑戦状の試合で挑戦者(ゲスト)が怪我をすると、所属団体へ戻すときに体調が NaN になる(2026-09-26 発見・未修正・報告済み。
+// ゲストは挑戦状が届いた時点の写し event.challenger(体調・今季の伸び・自己最高評価などを持たない)から作られ、怪我の
+// 処理の Math.min(undefined, 30) が NaN を作り、App._finalizeHookGuests の { ...f, ...updatedGuest } が本物の選手の
+// 値を上書きする。K-1 第3段の前(2c87ae3d)でも同じ。直すと他団体の選手の数値が変わるので止めて報告)。
+// 後ろの経路(清算・対戦成績・ゲスト返却)を検査し続けるため既知扱いにする
+const B3_KNOWN_CONSOLE = [/^\[WM Debug\] .*AI団体 .* のconditionが不正値: NaN$/];
+
+// 挑戦状の決断画面: 受けて立つ(data-choice="0")を選び、断る(同じトレイの"1")は封じる
+const _b3AcceptBoost = (candidate, all) => {
+  const inB3Tray = /mdl-a-decision-card/.test(candidate.className)
+    && all.some(c => c.dataChoice === '0' && /mdl-a-decision-card danger-accent/.test(c.className));
+  if (!inB3Tray) return null;
+  if (candidate.dataChoice === '0') return 9990;
+  if (candidate.dataChoice === '1') return -Infinity;
+  return null;
+};
+
+// 挑戦状の予約・清算を手ごとに読む。window.__wmIgniteB3 は読取りの控え(画面の G ではない)
+const B3_STEP_PROBE = `(() => {
+  if (typeof G === 'undefined' || !G) return null;
+  const memo = window.__wmIgniteB3 = window.__wmIgniteB3 || {};
+  const booking = G._pendingIncomingB3Match || null;
+  if (booking) { memo.fighterId = booking.fighterId; memo.challengerId = booking.challenger && booking.challenger.id; memo.orgId = booking.orgId; }
+  const rec = (memo.fighterId != null && memo.challengerId != null && Engine.h2h && Engine.h2h.getRecord)
+    ? Engine.h2h.getRecord(G, memo.fighterId, memo.challengerId) : null;
+  const sp = (typeof App !== 'undefined' && App._showPreview) || null;
+  const main = sp && sp.validMatches && sp.validMatches[0];
+  return {
+    season: G.season, week: G.week, phase: G.weekPhase, totalShows: G.totalShows,
+    booked: !!booking, fighterId: memo.fighterId == null ? null : memo.fighterId,
+    challengerId: memo.challengerId == null ? null : memo.challengerId,
+    mainIsB3: !!(main && main._b3ChallengeMatch),
+    challengerInRoster: memo.challengerId != null && (G.roster || []).some(f => f.id === memo.challengerId),
+    h2hMatches: rec ? (rec.matches || 0) : 0,
+    h2hLast: rec && rec.lastMatch ? [rec.lastMatch.season, rec.lastMatch.week] : null,
+    lastB3ChallengeWeek: G.lastB3ChallengeWeek || 0,
+  };
+})()`;
+
+function _assertB3Resolved(steps) {
+  const fails = [];
+  const values = steps.map(entry => entry.value).filter(Boolean);
+  const booked = values.find(v => v.booked);
+  if (!booked) { fails.push('挑戦状が予約されていない(_pendingIncomingB3Match が一度も立たない)'); return fails; }
+  const showIdx = values.findIndex(v => v.mainIsB3);
+  if (showIdx < 0) fails.push('次の興行のメインに挑戦状の試合が組まれていない');
+  const before = values.find(v => v.booked);
+  const last = values[values.length - 1];
+  if (last.booked) fails.push('挑戦状の予約が残っている(興行で清算されていない)');
+  if (last.challengerInRoster) fails.push('挑戦者(ゲスト)が自団体のロスターに残っている');
+  console.log(`B3: 代表 ${last.fighterId} vs 挑戦者 ${last.challengerId} / 対戦成績 ${before.h2hMatches}→${last.h2hMatches}(最後 ${JSON.stringify(last.h2hLast)}) / lastB3ChallengeWeek ${last.lastB3ChallengeWeek} / ゲストの残り ${last.challengerInRoster}`);
+  // 挑戦状の試合は isCRMatch なので共通の対戦成績(recordShowH2h)は飛ばし、hooks.afterWriteback が1回だけ記録する
+  if (last.h2hMatches !== before.h2hMatches + 1) fails.push(`代表と挑戦者の対戦成績が1試合分増えていない(${before.h2hMatches}→${last.h2hMatches})`);
+  if (!(last.lastB3ChallengeWeek > 0)) fails.push('lastB3ChallengeWeek が記録されていない');
+  return fails;
+}
+
+// ── 派閥の予約(F07 メイン推薦 / Common-1 / F08 直接対決)──
+// 派閥イベントは持ち越し中なら週送りでも新しい抽選をせずそのまま画面に出る(tickWeek の
+// 「_pendingFactionEvent があれば何もしない」)。停止週の頭に、エンジンの判定関数が作った
+// payload の _pendingFactionEvent を置き、試走で週送りが大型イベントに枠を取られないことを確かめる
+const FACTION_KIND = {
+  F07: {
+    eventId: 'F07',
+    // F07 はチーム・派閥ごとの CD と、incidentType の抽選がある。判定は CD を外した写しで行い
+    // (セーブ側の CD は触らない)、DEMAND_MAIN が出るまで乱数を替える
+    build(G) {
+      const s = {
+        ...G,
+        _f07TeamCooldownUntil: 0,
+        factions: (G.factions || []).map(f => ({ ...f, _f07RecentIncidents: [], _f07DemandQuietUntil: 0, _f07DemandMoneyQuietUntil: 0, _f07PostRebukeQuietUntil: 0 })),
+      };
+      for (let k = 0; k < 400; k += 1) {
+        const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xF07D, k));
+        const payload = Engine.factions.checkF07Conditions(s, rng);
+        if (payload.eligible && payload.incidentType === 'DEMAND_MAIN') return { state: G, payload };
+      }
+      return { state: null, reason: 'F07 DEMAND_MAIN の候補派閥が無い(リーダーの信頼が60未満など)' };
+    },
+  },
+  COMMON_1: {
+    eventId: 'COMMON_1',
+    // 派閥内の因縁(rivalry≥40)の2人が要る。無ければ派閥の先頭2人の因縁を60にする(セーブにも入れる)。
+    // CD は写しで外す
+    build(G) {
+      let base = G;
+      const hasPair = (G.factions || []).some(f => {
+        const ids = (f.memberIds || []).filter(id => (G.roster || []).some(c => c.id === id));
+        return ids.some((a, i) => ids.slice(i + 1).some(b => Math.max(
+          ((G.relationships || {})[`${a}>${b}`] || {}).rivalry || 0,
+          ((G.relationships || {})[`${b}>${a}`] || {}).rivalry || 0) >= 40));
+      });
+      if (!hasPair) {
+        const fac = (G.factions || []).find(f => (f.memberIds || []).filter(id => (G.roster || []).some(c => c.id === id)).length >= 2);
+        if (!fac) return { state: null, reason: '2人以上いる派閥が無い' };
+        const [a, b] = fac.memberIds.filter(id => (G.roster || []).some(c => c.id === id));
+        const rels = { ...(G.relationships || {}) };
+        for (const key of [`${a}>${b}`, `${b}>${a}`]) {
+          if (!rels[key]) return { state: null, reason: `関係値 ${key} が無い` };
+          rels[key] = { ...rels[key], rivalry: Math.max(rels[key].rivalry || 0, 60) };
+        }
+        base = { ...G, relationships: rels };
+      }
+      const s = {
+        ...base,
+        _commonEventTeamCooldownUntil: 0,
+        factions: (base.factions || []).map(f => ({ ...f, _commonEventLastWeek: 0, _commonEventCooldowns: {} })),
+      };
+      const rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xC0B0));
+      const payload = Engine.factions.checkCommon1Conditions(s, rng);
+      if (!payload.eligible) return { state: null, reason: 'Common-1 の判定が通らない' };
+      return { state: base, payload };
+    },
+  },
+  F08: {
+    eventId: 'F08',
+    // F08 は抗争中(inHostility)の2派閥で片方向の対立度80以上。F02③(決着)は両方向60以上で
+    // 必ず立ち、そのときは F08 の試合後の画面が出ない(決着の演出が優先)。直接対決の清算で
+    // 敗れた側→勝った側の対立度が最大 +16(F08 の1.5倍×2)上がるので、逆方向は20に抑える
+    // リーダーの怪我は停止週では問わない(試合は翌週。翌週に出られるかは試走で確かめる)
+    build(G) {
+      const pairs = (G.factions || [])
+        .filter(f => f && f.leaderId != null && Array.isArray(f.memberIds))
+        .map(f => ({ faction: f, leader: (G.roster || []).find(c => c.id === f.leaderId && !c.isRental) }))
+        .filter(x => x.leader);
+      if (pairs.length < 2) return { state: null, reason: 'リーダーのいる派閥が2つ無い' };
+      const [A, B] = pairs;
+      const host = (from, to) => Number(((G.factionHostility || {})[`${from}>${to}`]) || 0);
+      let s = { ...G, factions: (G.factions || []).map(f => (f.id === A.faction.id || f.id === B.faction.id) ? { ...f, inHostility: true } : f) };
+      s = Engine.factions.applyHostilityChange(s, A.faction.id, B.faction.id, 85 - host(A.faction.id, B.faction.id));
+      if (host(B.faction.id, A.faction.id) > 20) {
+        s = Engine.factions.applyHostilityChange(s, B.faction.id, A.faction.id, 20 - host(B.faction.id, A.faction.id));
+      }
+      const payload = Engine.factions.checkF08Conditions(s);
+      if (!payload.eligible) return { state: null, reason: 'F08 の判定が通らない' };
+      return { state: s, payload };
+    },
+  },
+};
+
+function _pickFactionBooking(G, kind) {
+  const spec = FACTION_KIND[kind];
+  const built = spec.build(G);
+  if (!built.state) return { state: null, reason: built.reason };
+  const pending = { eventId: spec.eventId, payload: built.payload };
+  const { tick, next } = _dryRunWeek(built.state, { _pendingFactionEvent: pending });
+  if (tick._pendingLargeEvent) return { state: null, reason: '大型イベントが週次のモーダル枠を取る(派閥イベントは翌週へ)' };
+  if (!tick._pendingFactionEvent || tick._pendingFactionEvent.eventId !== spec.eventId) return { state: null, reason: '週送りで派閥イベントが消える' };
+  const blocked = _nextWeekBlocker(next);
+  if (blocked) return { state: null, reason: blocked };
+  const ids = kind === 'COMMON_1' ? [built.payload.fighterAId, built.payload.fighterBId]
+    : kind === 'F08' ? [built.payload.leaderAId, built.payload.leaderBId] : [];
+  if (!ids.every(id => _crHealthy((next.roster || []).find(c => c.id === id)))) return { state: null, reason: '対決の2人が翌週の興行に出られない' };
+  return { state: { ...built.state, [IGNITE_TRANSIENTS]: { _pendingFactionEvent: pending } }, reason: null };
+}
+
+// 派閥の予約の清算を手ごとに読む。信頼・帳簿の「派閥」・感度は全員分(12人)、ほかは予約の中身
+const FACTION_STEP_PROBE = `(() => {
+  if (typeof G === 'undefined' || !G) return null;
+  const sp = (typeof App !== 'undefined' && App._showPreview) || null;
+  const main = sp && sp.validMatches && sp.validMatches[0];
+  const mainIds = !main ? [] : (main.matchType === 'tag'
+    ? [main.teamA && main.teamA.fighter1, main.teamA && main.teamA.fighter2, main.teamB && main.teamB.fighter1, main.teamB && main.teamB.fighter2].filter(Boolean)
+    : [main.left, main.right].filter(Boolean));
+  const trust = {};
+  for (const c of (G.roster || [])) {
+    const t = c.trust != null ? c.trust : 50;
+    trust[c.id] = [t, (c.trustStrain && c.trustStrain.faction) || 0, Engine.trust.trustSensitivity(t), Engine.util.ov(c)];
+  }
+  const r0 = (G.lastShowResults || [])[0] || null;
+  const mainWinner = r0 && r0.left && r0.right ? (r0.winner === 'left' ? r0.left.id : (r0.winner === 'right' ? r0.right.id : null)) : null;
+  const rel = (a, b) => { const r = (G.relationships || {})[a + '>' + b]; return r ? r.rivalry : null; };
+  const pend = G._pendingFactionEvent || null;
+  // 予約が消えた後も同じ2人の因縁を読めるよう、読取りの控えを window に置く(画面の G ではない)
+  const memo = window.__wmIgniteFaction = window.__wmIgniteFaction || {};
+  if (G.bookedCommon1) memo.c1 = [G.bookedCommon1.fighterAId, G.bookedCommon1.fighterBId];
+  if (G._pendingF08Directive) memo.f08 = [G._pendingF08Directive.leaderAId, G._pendingF08Directive.leaderBId];
+  return {
+    season: G.season, week: G.week, phase: G.weekPhase, totalShows: G.totalShows,
+    pendingEvent: pend ? pend.eventId : null,
+    f07: G._pendingF07Directive || null,
+    f08: G._pendingF08Directive || null,
+    c1: G.bookedCommon1 ? [G.bookedCommon1.fighterAId, G.bookedCommon1.fighterBId] : null,
+    mainIds,
+    mainWinner,
+    c1Rivalry: memo.c1 ? [rel(memo.c1[0], memo.c1[1]), rel(memo.c1[1], memo.c1[0])] : null,
+    f08Rivalry: memo.f08 ? [rel(memo.f08[0], memo.f08[1]), rel(memo.f08[1], memo.f08[0])] : null,
+    shown: {
+      c1Result: !!document.getElementById('c1rCloseBtn'),
+      f08Post: !!document.getElementById('fevtF08PostOverlay'),
+    },
+    factions: (G.factions || []).map(f => ({ id: f.id, leaderId: f.leaderId, memberIds: f.memberIds, momentum: f.momentum })),
+    hostility: G.factionHostility || {},
+    trust,
+  };
+})()`;
+
+// 興行の清算の前後: 同じ週のうちに totalShows が増えた最初の手が清算(Engine.show.beginShow/finalize)を
+// 含む手、その直前の手が清算前。清算の間に信頼を動かすのは派閥の予約と引退・退団の影響だけ。
+// 同じ週に限るのは、最初の読取り(タイトル画面・セーブの読み込み前の G)を清算と取り違えないため
+function _findFinalizeWindow(steps) {
+  const values = steps.map(entry => entry.value);
+  for (let i = 1; i < values.length; i += 1) {
+    const prev = values[i - 1];
+    const cur = values[i];
+    if (!prev || !cur || prev.probeError || cur.probeError) continue;
+    if (prev.season !== cur.season || prev.week !== cur.week) continue;
+    if (Number.isFinite(prev.totalShows) && cur.totalShows > prev.totalShows) return { pre: prev, post: cur, index: i };
+  }
+  return null;
+}
+
+const _near = (a, b) => Math.abs(a - b) < 1e-6;
+const _clampTrust = v => Math.max(0, Math.min(100, v));
+const _fmt = v => (typeof v === 'number' ? Math.round(v * 100) / 100 : v);
+
+// 清算の窓(pre/post)で、派閥の関数 _applyTrustToMembers が1回だけ動かした形を確かめる:
+// 信頼 = clamp(前 + rawDelta × 感度(前))、帳簿の「派閥」は減った分だけ増える
+function _checkTrustApplied(fails, pre, post, id, rawDelta, label) {
+  const [t0, s0, sens] = pre.trust[id] || [];
+  const [t1, s1] = post.trust[id] || [];
+  if (t0 == null || t1 == null) { fails.push(`${label}(${id})の信頼が読めない`); return; }
+  const want = _clampTrust(t0 + rawDelta * sens);
+  const wantStrain = s0 + Math.max(0, t0 - want);
+  console.log(`  ${label}(${id}): 信頼 ${_fmt(t0)}→${_fmt(t1)} (期待 ${_fmt(want)} = ${rawDelta}×感度${sens}) / 帳簿「派閥」 ${_fmt(s0)}→${_fmt(s1)}`);
+  if (!_near(t1, want)) fails.push(`${label}(${id})の信頼 ${_fmt(t0)}→${_fmt(t1)}(期待 ${_fmt(want)})`);
+  if (!_near(s1, wantStrain)) fails.push(`${label}(${id})の帳簿「派閥」 ${_fmt(s0)}→${_fmt(s1)}(期待 ${_fmt(wantStrain)})`);
+}
+
+function _stepValues(steps) {
+  return (steps || []).map(entry => entry.value).filter(v => v && !v.probeError);
+}
+
+// F07 メイン推薦(DEMAND_MAIN): 興行ごとに、メインに派閥の選手がいれば派閥全員の信頼 +1、
+// いなければリーダーの信頼 −2(感度つき)。残り興行数が1つ減る(app.js _finalizeHookFactionBookings)
+function _assertF07Main(probe, lang, steps) {
+  const fails = [];
+  const values = _stepValues(steps);
+  if (!values.some(v => v.f07 && v.f07.type === 'DEMAND_MAIN')) return ['F07 メイン推薦の方針(_pendingF07Directive)が一度も立たない'];
+  const win = _findFinalizeWindow(steps);
+  if (!win) return ['興行の清算(totalShows の増加)を観測できない'];
+  const { pre, post } = win;
+  if (!pre.f07) return ['清算の直前に F07 の方針が無い'];
+  const fac = (pre.factions || []).find(f => f.id === pre.f07.factionId);
+  if (!fac) return ['F07 の派閥が清算の直前に無い'];
+  const fulfilled = (pre.mainIds || []).some(id => fac.memberIds.includes(id));
+  console.log(`F07: メイン ${JSON.stringify(pre.mainIds)} / 派閥 ${JSON.stringify(fac.memberIds)} → ${fulfilled ? '推薦どおり(全員 +1)' : '推薦外(リーダー −2)'}`);
+  if (fulfilled) fac.memberIds.forEach(id => _checkTrustApplied(fails, pre, post, id, 1, '派閥の選手'));
+  else _checkTrustApplied(fails, pre, post, fac.leaderId, -2, 'リーダー');
+  const r0 = pre.f07.remainingShows;
+  const r1 = post.f07 ? post.f07.remainingShows : 0;
+  console.log(`F07: 残り興行数 ${r0}→${r1}`);
+  if (r1 !== r0 - 1) fails.push(`F07 の残り興行数 ${r0}→${r1}(1つ減るはず)`);
+  return fails;
+}
+
+// Common-1: 予約の2人がカードで当たれば清算。勝者の信頼 +3〜5・敗者 −1〜3(感度つき。敗者がリーダーなら
+// 下克上で追撃)、2人の因縁 −30〜50、予約は消える。結果の画面(c1rCloseBtn)が出る
+function _assertCommon1(probe, lang, steps) {
+  const fails = [];
+  const values = _stepValues(steps);
+  if (!values.some(v => v.c1)) return ['Common-1 の予約(bookedCommon1)が一度も立たない'];
+  const win = _findFinalizeWindow(steps);
+  if (!win) return ['興行の清算(totalShows の増加)を観測できない'];
+  const { pre, post } = win;
+  if (!pre.c1) return ['清算の直前に Common-1 の予約が無い'];
+  if (post.c1) fails.push('清算の後も Common-1 の予約が残っている(カードで当たっていない?)');
+  const [a, b] = pre.c1;
+  const delta = id => post.trust[id][0] - pre.trust[id][0];
+  const winner = delta(a) > 0 ? a : (delta(b) > 0 ? b : null);
+  if (winner == null) {
+    fails.push(`2人とも信頼が上がっていない(${a}: ${_fmt(delta(a))} / ${b}: ${_fmt(delta(b))})`);
+  } else {
+    const loser = winner === a ? b : a;
+    const raw = delta(winner) / pre.trust[winner][2];
+    console.log(`Common-1: 勝者 ${winner} 信頼 ${_fmt(pre.trust[winner][0])}→${_fmt(post.trust[winner][0])}(素点 ${_fmt(raw)}) / 敗者 ${loser} 信頼 ${_fmt(pre.trust[loser][0])}→${_fmt(post.trust[loser][0])} 帳簿「派閥」 ${_fmt(pre.trust[loser][1])}→${_fmt(post.trust[loser][1])}`);
+    if (post.trust[winner][0] < 100 && ![3, 4, 5].some(n => _near(raw, n))) fails.push(`勝者の信頼の素点 ${_fmt(raw)}(3〜5のはず)`);
+    const dl = delta(loser);
+    if (!(dl < 0)) fails.push(`敗者の信頼が下がっていない(${_fmt(dl)})`);
+    if (!_near(post.trust[loser][1] - pre.trust[loser][1], -dl)) fails.push('敗者の帳簿「派閥」が信頼の減り分だけ増えていない');
+  }
+  if (pre.c1Rivalry && post.c1Rivalry) {
+    console.log(`Common-1: 2人の因縁 ${JSON.stringify(pre.c1Rivalry.map(_fmt))}→${JSON.stringify(post.c1Rivalry.map(_fmt))}`);
+    if (!(post.c1Rivalry[0] < pre.c1Rivalry[0] && post.c1Rivalry[1] < pre.c1Rivalry[1])) fails.push('2人の因縁が下がっていない');
+  }
+  if (!values.some(v => v.shown && v.shown.c1Result)) fails.push('Common-1 の結果の画面(c1rCloseBtn)が出ていない');
+  return fails;
+}
+
+// F08 直接対決をメインに: 次の興行の先頭に両リーダーが組まれ(_f08Locked)、試合後に敗れた派閥の末端の
+// 信頼 −2〜4(感度つき)と試合後の画面(fevtF08PostOverlay)。方針は興行後に消える
+function _assertF08(probe, lang, steps) {
+  const fails = [];
+  const values = _stepValues(steps);
+  if (!values.some(v => v.f08)) return ['F08 の直接対決の方針(_pendingF08Directive)が一度も立たない'];
+  const win = _findFinalizeWindow(steps);
+  if (!win) return ['興行の清算(totalShows の増加)を観測できない'];
+  const { pre, post } = win;
+  if (!pre.f08) return ['清算の直前に F08 の方針が無い'];
+  if (post.f08) fails.push('清算の後も F08 の方針が残っている');
+  const d = pre.f08;
+  if (!(pre.mainIds.includes(d.leaderAId) && pre.mainIds.includes(d.leaderBId))) fails.push(`メインが両リーダーではない(${JSON.stringify(pre.mainIds)})`);
+  // 敗れた派閥の末端(リーダーと幹部=リーダーを除く OVR 上位2人 以外。Engine.factions.isExecutive)の信頼が
+  // 同じ素点(−2〜−4 のどれか1つ)×感度で下がり、帳簿の「派閥」が同じだけ増える。末端がいない(3人以下の派閥)なら信頼は動かない
+  const winnerId = post.mainWinner;
+  const loserLeader = winnerId === d.leaderAId ? d.leaderBId : (winnerId === d.leaderBId ? d.leaderAId : null);
+  if (loserLeader == null) {
+    fails.push(`メインの勝者が両リーダーのどちらでもない(${winnerId})`);
+  } else {
+    const fac = (pre.factions || []).find(f => f.leaderId === loserLeader) || { memberIds: [] };
+    const nonLeaders = fac.memberIds.filter(id => id !== fac.leaderId && pre.trust[id]);
+    const execs = new Set([...nonLeaders].sort((x, y) => pre.trust[y][3] - pre.trust[x][3]).slice(0, 2));
+    const tails = nonLeaders.filter(id => !execs.has(id));
+    console.log(`F08: 勝者 ${winnerId} / 敗れた派閥 ${fac.id} ${JSON.stringify(fac.memberIds)} 末端 ${JSON.stringify(tails)}`);
+    const raws = [];
+    for (const id of tails) {
+      const raw = (post.trust[id][0] - pre.trust[id][0]) / pre.trust[id][2];
+      raws.push(raw);
+      console.log(`  末端 ${id}: 信頼 ${_fmt(pre.trust[id][0])}→${_fmt(post.trust[id][0])}(素点 ${_fmt(raw)}) 帳簿「派閥」 ${_fmt(pre.trust[id][1])}→${_fmt(post.trust[id][1])}`);
+      if (post.trust[id][0] > 0 && ![-2, -3, -4].some(n => _near(raw, n))) fails.push(`敗れた派閥の末端 ${id} の信頼の素点 ${_fmt(raw)}(−2〜−4のはず)`);
+      if (!_near(post.trust[id][1] - pre.trust[id][1], pre.trust[id][0] - post.trust[id][0])) fails.push(`末端 ${id} の帳簿「派閥」が信頼の減り分だけ増えていない`);
+    }
+    if (raws.length > 1 && !raws.every(r => _near(r, raws[0]))) fails.push(`末端の素点がそろっていない(${raws.map(_fmt).join(',')})`);
+    for (const id of [...execs, fac.leaderId]) {
+      if (pre.trust[id] && post.trust[id] && !_near(pre.trust[id][0], post.trust[id][0])) fails.push(`敗れた派閥のリーダー・幹部 ${id} の信頼が動いた`);
+    }
+  }
+  const hk = (x, y) => `${x}>${y}`;
+  console.log(`F08: 対立度 ${_fmt(pre.hostility[hk(d.factionAId, d.factionBId)])}/${_fmt(pre.hostility[hk(d.factionBId, d.factionAId)])} → ${_fmt(post.hostility[hk(d.factionAId, d.factionBId)])}/${_fmt(post.hostility[hk(d.factionBId, d.factionAId)])}`);
+  if (pre.f08Rivalry && post.f08Rivalry) {
+    console.log(`F08: 両リーダーの因縁 ${JSON.stringify(pre.f08Rivalry.map(_fmt))}→${JSON.stringify(post.f08Rivalry.map(_fmt))}`);
+  }
+  if (!values.some(v => v.shown && v.shown.f08Post)) fails.push('F08 の試合後の画面(fevtF08PostOverlay)が出ていない');
+  return fails;
+}
+
 // ── R4: 統一王座「こちらの番」の前提づくり ──
 // aiHolderCycles=3 + challengePeriodKeyクリアで、次のtickWeekのprocessQuarterが
 // エンジン自身の手で _pendingUnifiedPlayerTurn+通知を発行する(payloadを手作りしない)
@@ -102,13 +628,33 @@ function _engineerUnifiedPlayerTurn(G) {
 // カードの自動組込みは存在しない(裁定: 枠は社長が決める)ため、発火予約
 // factionPendingIgnite と「リーダー対決入りの予約済みカード」を両方fixtureへ置く。
 // hostilityはF02「煽る」実装と同じ帯(+55)を両方向へ入れて表示の説得力を保つ
-function _engineerFactionIgnite(G) {
+function _healthyLeaderFactions(G) {
   const roster = G.roster || [];
   const healthyLeader = f => roster.find(c => c.id === f.leaderId && !c.injury && !c.isRental && !c.forcedRest && (c.condition ?? 80) >= 40);
-  const pairs = (G.factions || [])
+  return (G.factions || [])
     .filter(f => f && f.leaderId != null && Array.isArray(f.memberIds))
     .map(f => ({ faction: f, leader: healthyLeader(f) }))
     .filter(x => x.leader);
+}
+
+// 停止週: S2以降の W6〜W30 の通常興行週で、リーダー健在の派閥が2つそろう最初の週。
+// 以前は「S2W6」固定+シード固定で、派閥の顔ぶれがエンジンの変更で動くたびに
+// 「リーダー健在の派閥が2つ無い」で fixture が作れなくなっていた(seed42→7 に替えた P7-59 の後、
+// 2026-09-26 には seed7 が S2 を通して派閥1つ・seed42 が W6 で2つ、と入れ替わった)。
+// 週を探すので、シードの軌道が多少動いても次の該当週で作れる
+const FACTION_IGNITE_LAST_SEASON = 4;
+function _isFactionIgniteStopWeek(G) {
+  if (G.offSeason || G.season < 2) return false;
+  if (G.season > FACTION_IGNITE_LAST_SEASON) {
+    throw new Error(`S2〜S${FACTION_IGNITE_LAST_SEASON} にリーダー健在の派閥が2つそろう通常興行週が無い。別シードで生成し直すこと`);
+  }
+  return G.week >= 6 && G.week <= 30
+    && Engine.util.isRegularShowWeek(G.week)
+    && _healthyLeaderFactions(G).length >= 2;
+}
+
+function _engineerFactionIgnite(G) {
+  const pairs = _healthyLeaderFactions(G);
   if (pairs.length < 2) throw new Error('リーダー健在の派閥が2つ無い。fixtureの停止週を後ろへ/別シードで生成し直すこと');
   const [A, B] = pairs;
   let s = Engine.factions.applyHostilityChange(G, A.faction.id, B.faction.id, 55);
@@ -133,8 +679,13 @@ function _engineerFactionIgnite(G) {
 // 両者が収まるまで興行開催を封じる
 function _makeFactionIgniteBoost(fixture) {
   const pi = fixture.factionPendingIgnite || {};
-  const leaderA = { id: pi.leaderAId };
-  const leaderB = { id: pi.leaderBId };
+  return _makePairBookingBoost(pi.leaderAId, pi.leaderBId);
+}
+
+// スロット0に左 leftId・右 rightId を実クリックで組む誘導(派閥開戦のリーダー対決・Common-1 の予約で共用)
+function _makePairBookingBoost(leftId, rightId) {
+  const leaderA = { id: leftId };
+  const leaderB = { id: rightId };
   const rowRegex = (side, id) => new RegExp(`_spSelectFighter\\(0,\\s*'${side}',\\s*${id}\\)`);
   const openRegex = side => new RegExp(`_spOpenPicker\\(0,\\s*'${side}'\\)`);
   return (candidate, all) => {
@@ -937,14 +1488,13 @@ module.exports = {
 
   'away-challenge': {
     description: '果たし状(自団体発・CH-1直訴)の通し点火: 直訴モーダル(同行2名選択)→YES→sendoff→遠征予約→バス移動→敵地興行(task-95リスタイル)→2拍リザルト(B1/B2)',
-    fixture: {
-      seed: 42,
-      until: G => G.season === 2 && G.week === 6 && !G.offSeason,
-      engineer: G => _engineerChallengePending(G, false),
-      assert: _assertChallengePending,
-    },
+    // 停止週の探し方は incoming-challenge と同じ(_challengeFixture)。以前の「S2W6 固定」では
+    // 相手(他団体)の選手が W6 の他団体の試合で怪我をし、W8 の遠征が黙って取り消されていた(2026-09-26)
+    fixture: _challengeFixture(false),
     walk: { seasons: 1, maxSteps: 160 },
-    until: s => !!(s.state && !s.state.offSeason && (s.state.season > 2 || s.state.week >= 9)),
+    // 停止週(非興行)を処理→翌週の頭に直訴→同行2名→その週に遠征→2拍の結果→自団体の興行。
+    // 停止週の2週後の頭で止める(その週に自然に届く次の直訴を受けると、新しい遠征予約が残って見えるため)
+    makeUntil: _untilWeeksAfterFixture(2),
     // 直訴モーダルは同行2名を選ぶまでYESが無効。未選択の同行候補を最優先し、
     // NOは(このモーダル内に限り)封じる — 点火が目的のため
     boost: (candidate, all) => {
@@ -979,14 +1529,13 @@ module.exports = {
 
   'incoming-challenge': {
     description: '果たし状(相手発・task-87迎撃画面)の通し点火: 黒Stage果たし状→受けて立つ→迎撃予約→次の自団体興行で3試合シリーズ消化',
-    fixture: {
-      seed: 42,
-      until: G => G.season === 2 && G.week === 6 && !G.offSeason,
-      engineer: G => _engineerChallengePending(G, true),
-      assert: _assertChallengePending,
-    },
+    // 停止週は _challengeFixture で探す(seed42 では S2W7)。以前の「S2W6 固定」は発起人が W6 の
+    // 他団体の試合で怪我をし、W8 の興行で予約が解除されて2拍の結果画面が不発だった(2026-09-26)
+    fixture: _challengeFixture(true),
     walk: { seasons: 1, maxSteps: 160 },
-    until: s => !!(s.state && !s.state.offSeason && (s.state.season > 2 || s.state.week >= 9)),
+    // 停止週(非興行)を処理→翌週の頭に果たし状→受けて立つ→その週の興行でシリーズ→2拍の結果。
+    // 余裕を1週みて、停止週の3週後の頭で止める
+    makeUntil: _untilWeeksAfterFixture(3),
     ignition: [
       // 果たし状の到着画面(task-87の黒Stage)。id無しで .hostile-arrival-overlay クラスのみ
       { name: 'incoming-gauntlet', required: true, match: s => overlayHit(s, 'hostile-arrival-overlay') },
@@ -1003,6 +1552,186 @@ module.exports = {
       if (probe && probe.bookingLeft) fails.push('迎撃予約が残留している(シリーズが消化されていない)');
       return fails;
     },
+  },
+
+  // incoming-challenge の観戦版(2026-09-26 K-1 第3段の確認)。同じ停止週・同じ果たし状で、
+  // 3試合シリーズ(上位3枠=試合番号0〜2)を「🎬 試合を観る」で最後まで観戦してから残りをスキップする。
+  // 観戦は MATCH_RESULT → _afterMatchSettle の経路(スキップの経路とは別)を通って Engine.show.finalize に入る
+  'incoming-challenge-watch': {
+    description: '果たし状(相手発)の観戦版: 受けて立つ→次の自団体興行で3試合シリーズを観戦(iframe を最後まで)→2拍の結果',
+    fixture: _challengeFixture(true),
+    walk: { seasons: 1, maxSteps: 200 },
+    makeUntil: _untilWeeksAfterFixture(3),
+    boost: _watchMatchBoost([0, 1, 2]),
+    hold: WATCH_HOLD,
+    knownConsole: WATCH_KNOWN_CONSOLE,
+    ignition: [
+      { name: 'incoming-gauntlet', required: true, match: s => overlayHit(s, 'hostile-arrival-overlay') },
+      { name: 'watch-iframe', required: true, match: s => overlayHit(s, 'battleOverlay') },
+      { name: 'incoming-result-two-beat', required: true, match: s => overlayHit(s, 'challengeRequestResultOverlay') },
+    ],
+    finalProbe: `(() => ({
+      bookingLeft: !!(typeof G !== 'undefined' && G._pendingIncomingChallengeMatch),
+      accepted: (typeof G !== 'undefined' && G.challengeRequest) ? (G.challengeRequest.acceptedThisSeason || 0) : 0,
+      guestsLeft: (typeof G !== 'undefined') ? (G.roster || []).filter(f => f.isCRGuest).length : -1,
+    }))()`,
+    finalAssert: probe => {
+      const fails = [];
+      if (!probe || probe.accepted < 1) fails.push('果たし状が受理されていない(acceptedThisSeason=0)');
+      if (probe && probe.bookingLeft) fails.push('迎撃予約が残留している(シリーズが消化されていない)');
+      if (probe && probe.guestsLeft !== 0) fails.push(`シリーズのゲストが自団体のロスターに残っている(${probe.guestsLeft})`);
+      return fails;
+    },
+  },
+
+  // 挑戦状(B3)を受けて「次の通常興行のメインイベント」に組み、その興行で清算する(K-1 第3段の hooks.afterWriteback)。
+  // 停止週の週送りで挑戦状が立った形を合成(_pickB3Challenge)。スキップ版と観戦版
+  'b3-challenge': {
+    description: '挑戦状(B3): 週を処理→挑戦状→受けて立つ→代表を選ぶ→次の通常興行のメインに固定→全試合スキップ→対戦成績・ゲスト返却',
+    fixture: {
+      seed: 42,
+      until: G => {
+        if (G.season > 2) throw new Error('S2 のうちに挑戦状を置ける週が見つからない');
+        return _isPlainStopWeek(G) && !!_pickB3Challenge(G).state;
+      },
+      engineer: G => {
+        const picked = _pickB3Challenge(G);
+        if (!picked.state) throw new Error(`挑戦状を置けない: ${picked.reason}`);
+        return picked.state;
+      },
+      engineerSave: _moveIgniteTransients,
+      assert: G => (G[IGNITE_TRANSIENTS] && G[IGNITE_TRANSIENTS]._pendingLargeEvent ? [] : ['挑戦状(_pendingLargeEvent B3)が置けていない']),
+    },
+    walk: { seasons: 1, maxSteps: 160 },
+    makeUntil: _untilWeeksAfterFixture(3),
+    boost: _b3AcceptBoost,
+    knownConsole: B3_KNOWN_CONSOLE,
+    stepProbe: B3_STEP_PROBE,
+    ignition: [
+      // 決断トレイつきの暗い A 型は直訴(CH-1)とも同じ形なので、受けた証跡は stepProbe(予約)で見る
+      { name: 'b3-offer', required: false, match: s => (s.overlays || []).some(o => /mdlAOverlay:.*mdl-a-decision-tray/.test(String(o)) && /danger/.test(String(o))) },
+      { name: 'b3-pick', required: true, match: s => overlayHit(s, 'mdl-a-candidate-stage') },
+    ],
+    finalProbe: `(() => ({ booked: !!(typeof G !== 'undefined' && G._pendingIncomingB3Match) }))()`,
+    finalAssert: (probe, lang, steps) => _assertB3Resolved(steps),
+  },
+
+  'b3-challenge-watch': {
+    description: '挑戦状(B3)の観戦版: 受けて立つ→次の通常興行のメイン(試合番号0)を観戦(iframe を最後まで)→残りをスキップ',
+    fixture: {
+      seed: 42,
+      until: G => {
+        if (G.season > 2) throw new Error('S2 のうちに挑戦状を置ける週が見つからない');
+        return _isPlainStopWeek(G) && !!_pickB3Challenge(G).state;
+      },
+      engineer: G => {
+        const picked = _pickB3Challenge(G);
+        if (!picked.state) throw new Error(`挑戦状を置けない: ${picked.reason}`);
+        return picked.state;
+      },
+      engineerSave: _moveIgniteTransients,
+      assert: G => (G[IGNITE_TRANSIENTS] && G[IGNITE_TRANSIENTS]._pendingLargeEvent ? [] : ['挑戦状(_pendingLargeEvent B3)が置けていない']),
+    },
+    walk: { seasons: 1, maxSteps: 200 },
+    makeUntil: _untilWeeksAfterFixture(3),
+    boost: (candidate, all) => {
+      const accept = _b3AcceptBoost(candidate, all);
+      return accept != null ? accept : _watchMatchBoost([0])(candidate, all);
+    },
+    hold: WATCH_HOLD,
+    knownConsole: [...WATCH_KNOWN_CONSOLE, ...B3_KNOWN_CONSOLE],
+    stepProbe: B3_STEP_PROBE,
+    ignition: [
+      { name: 'b3-offer', required: false, match: s => (s.overlays || []).some(o => /mdlAOverlay:.*mdl-a-decision-tray/.test(String(o)) && /danger/.test(String(o))) },
+      { name: 'b3-pick', required: true, match: s => overlayHit(s, 'mdl-a-candidate-stage') },
+      { name: 'watch-iframe', required: true, match: s => overlayHit(s, 'battleOverlay') },
+    ],
+    finalProbe: `(() => ({ booked: !!(typeof G !== 'undefined' && G._pendingIncomingB3Match) }))()`,
+    finalAssert: (probe, lang, steps) => _assertB3Resolved(steps),
+  },
+
+  // 派閥の予約の清算(K-1 第3段 3-3・§7 X05 で信頼・人気が効くようになった処理)。停止週の週送りの後に
+  // 派閥イベントが出る形を合成し(_pickFactionBooking)、社長の選択 A → 翌週の通常興行で清算 →
+  // 清算の前後(stepProbe)で信頼・帳簿の「派閥」・予約の消化を検算する
+  'faction-f07-main': {
+    description: '派閥 F07 メイン推薦: 週を処理→メインカード相談→A(推す)→翌週の興行で清算(メインに派閥の選手なし=リーダー −2 / あり=全員 +1)→残り興行数',
+    fixture: {
+      seed: 42,
+      until: G => {
+        if (G.season > 2) throw new Error('S2 のうちに F07 を置ける週が見つからない');
+        return _isPlainStopWeek(G) && !!_pickFactionBooking(G, 'F07').state;
+      },
+      engineer: G => {
+        const picked = _pickFactionBooking(G, 'F07');
+        if (!picked.state) throw new Error(`F07 を置けない: ${picked.reason}`);
+        return picked.state;
+      },
+      engineerSave: _moveIgniteTransients,
+    },
+    walk: { seasons: 1, maxSteps: 160 },
+    makeUntil: _untilWeeksAfterFixture(3),
+    stepProbe: FACTION_STEP_PROBE,
+    ignition: [
+      { name: 'f07-modal', required: true, match: s => overlayHit(s, 'fevtF07Overlay') },
+    ],
+    finalProbe: `(() => ({ f07: (typeof G !== 'undefined' && G._pendingF07Directive) || null }))()`,
+    finalAssert: (probe, lang, steps) => _assertF07Main(probe, lang, steps),
+  },
+
+  'faction-common1': {
+    description: '派閥 Common-1: 週を処理→派閥内の対決→A(興行で決着)→翌週のカードに2人を組む→清算(勝者の信頼+・敗者の信頼−・因縁−)→結果の画面',
+    fixture: {
+      seed: 42,
+      until: G => {
+        if (G.season > 2) throw new Error('S2 のうちに Common-1 を置ける週が見つからない');
+        return _isPlainStopWeek(G) && !!_pickFactionBooking(G, 'COMMON_1').state;
+      },
+      engineer: G => {
+        const picked = _pickFactionBooking(G, 'COMMON_1');
+        if (!picked.state) throw new Error(`Common-1 を置けない: ${picked.reason}`);
+        return picked.state;
+      },
+      engineerSave: _moveIgniteTransients,
+    },
+    walk: { seasons: 1, maxSteps: 160 },
+    makeUntil: _untilWeeksAfterFixture(3),
+    // 予約の2人をスロット0に組む(枠は問わない仕様。組まないと清算されず次の興行へ繰り越される)
+    makeBoost: fixture => {
+      const p = (fixture._pendingFactionEvent && fixture._pendingFactionEvent.payload) || {};
+      return _makePairBookingBoost(p.fighterAId, p.fighterBId);
+    },
+    stepProbe: FACTION_STEP_PROBE,
+    ignition: [
+      { name: 'common1-modal', required: true, match: s => overlayHit(s, 'fevtCommon1Overlay') },
+    ],
+    finalProbe: `(() => ({ booked: !!(typeof G !== 'undefined' && G.bookedCommon1) }))()`,
+    finalAssert: (probe, lang, steps) => _assertCommon1(probe, lang, steps),
+  },
+
+  'faction-f08': {
+    description: '派閥 F08: 週を処理→対立ヒートアップ→A(直接対決をメインに)→翌週の興行の先頭に両リーダー→清算(敗れた派閥の末端の信頼−)→試合後の画面',
+    fixture: {
+      seed: 42,
+      until: G => {
+        if (G.season > 2) throw new Error('S2 のうちに F08 を置ける週が見つからない');
+        return _isPlainStopWeek(G) && !!_pickFactionBooking(G, 'F08').state;
+      },
+      engineer: G => {
+        const picked = _pickFactionBooking(G, 'F08');
+        if (!picked.state) throw new Error(`F08 を置けない: ${picked.reason}`);
+        return picked.state;
+      },
+      engineerSave: _moveIgniteTransients,
+    },
+    walk: { seasons: 1, maxSteps: 160 },
+    makeUntil: _untilWeeksAfterFixture(3),
+    stepProbe: FACTION_STEP_PROBE,
+    ignition: [
+      { name: 'f08-modal', required: true, match: s => overlayHit(s, 'fevtF08Overlay') },
+      { name: 'f08-aftermath', required: true, match: s => overlayHit(s, 'fevtF08PostOverlay') },
+    ],
+    finalProbe: `(() => ({ f08: (typeof G !== 'undefined' && G._pendingF08Directive) || null }))()`,
+    finalAssert: (probe, lang, steps) => _assertF08(probe, lang, steps),
   },
 
   'unified-player-turn': {
@@ -1054,19 +1783,22 @@ module.exports = {
   'faction-ignite': {
     description: '派閥開戦(F02_IGNITE・task-86セレモニー)の点火: 発火予約+リーダー対決入り予約カード→興行開催→開戦セレモニー→結果→hostility反映',
     fixture: {
-      seed: 7 /* P7-59: seed42はP7-54(集客)以降の軌道で「リーダー健在の派閥が2つ」を満たさなくなったため7へ */,
-      until: G => G.season === 2 && G.week === 6 && !G.offSeason,
+      // 停止週は _isFactionIgniteStopWeek で探す(seed42 では S2W6)。P7-59 の seed7 は
+      // 2026-09-26 時点で S2 を通して派閥が1つしか無く、固定週では作れなくなっていた
+      seed: 42,
+      until: _isFactionIgniteStopWeek,
       engineer: _engineerFactionIgnite,
       assert: G => {
         const fails = [];
         if (!G.factionPendingIgnite) fails.push('factionPendingIgnite が置けていない');
+        if (!Engine.util.isRegularShowWeek(G.week)) fails.push(`停止週 W${G.week} が通常興行週ではない(最初の操作でリーダー対決を組む前提)`);
         return fails;
       },
     },
     walk: { seasons: 1, maxSteps: 120 },
     makeBoost: _makeFactionIgniteBoost,
-    // 開戦モーダルは興行後のポップアップキュー経由で翌週頭に出ることがあるため、W9まで見る
-    until: s => !!(s.state && !s.state.offSeason && (s.state.season > 2 || s.state.week >= 9)),
+    // 開戦モーダルは興行後のポップアップキュー経由で翌週頭に出ることがあるため、停止週の3週後の頭まで見る
+    makeUntil: _untilWeeksAfterFixture(3),
     ignition: [
       // 開戦セレモニー(task-86)。overlayはid=fevtF02IOverlayで載る
       { name: 'ignite-ceremony', required: true, match: s => overlayHit(s, 'fevtF02I') },
@@ -1216,3 +1948,9 @@ module.exports = {
     },
   },
 };
+
+// 停止週の探し方の診断用(列挙されない。シナリオ一覧には出ない)
+Object.defineProperty(module.exports, '__test', {
+  enumerable: false,
+  value: { _isPlainStopWeek, _pickChallenge, _pickB3Challenge, _pickFactionBooking, _isFactionIgniteStopWeek },
+});
