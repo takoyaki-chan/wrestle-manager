@@ -8121,8 +8121,15 @@ const App = {
   // hooks.afterRelationships(試合の関係値・興行の文脈の直後、F02③ 決着と派閥ポイントの前):
   // 直訴の結果モーダルへ関係値の変化を添える・派閥の予約の清算(Common-1・F08・F07・F09・派閥内序列戦)。
   // w.common1MatchIdx に Common-1 を清算した試合の番号を返す(派閥ポイントの加点で派閥内ポイントを二重に入れない)
+  // K-1 第3段 3-3(§7 X05): 派閥の関数は状態の roster で信頼を動かす(_applyTrustToMembers)。以前はその roster が
+  // 興行前のロスターのままで、変えた信頼は finalize の書き戻し(s = { ...s, roster })で作業中のロスターに上書きされて
+  // 消えていた(F07 メイン推薦の +1/−2・Common-1 の勝敗・派閥内序列戦・F08 の試合後の信頼)。作業中のロスターを
+  // 状態に載せて渡し、変わったロスターを作業中のロスターとして受け取る(状態を1本で受け渡す)。
+  // finalize の共通の処理に戻すときは、状態の roster を興行前のロスターに戻す(派閥ポイントの序列=OVR順などが
+  // 読む。書き戻しまで興行前のロスターを読むのは両経路の従来どおりで、変えると派閥の予約が無い興行の数値も動くため)
   _finalizeHookFactionBookings(w) {
-    let s = w.s;
+    const preShowRoster = w.s.roster;
+    let s = { ...w.s, roster: w.roster };
     const { validMatches, results } = w;
 
     if (s.relationships && s._pendingChallengeRequestResult) {
@@ -8430,7 +8437,8 @@ const App = {
       });
     }
 
-    w.s = s;
+    w.roster = s.roster;
+    w.s = { ...s, roster: preShowRoster };
     w.common1MatchIdx = common1ResolvedIdx;
   },
 

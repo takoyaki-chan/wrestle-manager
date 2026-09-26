@@ -104,6 +104,39 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
     });
 });
 
+// ── 3-3 派閥の予約の清算の信頼が書き戻しで消えない(§7 X05) ──
+section('3-3: 派閥の予約の清算(F07 メイン推薦)の信頼の変化が作業中のロスターに残る(状態の roster は興行前のまま返す)', () => {
+  const app = readSource('src', 'app.js');
+  const start = app.indexOf('\n  _finalizeHookFactionBookings(w) {');
+  assert.ok(start >= 0, 'App._finalizeHookFactionBookings が無い');
+  const method = app.slice(start, app.indexOf('\n  },\n', start) + 4);
+  assert.ok(/let s = \{ \.\.\.w\.s, roster: w\.roster \};/.test(method), '派閥の関数に作業中のロスターを渡していない');
+  assert.ok(/w\.roster = s\.roster;/.test(method), '派閥の関数が変えたロスターを受け取っていない');
+  const hooks = new Function('Engine', 'FACTION_CONFIG', 'WM_I18N', '_factionDisplayName', 'wmDiag',
+    `return ({${method}\n});`)(Engine, FACTION_CONFIG, WM_I18N, n => n, () => {});
+  const base = clone(showState);
+  const leader = base.roster.find(c => !c.injury && !c.isRental && c.trust != null && c.trust > 30 && c.trust < 90);
+  const members = base.roster.filter(c => c.id !== leader.id).slice(0, 2).map(c => c.id);
+  const fac = { id: 901, name: 'テスト派', leaderId: leader.id, memberIds: [leader.id, ...members] };
+  const preShowRoster = base.roster;
+  const working = base.roster.map(c => ({ ...c, popularity: (c.popularity || 0) + 1 })); // 作業中のロスター(興行で変わった)
+  const others = base.roster.filter(c => !fac.memberIds.includes(c.id)).map(c => c.id);
+  const w = {
+    s: { ...base, factions: [...(base.factions || []), fac], _pendingF07Directive: { type: 'DEMAND_MAIN', factionId: 901, remainingShows: 3 } },
+    roster: working,
+    validMatches: [{ left: others[0], right: others[1] }], // メインに派閥の選手がいない → リーダーの信頼 −2
+    results: [{ winner: 'left', left: { id: others[0] }, right: { id: others[1] }, hpLeft: { final: 50, max: 100 }, hpRight: { final: 0, max: 100 } }],
+  };
+  hooks._finalizeHookFactionBookings(w);
+  const before = working.find(c => c.id === leader.id).trust;
+  const after = w.roster.find(c => c.id === leader.id).trust;
+  assert.ok(after < before, `リーダーの信頼が下がっていない(${before} → ${after})`);
+  assert.strictEqual(w.roster.find(c => c.id === leader.id).popularity, working.find(c => c.id === leader.id).popularity,
+    '作業中のロスターの他の値(人気)が興行前の値に戻った');
+  assert.strictEqual(w.s.roster, preShowRoster, '状態の roster を興行前のロスターに戻していない');
+  assert.strictEqual(w.s._pendingF07Directive.remainingShows, 2, '残り興行数が減っていない');
+});
+
 // ── finalize の中身 ──
 function runFinalize(ctx = {}) {
   const input = clone(showState);
