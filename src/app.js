@@ -7232,8 +7232,9 @@ const App = {
   skipMatch(idx) {
     const sp = App._showPreview;
     if (!sp || sp.results[idx]) return;
-    // 一度でもスキップを押したら、その興行の残り全試合で pre/post-match フレーバーを抑制する
-    sp._suppressFlavor = true;
+    // スキップした試合の試合後の小さな演出(敗者の心)は出さない(下の skipFlavor)。以前の「一度スキップしたら以降の
+    // 試合前の画面も出さない」(sp._suppressFlavor)は廃止: 派閥の試合前の画面と宣戦布告は物語の節目なので常に出し、
+    // 初対決は観戦を選んだ試合の前だけに出る(2026-09-26 Keisuke 裁定)
     const staleFilled = App._fillMissingShowPreviewResults();
     if (sp.results[idx]) { App._afterMatchSettle(idx, { skipFlavor: true }); return; }
     const m = sp.validMatches[idx];
@@ -8923,11 +8924,11 @@ const App = {
   // 試合前の画面を 1試合分流す。宣戦布告の後(App._runConfrontationForMatch)から呼ばれる。
   // ここで出すのは派閥の試合前の画面(派閥内序列戦・F08・F09)だけ。「✨ 初対決」は観戦を選んだ試合の前に
   // 出す(App._runFirstMeetBeforeWatch。2026-09-26 — 敗者の心と同じく観戦した試合だけ)
-  // その試合が既に始まっていれば出さない(遅れて観戦の上に出ない)
+  // 派閥の試合前の画面は物語の節目なので、前の試合をスキップしていても出す(2026-09-26 Keisuke 裁定。以前は一度スキップ
+  // すると `sp._suppressFlavor` で以降の試合に出なかった)。その試合が既に始まっていれば出さない(遅れて観戦の上に出ない)
   _runPreMatchFlavorForMatch(idx) {
     const sp = App._showPreview;
     if (!sp) return;
-    if (sp._suppressFlavor) return; // 一度スキップしたら以降のフレーバーは抑制
     if (!Array.isArray(sp.results) || sp.results[idx] !== null) return;
     if (!sp._shownPreFlavor) sp._shownPreFlavor = new Set();
     if (sp._shownPreFlavor.has(idx)) return;

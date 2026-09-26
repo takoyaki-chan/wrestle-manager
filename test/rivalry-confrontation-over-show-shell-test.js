@@ -19,6 +19,8 @@
 //   6. 出る前にその試合が始まった → 出さずに先へ(派閥の試合前の画面も出さない)
 //   7. 宣戦布告が出ている間の描き直し(同じ試合) → 重ねて出さない・派閥の試合前の画面を先に出さない
 //   8. 興行の後の決着の画面(opts なし)は従来どおり殻が閉じるのを待つ
+//   9. 前座をスキップしても、メインの派閥の試合前の画面(派閥内序列戦・F08・F09)と宣戦布告は出る(節目。2026-09-26 裁定)。
+//      スキップした試合の敗者の心は従来どおり省略(App.skipMatch を本物のまま通す)
 
 const assert = require('assert');
 const fs = require('fs');
@@ -91,7 +93,7 @@ const ROSTER = [
 const SAFETY = /confrontation safety net fired/;
 
 function build({ conf = { phase: 'confrontation', leftId: 1, rightId: 2, leftName: '左の子', rightName: '右の子', rivalry: 55 },
-  match = { left: 1, right: 2, _internalChallengeLocked: true } } = {}) {
+  match = { left: 1, right: 2, _internalChallengeLocked: true }, unplayed = false } = {}) {
   const clock = { now: 0, seq: 0, timers: [] };
   const warns = [];
   const calls = { faction: [], f08: 0 };
@@ -162,6 +164,8 @@ function build({ conf = { phase: 'confrontation', leftId: 1, rightId: 2, leftNam
     'var App = {',
     methodSource('_runPreMatchFlavorForMatch') + ',',
     confMethod ? confMethod + ',' : '',
+    methodSource('skipMatch') + ',',
+    methodSource('_fillMissingShowPreviewResults') + ',',
     '};',
     'this.App = App;',
     'this.focusHook = focusHook;',
@@ -171,6 +175,22 @@ function build({ conf = { phase: 'confrontation', leftId: 1, rightId: 2, leftNam
   ].join('\n');
   vm.createContext(ctx);
   vm.runInContext(code, ctx);
+  // スキップ(App.skipMatch)を本物のまま通すための周り。試合の中身と結果の画面は数えるだけ
+  Object.assign(ctx.Engine, {
+    rng: { create: () => ({}), derive: () => 1 },
+    battle: { simulateMatch: () => ({ winner: 'left', mq: 50 }) },
+  });
+  Object.assign(ctx.App, {
+    _normalShowMatchTier: () => 1,
+    _normalShowRingInOpts: () => ({}),
+    _afterMatchSettle: (idx, opts) => { calls.settled.push({ idx, skipFlavor: !!(opts && opts.skipFlavor) }); },
+    _buildF09OpeningData: () => ({ stub: 'f09-opening' }),
+    _buildF09MatchPreData: () => ({ stub: 'f09-pre' }),
+  });
+  calls.settled = [];
+  calls.f09 = [];
+  ctx.showFactionF09OpeningModal = (data, state, onContinue) => { calls.f09.push('opening'); onContinue(); };
+  ctx.showFactionF09MatchPreModal = () => { calls.f09.push('pre'); };
   const advance = ms => {
     const end = clock.now + ms;
     for (;;) {
@@ -185,10 +205,10 @@ function build({ conf = { phase: 'confrontation', leftId: 1, rightId: 2, leftNam
   };
   const overlayActive = id => el(id).classList.contains('active');
   el('showResultOverlay').classList.add('active'); // 興行中ずっと出ている試合一覧の殻
-  // メイン(0)の下に前座(1)。前座は済んでいて、次はメイン
+  // メイン(0)の下に前座(1)。前座は済んでいて、次はメイン(unplayed: true なら前座もまだ)
   const sp = {
     validMatches: [match, { left: 3, right: 1 }],
-    results: [null, { winner: 'left' }],
+    results: [null, unplayed ? null : { winner: 'left' }],
     confrontationMap: conf ? { 0: { ...conf, idx: 0 } } : {},
     _shownConfrontations: new Set(),
   };
@@ -359,6 +379,39 @@ function build({ conf = { phase: 'confrontation', leftId: 1, rightId: 2, leftNam
   t.pressWitness();
   t.advance(200);
   assert.strictEqual(done, 1, '決着の画面を閉じた後に先へ1回進んでいない');
+}
+
+// ── 9. 前座をスキップしても、メインの派閥の試合前の画面(と宣戦布告)は出る(2026-09-26 Keisuke 裁定) ──
+// 以前は App.skipMatch が sp._suppressFlavor を立て、_runPreMatchFlavorForMatch がそれを見て以降の試合の派閥の
+// 試合前の画面(F08・F09・派閥内序列戦)を出さなかった。メインは最後の試合なので、前座を1つでもスキップすると出なかった
+for (const [label, match, expect] of [
+  ['派閥内序列戦', { left: 1, right: 2, _internalChallengeLocked: true }, t => t.calls.faction.length === 1],
+  ['F08', { left: 1, right: 2, _f08Locked: true }, t => t.calls.f08 === 1],
+  ['F09', { left: 1, right: 2, _f09Locked: true }, t => t.calls.f09.join(',') === 'opening,pre'],
+]) {
+  const t = build({ conf: null, match, unplayed: true });
+  t.ctx.App.skipMatch(1); // 前座をスキップ
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(t.calls.settled)), [{ idx: 1, skipFlavor: true }],
+    `${label}: スキップした前座の試合後の小さな演出(敗者の心)を省略していない`);
+  t.focus(0); // メインにフォーカス
+  t.advance(400);
+  assert.ok(expect(t), `${label}: 前座をスキップした興行でメインの試合前の画面が出ていない`);
+  t.advance(20000);
+  assert.ok(expect(t), `${label}: 試合前の画面が2回以上出た`);
+}
+{
+  // 宣戦布告のある派閥内序列戦: スキップの後も 宣戦布告 → 派閥の試合前の画面 の順
+  const t = build({ unplayed: true });
+  t.ctx.App.skipMatch(1);
+  t.focus(0);
+  t.advance(400);
+  assert.ok(t.rivalryShown(), '前座をスキップした興行でメインの宣戦布告が出ていない(節目の演出)');
+  assert.strictEqual(t.calls.faction.length, 0);
+  t.advance(50);
+  t.pressWitness();
+  t.advance(200);
+  assert.strictEqual(t.calls.faction.length, 1, 'スキップの後、宣戦布告を閉じても派閥の試合前の画面へ進まない');
+  assert.strictEqual(t.calls.faction[0].rivalryOpen, false);
 }
 
 console.log('rivalry-confrontation-over-show-shell-test: ok');
