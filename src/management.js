@@ -15765,14 +15765,16 @@ const Engine = {
       return { state: s, roster: out, titles: outTitles, events };
     },
 
-    // 怪我による引退の演出データ(_pendingInjuryRetirements。v1.3-3)。実プレイの closeShowResult が
-    // showRetirementPopups で見せる(本人の引退ポップアップ。壮絶な幕切れは farewellKind で見出しと地の文が変わる)。
+    // 怪我による引退の演出データ(v1.3-3)。実プレイの closeShowResult が showRetirementPopups で見せる(本人の引退
+    // ポップアップ。壮絶な幕切れは farewellKind で見出しと地の文が変わる)。
     // preShowState: 興行前の状態(引退セリフの選び方・王者だったか)。opts.dict / opts.summaryState: 経歴の要約の
-    // 訳と団体名(実プレイは WM_I18N.t と状態を渡す。エンジンは渡さない=従来どおり)。戻り値: 新しい状態
+    // 訳と団体名(実プレイは WM_I18N.t と状態を渡す。エンジンは渡さない=従来どおり)。
+    // 戻り値: 演出データの配列(K-1 第4段 4-A / K1-T04 から状態に積まない。finalize が presentations.injuryRetirements で
+    // 返し、実プレイは一時キー _pendingInjuryRetirements に載せる。以前は新しい状態を返していた)
     buildInjuryRetirementPresentations(state, preShowState, injuryResults, opts = {}) {
-      let s = state;
+      const s = state;
       const injuryRetirees = injuryResults.filter(ir => ir.retireType);
-      if (injuryRetirees.length === 0) return s;
+      if (injuryRetirees.length === 0) return [];
       const lineRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xFAD2));
       const pendingInjuryRetirements = injuryRetirees.map(ir => {
         const route = ir.retireType === 'careerEnding' ? 'injury_career_ending' : 'injury_wear';
@@ -15800,10 +15802,7 @@ const Engine = {
         }
         return { fighter: retiredF, route, line, category, summary, injuryType: ir.injury?.type, wasChampion, championWorryLine, farewellKind: ir.farewellKind || null };
       }).filter(Boolean);
-      if (pendingInjuryRetirements.length > 0) {
-        s = { ...s, _pendingInjuryRetirements: pendingInjuryRetirements };
-      }
-      return s;
+      return pendingInjuryRetirements;
     },
 
     // 突然の退団(K-1 4-B-7 / K1-E04。trust-system-spec §13.3・§1.2 臨界帯)。信頼15未満の選手が1興行あたり2.5%で去る
@@ -16515,6 +16514,86 @@ const Engine = {
       }
 
       return { state: { ...s, roster: preShowRoster }, roster: s.roster, common1MatchIdx: common1ResolvedIdx, presentations };
+    },
+
+    // ラストランの試合を終えた選手を、その興行の後すぐに引退させる(K-1 第4段 4-A / K1-A09。「4週待ちバグ修正」。
+    // 以前は実プレイの App._finalizeShowImpl だけにあり、エンジン=auto-sim ではラストランの選手が季末の期限切れの判定まで
+    // 試合を続けていた)。出場した選手(タッグは4人)のうち、ロスターで lastRun の選手を試合ごとに1人選び、その試合の結果に
+    // isLastRunMatch / lastRunFighterId の印を付ける(state.lastShowResults と同じ配列)。引退の処理は:
+    //   経歴(retire / lastrun)・引退者の記録(retiredFighters / retiredIds / retiredSeasons)・コーチの担当・
+    //   年代記(アーカイブ・気風・章)・王座の返上・関係値の凍結と信頼への波及(引退試合)・
+    //   O-04 仲の良い選手の気落ち(bond −5〜−10。乱数 0xBE3B)
+    // 本人の引退ポップアップの演出データ(台詞は乱数 0xFAD3)は状態に積まず presentations で返す。
+    // opts.dict: 経歴の要約を訳す辞書(実プレイは WM_I18N.t)。戻り値: { state, events, presentations }
+    retireLastRunFighters(state, validMatches, results, opts = {}) {
+      const retireesById = new Map();
+      results.forEach((r, idx) => {
+        const match = validMatches[idx];
+        if (!match) return;
+        const participantIds = match.matchType === 'tag'
+          ? [match.teamA?.fighter1, match.teamA?.fighter2, match.teamB?.fighter1, match.teamB?.fighter2].filter(id => id > 0)
+          : [match.left, match.right].filter(id => id > 0);
+        const lastRunFighter = participantIds
+          .map(id => (state.roster || []).find(c => c.id === id))
+          .find(f => f?.lastRun) || null;
+        if (!lastRunFighter) return;
+        r.isLastRunMatch = true;
+        r.lastRunFighterId = lastRunFighter.id;
+        retireesById.set(lastRunFighter.id, lastRunFighter);
+      });
+      const retirees = [...retireesById.values()];
+      const events = [];
+      if (retirees.length === 0) return { state, events, presentations: [] };
+      const lrLineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xFAD3));
+      const retiredWithRecords = retirees.map(c => {
+        let f = Engine.career.ensure({ ...c, lastRun: false, lastRunWeek: null });
+        f = Engine.career.addEvent(f, { type: 'retire', reason: 'lastrun', season: state.season, week: state.week, age: f.age });
+        delete f.growthLog;
+        return f;
+      });
+      const retiredIds = new Set(retirees.map(c => c.id));
+      const survivingRoster = (state.roster || []).filter(c => !retiredIds.has(c.id));
+      // 関係値凍結 + trust影響 + retiredIds永続記録
+      const newRetiredIds = [...(state.retiredIds || []), ...retirees.map(c => c.id).filter(id => !(state.retiredIds || []).includes(id))];
+      const retiredSeasons = { ...(state.retiredSeasons || {}) };
+      retirees.forEach(c => { retiredSeasons[c.id] = state.season; });
+      let s = { ...state, roster: survivingRoster, retiredFighters: [...(state.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds, retiredSeasons };
+      // 退場者の後始末: 雇用コーチの担当から外す(残すと自己修復 coachAssign_stale_refs_removed が鳴る)
+      s = { ...s, coachAssign: Engine.coach.sanitizeAssignments(s) };
+      // 団体年代記: アーカイブ登録 + 気風寄与積算(player ロスター経由なので全件対象)
+      retiredWithRecords.forEach(rf => {
+        s = Engine.chronicle.archiveFighter(s, rf);
+        s = Engine.chronicle.applySpiritContribution(s, rf);
+      });
+      s = Engine.chronicle.refreshChapters(s);
+      // 王者がラストラン引退した場合は王座を空位にする
+      const vc = Engine.title.validateChampion(s);
+      if (vc.msg) { s = { ...s, titles: vc.titles }; events.push(vc.msg); }
+      if (s.relationships) {
+        retirees.forEach(retiree => {
+          s = Engine.relationships.freezeRelationships(s, retiree.id);
+          s = { ...s, roster: Engine.trust.applyDepartureTrustImpact(s.roster, retiree.id, s.relationships, { name: retiree.name, reason: '引退試合' }) };
+        });
+      }
+      // O-04: bond 60+の相手→引退者に bond -5〜-10
+      const retRelRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, 0xBE3B, state.season, state.week));
+      for (const retiree of retirees) {
+        const highBondIds = s.roster.map(c => c.id).filter(cid => {
+          const key = Engine.relationships._key(cid, retiree.id);
+          const rel = s.relationships?.[key];
+          return rel && Engine.relationships.isPositiveBond(rel.bond);
+        });
+        if (highBondIds.length > 0) {
+          s = Engine.relationships.applyFromRoster(s, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
+        }
+      }
+      // 引退の演出データ(pendingRetirements の形)
+      const presentations = retiredWithRecords.map(f => {
+        const { line, category } = Engine.retirement.selectLine(f, 'lastrun', s, lrLineRng);
+        const summary = Engine.retirement.buildCareerSummary(f, opts.dict, s);
+        return { fighter: f, route: 'lastrun', line, category, summary, canRetain: false };
+      });
+      return { state: s, events, presentations };
     },
 
     // 季節の統計(seasonStats)に通常興行1回分を足す(K-1 第2段 / K1-A03。以前は実プレイの _finalizeShowImpl だけにあった)。
@@ -17854,18 +17933,56 @@ const Engine = {
         events.push('🏛️ 団体人気が40に到達！ 地域振興助成金の支給が終了しました。自立経営の始まりです！');
       }
 
-      // v1.3-3: 怪我引退の演出データ(K-1 4-B-6 / K1-E03。引退セリフは興行前の状態で選ぶ)。
-      // 実プレイは経歴の要約を画面の言語で訳し、団体名を入れる(ctx.injuryPresentationDict)
-      s = Engine.show.buildInjuryRetirementPresentations(s, pre, injuryResults,
-        ctx.injuryPresentationDict ? { dict: ctx.injuryPresentationDict, summaryState: s } : undefined);
+      // v1.3-3: 怪我引退の演出データ(K-1 4-B-6 / K1-E03。引退セリフは興行前の状態で選ぶ)。状態には積まず
+      // presentations.injuryRetirements で返す(K-1 第4段 4-A / K1-T04)。実プレイは経歴の要約を画面の言語で訳し、
+      // 団体名を入れる(ctx.dict)
+      const injuryRetirementPresentations = Engine.show.buildInjuryRetirementPresentations(s, pre, injuryResults,
+        ctx.dict ? { dict: ctx.dict, summaryState: s } : undefined);
+      if (injuryRetirementPresentations.length > 0) presentations.injuryRetirements = injuryRetirementPresentations;
+
+      // v2.0 Phase1-6: メディア密着取材の興行後の処理(K-1 第4段 4-A / K1-A11。以前は実プレイの _finalizeShowImpl だけに
+      // あり、auto-sim では密着取材が終わらなかった)。取材の最終回に人気・信頼・団体人気・関係値(E-04)。
+      // 団体人気は 0〜100 に収める(以前の実プレイは clamp なしで足していた。監査 §8 #18)
+      if (s.mediaSpotlight) {
+        const spotlightName = s.mediaSpotlight.fighterName || null;
+        const spotRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xB4B4));
+        const spotResult = Engine.eventSystem.processMediaSpotlight(s, results, validMatches, spotRng);
+        if (spotResult) {
+          s = { ...s, mediaSpotlight: spotResult.mediaSpotlight, roster: spotResult.roster };
+          events.push(...spotResult.events);
+          if (spotResult.orgPopDelta) s = { ...s, orgPop: Engine.util.clamp(s.orgPop + spotResult.orgPopDelta, 0, 100) };
+          // Phase 4 E-04: メディアスポットライト終了時の関係値反映
+          if (spotResult.relationships) s = { ...s, relationships: spotResult.relationships };
+          if (spotResult.mediaSpotlight === null) presentations.mediaSpotlightEnded = { fighterName: spotlightName };
+        }
+      }
+
+      // ラストランの試合を終えた選手をその場で引退させる(K-1 第4段 4-A / K1-A09。「4週待ちバグ修正」)
+      {
+        const lr = Engine.show.retireLastRunFighters(s, validMatches, results, { dict: ctx.dict });
+        s = lr.state;
+        events.push(...lr.events);
+        if (lr.presentations.length > 0) presentations.lastRunRetirements = lr.presentations;
+      }
 
       // K-1 第2段(K1-A04): 興行結果の新聞データ。同じ週の tickWeek が週刊新聞に自団体の興行記事として載せる
       // (Engine.newspaper.generate の playerShow*)。見出し・本文のテンプレは画面の読み込み時に登録される
-      // (登録の無い Node の検査では既定の見出しとサブ見出し)。実プレイは ctx.buildNewspaper: false で自前で組む
-      if (ctx.buildNewspaper !== false) {
-        const paperData = Engine.show.buildShowNewspaperData(s, { titleOutcomes: titleMatchOutcomes, injuryResults });
+      // (登録の無い Node の検査では既定の見出しとサブ見出し)。ラストランの引退の後で組む(次回展望から引退者が外れる。
+      // 以前の実プレイの位置。K-1 第4段 4-A でエンジンもここへ)。実プレイは画面の言語の辞書を渡す(ctx.dict)
+      // 表示用のデータなので、組めなくても興行の処理は止めない(以前の実プレイと同じ)
+      try {
+        const paperData = Engine.show.buildShowNewspaperData(s, ctx.dict
+          ? { titleOutcomes: titleMatchOutcomes, injuryResults, dict: ctx.dict }
+          : { titleOutcomes: titleMatchOutcomes, injuryResults });
         if (paperData) s = { ...s, currentNewspaper: { ...paperData, generatedWeek: s.week, generatedSeason: s.season } };
+      } catch (e) {
+        console.error('[WM] 新聞データ生成エラー:', e);
       }
+
+      // 引退者の関係値と因縁の整理(K-1 第4段 4-A / K1-A16。関係値を消し、因縁を relationshipHistory.retiredRivalries へ移す)。
+      // 怪我による引退 → ラストランの順(以前の実プレイの closeShowResult の前半と同じ。新聞データの後)
+      (presentations.injuryRetirements || []).forEach(r => { s = Engine.relationships.archiveRetiredRivalryState(s, r.fighter || null); });
+      (presentations.lastRunRetirements || []).forEach(r => { s = Engine.relationships.archiveRetiredRivalryState(s, r.fighter || null); });
 
       // MQ再設計P3c: fp/venueHeatは興行1本につき1値。観測・計測用にトップレベルにも残す。
       return { state: s, results, injuryResults, events, showRivalryResolutions, titleMatchOutcomes, presentations, fp, venueHeat: venueHeatResult.total, pressureFactor: venueHeatResult.pressureFactor };

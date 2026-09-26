@@ -81,8 +81,8 @@ section('3-2: App._finalizeShowImpl は beginShow → Engine.show.finalize(実�
   assert.ok(/const fin = Engine\.show\.finalize\(begun\.state, validMatches, results, \{/.test(impl), '_finalizeShowImpl が Engine.show.finalize を呼んでいない');
   // 経路ごとの違い(第4段 4-A・第5段で寄せるまで残す指定)
   ["logStyle: 'structured'", "mqPath: 'App._finalizeShowImpl'", 'rivalryBeforeTitles: true', 'f08AttendanceMark: true',
-    'markDomeSellout: true', 'crossOrgRelationshipContext: true', 'resolveUnifiedTitle: false', 'buildNewspaper: false',
-    'injuryPresentationDict: WM_I18N.t', 'preShowState: G'].forEach(opt => {
+    'markDomeSellout: true', 'crossOrgRelationshipContext: true', 'resolveUnifiedTitle: false',
+    'dict: WM_I18N.t', 'preShowState: G'].forEach(opt => {
     assert.ok(impl.includes(opt), `_finalizeShowImpl が ${opt} を渡していない`);
   });
   const hookNames = ['afterTitles: w => App._finalizeHookSpecialBouts(w)',

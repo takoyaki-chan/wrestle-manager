@@ -61,22 +61,10 @@ module.exports = [
   // K1-E03(怪我による引退の処理一式が実プレイに無い)は K-1 第4段 4-B-6 で解消したので外した(2026-09-26)。
   // 両経路が Engine.show.resolveMatchInjury / applyInjuryRetirementAftermath / buildInjuryRetirementPresentations を通す。
   // 実プレイで引退が起きるようになって見えた、画面側だけの後始末を次の2項目に数える
-  {
-    id: 'K1-T04', title: '怪我引退の演出データ(_pendingInjuryRetirements)— 実プレイは closeShowResult の前半で取り出して本人の引退ポップアップへ回す(エンジンは戻り値の状態に残す)',
-    category: 'transient', side: 'app', impact: '一時', scenarios: ['injury'], checkpoints: ['A', 'B'],
-    patterns: ['_pendingInjuryRetirements'], sides: { A: ['engOnly'], B: ['engOnly'] },
-    mustAppear: true, refs: 'app.js closeShowResult(pendingInjuryRetirements → showRetirementPopups) / management.js Engine.show.buildInjuryRetirementPresentations',
-    note: '中身は両経路とも同じ関数で組む(実プレイは経歴の要約を画面の言語で訳し、団体名を入れる)。auto-sim は取り出さないので G に残り続ける。',
-  },
-  {
-    id: 'K1-A16', title: '引退者の関係値・因縁の整理(archiveRetiredRivalryState: 関係値を消し、因縁を relationshipHistory.retiredRivalries へ移す)',
-    category: 'processing', side: 'app', impact: '数値', scenarios: ['injury'], checkpoints: ['A', 'B'],
-    patterns: ['relationshipHistory.retiredRivalries', 'relationships.*', 'relationships.*.*', 'rivalries.*', 'rivalries.*.*'],
-    mustAppear: true,
-    refs: 'app.js archiveRetiredRivalryState を closeShowResult の前半(怪我引退・ラストラン)・processWeek(モチベ喪失)・季末の引退確定で呼ぶ / エンジンは freezeRelationships(凍結)だけ',
-    note: '第4段 4-B-6 で実プレイでも怪我引退が起きるようになり、injury シナリオで見えるようになった(ラストランの同じ差は K1-A09 に数える)。'
-      + 'B では、消えた関係値の分だけ週次の関係値の減衰・Glimpse・スナップショットの共有乱数の引き方がずれる(K1-B04・K1-B05)。',
-  },
+  // K1-T04(怪我引退の演出データ _pendingInjuryRetirements をエンジンだけが状態に残す)と K1-A16(引退者の関係値・因縁の整理
+  // archiveRetiredRivalryState が実プレイだけ)は K-1 第4段 4-A で解消したので外した(2026-09-26)。演出データは状態に積まず
+  // fin.presentations で返し(実プレイは一時キーに載せる)、整理は Engine.relationships.archiveRetiredRivalryState を
+  // Engine.show.finalize の最後(新聞データの後)で両経路が通す。
   // K1-E04(突然の退団が実プレイで起きない)は K-1 第4段 4-B-7 で解消したので外した(2026-09-26)。
   // 両経路が Engine.show.applySuddenDepartures を通す(前兆の確認は k1-parity-report.md §8 の 4-B 後半)。
   // K1-E05(派閥抗争ポイント・派閥内ポイントの試合ごとの加点が実プレイに無い)は K-1 第4段 4-B-2 で解消したので
@@ -90,37 +78,12 @@ module.exports = [
   // 消える)も両経路で直した(Engine.mq.updateRecord の careerStamp を書き戻しの後で applyRecordCareerStamp)。
   // K1-E07(自団体の王座移動記事 titleChange が実プレイで消える)は K-1 第1段で解消したので外した(2026-09-26)。
   // app.js _finalizeShowImpl が記事を G ではなく s に積む(乱入者が奪って即空位にした王座は記事にしない)。
-  {
-    id: 'K1-A09', title: 'ラストラン出場後の即引退(引退記録・年代記・関係値凍結/整理・信頼)',
-    category: 'processing', side: 'app', impact: '数値', scenarios: ['lastrun'], checkpoints: ['A', 'B'],
-    patterns: [
-      'roster[*](presence)', 'retiredFighters[*](presence)', 'retiredIds', 'retiredSeasons.*',
-      'chronicle.fighterArchive[*](presence)', 'relationshipHistory.retiredRivalries', 'relationships.*', 'relationships.*.*',
-      'rivalries.*', 'rivalries.*.*', 'roster[*]._departureBondImpact', 'roster[*].trust', 'newsSeen.**',
-      // 第1段で K1-P01 を外して見えるようになった(B): 引退した選手は W-1 の回数に数えられない
-      'w1FireCount.*',
-      // 2026-09-26(main 取り込み後の fixture)(B): 引退した選手あての挑戦試合の打診は週次処理で取り下げられる
-      'challengeRequest.pendingThisWeek',
-      // 2026-09-26(K-4 S1 の休眠プールの規則で fixture の世界が変わった後)(B): 実プレイだけが引退者の関係値を
-      // 整理するので、週次の関係性ポップアップの積み方(M-19 の冷却・直近12週の件数)と派閥イベント F07 の
-      // 抽選が変わる。処理の差ではなく上の差の波及
-      '_modalQueue', 'relationshipFlagCounters.*.lastWeek', 'relModalWindow[*].other', '_pendingFactionEvent',
-      // K-1 第2段(K1-A04 を両経路でそろえた後): 実プレイは引退を済ませた状態で新聞データを組むので、次回展望
-      // (ファンの期待カード・王座戦の展望)から引退した選手が外れる。同じ週の号にも写る
-      'currentNewspaper', 'weeklyNewspaper',
-      // 2026-09-26 退団寸前の引き留め: 上の信頼の差(仲の良い選手の引退による信頼の減り)は、退団寸前の帳簿の人間関係にも積まれる
-      'roster[*].trustStrain', 'roster[*].trustStrain.*',
-    ],
-    mustAppear: true, refs: 'app.js:9272-9344(finalize)・10867-10970(closeShowResult 前半) / エンジン側なし',
-  },
+  // K1-A09(ラストラン出場後の即引退が実プレイだけ)は K-1 第4段 4-A で解消したので外した(2026-09-26)。両経路が
+  // Engine.show.retireLastRunFighters を通す(新聞データはその後で組む)。
   // K1-A10(ドーム興行の経歴 domeMain・ドーム回数・初ドームの節目が実プレイだけ)は K-1 第4段 4-A で解消したので外した
   // (2026-09-26)。両経路が Engine.show.finalize の中の Engine.show.recordCareerMarks を通す(MVP 用の大試合 bigMatch・§7 X07 も)。
-  {
-    id: 'K1-A11', title: 'メディア密着取材の消化(人気・信頼・団体人気・関係値)',
-    category: 'processing', side: 'app', impact: '数値', scenarios: ['directives'], checkpoints: ['A', 'B'],
-    patterns: ['mediaSpotlight', 'orgPop', 'relationships.*', 'relationships.*.*', 'rivalries.*', 'rivalries.*.*', 'roster[*].popularity', 'roster[*].trust'],
-    mustAppear: true, refs: 'app.js:9250-9270(団体人気は clamp なしで加算) / エンジン側なし',
-  },
+  // K1-A11(メディア密着取材の消化が実プレイだけ)は K-1 第4段 4-A で解消したので外した(2026-09-26)。両経路が
+  // Engine.show.finalize の中で Engine.eventSystem.processMediaSpotlight を通す(団体人気は 0〜100 に収める)。
   // K1-A15(タッグ不仲ペアの試合後 信頼−1)は、裁定 K-12 の実装(7ba3738e: Engine.showTagMatch に4経路を
   // 通した)で差が消えたので外した(2026-09-26)。以後この場所に差が出ると「未登録」で落ちる。
   // K1-X03(怪我判定の引数。実プレイは週・季に 0 を渡し、険悪ペアの怪我率×2 と舞台の格を渡していなかった)は

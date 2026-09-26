@@ -3913,94 +3913,11 @@ function getPotentialPct(c) { return Engine.util.getPotentialPct(c); }
 function getPotentialLabel(c) { return Engine.util.getPotentialLabel(c); }
 function getRivalryLevel(id1, id2) { return Engine.title.getRivalryLevel(G, id1, id2); }
 
+// 引退者の関係値と因縁の整理。本体は Engine.relationships.archiveRetiredRivalryState(K-1 第4段 4-A で移した。
+// 通常興行の怪我引退・ラストランの引退はエンジンの Engine.show.finalize が済ませる。ここは画面側の引退
+// (モチベ喪失・季末の引退確定・取りこぼしの救済)から呼ぶ入口。同じ選手で2回呼んでも同じ)
 function archiveRetiredRivalryState(state, fighter) {
-  if (!state || !fighter || fighter.id == null) return state;
-
-  const relationships = { ...(state.relationships || {}) };
-  const rivalries = { ...(state.rivalries || {}) };
-  const historyStore = Engine.relationships.normalizeHistoryStore(state.relationshipHistory);
-  const history = [...historyStore.retiredRivalries];
-  const fighterId = fighter.id;
-  const fighterMap = new Map();
-  const register = candidate => {
-    if (candidate && candidate.id != null) fighterMap.set(candidate.id, candidate);
-  };
-
-  (state.roster || []).forEach(register);
-  (state.retiredFighters || []).forEach(register);
-  (state.freeAgents || []).forEach(register);
-  Object.values(state.aiOrgs || {}).forEach(org => (org.roster || []).forEach(register));
-  register(fighter);
-
-  const pairKeys = new Set();
-  Object.keys(relationships).forEach(key => {
-    const sepIdx = key.indexOf('>');
-    const idA = Number(key.substring(0, sepIdx));
-    const idB = Number(key.substring(sepIdx + 1));
-    if (idA !== fighterId && idB !== fighterId) return;
-    if (Number.isFinite(idA) && Number.isFinite(idB) && idA !== idB) {
-      pairKeys.add(Engine.title.getRivalryKey(idA, idB));
-    }
-    delete relationships[key];
-  });
-
-  Object.keys(rivalries).forEach(pairKey => {
-    const ids = pairKey.split('-').map(Number);
-    const id1 = ids[0];
-    const id2 = ids[1];
-    if (id1 !== fighterId && id2 !== fighterId) return;
-    pairKeys.add(pairKey);
-  });
-
-  pairKeys.forEach(pairKey => {
-    const ids = pairKey.split('-').map(Number);
-    const id1 = ids[0];
-    const id2 = ids[1];
-    if (!Number.isFinite(id1) || !Number.isFinite(id2) || id1 === id2) return;
-
-    const rel12 = (state.relationships || {})[String(id1) + '>' + String(id2)] || null;
-    const rel21 = (state.relationships || {})[String(id2) + '>' + String(id1)] || null;
-    const rivalryEntry = (state.rivalries || {})[pairKey] || null;
-    if (!rel12 && !rel21 && !rivalryEntry) return;
-
-    const fighter1 = fighterMap.get(id1) || null;
-    const fighter2 = fighterMap.get(id2) || null;
-    const archiveEntry = {
-      id1,
-      id2,
-      reason: 'retirement',
-      retiredFighterId: fighterId,
-      season: state.season || 1,
-      week: state.week || 1,
-      age1: fighter1?.age ?? null,
-      age2: fighter2?.age ?? null,
-      bond12: rel12?.bond ?? 50,
-      bond21: rel21?.bond ?? 50,
-      rivalry12: rel12?.rivalry ?? 0,
-      rivalry21: rel21?.rivalry ?? 0,
-      rivalryMeta: rivalryEntry ? { ...rivalryEntry } : null,
-      // K-4(S4): 2人の人生番号(相関図の過去の線は、表示中の2人の今の人生と一致するときだけ引く)
-      lives: Engine.life.livesFor(state, [id1, id2]),
-    };
-
-    const existingIdx = history.findIndex(entry =>
-      entry &&
-      entry.reason === 'retirement' &&
-      entry.retiredFighterId === fighterId &&
-      ((entry.id1 === id1 && entry.id2 === id2) || (entry.id1 === id2 && entry.id2 === id1))
-    );
-    if (existingIdx >= 0) history[existingIdx] = archiveEntry;
-    else history.push(archiveEntry);
-
-    delete rivalries[pairKey];
-  });
-
-  return {
-    ...state,
-    relationships,
-    rivalries,
-    relationshipHistory: { ...historyStore, retiredRivalries: history },
-  };
+  return Engine.relationships.archiveRetiredRivalryState(state, fighter);
 }
 // ── App Commands (G mutation ONLY via G = newState) ──
 let _pendingOrgName = '';
@@ -7750,8 +7667,7 @@ const App = {
       markDomeSellout: true,
       crossOrgRelationshipContext: true,
       resolveUnifiedTitle: false,
-      injuryPresentationDict: WM_I18N.t,
-      buildNewspaper: false,
+      dict: WM_I18N.t,
       hooks: {
         afterTitles: w => App._finalizeHookSpecialBouts(w),
         afterWriteback: w => App._finalizeHookGuests(w),
@@ -7784,102 +7700,6 @@ const App = {
     // 結果画面の前後で見せるための一時キーとして G に載せる
     App._applyShowPresentations(fin.presentations);
 
-    // v2.0 Phase1-6: メディアスポットライトの興行後処理
-    if (G.mediaSpotlight) {
-      const _spotlightName = G.mediaSpotlight.fighterName || WM_I18N.t('選手');
-      const spotRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB4B4));
-      const spotResult = Engine.eventSystem.processMediaSpotlight(G, results, validMatches, spotRng);
-      if (spotResult) {
-        G = { ...G, mediaSpotlight: spotResult.mediaSpotlight, roster: spotResult.roster,
-               gameLog: [...G.gameLog, ...spotResult.events] };
-        if (spotResult.orgPopDelta) {
-          G = { ...G, orgPop: G.orgPop + spotResult.orgPopDelta };
-        }
-        // Phase 4 E-04: メディアスポットライト終了時の関係値反映
-        if (spotResult.relationships) {
-          G = { ...G, relationships: spotResult.relationships };
-        }
-        // P6: メディアスポットライト終了トースト
-        if (spotResult.mediaSpotlight === null) {
-          setTimeout(() => showToast(WM_I18N.t('📺 {name}のメディア密着取材が終了した', { name: _spotlightName }), 5000), 500);
-        }
-      }
-    }
-
-    // ラストラン試合を行った選手を即座に引退処理（4週待ちバグ修正）
-    const lastRunRetireesById = new Map();
-    results.forEach((r, idx) => {
-      const match = validMatches[idx];
-      if (!match) return;
-      const participantIds = match.matchType === 'tag'
-        ? [match.teamA?.fighter1, match.teamA?.fighter2, match.teamB?.fighter1, match.teamB?.fighter2].filter(id => id > 0)
-        : [match.left, match.right].filter(id => id > 0);
-      const lastRunFighter = participantIds
-        .map(id => G.roster.find(c => c.id === id))
-        .find(f => f?.lastRun) || null;
-      if (!lastRunFighter) return;
-      r.isLastRunMatch = true;
-      r.lastRunFighterId = lastRunFighter.id;
-      lastRunRetireesById.set(lastRunFighter.id, lastRunFighter);
-    });
-    const lastRunRetirees = [...lastRunRetireesById.values()];
-    try {
-      wmDiag('[WM][lastrun-diag] processShowResult:lastRunRetirees',
-        { count: lastRunRetirees.length, names: lastRunRetirees.map(c => c?.name), resultsLen: results.length, validMatchesLen: validMatches.length });
-    } catch (_e) {}
-    if (lastRunRetirees.length > 0) {
-      const lrLineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xFAD3));
-      const retiredWithRecords = lastRunRetirees.map(c => {
-        let f = Engine.career.ensure({ ...c, lastRun: false, lastRunWeek: null });
-        f = Engine.career.addEvent(f, { type: 'retire', reason: 'lastrun', season: G.season, week: G.week, age: f.age });
-        delete f.growthLog;
-        return f;
-      });
-      const lastRunRetiredIds = new Set(lastRunRetirees.map(c => c.id));
-      const survivingRoster = G.roster.filter(c => !lastRunRetiredIds.has(c.id));
-      // 関係値凍結 + trust影響 + retiredIds永続記録
-      const newRetiredIds = [...(G.retiredIds || []), ...lastRunRetirees.map(c => c.id).filter(id => !(G.retiredIds || []).includes(id))];
-      const _lrRetiredSeasons = { ...(G.retiredSeasons || {}) };
-      lastRunRetirees.forEach(c => { _lrRetiredSeasons[c.id] = G.season; });
-      let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds, retiredSeasons: _lrRetiredSeasons };
-      // 退場者の後始末: 雇用コーチの担当から外す(残すと自己修復 coachAssign_stale_refs_removed が鳴る)
-      updState = { ...updState, coachAssign: Engine.coach.sanitizeAssignments(updState) };
-      // 団体年代記: アーカイブ登録 + 気風寄与積算 (player ロスター経由なので全件対象)
-      retiredWithRecords.forEach(rf => {
-        updState = Engine.chronicle.archiveFighter(updState, rf);
-        updState = Engine.chronicle.applySpiritContribution(updState, rf);
-      });
-      updState = Engine.chronicle.refreshChapters(updState);
-      // 王者がラストラン引退した場合は王座を空位にする
-      const vcLR = Engine.title.validateChampion(updState);
-      if (vcLR.msg) { updState = { ...updState, titles: vcLR.titles, gameLog: [...(updState.gameLog || []), vcLR.msg] }; }
-      if (updState.relationships) {
-        lastRunRetirees.forEach(retiree => {
-          updState = Engine.relationships.freezeRelationships(updState, retiree.id);
-          updState = { ...updState, roster: Engine.trust.applyDepartureTrustImpact(updState.roster, retiree.id, updState.relationships, { name: retiree.name, reason: '引退試合' }) };
-        });
-      }
-      // O-04: bond 60+の相手→引退者に bond -5〜-10
-      const retRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xBE3B, G.season, G.week));
-      for (const retiree of lastRunRetirees) {
-        const highBondIds = updState.roster.map(c => c.id).filter(cid => {
-          const key = Engine.relationships._key(cid, retiree.id);
-          const rel = updState.relationships?.[key];
-          return rel && Engine.relationships.isPositiveBond(rel.bond);
-        });
-        if (highBondIds.length > 0) {
-          updState = Engine.relationships.applyFromRoster(updState, highBondIds, retiree.id, { min: -10, max: -5 }, { min: 0, max: 0 }, retRelRng);
-        }
-      }
-      // 引退演出データを保持（pendingRetirements形式）
-      const pendingLastRunRetirements = retiredWithRecords.map(f => {
-        const { line, category } = Engine.retirement.selectLine(f, 'lastrun', updState, lrLineRng);
-        const summary = Engine.retirement.buildCareerSummary(f, WM_I18N.t, updState);
-        return { fighter: f, route: 'lastrun', line, category, summary, canRetain: false };
-      });
-      G = { ...updState, _pendingLastRunRetirements: pendingLastRunRetirements };
-    }
-
     App._showPreview = null;
     App._lastInjuries = injuryResults; // v0.96: store for popup after close
     App._lastTitleOutcomes = titleMatchOutcomes; // タイトルマッチ後リアクション用
@@ -7888,19 +7708,6 @@ const App = {
       try { Audio.fileBgm.stop(); } catch(e) {}
       Audio.bgm.play('management');
     }, 2500);
-
-    // 新聞データをGに保存（データベースタブで閲覧）
-    // K-1 第2段(K1-A04): エンジンの executeShow と同じ Engine.show.buildShowNewspaperData で組む(以前は
-    // App._buildShowResultNewspaperData。エンジンの週刊新聞には自団体の興行記事が載らなかった)。見出し・本文の
-    // 文選びは Math.random から専用の乱数系列(季・週・0x9E75)に変わった(表示だけ。同じ興行は同じ見出しになる)
-    try {
-      const paperData = Engine.show.buildShowNewspaperData(G, { titleOutcomes: titleMatchOutcomes, injuryResults, dict: WM_I18N.t });
-      if (paperData) {
-        G = { ...G, currentNewspaper: { ...paperData, generatedWeek: G.week, generatedSeason: G.season } };
-      }
-    } catch (e) {
-      console.error('[WM] 新聞データ生成エラー:', e);
-    }
 
     // 試合前/試合後フレーバーポップアップは per-match で流れる
     // (renderMatchPreview の nextIdx フォーカス時 + skipMatch/watchMatch 結果反映直後)
@@ -8147,8 +7954,17 @@ const App = {
   //   common1Result → _pendingCommon1Result(Common-1 予約の清算の結果表示)
   //   f08Aftermath  → _pendingF08Aftermath(F08 の試合後モーダル。キューの後ろに足す)
   //   f09Ending     → _pendingF09Ending(派閥対抗戦の決着。地の文は画面の言語でここで組む)
+  //   injuryRetirements  → _pendingInjuryRetirements(怪我による引退の本人のポップアップ。closeShowResult が取り出す)
+  //   lastRunRetirements → _pendingLastRunRetirements(ラストランの引退の本人のポップアップ。同上)
+  //   mediaSpotlightEnded → 密着取材の終了のトースト
   _applyShowPresentations(presentations) {
     const p = presentations || {};
+    if (Array.isArray(p.injuryRetirements) && p.injuryRetirements.length > 0) G = { ...G, _pendingInjuryRetirements: p.injuryRetirements };
+    if (Array.isArray(p.lastRunRetirements) && p.lastRunRetirements.length > 0) G = { ...G, _pendingLastRunRetirements: p.lastRunRetirements };
+    if (p.mediaSpotlightEnded) {
+      const name = p.mediaSpotlightEnded.fighterName || WM_I18N.t('選手');
+      setTimeout(() => showToast(WM_I18N.t('📺 {name}のメディア密着取材が終了した', { name }), 5000), 500);
+    }
     if (p.common1Result) G = { ...G, _pendingCommon1Result: p.common1Result };
     if (Array.isArray(p.f08Aftermath) && p.f08Aftermath.length > 0) {
       G = { ...G, _pendingF08Aftermath: [...(Array.isArray(G._pendingF08Aftermath) ? G._pendingF08Aftermath : []), ...p.f08Aftermath] };

@@ -167,16 +167,17 @@ section('E03: buildInjuryRetirementPresentations — 引退ポップアップの
   const pre = { ...s0, titles: { ...s0.titles, world: { ...(s0.titles && s0.titles.world), championId: x.id } } };
   const ret = Engine.show.retireInjuredFighter(s0, s0.roster, x.id, heavyChk(x, 'careerEnding', 'pyrrhic'));
   const entries = [{ id: x.id, name: x.name, injury: { type: '重傷' }, retireType: 'careerEnding', farewellKind: 'pyrrhic' }];
-  const out = Engine.show.buildInjuryRetirementPresentations(ret.state, pre, entries);
-  const p = out._pendingInjuryRetirements;
-  assert.ok(Array.isArray(p) && p.length === 1, '_pendingInjuryRetirements が1件でない');
+  // K-1 第4段 4-A(K1-T04): 状態に積まず、演出データの配列を返す(finalize が presentations.injuryRetirements で返し、
+  // 実プレイが一時キー _pendingInjuryRetirements に載せる)
+  const p = Engine.show.buildInjuryRetirementPresentations(ret.state, pre, entries);
+  assert.ok(Array.isArray(p) && p.length === 1, '演出データが1件でない');
   assert.strictEqual(p[0].fighter.id, x.id);
   assert.strictEqual(p[0].route, 'injury_career_ending');
   assert.strictEqual(p[0].farewellKind, 'pyrrhic', '幕切れの型が演出データに届いていない');
   assert.strictEqual(p[0].wasChampion, true);
   assert.ok(typeof p[0].line === 'string' && p[0].line.length > 0, '引退セリフが無い');
-  // 引退者がいなければ状態はそのまま
-  assert.strictEqual(Engine.show.buildInjuryRetirementPresentations(s0, s0, []), s0);
+  // 引退者がいなければ空
+  assert.deepStrictEqual(Engine.show.buildInjuryRetirementPresentations(s0, s0, []), []);
 });
 
 section('E03: 実プレイ(app.js)とエンジン(executeShow)が同じ関数で怪我引退を処理し、画面の流れが引退ポップアップへつながる', () => {

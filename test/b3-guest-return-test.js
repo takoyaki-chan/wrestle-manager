@@ -107,7 +107,7 @@ function runB3Show({ repIndex = 0, challengerExtra = {} } = {}) {
     roster: begun.roster, preShowLosingStreaks: begun.preShowLosingStreaks, preShowState: G,
     logStyle: 'structured', mqPath: 'App._finalizeShowImpl', rivalryBeforeTitles: true, intruderId: null,
     f08AttendanceMark: true, nextMatchBuffCard: G.showCard || [], markDomeSellout: true, crossOrgRelationshipContext: true,
-    resolveUnifiedTitle: false, injuryPresentationDict: WM_I18N.t, buildNewspaper: false,
+    resolveUnifiedTitle: false, dict: WM_I18N.t,
     hooks: {
       afterWriteback: w => {
         guestPost = clone(w.roster.find(c => c.id === guest.id) || null);
