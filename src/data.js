@@ -586,7 +586,9 @@ function coachPortraitImg(coach, size = 48) {
   const br = size >= 32 ? '10px' : '5px';
   if (primaryUrl) {
     const fallbackAttr = fallbackUrl ? ` data-fallback-src="${fallbackUrl}"` : '';
-    return `<img src="${primaryUrl}"${fallbackAttr} style="width:${size}px;height:${size}px;border-radius:${br};object-fit:cover;object-position:top center;border:1px solid rgba(100,85,50,0.12);flex-shrink:0;overflow:hidden" alt="${coach.name}" loading="lazy" onerror="const fb=this.dataset.fallbackSrc;if(fb){this.dataset.fallbackSrc='';this.src=fb;return;}this.style.display='none';this.nextElementSibling.style.display='flex'">` +
+    // i18n: alt のコーチ名は表示用の名前へ(UI の描画ヘルパー。i18n.js の無い node 実行では原文のまま)
+    const altName = (typeof WM_I18N !== 'undefined' && WM_I18N.pn) ? WM_I18N.pn(coach.name) : coach.name;
+    return `<img src="${primaryUrl}"${fallbackAttr} style="width:${size}px;height:${size}px;border-radius:${br};object-fit:cover;object-position:top center;border:1px solid rgba(100,85,50,0.12);flex-shrink:0;overflow:hidden" alt="${altName}" loading="lazy" onerror="const fb=this.dataset.fallbackSrc;if(fb){this.dataset.fallbackSrc='';this.src=fb;return;}this.style.display='none';this.nextElementSibling.style.display='flex'">` +
       `<div style="display:none;width:${size}px;height:${size}px;border-radius:${br};align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;flex-shrink:0;background:linear-gradient(135deg,rgba(122,101,48,0.2),rgba(122,101,48,0.05));border:1px solid rgba(100,85,50,0.12)">${coach.emoji}</div>`;
   }
   return `<div style="width:${size}px;height:${size}px;border-radius:${br};display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;flex-shrink:0;background:linear-gradient(135deg,rgba(122,101,48,0.2),rgba(122,101,48,0.05));border:1px solid rgba(100,85,50,0.12)">${coach.emoji}</div>`;

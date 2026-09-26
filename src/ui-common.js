@@ -2045,8 +2045,8 @@ function showCoachTooltip(coachId) {
         <button onclick="closeCoachTooltip()" style="background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:4px;line-height:1;flex-shrink:0">✕</button>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
-        <span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
-        ${(c.abilities||[]).map(a => `<span class="coach-trait">${a}</span>`).join(' ')}
+        <span class="coach-grade coach-grade-${c.grade}">${WM_I18N.t('{tier}級', { tier: c.grade })}</span>
+        ${(c.abilities||[]).map(a => `<span class="coach-trait">${WM_I18N.t(a)}</span>`).join(' ')}
         ${isHired ? `<span style="font-size:12px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 6px;border-radius:3px">${WM_I18N.t('雇用中')}</span>` : ''}
       </div>
       <div style="font-size:13px;color:var(--text);line-height:1.8">
@@ -2067,8 +2067,9 @@ function showCoachTooltip(coachId) {
   html += `<div class="coach-tooltip-section">
     <div class="coach-tooltip-label">${WM_I18N.t('特殊能力')}</div>
     <div style="font-size:13px;color:var(--text);line-height:1.6">${(c.abilities||[]).map(a => {
+      // i18n: 能力名・等級・効果説明は表の値(JA)。表示直前に t() を1回(招聘の画面 ui-render.js renderCoach と同じ引き方)
       const cat = COACH_ABILITY_CATALOG[a];
-      return cat ? `<div><strong>${a}</strong> <span style="font-size:11px;color:var(--text-sub)">(${cat.grade}級)</span> — ${cat.desc}</div>` : `<div>${a}</div>`;
+      return cat ? `<div><strong>${WM_I18N.t(a)}</strong> <span style="font-size:11px;color:var(--text-sub)">(${WM_I18N.t('{tier}級', { tier: cat.grade })})</span> — ${WM_I18N.t(cat.desc)}</div>` : `<div>${WM_I18N.t(a)}</div>`;
     }).join('')}${c.flavor ? `<div style="margin-top:4px;color:var(--text-sub);font-size:12px">🌿 ${WM_I18N.t(c.flavor)}: ${_coachFlavorDesc(c.flavor)}</div>` : ''}</div>
   </div>`;
 
@@ -4218,7 +4219,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck, lifeNo) {
   const peakOVR = Number((c.careerRecord || {}).peakOVR) || 0;
   const peakOVRSeason = (c.careerRecord || {}).peakOVRSeason;
   const peakHeader = ovrVal < peakOVR
-    ? `<span style="font-size:13px;color:var(--text-sub);align-self:flex-end;padding-bottom:5px">ピーク <b>${peakOVR}</b> <span style="color:var(--text-dim);font-size:11px">(S${peakOVRSeason || '?'})</span></span>`
+    ? `<span style="font-size:13px;color:var(--text-sub);align-self:flex-end;padding-bottom:5px">${WM_I18N.t('ピーク')} <b>${peakOVR}</b> <span style="color:var(--text-dim);font-size:11px">(S${peakOVRSeason || '?'})</span></span>`
     : '';
   // プレイヤー団体 or AI団体の王者判定
   const _playerChamp = G.titles?.world?.championId === c.id;
@@ -4293,7 +4294,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck, lifeNo) {
               const isExecRole = !isLeaderRole && Engine.factions.isExecutive(G, c.id);
               const role = isLeaderRole ? WM_I18N.t('リーダー') : isExecRole ? WM_I18N.t('幹部') : WM_I18N.t('メンバー');
               const icon = isLeaderRole ? '👑' : isExecRole ? '⭐' : '🎭';
-              return `<span class="fp-faction-badge" onclick="event.stopPropagation();openFactionPanel(${f.id})" title="${WM_I18N.t('派閥タブで詳細を見る')}">${icon} ${_factionDisplayName(f.name)}・${role}</span>`;
+              // i18n: 派閥名と役職の区切りは JA=「・」/ それ以外=" · "(英語で和文の中黒が残っていた)
+              return `<span class="fp-faction-badge" onclick="event.stopPropagation();openFactionPanel(${f.id})" title="${WM_I18N.t('派閥タブで詳細を見る')}">${icon} ${_factionDisplayName(f.name)}${WM_I18N.lang === 'ja' ? '・' : ' · '}${role}</span>`;
             })()}
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
@@ -4315,8 +4317,11 @@ function showFighterPopup(fighterId, source, _skipQueueCheck, lifeNo) {
             ${c._inviteBuff ? (() => {
               // care-rework v0.1 §3: 招聘中コーチの表示
               const coach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null;
-              const coachName = coach ? coach.name : WM_I18N.t('招聘コーチ');
-              return `<span style="color:#d4a843">🎓 ${coachName}${WM_I18N.t('コーチ招聘中 残り{n}週', { n: c._inviteBuff.weeksLeft })}</span>`;
+              // i18n: 名前と文を1テンプレに畳む(英語で名前が生の JA のまま文に直結していた)。JA の出力は畳む前と同じ
+              const inviteLine = coach
+                ? WM_I18N.t('{name}コーチ招聘中 残り{n}週', { name: coach.name, n: c._inviteBuff.weeksLeft })
+                : WM_I18N.t('招聘コーチ') + WM_I18N.t('コーチ招聘中 残り{n}週', { n: c._inviteBuff.weeksLeft });
+              return `<span style="color:#d4a843">🎓 ${inviteLine}</span>`;
             })() : ''}
             ${c.slump ? `<span style="color:#7f8c8d">${WM_I18N.t('📉 スランプ中（{n}週目 / 回復確率{p}%）', { n: c.slump.weeksSinceStart, p: (2 + (c.slump.recoveryMomentum || 0)).toFixed(1) })}</span>` : ''}
             ${c.motivationLoss ? `<span style="color:#95a5a6">${WM_I18N.t('😞 モチベ喪失（{n}週目）', { n: c.motivationLoss.weeksSinceStart })}</span>` : ''}
@@ -4532,7 +4537,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck, lifeNo) {
             <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${WM_I18N.pn(coach.name)}</span>
             <span ${styleBadgeCls}>${coach.style}</span>
             ${matchHtml}
-            <span style="color:var(--text-dim);font-size:12px;margin-left:4px">×${coach.gMult||1.0} / ${(coach.abilities||[]).join('・')}</span>
+            <span style="color:var(--text-dim);font-size:12px;margin-left:4px">×${coach.gMult||1.0} / ${(coach.abilities||[]).map(a => WM_I18N.t(a)).join(WM_I18N.lang === 'ja' ? '・' : ', ')}</span>
           </div>`;
         } else {
           html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.02);border-radius:4px">

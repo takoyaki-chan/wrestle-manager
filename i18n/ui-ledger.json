@@ -4818,6 +4818,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}コーチ招聘中 残り{n}週",
+    "en": "Guest coach on site: {name} — weeks left: {n}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}優位 +{diff}",
     "en": "{name} ahead +{diff}",
     "files": [
