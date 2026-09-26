@@ -4085,7 +4085,14 @@ function getRentalQuote(char) {
 
 // ── Fighter Detail Popup ──
 // source: 'roster' | 'free' | 'ai:{orgId}' | 'draft'
-function findFighter(fighterId, source) {
+// lifeNo(任意。K-4): 記録に刻まれた人生番号。渡すと、今そのIDで生きている選手がその人生のときだけ返す
+// (同じIDの別の人生 = 同姓同名の別人は返さない)。省略時は従来どおり
+function findFighter(fighterId, source, lifeNo) {
+  if (lifeNo != null) {
+    const any = findFighter(fighterId, source);
+    if (!any || typeof Engine === 'undefined' || !Engine.life) return any;
+    return Engine.life.of(G, any) === Number(lifeNo) ? any : null;
+  }
   // source は「まずここを見ろ」というヒントであって、**そこに居なければ諦める**という
   // 意味ではない。決め打ちで return していたため、'roster' を渡した画面に他団体の選手が
   // 並ぶと(試合カードのメイン、対抗戦、ゲスト参戦など)引けずに **押しても無反応**になっていた。
@@ -4116,15 +4123,38 @@ function findFighter(fighterId, source) {
   return null;
 }
 
+/** K-4: 押した記録の人生番号が今そのIDで生きている選手と違うとき、その人生の殿堂エントリ(無ければ null) */
+function _pastLifeHofEntry(fighterId, lifeNo) {
+  if (lifeNo == null || fighterId == null || typeof Engine === 'undefined' || !Engine.life) return null;
+  if (findFighter(Number(fighterId), null, lifeNo)) return null;
+  return Engine.life.findHofEntry(G, Number(fighterId), Number(lifeNo));
+}
+
+/** K-4: 在籍年の表記(「S3〜S9」・現役は「S3〜」・始まりの分からない旧データは「〜S9」)。
+ *  同じ名前が並ぶところで別人を見分けるためだけに添える(人生番号や「二代目」は出さない) */
+function lifeYearsLabel(start, end, active) {
+  const s = Number(start);
+  const e = Number(end);
+  const hasS = Number.isFinite(s) && s >= 1;
+  const hasE = Number.isFinite(e) && e >= 1;
+  if (active) return hasS ? `S${s}〜` : '';
+  if (hasS && hasE) return `S${s}〜S${e}`;
+  if (hasE) return `〜S${e}`;
+  return '';
+}
+
 /** 選手詳細を開けるだけのデータが今あるか。
  *  年代記や旗揚げドラフトには「もうゲームに存在しない選手」が並ぶ。
  *  findFighter は roster/FA/スカウト/AI団体/引退直後 しか見ないので、
  *  chronicle.fighterArchive しか残っていない選手や、ALL_CHARS から
  *  その場で組み立てているドラフト候補は引けず、押しても**無反応**になる。
  *  「押せそうなのに何も起きない」を作らないために、開ける相手にだけ手を付ける。 */
-function canOpenFighterPopup(fighterId) {
+//  K-4: lifeNo(任意)を渡すと、その人生の選手が今生きていれば選手詳細、前の人生で殿堂入りして
+//  いればその人生の殿堂詳細を開ける。どちらでもなければ押せない(同姓同名の別人を開かない)
+function canOpenFighterPopup(fighterId, lifeNo) {
   if (fighterId == null || typeof G === 'undefined') return false;
-  return !!findFighter(Number(fighterId));
+  if (findFighter(Number(fighterId), null, lifeNo)) return true;
+  return !!_pastLifeHofEntry(fighterId, lifeNo);
 }
 
 function _fighterPopupStatBarsHtml(c, stats, isAiFighter) {
@@ -4143,9 +4173,16 @@ function _fighterPopupStatBarsHtml(c, stats, isAiFighter) {
 
 // 第3引数 _skipQueueCheck は歴史的な残り。**押したら必ず開く**ようになったので効果は無い。
 // 既存の呼び出しを壊さないために受け取るだけにしてある。
-function showFighterPopup(fighterId, source, _skipQueueCheck) {
-  const c = findFighter(fighterId, source);
-  if (!c) return;
+// 第4引数 lifeNo(任意。K-4): 記録に刻まれた人生番号。今の人生でなければ、その人生の殿堂詳細を開く
+// (殿堂入りしていなければ何もしない — 呼び出し側は canOpenFighterPopup で押せる相手にだけ手を付ける)
+function showFighterPopup(fighterId, source, _skipQueueCheck, lifeNo) {
+  const c = findFighter(fighterId, source, lifeNo);
+  if (!c) {
+    if (_pastLifeHofEntry(fighterId, lifeNo) && typeof openHofDetailById === 'function') {
+      openHofDetailById(Number(fighterId), Number(lifeNo));
+    }
+    return;
+  }
   // 以前は「他のポップアップが開いていたらキューに積んで return」していたが、
   // showFighterPopup の呼び出し元は**全部ユーザーの操作**（onclick / タップ）であり、
   // システムが勝手に開くことは無い。そのためこの判定は、新聞・トーナメント表・式典など

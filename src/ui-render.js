@@ -1,7 +1,28 @@
 // 新聞・DB画面用: クリック可能なキャラクター名リンク
-function _newsClickableName(name, characterId) {
+// lifeNo(任意。K-4): 記事に刻まれた人物の人生番号。今の人生でなければ、その人生の殿堂詳細へ
+// (殿堂入りしていなければ押せない名前にする。同姓同名の別人を開かない)
+function _newsClickableName(name, characterId, lifeNo) {
   if (!characterId) return name;
+  if (lifeNo != null && typeof Engine !== 'undefined' && Engine.life && !Engine.life.isCurrentLife(G, characterId, lifeNo)) {
+    if (typeof canOpenFighterPopup !== 'function' || !canOpenFighterPopup(characterId, lifeNo)) return name;
+    return `<span style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px" onclick="event.stopPropagation();showFighterPopup(${characterId},null,true,${Number(lifeNo)})">${name}</span>`;
+  }
   return `<span style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px" onclick="event.stopPropagation();showFighterPopup(${characterId},null,true)">${name}</span>`;
+}
+
+// K-4: 記事の人物の人生番号(story.characterLives)。無ければ null(旧号 = 従来どおり今の選手を開く)
+function _newsLifeOf(story, id) {
+  if (!story || id == null || typeof Engine === 'undefined' || !Engine.life) return null;
+  return Engine.life.livesOf(story.characterLives, id);
+}
+
+// K-4: 新聞の写真の onclick 属性。記事の人物が今の人生なら従来の属性(fallbackAttr)のまま、
+// 前の人生ならその人生の殿堂詳細(殿堂入りしていなければ押せない = 空文字)
+function _npLifeClick(id, story, fallbackAttr) {
+  const life = _newsLifeOf(story, id);
+  if (life == null || Engine.life.isCurrentLife(G, id, life)) return fallbackAttr;
+  if (typeof canOpenFighterPopup !== 'function' || !canOpenFighterPopup(id, life)) return '';
+  return `onclick="event.stopPropagation();showFighterPopup(${Number(id)},null,true,${life})"`;
 }
 
 // story の headline/body 内のキャラ名をクリック可能にして返す
@@ -12,7 +33,7 @@ function _newsStoryClickable(story) {
   if (story.characterId) {
     const ch = ALL_CHARS.find(c => c.id === story.characterId);
     if (ch) {
-      const link = _newsClickableName(ch.name, ch.id);
+      const link = _newsClickableName(ch.name, ch.id, _newsLifeOf(story, ch.id));
       headline = headline.split(ch.name).join(link);
       body = body.split(ch.name).join(link);
     }
@@ -7334,7 +7355,9 @@ function _npSubPhotoHtml(ss) {
       if (!url) return '';
       const fighter = ALL_CHARS.find(c => c.id === id);
       const z = shown.length - idx;
-      return `<div class="np-sub-photo-member" style="z-index:${z}" onclick="showFighterPopup(${id})"><img src="${url}" alt="${escHtml(fighter?.name || '')}"></div>`;
+      // K-4: 前の人生の記事なら、その人生の殿堂詳細へ(殿堂入りしていなければ押せない)
+      const click = typeof _npLifeClick === 'function' ? _npLifeClick(id, ss, `onclick="showFighterPopup(${id})"`) : `onclick="showFighterPopup(${id})"`;
+      return `<div class="np-sub-photo-member" style="z-index:${z}" ${click}><img src="${url}" alt="${escHtml(fighter?.name || '')}"></div>`;
     }).join('');
     if (members) {
       const totalCount = (typeof ss.characterCount === 'number' && ss.characterCount > ids.length)
@@ -7346,7 +7369,10 @@ function _npSubPhotoHtml(ss) {
   }
   const singleId = ids[0] || ss.characterId || null;
   const photoBg = _npPhotoBg(singleId, ss);
-  return `<div class="np-sub-photo" style="${photoBg}" ${singleId ? `onclick="showFighterPopup(${singleId})"` : ''}></div>`;
+  const singleClick = singleId
+    ? (typeof _npLifeClick === 'function' ? _npLifeClick(singleId, ss, `onclick="showFighterPopup(${singleId})"`) : `onclick="showFighterPopup(${singleId})"`)
+    : '';
+  return `<div class="np-sub-photo" style="${photoBg}" ${singleClick}></div>`;
 }
 // MQ再設計P5補: 一面トップで2名を並び写真にする対象タイプ。
 // springTagResult(優勝ペア) / fatedRivals(同年代の逸材2名) /
@@ -7380,7 +7406,7 @@ function _npSpringTagStoryIds(state, story, seasonNum) {
   }
   return direct;
 }
-function _npTopTagPhotoHtml(ids) {
+function _npTopTagPhotoHtml(ids, story) {
   if (!Array.isArray(ids) || ids.length < 2) return '';
   const members = ids.slice(0, 2).map((id, idx) => {
     const upper = (typeof getUpperUrl === 'function') ? getUpperUrl(id) : '';
@@ -7388,7 +7414,8 @@ function _npTopTagPhotoHtml(ids) {
     const src = upper || portrait;
     if (!src) return '';
     const fighter = ALL_CHARS.find(c => c.id === id);
-    return `<div class="np-top-tag-photo-member np-top-tag-photo-member-${idx + 1}" onclick="showFighterPopup(${id})"><img src="${src}" alt="${escHtml(fighter?.name || '')}"></div>`;
+    const click = typeof _npLifeClick === 'function' ? _npLifeClick(id, story, `onclick="showFighterPopup(${id})"`) : `onclick="showFighterPopup(${id})"`;
+    return `<div class="np-top-tag-photo-member np-top-tag-photo-member-${idx + 1}" ${click}><img src="${src}" alt="${escHtml(fighter?.name || '')}"></div>`;
   }).join('');
   return members ? `<div class="np-top-tag-photo">${members}</div>` : '';
 }
@@ -7407,7 +7434,8 @@ function _npRenderBignewsTag(state, ts, seasonNum, weekNum) {
         const src = upper || portrait;
         if (!src) return '';
         const fighter = ALL_CHARS.find(c => c.id === id);
-        return `<div class="np-bignews-photo-member np-bignews-photo-member-${idx + 1}" onclick="showFighterPopup(${id})"><img src="${src}" alt="${escHtml(WM_I18N.pn(fighter?.name || ''))}"></div>`;
+        const click = typeof _npLifeClick === 'function' ? _npLifeClick(id, ts, `onclick="showFighterPopup(${id})"`) : `onclick="showFighterPopup(${id})"`;
+        return `<div class="np-bignews-photo-member np-bignews-photo-member-${idx + 1}" ${click}><img src="${src}" alt="${escHtml(WM_I18N.pn(fighter?.name || ''))}"></div>`;
       }).join('')
     : '';
   // i18n P7-7b: 生JA名を直接joinしており<strong>タグへの直書きがpn()を通っていなかった
@@ -8094,7 +8122,7 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
       : '';
     html += `<article class="np-top-story">
       <div class="np-top-photo${isTagPhoto ? ' np-top-photo--tag' : ''}" style="${photoBg}">
-        ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds) : ''}
+        ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds, ts) : ''}
         ${primaryId ? `<div class="stamp">EXCLUSIVE</div>` : ''}
         ${primaryId ? `<div class="caption">${tsOrgLineHtml}<strong>${tsName}</strong>${ts.captionExtra || WM_I18N.t('{season}-{week}号 紙面より', { season: seasonNum, week: weekNum })}</div>` : ''}
       </div>
@@ -8328,8 +8356,13 @@ function _npV3KurodaColumn(wp, seasonNum, weekNum) {
 // 専用フラグ追加前に発行済みのバックナンバーも特別紙面へ描き替えられる。
 // inductionSeason(任意): 指定すると、その季に殿堂入りした記録だけを引く(2026-09-25。同じIDの
 // 再登場は別人 — K-4裁定 — なので、前の人生の殿堂入りで今の人生の引退記事を描き替えない)
-function _npV3HofEntry(fighterId, inductionSeason) {
+// lifeNo(任意。K-4): 記事に刻まれた人生番号。あれば「ID+人生番号」で引く(番号の無い旧エントリは季で照合)
+function _npV3HofEntry(fighterId, inductionSeason, lifeNo) {
   if (fighterId == null) return null;
+  if (lifeNo != null && typeof Engine !== 'undefined' && Engine.life && typeof G !== 'undefined') {
+    return Engine.life.findHofEntry(G, Number(fighterId), Number(lifeNo),
+      { endSeason: inductionSeason != null ? Number(inductionSeason) : null });
+  }
   const sameId = h => h && String(h.id) === String(fighterId)
     && (inductionSeason == null || Number(h.inductionSeason) === Number(inductionSeason));
   const all = (typeof G !== 'undefined' && G.allHallOfFame) || {};
@@ -8349,7 +8382,10 @@ function _npV3IsHofRetirement(story) {
   // 引いて hallOfFameRetirement を決めている。IDだけで殿堂を探し直すと、同じIDの前の人生の殿堂入りで
   // 特別号に描き替えてしまうので、生成時の判定に従う。持たない記事(旧号・AI)は従来どおり照合する
   if (story.newsData && story.newsData.retiredSeason != null) return !!story.newsData.hallOfFameRetirement;
-  return !!(story.newsData?.hallOfFameRetirement || _npV3HofEntry(story.characterId));
+  // K-4: 記事に人生番号(characterLives)があれば、その人生の殿堂入りだけで描き替える
+  const _life = (story.characterLives && story.characterId != null) ? Number(story.characterLives[story.characterId]) : NaN;
+  return !!(story.newsData?.hallOfFameRetirement
+    || _npV3HofEntry(story.characterId, undefined, Number.isFinite(_life) ? _life : undefined));
 }
 
 // 殿堂入り引退の一面ジャック。新聞全体の赤・金・生成りの色規則は守りつつ、
@@ -8357,8 +8393,10 @@ function _npV3IsHofRetirement(story) {
 function _npV3HallOfFameRetirement(ts, seasonNum, weekNum) {
   const id = ts.characterId || null;
   const data = ts.newsData || {};
-  // retiredSeason を持つ記事は、その季に殿堂入りした記録だけを使う(前の人生の記録を混ぜない)
-  const entry = (data.retiredSeason != null ? _npV3HofEntry(id, data.retiredSeason) : _npV3HofEntry(id)) || {};
+  // retiredSeason を持つ記事は、その季に殿堂入りした記録だけを使う(前の人生の記録を混ぜない)。
+  // K-4: 人生番号(characterLives)があれば「ID+人生番号」で引く
+  const _hofLife = (ts.characterLives && id != null && Number.isFinite(Number(ts.characterLives[id]))) ? Number(ts.characterLives[id]) : undefined;
+  const entry = (data.retiredSeason != null ? _npV3HofEntry(id, data.retiredSeason, _hofLife) : _npV3HofEntry(id, undefined, _hofLife)) || {};
   const fighter = ALL_CHARS.find(c => c.id === id) || {};
   const name = entry.name || fighter.name || '';
   const orgId = entry.orgId || (id ? _npFindFighterOrgKey(G, id) : null);
@@ -8400,7 +8438,7 @@ function _npV3HallOfFameRetirement(ts, seasonNum, weekNum) {
     <div class="np-v3-hof-deck">${ts.subhead || WM_I18N.t('{level}。その功績を永久保存版で振り返る', { level: levelDisplay })}</div>
     <div class="np-v3-hof-hero">
       <figure class="np-v3-hof-figure">
-        <div class="np-v3-hof-photo"${id ? ` onclick="showFighterPopup(${id},null,true)"` : ''}>
+        <div class="np-v3-hof-photo"${id ? ` ${typeof _npLifeClick === 'function' ? _npLifeClick(id, ts, `onclick="showFighterPopup(${id},null,true)"`) : `onclick="showFighterPopup(${id},null,true)"`}` : ''}>
           ${src ? `<img src="${src}" alt="${escHtml(name)}">` : ''}
           <div class="np-v3-hof-medallion">HALL<br>OF FAME</div>
         </div>
@@ -8437,16 +8475,22 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
   // i18n P7-7b: ALL_CHARS由来の生JA名を直接joinしており、<strong>タグへの直書きが
   // pn()を通っていなかった(EN走破で発見)
   const tsName = photoIds.map(id => WM_I18N.pn(ALL_CHARS.find(c => c.id === id)?.name || '')).filter(Boolean).join(pairJoin);
-  const orgKey = primaryId ? _npFindFighterOrgKey(G, primaryId) : null;
-  const orgName = primaryId ? _findFighterOrgName(G, primaryId) : '';
+  // K-4: 前の人生の記事では、今そのIDで生きている別人の所属を出さない
+  const _tsLife = (primaryId && typeof _newsLifeOf === 'function') ? _newsLifeOf(ts, primaryId) : null;
+  const _tsPast = _tsLife != null && !Engine.life.isCurrentLife(G, primaryId, _tsLife);
+  const orgKey = primaryId && !_tsPast ? _npFindFighterOrgKey(G, primaryId) : null;
+  const orgName = primaryId && !_tsPast ? _findFighterOrgName(G, primaryId) : '';
   const emblem = orgKey ? _npOrgEmblem(G, orgKey, 18) : '';
   const orgLine = (emblem || orgName) ? `<div class="np-top-org-line">${emblem}<span>${orgName || ''}</span></div>` : '';
+  const _topClick = primaryId && !isTagPhoto
+    ? (typeof _npLifeClick === 'function' ? _npLifeClick(primaryId, ts, `onclick="showFighterPopup(${primaryId},null,true)"`) : `onclick="showFighterPopup(${primaryId},null,true)"`)
+    : '';
 
   const photoHtml = (isTagPhoto || photoBg)
     ? `<figure class="np-v3-topfig">
         <div class="np-v3-photo-top${isTagPhoto ? ' np-top-photo--tag' : ''}" style="${photoBg}"
-             ${primaryId && !isTagPhoto ? `onclick="showFighterPopup(${primaryId},null,true)"` : ''}>
-          ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds) : ''}
+             ${_topClick}>
+          ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds, ts) : ''}
           ${primaryId ? `<div class="stamp">EXCLUSIVE</div>` : ''}
           ${primaryId ? `<div class="caption">${orgLine}<strong>${tsName}</strong>${ts.captionExtra || WM_I18N.t('{season}-{week}号 紙面より', { season: seasonNum, week: weekNum })}</div>` : ''}
         </div>
@@ -8484,7 +8528,7 @@ function _npV3Shoulder(story) {
   const photo = ids.length >= 2
     ? `<div class="np-v3-photo-kata-group">${_npSubPhotoHtml(story)}</div>`
     : bg
-    ? `<div class="np-v3-photo-kata" style="${bg}"${id ? ` onclick="showFighterPopup(${id},null,true)"` : ''}></div>`
+    ? `<div class="np-v3-photo-kata" style="${bg}"${id ? ` ${typeof _npLifeClick === 'function' ? _npLifeClick(id, story, `onclick="showFighterPopup(${id},null,true)"`) : `onclick="showFighterPopup(${id},null,true)"`}` : ''}></div>`
     : '';
   // 右カラムは 200px しかないので、写真は回り込ませる。
   // flex で横に並べると本文が9文字幅のリボンになって読めない（実測 2026-08-01）
@@ -10465,12 +10509,68 @@ function _recordBookSources() {
   Object.values(G.allHallOfFame || {}).forEach(entries => add(entries, ''));
   add(G.hallOfFame, '');
 
-  const byId = new Map();
+  // K-4: 重複除去は「ID+人生」で行う(同じIDでも人生が違えば別の選手 = 別の元データ)。
+  // 以前はIDだけで除去して現役を残していたので、前の人生の天頂戦優勝・防衛記録が消えていた
+  const byKey = new Map();
   sources.forEach(source => {
-    const key = String(source.fighter.id);
-    if (!byId.has(key)) byId.set(key, source);
+    const life = _recordBookLifeOf(source);
+    source.lifeNo = life.lifeNo;
+    source.legacyPast = life.legacyPast;
+    source.key = life.key;
+    if (!byKey.has(life.key)) byKey.set(life.key, source);
   });
-  return [...byId.values()];
+  return [...byKey.values()];
+}
+
+/** K-4: 元データの人生。生きた選手(現役・FA・引退直後)は今の人生、殿堂・年代記アーカイブは刻まれた番号。
+ *  番号の無い旧項目は、今そのIDで生きている選手のデビューより前に終わっていれば「前の人生(番号不明)」 */
+function _recordBookLifeOf(source) {
+  const f = source.fighter;
+  const id = f.id;
+  const hasLife = typeof Engine !== 'undefined' && Engine.life;
+  if (!hasLife) return { lifeNo: null, legacyPast: false, key: String(id) };
+  const live = source.active || (G.retiredFighters || []).includes(f);
+  if (live) {
+    const n = Engine.life.of(G, f);
+    return { lifeNo: n, legacyPast: false, key: `${id}#${n}` };
+  }
+  const n = Engine.life.entryLife(f);
+  if (n != null) return { lifeNo: n, legacyPast: false, key: `${id}#${n}` };
+  const end = f.careerSeasonsEnd != null ? f.careerSeasonsEnd : (f.activeSeasonsEnd != null ? f.activeSeasonsEnd : f.retiredSeason);
+  if (Engine.life._legacyIsPast(G, id, end)) return { lifeNo: null, legacyPast: true, key: `${id}#past${end}` };
+  const cur = Engine.life.current(G, id);
+  return { lifeNo: cur, legacyPast: false, key: `${id}#${cur}` };
+}
+
+/** K-4: 在籍年(S3〜S9)。同じIDの別の人生が同じ画面に並ぶときだけ名前に添える */
+function _recordBookYears(source) {
+  const f = (source && source.fighter) || {};
+  if (source && source.active) return lifeYearsLabel(f.debutSeason, null, true);
+  if (f.startUnknown) return lifeYearsLabel(null, f.activeSeasonsEnd, false);
+  const retire = (((f.careerRecord || {}).history) || []).slice().reverse().find(e => e && e.type === 'retire');
+  const start = f.careerSeasonsStart != null ? f.careerSeasonsStart : (f.activeSeasonsStart != null ? f.activeSeasonsStart : f.debutSeason);
+  const end = f.careerSeasonsEnd != null ? f.careerSeasonsEnd
+    : (f.activeSeasonsEnd != null ? f.activeSeasonsEnd : (f.retiredSeason != null ? f.retiredSeason : (retire && retire.season)));
+  return lifeYearsLabel(start, end, false);
+}
+
+/** K-4: 並んだ元データのうち、同じIDの別の人生が2人以上いるID */
+function _recordBookDupIds(list) {
+  const byId = new Map();
+  (list || []).forEach(source => {
+    if (!source || !source.fighter) return;
+    const id = String(source.fighter.id);
+    if (!byId.has(id)) byId.set(id, new Set());
+    byId.get(id).add(source.key || id);
+  });
+  return new Set([...byId.entries()].filter(([, keys]) => keys.size >= 2).map(([id]) => id));
+}
+
+/** 名前に添える在籍年(同じIDの別の人生が並ぶときだけ)。空なら '' */
+function _recordBookYearsSuffix(source, dupIds) {
+  if (!source || !source.fighter || !dupIds || !dupIds.has(String(source.fighter.id))) return '';
+  const y = _recordBookYears(source);
+  return y ? ` ${y}` : '';
 }
 
 function _recordBookPeak(source) {
@@ -10479,11 +10579,20 @@ function _recordBookPeak(source) {
   return Number(record.peakOVR) || Number(fighter && fighter.peakOVR) || (fighter ? Engine.util.ov(fighter) : 0);
 }
 
-function _recordBookOpen(fighter) {
+// lifeNo(任意。K-4): 元データの人生。今の人生なら選手詳細、前の人生ならその人生の殿堂詳細
+// (殿堂入りしていなければ押せない)
+function _recordBookOpen(fighter, lifeNo) {
   const id = Number(fighter && fighter.id);
-  return Number.isFinite(id) && typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(id)
-    ? ` role="button" tabindex="0" onclick="showFighterPopup(${id},null,true)"`
+  const life = lifeNo != null ? Number(lifeNo) : null;
+  return Number.isFinite(id) && typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(id, life)
+    ? ` role="button" tabindex="0" onclick="showFighterPopup(${id},null,true${life != null ? `,${life}` : ''})"`
     : '';
+}
+
+/** 元データ(source)を押したとき。番号の分からない前の人生(旧データ)は押せない */
+function _recordBookOpenSource(source) {
+  if (!source || !source.fighter || source.legacyPast) return '';
+  return _recordBookOpen(source.fighter, source.lifeNo);
 }
 
 function _recordBookFace(id, name) {
@@ -10545,18 +10654,22 @@ function _recordBookDisplayOvr(source) {
   return Math.round(Number(record.peakOVR) || Number(fighter.peakOVR) || Engine.util.ov(fighter));
 }
 
-function _renderDbRecordWinnerCard(item, index, kind) {
+function _renderDbRecordWinnerCard(item, index, kind, dupIds) {
   const source = item.source;
   const season = item.event.season || '?';
   const name = _recordBookName(source);
   const ovr = _recordBookDisplayOvr(source);
   const ovrClass = typeof valueClassOvr === 'function' ? valueClassOvr(ovr) : '';
   const orgName = (source && source.orgName) || '';
+  // K-4: 同じIDの別の人生が同じ画面に並ぶときだけ、所属の行に在籍年を添える
+  const years = typeof _recordBookYearsSuffix === 'function' ? _recordBookYearsSuffix(source, dupIds).trim() : '';
+  const subLine = [orgName, years].filter(Boolean).join(' · ');
   const className = kind === 'tenchosen' ? 'db-record-glory-card' : 'db-record-glory-card db-record-ppv-card';
   const cardNumber = kind === 'tenchosen' ? `<div class="db-record-glory-sub">${WM_I18N.t('第{n}回 王者', { n: index + 1 })}</div>` : '';
-  return `<div class="${className}"${_recordBookOpen(source && source.fighter)}>
+  const open = typeof _recordBookOpenSource === 'function' ? _recordBookOpenSource(source) : _recordBookOpen(source && source.fighter);
+  return `<div class="${className}"${open}>
     ${_recordBookUpper(source, kind === 'tenchosen' ? 'is-tenchosen' : 'is-ppv')}
-    <div class="db-record-nameband"><div><span>${escHtml(name)}</span><b class="db-record-ovr ${ovrClass}">OVR ${ovr}</b></div>${orgName ? `<small>${escHtml(orgName)}</small>` : ''}</div>
+    <div class="db-record-nameband"><div><span>${escHtml(name)}</span><b class="db-record-ovr ${ovrClass}">OVR ${ovr}</b></div>${subLine ? `<small>${escHtml(subLine)}</small>` : ''}</div>
     <div class="db-record-glory-plate">${kind === 'tenchosen' ? '🌿' : ''}S${season}${kind === 'tenchosen' ? '🌿' : ''}</div>
     ${cardNumber}
   </div>`;
@@ -10582,7 +10695,10 @@ function _recordBookDefenseLeader(sources) {
   });
   const addActive = (title, orgName) => {
     if (!title || title.championId == null || Number(title.defenses) <= 0) return;
-    const source = sources.find(entry => entry.fighter.id === title.championId);
+    // K-4: 在位中の王者は今の人生(生きた選手)。前の人生の元データを引かない
+    const source = sources.find(entry => entry.active && entry.fighter.id === title.championId)
+      || sources.find(entry => entry.fighter.id === title.championId && !entry.legacyPast
+        && (typeof Engine === 'undefined' || !Engine.life || entry.lifeNo == null || Engine.life.isCurrentLife(G, entry.fighter.id, entry.lifeNo)));
     if (!source) return;
     const history = ((source.fighter || {}).careerRecord || {}).history || [];
     const win = history.slice().reverse().find(event => event && event.type === 'titleWin' && (event.beltId || 'world') === 'world');
@@ -10599,7 +10715,26 @@ function _recordBookDefenseLeader(sources) {
 function _recordBookUnifiedReigns(sources) {
   if (!G.unifiedTitle) return [];
   const history = G.unifiedTitle.history || [];
-  const byId = new Map(sources.map(source => [String(source.fighter.id), source]));
+  const byKey = new Map(sources.map(source => [source.key || String(source.fighter.id), source]));
+  const byId = new Map();
+  sources.forEach(source => { const k = String(source.fighter.id); if (!byId.has(k)) byId.set(k, []); byId.get(k).push(source); });
+  // K-4: 王者の元データは「ID+人生番号」(履歴の lives)で引く。番号の無い旧履歴は §4-3 の季の判定:
+  // 今そのIDで生きている選手のデビューより前の戴冠なら、その季以降に終わった最も早い前の人生の元データ
+  const hasLife = typeof Engine !== 'undefined' && Engine.life;
+  const sourceOf = (id, event) => {
+    const life = hasLife ? Engine.life.livesOf(event && event.lives, id) : null;
+    if (life != null) return byKey.get(`${id}#${life}`) || null;
+    const list = byId.get(String(id)) || [];
+    if (!hasLife || list.length <= 1) return list[0] || null;
+    const season = Number(event && event.season) || 0;
+    if (Engine.life._legacyIsPast(G, id, season)) {
+      const past = list.filter(s => !s.active && !Engine.life.isCurrentLife(G, id, s.lifeNo) || s.legacyPast)
+        .map(s => ({ s, end: Number(s.fighter.careerSeasonsEnd != null ? s.fighter.careerSeasonsEnd : s.fighter.activeSeasonsEnd) || 0 }))
+        .filter(x => x.end >= season).sort((a, b) => a.end - b.end);
+      return past.length ? past[0].s : null;
+    }
+    return byKey.get(`${id}#${Engine.life.current(G, id)}`) || list[0] || null;
+  };
   const absWeek = (season, week) => Engine.util.absWeek(Number(season) || 1, Number(week) || 1);
   const reigns = [];
   let current = null;
@@ -10614,8 +10749,9 @@ function _recordBookUnifiedReigns(sources) {
     current = {
       generation: Number(event.generation) || derivedGeneration,
       championId,
+      lifeNo: hasLife ? Engine.life.livesOf(event.lives, championId) : null,
       orgId,
-      source: byId.get(String(championId)) || null,
+      source: sourceOf(championId, event),
       startSeason: Number(event.season) || 1,
       startWeek: Number(event.week) || 1,
       defenses: 0,
@@ -10662,7 +10798,8 @@ function _recordBookUnifiedReigns(sources) {
     if (event.type === 'vacate' && current) finishReign(event, WM_I18N.t('返上'));
   });
 
-  if (current && G.unifiedTitle.championId === current.championId) {
+  if (current && G.unifiedTitle.championId === current.championId
+    && (!hasLife || current.lifeNo == null || Engine.life.isCurrentLife(G, current.championId, current.lifeNo))) {
     const endSeason = Number(G.season) || current.startSeason;
     const endWeek = Number(G.week) || current.startWeek;
     reigns.push({
@@ -10690,22 +10827,23 @@ function _recordBookUnifiedDuration(weeks) {
   return WM_I18N.t('{dw}週', { dw: total });
 }
 
-function _renderDbUnifiedTitleRecords(sources) {
+function _renderDbUnifiedTitleRecords(sources, dupIds) {
   // 未創設セーブでは見出しも空データ説明も出さない。
   if (!G.unifiedTitle) return '';
   const reigns = _recordBookUnifiedReigns(sources);
   const defenseLeader = reigns.slice().sort((a, b) => b.defenses - a.defenses || a.generation - b.generation)[0] || null;
   const longest = reigns.slice().sort((a, b) => b.durationWeeks - a.durationWeeks || a.generation - b.generation)[0] || null;
-  const holderName = reign => reign?.source ? _recordBookName(reign.source)
+  // K-4: 同じIDの別の人生が同じ画面に並ぶときだけ在籍年を添える
+  const holderName = reign => reign?.source ? _recordBookName(reign.source) + _recordBookYearsSuffix(reign.source, dupIds)
     : Engine.mq._fighterName(G, reign?.championId);
-  const recordCard = (label, reign, value) => reign ? `<div class="db-record-strip"${reign.source ? _recordBookOpen(reign.source.fighter) : ''}>
+  const recordCard = (label, reign, value) => reign ? `<div class="db-record-strip"${reign.source ? _recordBookOpenSource(reign.source) : ''}>
     <span class="db-record-strip-label">${label}</span>
     <span class="db-record-strip-value">${value}</span>
     <div class="db-record-strip-detail"><strong>${escHtml(holderName(reign))}</strong><br><span>${WM_I18N.t('第{n}代', { n: reign.generation })} / ${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</span></div>
   </div>` : '';
   const rows = reigns.map(reign => {
     const period = `S${reign.startSeason} ${WM_I18N.t('第{w}週', { w: reign.startWeek })}〜${reign.active ? WM_I18N.t('現在') : `S${reign.endSeason} ${WM_I18N.t('第{w}週', { w: reign.endWeek })}`}`;
-    return `<tr${reign.source ? _recordBookOpen(reign.source.fighter) : ''}>
+    return `<tr${reign.source ? _recordBookOpenSource(reign.source) : ''}>
       <td class="num">${WM_I18N.t('第{n}代', { n: reign.generation })}</td>
       <td>${escHtml(holderName(reign))}</td>
       <td>${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</td>
@@ -10733,25 +10871,29 @@ function _renderDbRecordBook() {
     .sort((a, b) => (b.event.season || 0) - (a.event.season || 0));
   const nextTenchosen = (Math.floor((G.season || 1) / 4) + 1) * 4;
   const leader = _recordBookDefenseLeader(sources);
+  // K-4: この画面に同じIDの別の人生が2人以上並ぶID(在籍年を添える)
+  const shownSources = [...tenchosen.map(i => i.source), ...ppv.map(i => i.source),
+    ...(G.unifiedTitle ? _recordBookUnifiedReigns(sources).map(r => r.source) : []), leader && leader.source].filter(Boolean);
+  const dupIds = _recordBookDupIds(shownSources);
 
   let html = `<div class="db-record-book">
     <div class="db-record-strips">${_renderDbRecordStrip(G.mqRecord, WM_I18N.t('シングル'), false)}${_renderDbRecordStrip(G.mqRecordTag, WM_I18N.t('タッグ'), true)}</div>
-    ${_renderDbUnifiedTitleRecords(sources)}
+    ${_renderDbUnifiedTitleRecords(sources, dupIds)}
     <section class="db-record-hall db-record-tenchosen-hall">
       <div class="db-record-cere-head"><span>━━</span><h3>${WM_I18N.t('天頂戦 歴代優勝')}</h3><span>━━</span></div>
       <p class="db-record-cere-lead">${WM_I18N.t('4年に一度、業界の頂を決める舞台')}</p>
-      <div class="db-record-glory-row">${tenchosen.map((item, index) => _renderDbRecordWinnerCard(item, index, 'tenchosen')).join('')}
+      <div class="db-record-glory-row">${tenchosen.map((item, index) => _renderDbRecordWinnerCard(item, index, 'tenchosen', dupIds)).join('')}
         <div class="db-record-glory-card is-empty"><div class="db-record-upper is-tenchosen"><span>⛰</span><small>${WM_I18N.t('次回<br>S{season}', { season: nextTenchosen })}</small></div><div class="db-record-glory-plate">S${nextTenchosen}</div><div class="db-record-glory-sub">${WM_I18N.t('開催前')}</div></div>
       </div>
     </section>`;
   html += `<section class="db-record-hall db-record-ppv-hall">
     <div class="db-record-cere-head is-ppv"><span>━━</span><h3>PPV GRAND FINAL ${WM_I18N.t('歴代優勝')}</h3><span>━━</span></div>
     <p class="db-record-cere-lead">${WM_I18N.t('毎年の頂点 ─ 直近から')}</p>
-    <div class="db-record-ppv-row">${ppv.map((item, index) => _renderDbRecordWinnerCard(item, index, 'ppv')).join('')}</div>
+    <div class="db-record-ppv-row">${ppv.map((item, index) => _renderDbRecordWinnerCard(item, index, 'ppv', dupIds)).join('')}</div>
   </section>`;
   if (leader) {
-    const name = _recordBookName(leader.source);
-    html += `<section class="db-record-defense-band"${_recordBookOpen(leader.source.fighter)}>
+    const name = _recordBookName(leader.source) + _recordBookYearsSuffix(leader.source, dupIds);
+    html += `<section class="db-record-defense-band"${_recordBookOpenSource(leader.source)}>
       <div class="db-record-defense-portrait"><span>👑</span>${_recordBookUpper(leader.source, 'is-defense')}</div>
       <div class="db-record-defense-info"><div>${WM_I18N.t('最多連続防衛')}</div><p><strong>${leader.defenses}</strong><span>${WM_I18N.t('度防衛')}</span></p><h3>${escHtml(name)}</h3><small>${escHtml(leader.titleName)} ─ ${leader.period}${leader.active ? WM_I18N.t(' ─ 継続中') : ''}</small></div>
     </section>`;
@@ -10838,9 +10980,14 @@ function _renderDbHallOfFame() {
     return html;
   }
 
+  // K-4: 同じIDが2つの人生で殿堂入りしているときだけ、カードに在籍年を1行添える(同姓同名の別人の見分け)
+  const _hofIdCount = new Map();
+  allEntries.forEach(h => { if (h) _hofIdCount.set(h.id, (_hofIdCount.get(h.id) || 0) + 1); });
+
   // 盾グリッド（flex-wrap コンパクトカード）
   html += `<div class="db-hof-grid">`;
   filtered.forEach((h, idx) => {
+    const yearsRow = (_hofIdCount.get(h.id) || 0) >= 2 ? _hofYearsLabel(h) : '';
     const level = h.hofLevel || 1;
     const borderColor = _getHofBorderColor(level);
     const pUrl = getPortraitUrl(h.id || 0);
@@ -10855,6 +11002,7 @@ function _renderDbHallOfFame() {
       <div style="font-size:10px;color:${borderColor};font-weight:700;margin:2px 0">${starText}</div>
       <div style="margin:4px 0">${imgHtml}</div>
       <div class="db-hof-name">${WM_I18N.pn(h.name)}</div>
+      ${yearsRow ? `<div class="db-hof-row">${yearsRow}</div>` : ''}
       <div class="db-hof-row">${h.orgName || _getHofOrgName(h.orgId)}</div>
       <div class="db-hof-row">${WM_I18N.t('王座{reigns}/防衛{defenses}', { reigns: h.titleReigns || 0, defenses: h.totalDefenses || 0 })}</div>
     </div>`;
@@ -10865,6 +11013,20 @@ function _renderDbHallOfFame() {
   window._hofFilteredList = filtered;
 
   return html;
+}
+
+/** K-4: 殿堂エントリの在籍年(S3〜S9)。始まりが信用できない旧データのAI殿堂(移行で startUnknown)は「〜S9」 */
+function _hofYearsLabel(h) {
+  if (!h) return '';
+  if (h.startUnknown) return lifeYearsLabel(null, h.activeSeasonsEnd, false);
+  return lifeYearsLabel(h.activeSeasonsStart, h.activeSeasonsEnd, false) || (h.activeYears || '');
+}
+
+/** K-4: 殿堂エントリと年代記の章の登場者(エース・同世代)が同じ人生か(番号の無い旧データはIDだけで照合) */
+function _hofSameLife(h, c) {
+  if (!h || !c || c.id !== h.id) return false;
+  if (c.lifeNo == null || h.lifeNo == null) return true;
+  return Number(c.lifeNo) === Number(h.lifeNo);
 }
 
 /** 殿堂詳細ポップアップ */
@@ -10947,7 +11109,9 @@ function showHofDetail(idx) {
   // 対抗戦戦績（既存エントリはwarWins未保存→retiredFightersからフォールバック）
   let _warW = h.warWins || 0, _warL = h.warLosses || 0;
   if (_warW === 0 && _warL === 0) {
-    const _rf = (G.retiredFighters || []).find(f => f.id === h.id);
+    // K-4: 同じ人生の引退直後の選手だけ(同じIDの別の人生の戦績を混ぜない)
+    const _rf = (G.retiredFighters || []).find(f => f.id === h.id
+      && (h.lifeNo == null || typeof Engine === 'undefined' || !Engine.life || Engine.life.of(G, f) === Number(h.lifeNo)));
     if (_rf) {
       // 転生前の架空対抗戦は別人扱いで除外
       const _rfJs = Engine.career.joinSeason(_rf);
@@ -10975,9 +11139,13 @@ function showHofDetail(idx) {
   const legendGlow = level >= 3 ? 'box-shadow:0 0 20px rgba(243,156,18,0.3);' : '';
   const shieldGlow = level >= 3 ? 'filter:drop-shadow(0 0 8px rgba(243,156,18,0.5))' : '';
 
-  // 年代記チャプターに登場するか（「年代記で見る」ボタン表示判定）
+  // 年代記チャプターに登場するか（「年代記で見る」ボタン表示判定）。K-4: 同じ人生の登場だけ
   const hasChronicleChapter = !!(G && G.chronicle && ((G.chronicle.chaptersCache || {}).chapters || [])
-    .some(ch => [...(ch.aces || []), ...(ch.peers || [])].some(c => c.id === h.id)));
+    .some(ch => [...(ch.aces || []), ...(ch.peers || [])].some(c => _hofSameLife(h, c))));
+  // K-4: 在籍年。始まりが信用できない旧データのAI殿堂は「〜S9」だけ(シーズン数は出さない)
+  const yearsLine = h.startUnknown
+    ? _hofYearsLabel(h)
+    : WM_I18N.t('{years}（{n}シーズン）', { years: _hofYearsLabel(h), n: (h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1 });
 
   const modal = document.createElement('div');
   modal.className = 'db-hof-detail-overlay';
@@ -10995,7 +11163,7 @@ function showHofDetail(idx) {
         <div style="font-size:18px;font-weight:700;color:var(--text-main)">${WM_I18N.pn(h.name)}</div>
         <div style="font-size:15px;color:var(--gold);margin:4px 0">${WM_I18N.t('── 「{epithet}」──', { epithet: epithetLabel })}</div>
         <div style="font-size:13px;color:var(--text-sub)">${orgName} / ${h.style || 'Allround'}</div>
-        <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('{years}（{n}シーズン）', { years: h.activeYears || '', n: (h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1 })}</div>
+        <div style="font-size:12px;color:var(--text-sub)">${yearsLine}</div>
         <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('最高OVR {ovr}（S{season}）', { ovr: h.peakOVR || 0, season: h.peakOVRSeason || '?' })}</div>
         ${retireInfo}
       </div>
@@ -11009,7 +11177,7 @@ function showHofDetail(idx) {
       ${WM_I18N.t('殿堂pt: {pt} ／ 殿堂入り: S{season}', { pt: h.hofPoints || 0, season: h.inductionSeason || '?' })}
     </div>
     <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-      ${hasChronicleChapter ? `<button class="db-hof-detail-btn" style="background:rgba(154,112,32,0.12);border-color:rgba(184,137,42,0.6);color:#c9a84c" onclick="openChronicleForFighter(${h.id})">${WM_I18N.t('📖 年代記で見る')}</button>` : ''}
+      ${hasChronicleChapter ? `<button class="db-hof-detail-btn" style="background:rgba(154,112,32,0.12);border-color:rgba(184,137,42,0.6);color:#c9a84c" onclick="openChronicleForFighter(${h.id}${h.lifeNo != null ? `,${Number(h.lifeNo)}` : ''})">${WM_I18N.t('📖 年代記で見る')}</button>` : ''}
       <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove();_drainPopupQueue()">${WM_I18N.t('閉じる')}</button>
     </div>
   </div>`;
@@ -11036,24 +11204,33 @@ function rebuildChronicle() {
 }
 window.rebuildChronicle = rebuildChronicle;
 
-/** 年代記 → HoF: fighter ID から直接 HoF 詳細モーダルを開く */
-function openHofDetailById(fighterId) {
+/** 年代記 → HoF: fighter ID から直接 HoF 詳細モーダルを開く。
+ *  lifeNo(任意。K-4): その人生の殿堂エントリを開く(同じIDが別の人生でも殿堂入りしていることがある) */
+function openHofDetailById(fighterId, lifeNo) {
   const allEntries = _getAllHofEntries();
-  const idx = allEntries.findIndex(h => h.id === fighterId);
+  let idx = -1;
+  if (lifeNo != null && typeof Engine !== 'undefined' && Engine.life) {
+    const entry = Engine.life.findHofEntry(G, Number(fighterId), Number(lifeNo));
+    idx = entry ? allEntries.indexOf(entry) : -1;
+    if (idx < 0 && entry) idx = allEntries.findIndex(h => h.id === entry.id && Engine.life.entryLife(h) === Engine.life.entryLife(entry));
+    if (idx < 0) return;
+  } else {
+    idx = allEntries.findIndex(h => h.id === fighterId);
+  }
   if (idx < 0) return;
   window._hofFilteredList = allEntries;
   showHofDetail(idx);
 }
 window.openHofDetailById = openHofDetailById;
 
-/** HoF → 年代記: fighter が登場する章を開く */
-function openChronicleForFighter(fighterId) {
+/** HoF → 年代記: fighter が登場する章を開く。lifeNo(任意。K-4): その人生の登場だけ */
+function openChronicleForFighter(fighterId, lifeNo) {
   if (!G || !G.chronicle) return;
   const chapters = (G.chronicle.chaptersCache || {}).chapters || [];
   let targetIdx = null;
   for (let i = 0; i < chapters.length; i++) {
     const all = [...(chapters[i].aces || []), ...(chapters[i].peers || [])];
-    if (all.some(c => c.id === fighterId)) { targetIdx = i + 1; break; }
+    if (all.some(c => c.id === fighterId && (lifeNo == null || c.lifeNo == null || Number(c.lifeNo) === Number(lifeNo)))) { targetIdx = i + 1; break; }
   }
   if (targetIdx === null) return;
   const overlay = document.querySelector('.db-hof-detail-overlay');
@@ -11878,10 +12055,14 @@ function _renderPrologueBlock(prologue, chapters) {
   const orgName = G.orgName ? WM_I18N.pn(G.orgName) : WM_I18N.t('あなたの団体');
   const founderIds = prologue.founderIds || [];
   // founder の最新スナップショット (roster / archive / retiredFighters のいずれかから取得)
+  // K-4: 旗揚げメンバーは1番目の人生。転生して戻った同名の別人(2番目以降の人生)の姿・記録を出さない
+  const _firstLife = f => !f || typeof Engine === 'undefined' || !Engine.life || Engine.life.of(G, f) === 1;
   const founders = founderIds.map(id => {
-    const inRoster = (G.roster || []).find(c => c.id === id);
-    const inArchive = (G.chronicle?.fighterArchive || []).find(a => a.id === id);
-    const inRetired = (G.retiredFighters || []).find(f => f.id === id);
+    const inRoster = (G.roster || []).find(c => c.id === id && _firstLife(c));
+    const inArchive = (Engine.prologue && Engine.prologue.founderArchive)
+      ? Engine.prologue.founderArchive(G, id)
+      : (G.chronicle?.fighterArchive || []).find(a => a.id === id);
+    const inRetired = (G.retiredFighters || []).find(f => f.id === id && _firstLife(f));
     const raw = (typeof ALL_CHARS !== 'undefined') ? ALL_CHARS.find(c => c.id === id) : null;
     const src = inRoster || inArchive || inRetired || raw || { id, name: '?' };
     return {
@@ -11899,6 +12080,7 @@ function _renderPrologueBlock(prologue, chapters) {
   const idolThreshold = 60;
   const idolCandidate = founders.filter(f => f.peakPopularity >= idolThreshold)
     .sort((a, b) => b.peakPopularity - a.peakPopularity)[0];
+  // (K-4: 初代王者は旗揚げ直後の戴冠で、転生が起きうる5季より前なので必ず1番目の人生。人生の照合は不要)
   const firstChampionId = Engine.prologue.firstChampionId(G);
 
   const STYLE_JP = { Striker: WM_I18N.t('打撃'), Grappler: WM_I18N.t('組技'), Submission: WM_I18N.t('関節技'), Brawler: WM_I18N.t('喧嘩'), Aerial: WM_I18N.t('空中戦'), Allround: WM_I18N.t('万能') };
@@ -11962,8 +12144,9 @@ function _renderPrologueBlock(prologue, chapters) {
     // U7 §2-C: 開けるデータがある選手だけ押せるようにする。
     // 旗揚げ世代は退団・引退で roster から消えると chronicle.fighterArchive にしか
     // 残らず、その中身は年代記用の抜粋なので選手詳細は出せない
-    const open = (typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(f.id))
-      ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},null,true)"` : '';
+    // K-4: 旗揚げメンバーは1番目の人生で開く(転生した同名の別人を開かない。殿堂入りしていればその殿堂詳細)
+    const open = (typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(f.id, 1))
+      ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},null,true,1)"` : '';
     html += `<div class="${cardCls}"${open}>
       <div class="chron-prologue-portrait">${portraitInner}</div>
       <div class="chron-prologue-name">${WM_I18N.pn(f.name)}</div>
@@ -12223,16 +12406,32 @@ function _renderDbChronicle() {
   const peers = current.peers || [];
   const isDual = aces.length >= 2;
 
-  // HoF IDセット (年代記内でのHoFバッジ判定用)
-  const hofSet = new Set(((G.allHallOfFame || {}).player || []).map(h => h.id));
+  // HoF判定 (年代記内でのHoFバッジ)。K-4: 「ID+人生番号」で引く(同じIDの別の人生の殿堂入りでバッジを付けない)。
+  // 番号の無い旧キャッシュの登場者は従来どおり自団体の殿堂のIDで判定
+  const hofSetLegacy = new Set(((G.allHallOfFame || {}).player || []).map(h => h.id));
+  const _chrHof = c => (c && c.lifeNo != null && Engine.life)
+    ? !!Engine.life.findHofEntry(G, c.id, c.lifeNo)
+    : hofSetLegacy.has(c && c.id);
+  const _chrHofArgs = c => `${Number(c.id) || 0}${c.lifeNo != null ? `,${Number(c.lifeNo)}` : ''}`;
+  // K-4: 同じ章に同じIDの別の人生が並ぶときだけ、名前に在籍年を添える
+  const _chrLives = new Map();
+  [...(current.aces || []), ...(current.peers || [])].forEach(c => {
+    if (!c) return;
+    if (!_chrLives.has(c.id)) _chrLives.set(c.id, new Set());
+    _chrLives.get(c.id).add(c.lifeNo != null ? c.lifeNo : '?');
+  });
+  const _chrYears = c => ((_chrLives.get(c.id) || new Set()).size >= 2)
+    ? ` <span style="font-size:11px;font-weight:400;color:var(--chr-ink-mid)">${lifeYearsLabel(c.careerSeasonsStart, c.careerSeasonsEnd, !!c.active)}</span>`
+    : '';
 
   // ポートレート HTML ビルダー
   const _buildAcePortrait = (a, isDualPortrait) => {
     const pUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(a.id || 0, a.peakOVR || 0) : '';
     const letter = Engine.chronicle._getSurname(a.name).charAt(0);
     // U7 §2-C: 開けるデータがある選手だけ押せるようにする（過去のエースは居ないことがある）
-    const open = (typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(a.id))
-      ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(a.id) || 0},null,true)"` : '';
+    // K-4: 人生番号を渡す — 前の人生のエースは、その人生の殿堂詳細(殿堂入りしていなければ押せない)
+    const open = (typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(a.id, a.lifeNo))
+      ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(a.id) || 0},null,true${a.lifeNo != null ? `,${Number(a.lifeNo)}` : ''})"` : '';
     if (isDualPortrait) {
       const img = pUrl
         ? `<img src="${pUrl}" onerror="this.remove()" alt=""><span class="chron-dual-portrait-letter" style="display:none">${letter}</span>`
@@ -12251,12 +12450,13 @@ function _renderDbChronicle() {
   if (isDual) {
     // ── 2枚看板専用レイアウト ────────────────────────────
     const buildDualCard = (a) => {
-      const hofBadge = hofSet.has(a.id)
-        ? `<span class="chron-hof-badge" onclick="openHofDetailById(${a.id})" title="${WM_I18N.t('殿堂入り')}">🏅</span>`
+      const isHof = _chrHof(a);
+      const hofBadge = isHof
+        ? `<span class="chron-hof-badge" onclick="openHofDetailById(${_chrHofArgs(a)})" title="${WM_I18N.t('殿堂入り')}">🏅</span>`
         : '';
-      const nameHtml = hofSet.has(a.id)
-        ? `<span class="chron-hof-link" onclick="openHofDetailById(${a.id})">${WM_I18N.pn(a.name)}</span>${hofBadge}`
-        : WM_I18N.pn(a.name);
+      const nameHtml = (isHof
+        ? `<span class="chron-hof-link" onclick="openHofDetailById(${_chrHofArgs(a)})">${WM_I18N.pn(a.name)}</span>${hofBadge}`
+        : WM_I18N.pn(a.name)) + _chrYears(a);
       return `<div class="chron-dual-card">
         ${_buildAcePortrait(a, true)}
         <div class="chron-dual-info">
@@ -12298,12 +12498,13 @@ function _renderDbChronicle() {
   } else {
     // ── 単独エースレイアウト（従来ベース） ──────────────────
     const a = aces[0];
-    const hofBadge = hofSet.has(a.id)
-      ? `<span class="chron-hof-badge" onclick="openHofDetailById(${a.id})" title="${WM_I18N.t('殿堂入り')}">🏅</span>`
+    const aIsHof = _chrHof(a);
+    const hofBadge = aIsHof
+      ? `<span class="chron-hof-badge" onclick="openHofDetailById(${_chrHofArgs(a)})" title="${WM_I18N.t('殿堂入り')}">🏅</span>`
       : '';
-    const nameHtml = hofSet.has(a.id)
-      ? `<span class="chron-hof-link" onclick="openHofDetailById(${a.id})">${WM_I18N.pn(a.name)}</span>${hofBadge}`
-      : WM_I18N.pn(a.name);
+    const nameHtml = (aIsHof
+      ? `<span class="chron-hof-link" onclick="openHofDetailById(${_chrHofArgs(a)})">${WM_I18N.pn(a.name)}</span>${hofBadge}`
+      : WM_I18N.pn(a.name)) + _chrYears(a);
     html += `<div class="chron-ace-row">
       ${_buildAcePortrait(a, false)}
       <div>
@@ -12428,13 +12629,14 @@ function _renderDbChronicle() {
       if (isIdol && p.traits && p.traits.length > 0) {
         metaParts.push(_chronicleDotJoin(p.traits.slice(0, 2).map(tr => WM_I18N.t(tr))));
       } else if (p.titleReigns > 0) metaParts.push(_chronicleUnit('peerReigns', { n: p.titleReigns }));
-      // HoFバッジ (hofSet は上のエースセクションで定義済み)
-      const pHofBadge = hofSet.has(p.id)
-        ? `<span class="chron-hof-badge" onclick="openHofDetailById(${p.id})" title="${WM_I18N.t('殿堂入り')}">🏅</span>`
+      // HoFバッジ (_chrHof は上のエースセクションで定義済み)
+      const pIsHof = _chrHof(p);
+      const pHofBadge = pIsHof
+        ? `<span class="chron-hof-badge" onclick="openHofDetailById(${_chrHofArgs(p)})" title="${WM_I18N.t('殿堂入り')}">🏅</span>`
         : '';
-      const pNameHtml = hofSet.has(p.id)
-        ? `<span class="chron-hof-link" onclick="openHofDetailById(${p.id})">${WM_I18N.pn(p.name)}</span>${pHofBadge}`
-        : WM_I18N.pn(p.name);
+      const pNameHtml = (pIsHof
+        ? `<span class="chron-hof-link" onclick="openHofDetailById(${_chrHofArgs(p)})">${WM_I18N.pn(p.name)}</span>${pHofBadge}`
+        : WM_I18N.pn(p.name)) + _chrYears(p);
       // Phase B: 4 枠ごとの役割タグ
       let roleTag = '';
       if (isIdol) roleTag = `<div class="chron-gen-idol-tag">★ ${WM_I18N.t('アイドル選手')}</div>`;
@@ -12444,8 +12646,8 @@ function _renderDbChronicle() {
       const memberClass = `chron-gen-member${isIdol ? ' idol' : ''}${isRising ? ' rising' : ''}${isVeteran ? ' veteran' : ''}`;
       // U7 §2-C: 顔を押せば選手詳細。名前は殿堂リンクが載ることがあるので顔に付ける。
       // 既に居なくなった選手は開けるデータが無いので手を付けない（無反応を作らない）
-      const pOpen = (typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(p.id))
-        ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(p.id)},null,true)"` : '';
+      const pOpen = (typeof canOpenFighterPopup === 'function' && canOpenFighterPopup(p.id, p.lifeNo))
+        ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(p.id)},null,true${p.lifeNo != null ? `,${Number(p.lifeNo)}` : ''})"` : '';
       html += `<li class="${memberClass}">
         <div class="chron-gen-portrait"${pOpen}>${imgHtml}</div>
         <div class="chron-gen-info">
@@ -12810,6 +13012,15 @@ function _relmapBuildLinks(allChars) {
   const links = [];
   const charsById = new Map(allChars.map(c => [String(c.id), c]));
   const pairKeys = new Set();
+  // K-4: 退避した過去の関係(lives を持つ項目)は、表示中の2人の今の人生と一致するときだけ引く
+  // (転生した子と前の人生の相手の間に「過去の線」を引かない)。lives の無い旧項目は従来どおり
+  const _histMatchesNow = entry => {
+    if (!entry || !entry.lives || typeof Engine === 'undefined' || !Engine.life) return true;
+    const a = Number(entry.id1);
+    const b = Number(entry.id2);
+    return Engine.life.isCurrentLife(G, a, Engine.life.livesOf(entry.lives, a))
+      && Engine.life.isCurrentLife(G, b, Engine.life.livesOf(entry.lives, b));
+  };
 
   Object.keys(rels).forEach(key => {
     const sep = key.indexOf('>');
@@ -12825,6 +13036,7 @@ function _relmapBuildLinks(allChars) {
     const bId = Number(entry && entry.id2);
     if (!Number.isFinite(aId) || !Number.isFinite(bId) || aId === bId) return;
     if (!charsById.has(String(aId)) || !charsById.has(String(bId))) return;
+    if (!_histMatchesNow(entry)) return;
     pairKeys.add(_relmapPairKey(aId, bId));
   });
 
@@ -12859,7 +13071,7 @@ function _relmapBuildLinks(allChars) {
     const hasTitle = !!rivalLvl && !rivalLvl.isOneSided;
     const isOneSided = rivalLvl?.isOneSided || false;
     const hasPast = history.some(h =>
-      (h.id1 === a.id && h.id2 === b.id) || (h.id1 === b.id && h.id2 === a.id)
+      ((h.id1 === a.id && h.id2 === b.id) || (h.id1 === b.id && h.id2 === a.id)) && _histMatchesNow(h)
     );
 
     const strength = (Math.abs(bondAB - 50) + Math.abs(bondBA - 50) + rivAB + rivBA) / 200;

@@ -28,7 +28,8 @@ assert.match(uiSource, /league\.announcedSeason === seasonNum/,
   'pre-fix saves must recover champion IDs only from the matching tournament season');
 assert.match(uiSource, /best\.awardedSeason === seasonNum/,
   'pre-fix saves must also recover the matching best-tag record');
-assert.match(uiSource, /_npTopTagPhotoHtml\(tagPhotoIds\)/,
+// K-4 S6: 記事(人生番号の照合用)を第2引数で渡すようになった
+assert.match(uiSource, /_npTopTagPhotoHtml\(tagPhotoIds(, ts)?\)/,
   'page-one rendering must emit the paired champion photo');
 assert.match(uiSource, /tsName = photoIds[\s\S]*?\.join\('\s\/\s'\)/,
   'the paired photo caption must name both wrestlers');

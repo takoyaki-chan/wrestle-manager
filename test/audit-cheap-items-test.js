@@ -165,7 +165,8 @@ function sliceTopLevelFunction(src, startIndexOrAnchor, label) {
     `showHofDetail の ×/閉じる ボタン close が _drainPopupQueue() を呼んでいる箇所が${closeButtons.length}件`
     + '(期待2件: ×ボタン・閉じるボタン)');
 
-  const chronicleBody = sliceTopLevelFunction(renderSrc, 'function openChronicleForFighter(fighterId) {', 'openChronicleForFighter');
+  // K-4 S6: 人生番号(lifeNo)の任意引数が増えた
+  const chronicleBody = sliceTopLevelFunction(renderSrc, 'function openChronicleForFighter(fighterId, lifeNo) {', 'openChronicleForFighter');
   assert.ok(/overlay\.remove\(\);\s*_drainPopupQueue\(\);/.test(chronicleBody),
     'openChronicleForFighter の overlay.remove() が _drainPopupQueue() を呼んでいない');
 
