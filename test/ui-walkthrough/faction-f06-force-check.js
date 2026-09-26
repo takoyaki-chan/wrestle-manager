@@ -124,7 +124,10 @@ async function closeOther(page) {
     const vis = el => !!el && !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
     const pick = (sel) => Array.from(document.querySelectorAll(sel)).find(el => vis(el) && !el.closest('#fevtF06ForceOverlay')) || null;
     document.querySelectorAll('[data-check-close]').forEach(el => el.removeAttribute('data-check-close'));
+    // 派閥の通知だけのモーダル(COMMON_3 派閥加入など)は選択肢が「見届ける ✓」の1枚(data-choice="OK")。
+    // 2026-09-26: fixture の世界が変わって合成の派閥に加入が起き、2択より先に出るようになった
     const btn = pick('.mdl-c-footer-btn') || pick('#mdlDOverlay .mdl-d-btn') || pick('.fevt-continue-btn')
+      || pick('.fevt-overlay-office.active .fevt-decision-card[data-choice="OK"]')
       || pick('#mdlAOverlay.active .mdl-a-decision-card') || pick('#mdlAOverlay.active .mdl-a-continue-btn:not([disabled])');
     if (!btn) return null;
     btn.setAttribute('data-check-close', '1');

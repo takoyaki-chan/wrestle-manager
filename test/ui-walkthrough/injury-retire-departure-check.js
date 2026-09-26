@@ -97,7 +97,10 @@ async function closeOne(page) {
       || pick('.fevt-decision-card[data-choice="NO"]')
       || pick('.fevt-decision-card[data-choice="C"]') || pick('.fevt-decision-card:not(.disabled)')
       || pick('#mdlAOverlay.active .mdl-a-decision-card') || pick('#mdlAOverlay.active .mdl-a-continue-btn:not([disabled])')
-      || (pick('#mdlAOverlay.active .mdl-a-tap-hint') ? pick('#mdlAOverlay.active .mdl-a-tap-hint') : null);
+      || (pick('#mdlAOverlay.active .mdl-a-tap-hint') ? pick('#mdlAOverlay.active .mdl-a-tap-hint') : null)
+      // 成長イベント(ブレークスルー・スランプ等)のポップアップ。2026-09-26: headless 進行のスタブを直した fixture では
+      // スランプ中の選手がいて、ラストランの週に別れの後で出る
+      || pick('#growthEventOverlay.active .growth-event-btn');
     if (!btn) return null;
     const box = btn.closest('[id]');
     btn.setAttribute('data-check-close', '1');
@@ -192,6 +195,14 @@ async function logTabLines(page, name) {
 }
 
 async function advanceWeekCheck(page, check) {
+  // 別れの後の通知を閉じ切った後から遅れて出るポップアップ(成長イベント等)が残っていれば閉じる
+  const late = [];
+  for (let i = 0; i < 10; i++) {
+    const closed = await closeOne(page);
+    if (!closed) break;
+    late.push(closed);
+  }
+  if (late.length) console.log(`  (週を処理の前に閉じたもの: ${JSON.stringify(late)})`);
   const adv = await page.$('[data-walk-role="advance-week"]');
   check('「週を処理」ボタンが押せる状態にある', !!adv && await adv.isVisible());
   const wBefore = (await read(page)).week;
