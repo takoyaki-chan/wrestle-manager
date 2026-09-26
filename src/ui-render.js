@@ -7830,6 +7830,10 @@ function _npMatchupFlavorText(m, d, seasonNum, weekNum) {
   const second = pickFrom('style', axes.style, 0xC2A2) || (axes.age ? pickFrom('age', axes.age, 0xC2A3) : '');
   const parts = [first, second].filter(Boolean);
   if (parts.length === 0) return '';
+  // 英語の寸評はピリオド等で終わるので「。」を足さず、2文は空白でつなぐ(JAの出力は従来どおり)
+  if (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en') {
+    return parts.map(s => (/[.!?。！？]$/.test(s) ? s : s + '.')).join(' ');
+  }
   return parts.map(s => (/[。！？]$/.test(s) ? s : s + '。')).join('');
 }
 
@@ -8349,6 +8353,57 @@ function _npV3MvpBox(isLatest) {
   </div>`;
 }
 
+// 次回展望(黒田コラムの直上。2026-09-26 Keisuke 裁定 案B「コラムとは別の欄として3行」)。
+// 記者・黒田が次の興行について「ファンが見たがっている組み合わせ」「決着していない因縁」「王座戦線」を
+// 一言ずつ書く欄。2026-04-26 の新聞 v3.1 で1面から外れていたものを戻した(specs/newspaper-spec-v1.0 §1・§3-7)。
+// - 出すのは自団体の興行記事が載る号(wp.playerShowData がある=興行週に今週生成した結果)だけ。
+//   文面が興行を終えた記者の「次の興行」への見通しなので、結果を報じた号に置く。材料(buildPreview)は
+//   毎号作られているが、非興行週の号に出すと同じ組を2号続けて書くことになる
+// - 材料は号に焼かれた wp.preview(無ければ詳報側の playerShowData.preview)。過去号でもその号の材料で書く
+//   (MVP小窓と違い「いまの状態」を過去号へ貼らない)
+// - 書ける行が無ければ欄ごと出さない。KURODA_PREVIEW.generic(「注目カードはまだ見えていない」型)は使わない
+//   — 中身が無いことの説明で欄を埋めない(spec §0「静かな号は静かでよい」)
+// - 同じ組を2行で書かない。因縁・王座の行が組を先に取り、ファン期待は残りの組から採る。2番手の組には
+//   「一番見たがっている」の文(KURODA_PREVIEW.fanExpect の先頭)を使わない(1番手ではないので嘘になる)
+// - 文選びは表示専用(CLAUDE.md 原則4の例外)。号ごとに固定のシードで、言語を切り替えても同じ文の訳が出る
+function _npV3PreviewColumn(wp, seasonNum, weekNum) {
+  if (!wp || !wp.playerShowData) return '';
+  if (typeof KURODA_PREVIEW === 'undefined' || typeof kurodaText !== 'function') return '';
+  const pv = wp.preview || wp.playerShowData.preview || null;
+  if (!pv) return '';
+  const nm = s => escHtml(WM_I18N.pn(s || ''));
+  const pairKey = (a, b) => [String(a || ''), String(b || '')].sort().join('\n');
+  const pick = (pool, d, salt) => {
+    if (!Array.isArray(pool) || pool.length === 0) return '';
+    const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, salt));
+    try { return kurodaText(Engine.rng.pick(rng, pool), d, WM_I18N.t) || ''; } catch (e) { return ''; }
+  };
+  const riv = (pv.rivalry && pv.rivalry.leftName && pv.rivalry.rightName) ? pv.rivalry : null;
+  const title = (pv.title && pv.title.championName && pv.title.challengerName) ? pv.title : null;
+  const taken = new Set();
+  if (riv) taken.add(pairKey(riv.leftName, riv.rightName));
+  if (title) taken.add(pairKey(title.championName, title.challengerName));
+  const feList = Array.isArray(pv.fanExpect) ? pv.fanExpect : [];
+  const feIdx = feList.findIndex(fe => fe && fe.leftName && fe.rightName && !taken.has(pairKey(fe.leftName, fe.rightName)));
+
+  const lines = [];
+  if (feIdx >= 0) {
+    const fe = feList[feIdx];
+    const fePool = KURODA_PREVIEW.fanExpect || [];
+    lines.push(pick(feIdx === 0 ? fePool : fePool.slice(1), { leftName: nm(fe.leftName), rightName: nm(fe.rightName) }, 0xF0CA));
+  }
+  if (riv) lines.push(pick(KURODA_PREVIEW.rivalry, { leftName: nm(riv.leftName), rightName: nm(riv.rightName) }, 0xF0CB));
+  if (title) lines.push(pick(KURODA_PREVIEW.titleOutlook, { championName: nm(title.championName), challengerName: nm(title.challengerName) }, 0xF0CC));
+  // 原文は文末の句点を持たない(旧紙面では「」の中に置いていた)。行として並べるので JA だけ句点で閉じる
+  // (EN の訳文はピリオドで終わっている)
+  const items = lines.filter(Boolean).map(s => (/[。！？!?.」』]$/.test(s) ? s : s + '。'));
+  if (items.length === 0) return '';
+  return `<section class="np-v3-preview">
+    <div class="np-v3-preview-ttl">${WM_I18N.t('次回展望')}</div>
+    <ul class="np-v3-preview-list">${items.map(s => `<li>${s}</li>`).join('')}</ul>
+  </section>`;
+}
+
 // 黒田コラム(最下段固定)。載せる記事から寸評を1本引く。
 // 自団体興行の記事には寸評プールが無いので、次の記事へ順に当たる
 function _npV3KurodaColumn(wp, seasonNum, weekNum) {
@@ -8652,6 +8707,9 @@ function _npFrontV3(wp, seasonNum, weekNum, isLatest) {
   } else if (!shoulder && !junTop) {
     html += `<div class="np-empty-substory">${WM_I18N.t('今週は業界動向の特筆事項なし。<br>業界全体が静かに次の展開を待っている。')}</div>`;
   }
+
+  // ── 次回展望(黒田コラムの直上。興行週の号だけ) ──
+  html += _npV3PreviewColumn(wp, seasonNum, weekNum);
 
   // ── 黒田コラム(最下段固定) ──
   html += _npV3KurodaColumn(wp, seasonNum, weekNum);

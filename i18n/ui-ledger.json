@@ -34156,6 +34156,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "次回展望",
+    "en": "Looking Ahead",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "次回興行のメイン提案で、{factionName}メンバーを優先候補にする。<br>派閥内では期待に応えたと受け止められそうだ。",
     "en": "Next show's main event proposal will favor {factionName} members.<br>The faction will likely feel their expectations were met.",
     "files": [

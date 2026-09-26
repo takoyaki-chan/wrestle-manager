@@ -315,6 +315,14 @@ const NEWSPAPER_PAGE1_PROBE = `(() => {
     // text は先頭400字しか持たないので、紙面全体で見る
     factionDecidedJa: /の派閥抗争に決着——|」が抗争を制す——/.test(norm(root)),
     factionDecidedEn: /feud settled — | take the feud — /.test(norm(root)),
+    // 2026-09-26: 次回展望の欄(黒田コラムの直上。興行の記事が載る号だけ)。行数と見出しと本文
+    previewLines: root.querySelectorAll('.np-v3-preview li').length,
+    previewTitle: (() => { const el = root.querySelector('.np-v3-preview-ttl'); return el ? norm(el) : ''; })(),
+    previewText: (() => { const el = root.querySelector('.np-v3-preview-list'); return el ? norm(el) : ''; })(),
+    previewAboveKuroda: (() => {
+      const pv = root.querySelector('.np-v3-preview'); const ku = root.querySelector('.np-v3-kuroda');
+      return !!(pv && ku && (pv.compareDocumentPosition(ku) & Node.DOCUMENT_POSITION_FOLLOWING));
+    })(),
   };
 })()`;
 
@@ -855,6 +863,23 @@ module.exports = {
           if (latest.factionDecidedJa) fails.push('最新号: ENなのに派閥抗争の決着の記事のJA見出しが残っている');
         } else if (!latest.factionDecidedJa) {
           fails.push('最新号: 派閥抗争の決着の記事(の派閥抗争に決着 / が抗争を制す)が出ていない');
+        }
+      }
+      // 2026-09-26: 次回展望の欄。engineer が詳報(playerShowData)を差し込んだ最新号とバックナンバー1は
+      // 興行の記事が載る号なので欄が出る(材料は号に焼かれた buildPreview)。JA では見出し「次回展望」、
+      // EN では見出し「Looking Ahead」で本文に日本語が残らない(紙面全体の JA 露出ゲートとは別に、欄だけでも見る)
+      const jaChar = /[぀-ヿ㐀-鿿豈-﫿]/;
+      for (const label of ['新聞を開く(最新号)', 'バックナンバー1(engineerの差し込み号)']) {
+        const p = probes[label];
+        if (!p || p.probeError || !p.present) continue;
+        console.log(`  preview: ${label} lines=${p.previewLines} title="${p.previewTitle}" | ${String(p.previewText || '').slice(0, 120)}`);
+        if (!p.previewLines) { fails.push(`${label}: 次回展望の欄が出ていない(興行の記事が載る号)`); continue; }
+        if (!p.previewAboveKuroda) fails.push(`${label}: 次回展望が黒田コラムの直上に無い`);
+        if (lang === 'en') {
+          if (p.previewTitle !== 'Looking Ahead') fails.push(`${label}: 次回展望の見出しが英語になっていない(${p.previewTitle})`);
+          if (jaChar.test(p.previewText)) fails.push(`${label}: 次回展望の本文に日本語が残っている(${p.previewText.slice(0, 80)})`);
+        } else if (p.previewTitle !== '次回展望') {
+          fails.push(`${label}: 次回展望の見出しが出ていない(${p.previewTitle})`);
         }
       }
       const backnumber1 = probes['バックナンバー1(engineerの差し込み号)'];
