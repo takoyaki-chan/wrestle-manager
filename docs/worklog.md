@@ -64,6 +64,7 @@ Keisuke 裁定(第5回 問11)「派閥の抗争の決着は、新聞とログに
 ### テスト
 - 新 `test/faction-rivalry-resolution-notice-test.js`(8節: 記事とログの組み立て/一言の口調×性格と粒度/消滅・沈静化・和解・リーダー欠け/JA の紙面(数値・内部名なし)/EN の紙面・ログ・一言19本・年表の言葉(実物の i18n.js+lang-en 4本)/tickWeek の配線(モーダルの待ちを立てない)/年表の言葉/次回展望の因縁ペア): **変更前の src で 8/8 FAIL**、変更後 ALL PASS
 - `test/newspaper-priority-test.js` の「派閥の諍いは一般試合より上」に factionRivalryDecided を追加
+- main(bf934665 退団寸前の引き留めのセリフ下書き。docs だけ)取り込み後: `npm test` 310/310 PASS
 - `npm test` 310/310 PASS / i18n: 台帳に UI 3・テンプレ 6・セリフ 19 行を足して3つの辞書を再生成(未訳0・セル別検査は吹き出し110字超の4本を短くして通過)。ratchet の基準は自分の増分だけ更新(data-faction-dialogue.js +19・data.js +6・ui-render.js +4)。management.js +14・ui-render.js +1 は main 時点からある他の作業の分で、触っていない
 - UI 走破1季 PASS(Issues 0)。点火 `newspaper-lang-switch` を拡張: engineer が最新号に本物の経路(決着の知らせ → 業界ニュース → `Engine.newspaper.generate`)で組んだ factionRivalryDecided の記事を差し込み、tourAssert が JA は原文の見出し・EN は訳文の見出し(JA 見出しが残らないこと)を見る(目印を壊すと FAIL することを確認)。JA PASS / EN PASS(新聞の JA 露出0・i18n-miss 0)。`newspaper-mvprace` PASS(同じ probe に目印の欄を足しただけ)
 
