@@ -239,6 +239,8 @@ const TABLE_MANIFEST = [
   // 2026-08-30 追加(care-rework2 P2-G / task-101)。bold専用の起用約束チャンネル。
   // 登録し忘れるとワークブック往復から不可視になる(GLIMPSE_B で踏んだ罠と同型)。
   T('PLEDGE_LINES', 'data.js', '11'),
+  // 2026-09-26 追加(退団寸前の引き留め §5-3)。信頼20未満の声かけの反応(原因 → アーキタイプ → 性格)
+  T('LAST_WARNING_ENCOURAGE_LINES', 'data.js', '11'),
   T('CHOICE_EVENT_DIALOGUES', 'data.js', '11'),
   T('CHOICE_EVENT_RESULT_DIALOGUES', 'data.js', '11'),
   T('LARGE_EVENT_TEXTS', 'data.js', '11'),
@@ -265,6 +267,9 @@ const TABLE_MANIFEST = [
   T('GLIMPSE_A_LINES', 'data.js', '13'),
   T('GLIMPSE_HOTSTREAK_END_LINES', 'data.js', '13'),
   T('GLIMPSE_B_LINES', 'data.js', '13'),
+  // 2026-09-26 追加(退団寸前の引き留め §5-2・§5-4)。20割れの噂の本人の一言(原因別)と、応えてもらえた一言
+  T('LAST_WARNING_RUMOR_LINES', 'data.js', '13'),
+  T('LAST_WARNING_ANSWERED_LINES', 'data.js', '13'),
 
   // ---- 14: PPV/対抗戦/天頂戦/ジュニアトーナメント ----
   T('PPV_SUMMIT_VICTORY_LINES', 'data.js', '14'),

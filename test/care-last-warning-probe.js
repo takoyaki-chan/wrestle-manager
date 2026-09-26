@@ -71,7 +71,7 @@ const ENGINE_B = (() => {
   } else {
     txt = fsx.readFileSync(path.join(__dirname, '..', 'src', 'management.js'), 'utf8');
   }
-  return txt.includes('consumeWarningAnswer(fighter, cause, by, absWeek)');
+  return /\bconsumeWarningAnswer\(fighter, cause, by, absWeek/.test(txt);
 })();
 // 本体の原因のキー → この計測器のまとまりの名前
 const ENGINE_CAUSE_JA = { stage: '出番', pay: '給与', title: '王座', bonds: '人間関係', air: '空気', promise: '約束', faction: '派閥', general: 'general' };
