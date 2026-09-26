@@ -28,7 +28,7 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 const { startStaticServer } = require('../ui-walkthrough/server');
-const { advanceUntil, toSaveState } = require('../ui-walkthrough/fixtures/headless-sim');
+const { advanceUntil, toSaveState, summarizeSwallowedErrors } = require('../ui-walkthrough/fixtures/headless-sim');
 const { scenarios } = require('./scenarios');
 const { diffStates, diffTwo, aggregate, short } = require('./diff');
 const allowlist = require('./allowlist');
@@ -164,9 +164,12 @@ function buildFixture(opts) {
     seed: opts.fixtureSeed,
     until: g => g.season === opts.season && g.week === opts.week && g.weekPhase === 'manage' && !g.offSeason,
   });
+  // headless 進行の自動応答が例外で失敗した件数(2026-09-26)。0 でなければ fixture の世界が実プレイと違う
+  // (以前は WM_I18N スタブの不足で派閥の選択が毎回失敗し、黙って捨てられていた)ので、照合の失敗として数える
+  const swallowed = summarizeSwallowedErrors();
   const save = toSaveState(G, `k1-parity fixture seed=${opts.fixtureSeed} S${opts.season}W${opts.week}`);
   save.rngSeed = opts.fixtureSeed;
-  return { text: JSON.stringify(save), ms: Date.now() - t0, season: save.season, week: save.week, roster: save.roster.length };
+  return { text: JSON.stringify(save), ms: Date.now() - t0, season: save.season, week: save.week, roster: save.roster.length, swallowed };
 }
 
 async function runScenario(browser, server, fixtureText, scenario, mode, cache) {
@@ -356,6 +359,9 @@ async function main() {
 
   const fixture = buildFixture(opts);
   console.log(`K-1 経路差分テスト — fixture seed=${opts.fixtureSeed} S${fixture.season}W${fixture.week} roster=${fixture.roster} (生成 ${fixture.ms}ms)`);
+  const swallowedTotal = fixture.swallowed.reduce((n, g) => n + g.count, 0);
+  console.log(`  headless 進行の自動応答で握りつぶした例外: ${swallowedTotal} 件`);
+  for (const g of fixture.swallowed) console.log(`    ${g.where} ${g.detail} ×${g.count}(最初 ${g.first}): ${g.message}`);
 
   const server = await startStaticServer({ projectRoot: ROOT });
   const browser = await chromium.launch({ headless: true });
@@ -422,7 +428,7 @@ async function main() {
   printCategorySummary(check);
   if (opts.scenario) console.log('  (--scenario 指定時は「消えた既知差分」の判定を省略)');
   const runErrors = allRuns.filter(r => r.analysis.errors.length > 0);
-  console.log(`\n== 許容リスト照合: 登録 ${allowlist.length} 件 / 未登録の差分 ${check.unexpected.length} 件 / 向きの食い違い ${check.sideMismatch.length} 件 / 消えた既知差分 ${check.stale.length} 件 / 実行エラー ${runErrors.length} 件 ==`);
+  console.log(`\n== 許容リスト照合: 登録 ${allowlist.length} 件 / 未登録の差分 ${check.unexpected.length} 件 / 向きの食い違い ${check.sideMismatch.length} 件 / 消えた既知差分 ${check.stale.length} 件 / 実行エラー ${runErrors.length} 件 / fixture の握りつぶし ${swallowedTotal} 件 ==`);
   const uniqUnexpected = new Map();
   for (const u of check.unexpected) {
     const key = `${u.checkpoint}:${u.pattern}`;
@@ -456,12 +462,16 @@ async function main() {
         previewLeak: r.analysis.previewLeak.map(l => ({ caller: l.caller, groups: aggregate(l.records) })),
       },
     }));
-    fs.writeFileSync(opts.json, JSON.stringify({ generatedAt: new Date().toISOString(), fixture: { seed: opts.fixtureSeed, season: fixture.season, week: fixture.week }, runs: payload }, null, 1));
+    fs.writeFileSync(opts.json, JSON.stringify({ generatedAt: new Date().toISOString(), fixture: { seed: opts.fixtureSeed, season: fixture.season, week: fixture.week, swallowed: fixture.swallowed }, runs: payload }, null, 1));
     console.log(`\nJSON: ${path.relative(ROOT, opts.json)}`);
   }
   console.log(`所要 ${Math.round((Date.now() - t0) / 1000)}s`);
 
-  const failed = check.unexpected.length > 0 || check.sideMismatch.length > 0 || check.stale.length > 0 || runErrors.length > 0;
+  if (swallowedTotal > 0) {
+    console.log(`  fixture の握りつぶし ${swallowedTotal} 件 — headless 進行の世界が実プレイと違うので、許容リストの照合は当てにならない(上の一覧を直すこと)`);
+  }
+  const failed = check.unexpected.length > 0 || check.sideMismatch.length > 0 || check.stale.length > 0 || runErrors.length > 0
+    || swallowedTotal > 0;
   if (failed && !opts.report) {
     console.log('\nRESULT: FAIL(許容リストと食い違いがあります。--report で詳細を確認してください)');
     process.exitCode = 1;
