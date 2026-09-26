@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4773件、訳文あり4773件)
+//  生成元: i18n/ui-ledger.json (総キー4776件、訳文あり4776件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1341,6 +1341,7 @@
     "ポイントは白紙に戻し、勝者も敗者も出さずに幕を引く。両派閥の対立はやわらぐ": "The points are wiped clean and it ends with no winner and no loser. The tension between the factions eases.",
     "リングの外でも睨み合いは続き、ロッカールームには疲れが見え始めた。": "The glaring goes on outside the ring too, and the locker room is starting to look worn out.",
     "両派閥とも、決着がつかないまま長くなりました。リーダーの二人が、社長の判断を待っています": "Neither side has settled it, and it has dragged on a long time. Both leaders are waiting for your call.",
+    "出番表に名前があった": "Her name was on the card",
     "和解させる": "Broker a truce",
     "対立が何度も重なってきた二人に使える。慢性化する前に手を打てば、亀裂が修復可能になることもある。": "For two wrestlers whose clashes keep piling up. Act before it turns chronic, and the rift can still be mended.",
     "成功すれば、二人の間のわだかまりがいくらか解ける。失敗しても関係は変わらない。": "If it works, some of the ill feeling between the two eases. If it fails, nothing changes between them.",
@@ -1351,6 +1352,8 @@
     "白紙に戻った": "Wiped clean",
     "続けさせる": "Let it continue",
     "記事の反響で、ファンの間で名前が広まった": "The piece got people talking, and her name is spreading among the fans.",
+    "話は最後まで聞いてくれた。けれど、表情は硬いままだ": "She heard you out to the end. But her face never softened",
+    "退団の噂が耳に入っている。": "Word has reached you that she may leave.",
     "集客力とグッズ売上にボーナス。興行出場で人気が上がりやすい": "Bonus to draw power and merch income. Popularity climbs more easily from working shows",
     "グッズ販売会": "Merch sale event",
     "グラウンド攻撃": "Ground Attack",

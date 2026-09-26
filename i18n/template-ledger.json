@@ -34638,8 +34638,108 @@
     "hasProperNoun": false
   },
   {
+    "key": "💬 {name}が退団を決めかけているという噂がある。ベルトに挑む機会が回ってこないことに焦れているらしい",
+    "en": "💬 There are rumors that {name} has all but decided to leave. Word is she's growing restless that a shot at the belt never comes her way",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を決めかけているという噂がある。同じ格の選手との待遇の差を気にしているらしい",
+    "en": "💬 There are rumors that {name} has all but decided to leave. Word is she's bothered by how she's paid next to wrestlers at her level",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を決めかけているという噂がある。団体の空気に嫌気がさしているらしい",
+    "en": "💬 There are rumors that {name} has all but decided to leave. Word is she's fed up with the mood around the promotion",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を決めかけているという噂がある。控室で出番表を見ていたという",
+    "en": "💬 There are rumors that {name} has all but decided to leave. Word is she was seen staring at the lineup in the locker room",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を決めかけているという噂がある。控室で誰とも口をきいていないという",
+    "en": "💬 There are rumors that {name} has all but decided to leave. Word is she hasn't spoken to anyone in the locker room",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "💬 {name}が退団を考えているという噂がある",
     "en": "💬 There are rumors that {name} is thinking about leaving",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を考えているという噂がある。ベルトに挑む機会が回ってこないことに焦れているらしい",
+    "en": "💬 There are rumors that {name} is thinking about leaving. Word is she's growing restless that a shot at the belt never comes her way",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を考えているという噂がある。出番のない興行が続いている",
+    "en": "💬 There are rumors that {name} is thinking about leaving. Show after show has gone by without her on the card",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を考えているという噂がある。同じ格の選手との待遇の差を気にしているらしい",
+    "en": "💬 There are rumors that {name} is thinking about leaving. Word is she's bothered by how she's paid next to wrestlers at her level",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を考えているという噂がある。団体の空気に嫌気がさしているらしい",
+    "en": "💬 There are rumors that {name} is thinking about leaving. Word is she's fed up with the mood around the promotion",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が退団を考えているという噂がある。控室で浮いているらしい",
+    "en": "💬 There are rumors that {name} is thinking about leaving. Word is she has become an outsider in the locker room",
     "files": [
       "GAMELOG_TEMPLATES"
     ],

@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3590件、訳文あり3590件)
+//  生成元: i18n/template-ledger.json (総キー3600件、訳文あり3600件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3477,7 +3477,17 @@
     "💬 {name}が{name2}に技のコツを教えていた": "💬 {name} was walking {name2} through a move",
     "💬 {name}が一人で帰る姿を見かけた": "💬 {name} was seen leaving on her own",
     "💬 {name}が退団を決めかけているという噂がある": "💬 There are rumors that {name} has all but decided to leave",
+    "💬 {name}が退団を決めかけているという噂がある。ベルトに挑む機会が回ってこないことに焦れているらしい": "💬 There are rumors that {name} has all but decided to leave. Word is she's growing restless that a shot at the belt never comes her way",
+    "💬 {name}が退団を決めかけているという噂がある。同じ格の選手との待遇の差を気にしているらしい": "💬 There are rumors that {name} has all but decided to leave. Word is she's bothered by how she's paid next to wrestlers at her level",
+    "💬 {name}が退団を決めかけているという噂がある。団体の空気に嫌気がさしているらしい": "💬 There are rumors that {name} has all but decided to leave. Word is she's fed up with the mood around the promotion",
+    "💬 {name}が退団を決めかけているという噂がある。控室で出番表を見ていたという": "💬 There are rumors that {name} has all but decided to leave. Word is she was seen staring at the lineup in the locker room",
+    "💬 {name}が退団を決めかけているという噂がある。控室で誰とも口をきいていないという": "💬 There are rumors that {name} has all but decided to leave. Word is she hasn't spoken to anyone in the locker room",
     "💬 {name}が退団を考えているという噂がある": "💬 There are rumors that {name} is thinking about leaving",
+    "💬 {name}が退団を考えているという噂がある。ベルトに挑む機会が回ってこないことに焦れているらしい": "💬 There are rumors that {name} is thinking about leaving. Word is she's growing restless that a shot at the belt never comes her way",
+    "💬 {name}が退団を考えているという噂がある。出番のない興行が続いている": "💬 There are rumors that {name} is thinking about leaving. Show after show has gone by without her on the card",
+    "💬 {name}が退団を考えているという噂がある。同じ格の選手との待遇の差を気にしているらしい": "💬 There are rumors that {name} is thinking about leaving. Word is she's bothered by how she's paid next to wrestlers at her level",
+    "💬 {name}が退団を考えているという噂がある。団体の空気に嫌気がさしているらしい": "💬 There are rumors that {name} is thinking about leaving. Word is she's fed up with the mood around the promotion",
+    "💬 {name}が退団を考えているという噂がある。控室で浮いているらしい": "💬 There are rumors that {name} is thinking about leaving. Word is she has become an outsider in the locker room",
     "💬 {name}と{name2}が何か話し込んでいた": "💬 {name} and {name2} were deep in some conversation",
     "💬 {name}の機嫌が明らかに悪い": "💬 {name} is plainly in a bad mood",
     "💬 {name}の表情が最近硬い": "💬 {name} has looked tight in the face lately",

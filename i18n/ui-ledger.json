@@ -13887,6 +13887,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "出番表に名前があった",
+    "en": "Her name was on the card",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "退団寸前の引き留め(docs/care-last-warning-design-v0.1.md)。走査対象外につき手追加。Glimpse A last_warning_answered のラベル(道場の吹き出しはセリフ本文を出すので、ラベルはセリフが無いときの予備)"
+  },
+  {
     "key": "和解させる",
     "en": "Broker a truce",
     "files": [
@@ -13987,6 +13999,28 @@
     "en": "The piece got people talking, and her name is spreading among the fans.",
     "files": [
       "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "話は最後まで聞いてくれた。けれど、表情は硬いままだ",
+    "en": "She heard you out to the end. But her face never softened",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "退団寸前の引き留め(docs/care-last-warning-design-v0.1.md)。走査対象外につき手追加。Engine.shachoshitsu.execute の声かけ(信頼20未満)の changes[].text"
+  },
+  {
+    "key": "退団の噂が耳に入っている。",
+    "en": "Word has reached you that she may leave.",
+    "files": [
+      "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": false,

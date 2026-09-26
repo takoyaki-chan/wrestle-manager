@@ -2132,7 +2132,8 @@ function _renderRosterDojoHeader() {
     // 2026-08-13裁定(関係性モーダル全廃の受け皿): gold(宿命のライバル/深い絆)・danger(退団の噂)級の
     // 節目は抽選にかけず、その週は確定で1枠見せる。道場を覗きに来なければそのまま流れる——
     // 「さりげなく垣間見える」の距離感は変えない
-    const milestone = restCandidates.find(g => g.layer === 'A' && (g.tone === 'gold' || g.tone === 'danger'));
+    // 退団寸前の引き留め(docs/care-last-warning-design-v0.1.md §5-4): 出番の手当てに応えてもらえた一言(milestone)も確定枠
+    const milestone = restCandidates.find(g => g.layer === 'A' && (g.tone === 'gold' || g.tone === 'danger' || g.milestone));
     if (milestone) restPicked.push(milestone);
     restCandidates.forEach(g => {
       if (restPicked.length >= DOJO_REST_MAX) return;

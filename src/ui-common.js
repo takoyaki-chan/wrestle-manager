@@ -4371,6 +4371,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck, lifeNo) {
       let reasonText = '';
       if (c.slump) reasonText = WM_I18N.t('スランプ中の選手だ。今日は、少し時間を取ろう。');
       else if (c.motivationLoss) reasonText = WM_I18N.t('モチベーションを失いかけている。放っておけない。');
+      // 退団寸前の引き留め(docs/care-last-warning-design-v0.1.md §7): 噂が実際に耳に入っていて、信頼20未満のとき
+      else if (c.lastWarning && curTrust < 20) reasonText = WM_I18N.t('退団の噂が耳に入っている。');
       else if (hasUrgentTrust) reasonText = WM_I18N.t('最近、この選手の様子が気になっている。');
       else reasonText = WM_I18N.t('最近、少し様子が気になっている。');
 
