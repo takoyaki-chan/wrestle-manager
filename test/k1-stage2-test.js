@@ -23,6 +23,7 @@
 
 const assert = require('assert');
 const { readSource } = require('./helpers/source.js');
+const { engineShowBody } = require('./helpers/show-paths.js');
 const { loadEngines } = require('./ui-walkthrough/fixtures/headless-sim');
 
 loadEngines();
@@ -42,7 +43,8 @@ function methodBody(file, signature) {
   return src.slice(start, end);
 }
 const finalizeBody = () => methodBody('app.js', '  _finalizeShowImpl() {');
-const executeShowBody = () => methodBody('management.js', '  executeShow(state) {');
+// K-1 第3段: エンジンの試合後の処理は Engine.show.finalize に切り出した(executeShow はそれを呼ぶ)
+const executeShowBody = () => engineShowBody();
 
 console.log('K-1 第2段 回帰ガード');
 

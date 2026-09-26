@@ -122,7 +122,8 @@ section('9. 王座移動は積み忘れようがない形にする', () => {
                 + [...app.matchAll(/Engine\.title\.crownChampion\(/g)].length;
   assert.strictEqual(callers, 2,
     `crownChampion の呼び出しが ${callers} 箇所。増えたなら、その経路でも記事を積むこと`);
-  assert.ok(/if \(crown\.newsEvent\) s = Engine\.industryNews\.push\(s, crown\.newsEvent\);/.test(mgmt),
+  // K-1 第3段: エンジンの呼び出しは Engine.show.finalize の中(乱入者が奪った王座は記事にしない。乱入は実プレイだけ)
+  assert.ok(/if \(crown\.newsEvent && !intruderTook\) s = Engine\.industryNews\.push\(s, crown\.newsEvent\);/.test(mgmt),
     'エンジン側の呼び出しで積んでいない');
   // UI 側は G ではなく s(_finalizeShowImpl の作業中の状態)に積む。G に積むと関数の最後の
   // G = { ...s } で上書きされて記事が消える(K-1 第1段 K1-E07・2026-09-26)。乱入者が奪った王座は除く

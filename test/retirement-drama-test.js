@@ -172,7 +172,8 @@ section('C-6. 両方の経路が新しい規則を使っている（自団体/AI
   const resStart = management.indexOf('    resolveMatchInjury(state, roster, result, matchIdx, fighter, opts = {}) {');
   assert.ok(resStart > 0 && management.slice(resStart, resStart + 1500).includes('Engine.show.rollMatchInjury('),
     'Engine.show.resolveMatchInjury が Engine.show.rollMatchInjury を通っていない');
-  const execShow = management.slice(management.indexOf('  executeShow(state) {'));
+  // K-1 第3段: エンジンの試合後の処理は Engine.show.finalize(executeShow はそれを呼ぶ)
+  const execShow = require('./helpers/show-paths.js').engineShowBody();
   assert.ok(execShow.includes('Engine.show.resolveMatchInjury('), '自団体の興行(エンジン)が Engine.show.resolveMatchInjury を通っていない');
   const app = read('src/app.js');
   const fin = app.slice(app.indexOf('  _finalizeShowImpl() {'));

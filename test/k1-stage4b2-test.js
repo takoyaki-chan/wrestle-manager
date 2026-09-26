@@ -23,6 +23,7 @@
 
 const assert = require('assert');
 const { readSource } = require('./helpers/source.js');
+const { engineShowBody } = require('./helpers/show-paths.js');
 const { loadEngines, advanceUntil } = require('./ui-walkthrough/fixtures/headless-sim');
 
 loadEngines();
@@ -42,13 +43,9 @@ function finalizeBody() {
   return app.slice(start, end);
 }
 
-// executeShow の本文(次のメソッドの手前まで)
+// エンジンの経路の本文(K-1 第3段: executeShow → Engine.show.finalize)
 function executeShowBody() {
-  const mgmt = readSource('src', 'management.js');
-  const start = mgmt.indexOf('  executeShow(state) {');
-  assert.ok(start >= 0, 'executeShow が見つからない');
-  const end = mgmt.indexOf('\n  },\n', start);
-  return mgmt.slice(start, end);
+  return engineShowBody();
 }
 
 function fighter(id, extra = {}) {

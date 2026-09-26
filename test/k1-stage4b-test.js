@@ -20,6 +20,7 @@
 
 const assert = require('assert');
 const { readSource } = require('./helpers/source.js');
+const { engineShowBody } = require('./helpers/show-paths.js');
 const { loadEngines } = require('./ui-walkthrough/fixtures/headless-sim');
 
 loadEngines();
@@ -106,7 +107,7 @@ section('F01: 実プレイ(app.js)はエンジンと同じ Engine.show.applyMatc
   assert.ok(/Engine\.show\.applyMatchPopularity\(/.test(body), '_finalizeShowImpl が Engine.show.applyMatchPopularity を呼んでいない');
   assert.ok(!/fakeSingleResult/.test(body), '左右に同じ選手を入れる旧コード(fakeSingleResult)が残っている');
   const mgmt = readSource('src', 'management.js');
-  const ex = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('  executeShow(state) {') + 60000);
+  const ex = engineShowBody(); // K-1 第3段: executeShow → Engine.show.finalize
   assert.ok(/Engine\.show\.applyMatchPopularity\(/.test(ex), 'executeShow が Engine.show.applyMatchPopularity を呼んでいない');
 });
 
@@ -187,8 +188,8 @@ section('E05: 実プレイ(app.js)はエンジンと同じ Engine.show.accrueFac
     '_finalizeShowImpl が Engine.show.accrueFactionPoints を呼んでいない');
   assert.ok(/common1ResolvedIdx = c1Idx;/.test(body), 'Common-1 を清算した試合の番号を控えていない');
   const mgmt = readSource('src', 'management.js');
-  const ex = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('  executeShow(state) {') + 60000);
-  assert.ok(/Engine\.show\.accrueFactionPoints\(s, validMatches, results\)/.test(ex), 'executeShow が Engine.show.accrueFactionPoints を呼んでいない');
+  const ex = engineShowBody(); // K-1 第3段: executeShow → Engine.show.finalize
+  assert.ok(/Engine\.show\.accrueFactionPoints\(s, validMatches, results, \{ common1MatchIdx: w\.common1MatchIdx \}\)/.test(ex), 'executeShow が Engine.show.accrueFactionPoints を呼んでいない');
 });
 
 // ── 3. §7 X03 怪我判定に渡す情報 ──
@@ -251,8 +252,8 @@ section('X03: 実プレイ(app.js)はエンジンと同じ Engine.show.rollMatch
   assert.ok(/\[r\.left\.id, r\.right\.id\]\.forEach/.test(body), '_finalizeShowImpl が左右の両方を判定していない');
   assert.ok(!/Engine\.injury\.check\(/.test(body), '_finalizeShowImpl が Engine.injury.check を直接呼んでいる');
   const mgmt = readSource('src', 'management.js');
-  const ex = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('  executeShow(state) {') + 60000);
-  assert.strictEqual((ex.match(/Engine\.show\.resolveMatchInjury\(s, roster, r, idx, fighter, \{ hostileMult, titleChampionId: _titleChampId \}\)/g) || []).length, 1,
+  const ex = engineShowBody(); // K-1 第3段: executeShow → Engine.show.finalize
+  assert.strictEqual((ex.match(/Engine\.show\.resolveMatchInjury\(s, roster, r, idx, fighter, \{ hostileMult, titleChampionId: titleChampId \}\)/g) || []).length, 1,
     'executeShow が Engine.show.resolveMatchInjury を呼んでいない');
   assert.ok(/\[r\.left\.id, r\.right\.id\]\.forEach/.test(ex), 'executeShow が左右の両方を判定していない');
   const res = mgmt.slice(mgmt.indexOf('    resolveMatchInjury(state, roster, result, matchIdx, fighter, opts = {}) {'));
@@ -321,7 +322,7 @@ section('E02: 実プレイ(app.js)はエンジンと同じ Engine.show.applyMatc
   assert.ok(/roster = Engine\.show\.applyMatchGrowth\(s, roster, validMatches, results\);/.test(body), '_finalizeShowImpl が Engine.show.applyMatchGrowth を呼んでいない');
   assert.ok(!/derive\(s\.rngSeed, s\.season, s\.week, 1732\)/.test(body), '_finalizeShowImpl に自前の試合成長(乱数1732)が残っている');
   const mgmt = readSource('src', 'management.js');
-  const ex = mgmt.slice(mgmt.indexOf('  executeShow(state) {'), mgmt.indexOf('  executeShow(state) {') + 60000);
+  const ex = engineShowBody(); // K-1 第3段: executeShow → Engine.show.finalize
   assert.ok(/roster = Engine\.show\.applyMatchGrowth\(s, roster, validMatches, results\);/.test(ex), 'executeShow が Engine.show.applyMatchGrowth を呼んでいない');
 });
 
