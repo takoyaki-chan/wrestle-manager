@@ -158,8 +158,14 @@ npm run test:ui:ignite -- --scenario b3-challenge-watch         # 同・メイ�
 npm run test:ui:ignite -- --scenario faction-f07-main           # F07 メインカード相談 → 推す → 清算の信頼・残り興行数
 npm run test:ui:ignite -- --scenario faction-common1            # Common-1 → 2人をカードに組む → 清算の信頼・因縁・結果の画面
 npm run test:ui:ignite -- --scenario faction-f08                # F08 → 直接対決をメインに → 試合後の画面
+npm run test:ui:ignite -- --scenario faction-f08-skip           # 同・前座を1試合ずつスキップ → メインの F08 の試合前の画面(スキップしていても出る)
+npm run test:ui:ignite -- --scenario rivalry-confrontation      # メインの2人の因縁95 → 前座を1試合ずつスキップ → 殻の上に宣戦布告 → 見届ける
+npm run test:ui:ignite -- --scenario incoming-challenge-injured # 果たし状の発起人が怪我 → 週を処理しても出ず取り下げ(受けて予約→解除、にならない)
 npm run test:ui:ignite -- --scenario faction-ignite             # 派閥開戦(停止週を探すようにした)
 ```
+
+- **2026-09-26(裁定3件の確認)**: `rivalry-confrontation`(宣戦布告が試合一覧の殻の上に出る。`.tone-confront`+`showResultOverlay`。前座をスキップした後に出たこと・完了待ちが残らないこと・興行が最後まで進むことを検査)/ `faction-f08-skip`(`_watchMatchBoost([])` で1試合ずつスキップし、メインのフォーカスで `#fevtF08PreOverlay` が殻の上に出る)/ `incoming-challenge-injured`(`incoming-challenge` と同じ停止週・同じ果たし状で発起人だけ6週の怪我。置いた果たし状を key で追い、出ない・予約されない・取り下げられることを検査。W8 の抽選で別の組の直訴が新しく届くのは正常)。3本とも変更前のコードで FAIL を確認(宣戦布告は殻の後ろに積まれたまま・F08 の試合前の画面は `_suppressFlavor` で出ない・怪我の発起人の果たし状が出て受けると次の興行で予約が消える)
+- **既知のゆらぎ(未修正・報告のみ)**: `incoming-challenge-watch` が3回に1回、3試合目(メイン)の観戦 iframe が「STANDBY」のまま止まって D2_FREEZE になった(同じ fixture で再実行すると PASS)。観戦の手の直後の実時間の待ち(`hold.frameReady`)が iframe の読み込み完了より先に抜け、親の「800ms 後にもう一度送る」保険が読み込み前の文書へ START_MATCH を送った形(`page.evaluate` の例外を「読み込み済み」とみなす `.catch(() => true)` が疑わしい)。製品の不具合ではなく走破の待ちの側
 
 - **失敗していた原因(どちらもテストの側)**
   - `incoming-challenge`(と、同じ作りの `away-challenge`): fixture を S2W6 の頭に置いた果たし状・直訴の他団体の選手(seed42 では根岸)が、画面に出る前の W6 の他団体の試合で怪我をし、受けた後の W8 の興行で予約が「出場メンバーが揃わない」で解除(遠征は黙って取り消し)されて2拍の結果が不発だった。停止週を「S2 の非興行週で翌週が通常興行」に変え、その週の週送り(`tickWeek`→`advanceWeek`)を fixture 生成時に試走して、翌週の頭に画面に出て6人とも翌週の興行に出られる組だけを使う(`_challengeFixture` / `_pickChallenge`)。seed42 では S2W7

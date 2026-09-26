@@ -18,6 +18,12 @@
 
 **2026-08-14 追加(孤児化した打診の自浄)**: 未解決の `pendingThisWeek` は翌週持ち越しだが、持ち越し中に発起人/相手が移籍・引退・団体解散で不在になると表示不能のまま週次モーダル枠(新規直訴の抽選と統一王座「こちらの番」の表示)を恒久占有していた(点火カタログR4で検出)。`Engine.challengeRequest.dropStalePending` が実効性を検査し、不成立の打診は**静かに取り下げる**(CD/クォータ不記録・取り下げ通知なし)。選手が退場しうる全遷移API(processWeekly冒頭/tickWeek末尾/commitRetirements/advanceWeekラッパー)で自浄し、validateGameStateの参照整合性不変条件が外部経路の孤児を検出する。詳細は v0.1 の同日追加改修+`test/challenge-request-stale-pending-test.js`。
 
+**2026-09-26 追加(出す直前の見直し・表示だけ)**: 大型イベント・派閥イベントに週次のモーダル枠を取られて持ち越している間に発起人・相手が怪我・休養をすると、在籍しか見ない `dropStalePending` を通り抜け、`App.handleChallengeRequest` も見直さないので、出られない発起人の直訴・果たし状が画面に出ていた。受けると `buildMatchCard` は発起人・相手の健康を見ずにカードを組み、次の興行で `getScheduledCard`(6人とも健康が条件)が予約を解除してトースト「⚠ 挑戦試合の出場条件が整わないため、予約を解除しました」が出るだけだった(点火 `incoming-challenge-injured` で変更前のコードで再現。自然な発生は headless 12シード×8季の持ち越し49件で0件=稀)。
+- `Engine.challengeRequest.dropUnplayablePending(state)`(純関数): 発起人・相手のどちらかが怪我・休養(`forcedRest`)・謹慎なら取り下げる(予約の消化と同じ基準)。扱いは `dropStalePending` と同じ=**CD・クォータは付けず、取り下げの通知も出さない**(治って熱が残っていれば次の抽選でまた届きうる)
+- 呼ぶのは**出す直前だけ**: `App.handleChallengeRequest` の頭と `App.processWeek` の出す判定の直前(取り下げた週は統一王座「こちらの番」を塞がない)。週次処理(tickWeek・processWeekly・`dropStalePending`)は変えない(auto-sim の数値は不変)
+- 持ち越し(治るまで待つ)にしない理由: 持ち越している打診は新しい直訴の抽選と「こちらの番」の表示を堰き止め続ける(上の 2026-08-14 の自浄と同じ理由)。抽選の時点では `_passesPrereq` が出られる2人だけを選ぶので、「出られない打診」は抽選されなかったのと同じに扱う
+- 回帰テスト `test/challenge-request-unplayable-pending-test.js`
+
 ## 3. UIフロー
 
 ### forward(挑む) — 2枚
