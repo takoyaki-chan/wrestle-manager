@@ -15,8 +15,15 @@ assert.ok(handler.includes('let completed = false;'),
   'post-match flavor completion must be tracked per match');
 assert.ok(handler.includes('const finish = () => {'),
   'post-match flavor completion must be idempotent');
-assert.ok(handler.includes('_chainEventPopupQueueEmpty(finish);'),
-  'post-match flavor must wait for the shared popup queue through its local completion');
+// 2026-09-26: 敗者の心は汎用の列(showEventPopup/_chainEventPopupQueueEmpty)を通さず、試合一覧の殻の上に
+// 自分で出して完了を返す(showPostMatchFlavorPopups)。汎用の列は殻の後ろで止まるので、そこを待つと毎試合保険が発火していた
+// (動きの検査は post-match-flavor-over-show-shell-test.js)
+assert.ok(handler.includes('showPostMatchFlavorPopups(popups, finish)'),
+  'post-match flavor must draw over the show shell and report completion through its local finish');
+assert.ok(!handler.includes('showEventPopup(') && !handler.includes('_chainEventPopupQueueEmpty('),
+  'post-match flavor must not wait on the shared event popup queue (it is gated behind the show shell)');
+assert.ok(handler.includes('flavor.cancel()'),
+  'the safety net must withdraw a flavor popup that never got on screen');
 assert.ok(handler.includes('if (!completed) {'),
   'safety timeout must only advance an unfinished match');
 assert.ok(handler.includes("console.warn('[WM] postMatchFlavor safety net fired');"),

@@ -8836,6 +8836,7 @@ const App = {
 
   // 試合後フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.6）
   // 勝者の一言は試合結果ポップアップ内の吹き出しへ統合。ここでは敗者の余韻だけを返す。
+  // 表示は showPostMatchFlavorPopups(試合一覧の殻の上。敗者の画像は isLoser で減彩)
   _collectPostMatchPopupsForMatch(idx, result) {
     const popups = [];
     const sp = App._showPreview;
@@ -8851,7 +8852,7 @@ const App = {
     if (typeof POST_MATCH_FLAVOR_LINES === 'undefined') return popups;
     const loseLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.loser,  loserFighter);
     popups.push({
-      type: 'fighter', id: loserId, name: loserFighter.name,
+      type: 'fighter', id: loserId, name: loserFighter.name, isLoser: true,
       speech: loseLine, detail: WM_I18N.t('— 敗者の心 —'), autoCloseMs: 1800, sound: 'event',
     });
     return popups;
@@ -8964,22 +8965,24 @@ const App = {
     runPostInternalChallenge(() => runPostF09(() => {
       const popups = App._collectPostMatchPopupsForMatch(idx, result);
       if (popups.length === 0) { if (then) then(); return; }
-      // The shared queue can be extended by another post-show popup. Keep this
-      // match's completion local so its timeout cannot cancel that other wait.
+      // 敗者の心は試合一覧の殻の上に出す(showPostMatchFlavorPopups。汎用の _eventPopupQueue は通らない)。
+      // この試合の完了はここで1回だけ(ほかの待ちを取り消さない)
       let completed = false;
+      let safetyTimer = null;
       const finish = () => {
         if (completed) return;
         completed = true;
+        clearTimeout(safetyTimer);
         if (then) then();
       };
-      _chainEventPopupQueueEmpty(finish);
-      popups.forEach(p => showEventPopup(p));
+      const flavor = showPostMatchFlavorPopups(popups, finish);
       const maxWaitMs = popups.length * 2200 + 1500;
-      setTimeout(() => {
+      safetyTimer = setTimeout(() => {
         if (!completed) {
-          // A queued ceremony may legitimately outlive this flavor popup.
-          // Reaching this point means this match itself did not complete.
+          // 殻以外の画面が本当に開いていて出られなかった(待ち行列で止まった)ときだけここに来る。
+          // 出ていない一言は取り下げて(次の試合の上に遅れて出さない)先へ進む
           console.warn('[WM] postMatchFlavor safety net fired');
+          if (flavor && typeof flavor.cancel === 'function') flavor.cancel();
           finish();
         }
       }, maxWaitMs);

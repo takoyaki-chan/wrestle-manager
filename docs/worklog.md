@@ -1,5 +1,22 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-26 点火で見つけた2件の裁定を反映 — 観戦の後の「敗者の心」を出す/F08 の両リーダーの因縁を効かせる(Claude/Opus 5.5・worktree)
+
+1つ下の節(点火カタログの立て直し)で報告した未修正の4件のうち、Keisuke 裁定(09-26)が出た2件。
+
+### 1. 「— 敗者の心 —」を出す(裁定: 出す。数値は不変)
+- 観戦した試合の結果画面を閉じた後の敗者の一言(`POST_MATCH_FLAVOR_LINES.loser`・1.8秒で自動で閉じる)が、`showEventPopup` → `_enqueuePopup` で興行中ずっと active な試合一覧の殻(`showResultOverlay`)の後ろに積まれ、**一度も表に出ていなかった**(保険のタイマー N×2.2秒+1.5秒が毎試合発火して `[WM] postMatchFlavor safety net fired`、積まれた一言は週送りの全消去で捨てられていた)
+- ui-common.js に `showPostMatchFlavorPopups(popups, onDone)` を新設。殻は排他の相手に数えない(`_isPopupActive({ ignoreShowResultOverlay: true })`。F08/F09 の試合後の画面と同じ例外)。汎用の `_eventPopupQueue` は通さない(殻の後ろで止まったままの試合前の「初対決」を先頭に抱えていることがあり、後ろに並ぶと出られない)。見た目は従来の C-3 と同じ mdl-c の小型カード(`.post-match-flavor`)+頭上の吹き出し(クリーム地・台詞だけ)+画像 M 132×194(敗者なので `is-loser` で減彩)+名前+「— 敗者の心 —」。1.8秒か OK で閉じ、200ms 後に完了を1回だけ返す(タイマーと OK が重なっても1回)
+- `App._runPostMatchFlavorForMatch` はこれを呼び、保険のタイマーは残した(殻以外の画面が本当に開いていて待ち行列で止まったときだけ発火し、出ていない一言を `cancel()` で取り下げて先へ進む=次の試合の上に遅れて出ない)
+- 出るのは観戦した試合だけ(1試合スキップ・全スキップは従来どおり省略)。タッグ・引き分けは出さない(従来どおり)。敗者の心が閉じてから試合一覧を描き直し、次の試合の試合前の画面はその 400ms 後なので重ならない。親画面に自動送りの設定は無く(観戦 iframe の「自動再生」は iframe の中だけ)、結果画面の「次の試合へ」を押してから流れるので崩れない
+- 点火 `incoming-challenge-watch` / `b3-challenge-watch` の `knownConsole` から保険の警告を外し、手ごとの読取りのついでに `#mdlCCard` を見張って敗者の心が出た回数を数える検査を足した(`WATCH_FLAVOR_OBSERVER` / `_assertFlavorSeen`。1.8秒で閉じるので手の後の読取りでは見えない)
+- specs/match-flavor-popup-spec-v0.1.md §4.6.1・`test/ui-walkthrough/README.md`・`docs/rare-screen-ignition-catalog-design-v0.1.md` §10・`docs/実機確認バックログ.md`
+
+### 検証(1)
+- 回帰テスト `test/post-match-flavor-over-show-shell-test.js`(新規): ui-common.js の待ち行列まわりと app.js の試合後の流れを本物のまま偽の DOM・偽の時計で動かす。殻だけが開いている→すぐ出る・中身は敗者の一言(減彩)・1.8秒で閉じ次へ1回・警告なし/汎用の列に止まった「初対決」がいても出る/OK の二度押し+タイマーでも1回/殻以外の画面が開いている→保険1回・取り下げた一言は後から出ない/タッグ・引き分けは出ない。**変更前のコードでは1つ目で失敗**(殻の後ろに積まれる)。`test/post-match-flavor-safety-net-test.js` は新しい形(汎用の列を待たない・保険が取り下げる)に合わせた
+- 点火 `incoming-challenge-watch` PASS(警告0・敗者の心 3回: 3試合とも)/ `b3-challenge-watch` PASS(敗者の心 1回・既知扱いは B3 のゲストの NaN だけ)
+- `npm test` 314/314 PASS・`node test/ui-baseline-guard-test.js` ok
+
 ## 2026-09-26 点火カタログの立て直しと K-1 第3段の確認 — 受けた挑戦状・派閥の予約の清算を実UIで検算(Claude/Opus 5.5・worktree)
 
 K-1 第3段の作業者が「main の時点で失敗」と挙げた点火2本(`incoming-challenge`・`faction-ignite`)を直し、差分テストが見ていない実プレイだけの清算を実UIで通した。数値は変えていない(製品の修正は画面の待ち行列の扱い1か所のみ)。使い方と仕組みは `test/ui-walkthrough/README.md`「受けた挑戦状・派閥の予約の清算」、カタログは `docs/rare-screen-ignition-catalog-design-v0.1.md` §10。

@@ -3,6 +3,7 @@
 > **ステータス**: 🟢 v0.2 実装済み (per-match 化 + 試合後余韻)
 > **作成日**: 2026-04-14
 > **更新**: 2026-04-28 (v0.2): 試合前ポップアップを per-match へ移動、試合後余韻ポップアップを追加
+> **更新**: 2026-09-26: 試合後の「敗者の心」を試合一覧の殻の上に出す形へ(§4.6.1。それまで興行中に一度も出ていなかった)
 > **依存**: personality-archetype-spec-v1.0.md / character-data-spec-v1.7.md
 > **関連**: `match-popup-overview-v0.1.md` (全体構想)
 > **🔧マーク = 調整可能パラメータ**
@@ -233,6 +234,16 @@ App._afterMatchSettle = function(idx) {
 ```
 
 `POST_MATCH_FLAVOR_LINES` は `winner` と `loser` の二系統。引き分け・タッグ・スタレ結果はスキップ。
+
+#### §4.6.1 現行の形(2026-09-26 Keisuke 裁定「敗者の心を出す」)
+
+- **出す経路**: 観戦した試合だけ(`watchMatch` → 試合結果の画面 → 「次の試合へ」 → `_runPostMatchFlavorForMatch`)。1試合スキップ・残り全試合スキップでは出さない(`_afterMatchSettle(idx, { skipFlavor: true })`。省略の意思表示)
+- **中身**: 勝者の一言は試合結果の画面の吹き出しへ統合済み。ここでは**敗者の一言だけ**を1枚(`_collectPostMatchPopupsForMatch`)。見出し「— 敗者の心 —」は画像の下の小さな文字で、吹き出しの中は台詞だけ
+- **見せ方**: C-3 と同じ mdl-c の小型カード(`.mdl-c-body.post-match-flavor`)。頭上の吹き出し(クリーム地+黒文字・画像の上の予約枠・尻尾は画像の中心)→ 画像 M 132×194 → 名前 → 「— 敗者の心 —」。敗者の画像は `is-loser`(`grayscale(.9) brightness(.72)`)。画像か名前を押すと選手詳細
+- **描画の口**: `showPostMatchFlavorPopups(popups, onDone)`(ui-common.js)。興行中ずっと active な試合一覧の殻(`showResultOverlay`)は排他の相手に数えない(`_isPopupActive({ ignoreShowResultOverlay: true })`。F08/F09 の試合後の画面・直訴の結果と同じ例外)。汎用の `showEventPopup` / `_eventPopupQueue` は**通さない**(殻の後ろで止まったままの項目を先頭に抱えていることがあり、後ろに並ぶと出られない)
+- **時間**: `autoCloseMs` 1800ms で自動で閉じる。OK で早く閉じてもよい。閉じてから 200ms 後に次の1枚、全部閉じたら `onDone` を1回だけ呼び、そこで試合一覧を描き直して次の試合へ(次の試合の試合前の画面は描き直しの 400ms 後)。自動のタイマーと OK が重なっても進むのは1回
+- **保険**: 呼び出し側は `件数×2200 + 1500` ms の時限を掛ける。殻以外の画面が本当に開いていて待ち行列で止まったときだけ発火し、`[WM] postMatchFlavor safety net fired` を出して、出ていない一言を取り下げ(`cancel()`。後から待ち行列で呼ばれても出さない)先へ進む
+- 2026-09-26 まで: `showEventPopup` → `_enqueuePopup` を通していて、殻を「開いている別の画面」と数えて殻の後ろに積まれ、**興行中に一度も出ず**、保険のタイマーが毎試合発火していた(点火 `incoming-challenge-watch` / `b3-challenge-watch` で発見。積まれた一言は週送りの全消去で捨てられていた)。回帰テスト `test/post-match-flavor-over-show-shell-test.js`
 
 ### §4.3 `_onEventPopupQueueEmpty` の使い方
 

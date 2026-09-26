@@ -2501,6 +2501,82 @@ function _chainEventPopupQueueEmpty(cb) {
   };
 }
 
+// ── 試合後の「敗者の心」(specs/match-flavor-popup-spec-v0.1.md §4.6。2026-09-26 Keisuke 裁定「出す」) ──
+// 観戦した試合の結果画面を閉じた後に、負けた選手の一言を autoCloseMs(1.8秒)だけ出し、全部閉じたら onDone を1回だけ呼ぶ。
+// ・興行中ずっと active な試合一覧の殻(showResultOverlay)の上に出す(F08/F09 の試合後の画面・直訴の結果と同じ例外)。
+//   以前は showEventPopup を通していたため、殻を「開いている別の画面」と数えて殻の後ろの待ち行列に積まれ、興行中に
+//   一度も出ないまま呼び出し側の保険のタイマーが毎試合発火していた(2026-09-26 点火 *-watch で発見)
+// ・汎用の _eventPopupQueue には並ばない。あの列は殻の後ろで止まったままの試合前の一言(初対決)を先頭に抱えていることが
+//   あり、後ろに並ぶと同じく出られない。見た目は C-3(_renderEventPopupAsC3)と同じ mdl-c の小型カード+頭上の吹き出し
+// ・殻以外の画面が本当に開いているときだけ待ち行列に積む。そこで止まれば呼び出し側の保険が cancel() して先へ進む。
+//   取り下げた一言は、後から待ち行列で呼ばれても出さない(次の試合の上に遅れて出ない)
+// ・1枚の「閉じる」は1回だけ(自動で閉じるタイマーと OK の早押しが重なっても、次の1枚/完了へ1回だけ進む)
+function showPostMatchFlavorPopups(popups, onDone) {
+  const list = (Array.isArray(popups) ? popups : []).filter(Boolean);
+  let finished = false;
+  let cancelled = false;
+  let closeCurrent = null;
+  const done = () => {
+    if (finished) return;
+    finished = true;
+    if (typeof onDone === 'function') onDone();
+  };
+  const showAt = (i) => {
+    if (cancelled || finished) return;
+    if (i >= list.length) { done(); return; }
+    const o = list[i];
+    const run = () => {
+      if (cancelled || finished) { _drainPopupQueue(); return; }
+      const characterHtml = (o.type === 'fighter' && o.id != null)
+        ? `<div class="event-popup-character u3b-theme-dark">${_u3bSideHtml({
+            name: o.name || '', line: o.speech || '', reserveBubble: !!o.speech, size: 'm', isLoser: !!o.isLoser,
+            imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(o.id) : '',
+            fallback: String(o.name || '?').charAt(0),
+            onClick: `showFighterPopup(${Number(o.id)},'roster',true)`,
+          })}</div>`
+        : '';
+      const html = `
+        <div class="mdl-c-body post-match-flavor" style="padding-top:4px">
+          ${characterHtml}
+          ${o.detail ? `<div style="font-size:12px;color:var(--info-text-dim);margin-top:8px;text-align:center">${o.detail}</div>` : ''}
+        </div>
+        <div class="mdl-c-footer" style="justify-content:center">
+          <button class="mdl-c-footer-btn" id="postMatchFlavorOkBtn" type="button">OK</button>
+        </div>
+      `;
+      let closed = false;
+      let timer = null;
+      const close = () => {
+        if (closed) return;
+        closed = true;
+        clearTimeout(timer);
+        if (closeCurrent === close) closeCurrent = null;
+        // 自分のカードがまだ出ているときだけ閉じる(ほかの mdl-c を巻き込まない)
+        if (document.querySelector('#mdlCCard .post-match-flavor')) _mdlCClose();
+        if (cancelled) return;
+        // 次の1枚(または完了)は mdl-c が閉じ切ってから。C-3 の連続表示と同じ 200ms の間
+        setTimeout(() => showAt(i + 1), 200);
+      };
+      if (!_mdlCOpen(html, { compact: true })) { close(); return; }
+      closeCurrent = close;
+      const btn = document.getElementById('postMatchFlavorOkBtn');
+      if (btn) btn.addEventListener('click', close, { once: true });
+      try { Audio.play(o.sound || 'event'); } catch (_e) {}
+      timer = setTimeout(close, Number(o.autoCloseMs) > 0 ? Number(o.autoCloseMs) : 1800);
+    };
+    if (_isPopupActive({ ignoreShowResultOverlay: true })) { _popupQueue.push(run); return; }
+    run();
+  };
+  showAt(0);
+  return {
+    cancel() {
+      if (finished || cancelled) return;
+      cancelled = true;
+      if (closeCurrent) closeCurrent();
+    },
+  };
+}
+
 // ── v1.3-3: Retirement Popup ────────────────
 let _retirementPopupQueue = [];
 // WM-D03「引退」BGM が鳴っている間だけ true。連続引退で鳴らし直さないための番人。
