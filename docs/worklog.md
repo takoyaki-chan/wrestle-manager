@@ -15,7 +15,16 @@
 - `src/index.html` `.coach-trait`: `#7a4a9a`+白文字 → `#efe0fb`+`#4a2a6a`(枠 `#b98fd8`・太字)。明るい「スタッフ募集」画面でも暗いコーチ詳細でも読める
 - `src/ui-render.js` 雇用ボタン: 文字色 `#2ecc71` → `#17693a`(枠も濃く・太字)。明るい背景の上で緑が飛んでいた
 
-### Codex へ回したもの(task-105)
+### Codex へ回したもの(task-105・09-27 完了)
+
+4件とも実装・検証済み(ブランチ `codex/task-105` を main へ早送り合流、全325テスト緑)。配布はしていない。
+- 1: `G.autoRestLine`(既定60・50/60/70/80、体調30未満の安全弁は不変)+「今週」タブのセレクト。`test/auto-rest-line-test.js`
+- 2: タイトルの導線を見える濃さへ+ヘルプ画面に1か所。フォーム導線は**2か所だけ**を検査で固定。`test/feedback-link-test.js`
+- 3: `src/data-changelog.js`(v1.05〜v1.37の24版・日本語/English)+タイトルの「更新履歴」。文面の正本は `docs/changelog-content-20260927.md`。`test/changelog-test.js`
+- 4: `BUYER_PASSWORD` を設定した時だけ購入者用の入口が出る。未設定なら従来どおり。**パスワードは POST で受け取り、URL・履歴・アクセスログに残さない**(Codexの初稿はGETだったのでこちらで直した)。`test/buyer-password-gate-test.js`
+- 4の注意: クッキー署名鍵に `BUYER_PASSWORD` を混ぜているため、設定・変更した時点で既存の入場クッキーが全員無効になる(入り直しが要る)
+
+### 旧メモ(依頼時点)
 `docs/codex-tasks/task-105-survey-followups-20260927.md` に仕様と文言(日本語/English)を書いて委託。起動は `tools/run-codex-task-105.cmd`。
 1. 自動休養ラインの設定化(`G.autoRestLine`・既定60・50/60/70/80・体調30未満の安全弁は不変)
 2. アンケート導線(タイトルの文字色を上げる+ヘルプ画面に1か所。増やすのは2か所まで)
