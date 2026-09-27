@@ -13694,6 +13694,19 @@ const Engine = {
     },
   },
   season: {
+    getAutoRestLine(state) {
+      const line = Number(state && state.autoRestLine);
+      return [50, 60, 70, 80].includes(line) ? line : 60;
+    },
+
+    resolveAutoRestAction(action, condition, state) {
+      const autoRested = action !== 'rest' && condition < Engine.season.getAutoRestLine(state);
+      return {
+        action: (autoRested || condition <= 30) ? 'rest' : action,
+        autoRested,
+      };
+    },
+
     // Returns { roster, freeAgents, heatScore, events } — does NOT mutate G
     // i18n Stage B P6-13: 週次イベント生成(pendingLargeEvent/pendingNotifEvent)のtext/detail
     // をpickText()経由でdict適用するための糸通し。第3引数dict省略時はJA原文のまま
@@ -13954,10 +13967,10 @@ const Engine = {
             action = 'practice';
           }
         }
-        // §2: 体調自動管理 — condition < 60 で方針を無視して自動休養
-        let autoRested = false;
-        if (action !== 'rest' && nc.condition < 60) { action = 'rest'; autoRested = true; }
-        if (nc.condition <= 30) action = 'rest'; // 安全弁
+        // §2: 体調自動管理 — 設定ライン未満で方針を無視して自動休養
+        const autoRest = Engine.season.resolveAutoRestAction(action, nc.condition, G);
+        action = autoRest.action;
+        const autoRested = autoRest.autoRested;
         const mentalBonus = Engine.coach.getCondBonus(stateForCalc, nc.id);
 
         if (action === 'practice') {
@@ -21770,6 +21783,7 @@ const Engine = {
       funds: 5000,
       orgPop: 10,
       orgName: 'プレイヤー団体',
+      autoRestLine: 60,
       playerOrgIcon: 0,
       roster,
       freeAgents,

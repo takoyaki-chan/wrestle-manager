@@ -1362,6 +1362,20 @@ function renderWeekScreen() {
       html += `<button class="btn btn-gold" data-walk-role="advance-week" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ ${WM_I18N.t('週を処理')}</button>`;
     }
     html += `<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="${WM_I18N.t('体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに切り替えます。それ以外の方針は維持されます')}">🤖 ${WM_I18N.t('おまかせ')}</button>`;
+    const autoRestLine = Engine.season.getAutoRestLine(G);
+    const autoRestTooltip = WM_I18N.t('この体調を下回った選手は、育成方針にかかわらず自動で休養します。体調30未満は設定にかかわらず必ず休養します。');
+    const autoRestOptions = [
+      { value: 50, label: WM_I18N.t('体調50未満') },
+      { value: 60, label: WM_I18N.t('体調60未満') },
+      { value: 70, label: WM_I18N.t('体調70未満') },
+      { value: 80, label: WM_I18N.t('体調80未満') },
+    ];
+    html += `<label title="${autoRestTooltip}" style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-sub)">
+      <span>${WM_I18N.t('自動休養ライン')}</span>
+      <select aria-label="${WM_I18N.t('自動休養ライン')}" title="${autoRestTooltip}" onchange="App.setAutoRestLine(this.value)" style="font-size:11px;padding:4px 6px;background:var(--bg-card);color:var(--text-main);border:1px solid var(--border);border-radius:4px">
+        ${autoRestOptions.map(option => `<option value="${option.value}"${option.value === autoRestLine ? ' selected' : ''}>${option.label}</option>`).join('')}
+      </select>
+    </label>`;
     html += _tipIcon(WM_I18N.t('<strong style="color:var(--gold)">🤖 おまかせ</strong><br>体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに戻します。それ以外の方針は維持されます。'));
     html += '</div>';
 

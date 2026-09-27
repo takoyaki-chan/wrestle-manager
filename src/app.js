@@ -2063,6 +2063,7 @@ const Storage = {
       // Replace G entirely with saved state, preserving any missing defaults
       const base = Engine.createInitialState(state.rngSeed || (Date.now() ^ 0xDEADBEEF));
       G = { ...base, ...state };
+      if (![50, 60, 70, 80].includes(Number(G.autoRestLine))) G = { ...G, autoRestLine: 60 };
 
       // 旧セーブに残った単独頂上決戦は、現行のPPV内頂上決戦へ統合済み。
       // 旧イベント画面に閉じ込められないよう予約だけ安全に解除する。
@@ -10136,6 +10137,13 @@ const App = {
     });
     G = { ...G, roster };
     refreshAll();
+  },
+
+  setAutoRestLine(value) {
+    const next = Number(value);
+    if (![50, 60, 70, 80].includes(next)) return;
+    G = { ...G, autoRestLine: next };
+    Storage.autoSave();
   },
 
   // §13.4 突然の退団のトースト(K-1 4-B-7)。興行週(closeShowResult)と非興行週(processWeek)で同じものを出す。

@@ -4806,7 +4806,13 @@
     "業界紙報道: {name}、{orgName} と電撃契約": "From the trade press: {name} signs with {orgName} out of nowhere",
     "スカウト合戦の裏で進められていた極秘交渉が明らかに": "Talks had been running in secret behind the scouting war",
     "大会": "Tournaments",
-    "格上撃破": "Upsets"
+    "格上撃破": "Upsets",
+    "この体調を下回った選手は、育成方針にかかわらず自動で休養します。体調30未満は設定にかかわらず必ず休養します。": "Fighters below this condition rest automatically, regardless of their training policy. Below 30 they always rest.",
+    "自動休養ライン": "Auto-rest line",
+    "体調50未満": "Below 50",
+    "体調60未満": "Below 60",
+    "体調70未満": "Below 70",
+    "体調80未満": "Below 80"
   }
   );
 })();
