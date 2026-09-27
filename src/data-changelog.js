@@ -4,8 +4,8 @@ const WM_CHANGELOG = [
   {
     version: "1.38",
     date: "2026-09-27",
-    ja: ["自動休養に入る体調のラインを選べるようにした(50・60・70・80、初期値は60)", "タイトル画面に「更新履歴」を追加し、ご意見・バグ報告の入口をヘルプ画面にも用意した", "コーチの特性と雇用ボタンの文字が見えにくかったのを直した"],
-    en: ["You can now choose the condition threshold for automatic rest (50/60/70/80, default 60)", "Added \"What's New\" to the title screen and a feedback link in the help screen", "Improved the readability of coach traits and hire buttons"],
+    ja: ["自動休養に入る体調のラインを選べるようにした(50・60・70・80、初期値は60)", "タイトル画面に「更新履歴」を追加し、ご意見・バグ報告の入口をヘルプ画面にも用意した", "コーチの特性と雇用ボタンの文字が見えにくかったのと、旗揚げ直後に新人が「古参選手」として話していたのを直した"],
+    en: ["You can now choose the condition threshold for automatic rest (50/60/70/80, default 60)", "Added \"What's New\" to the title screen and a feedback link in the help screen", "Improved the readability of coach traits and hire buttons, and stopped brand-new fighters from speaking as veterans right after founding"],
   },
   {
     version: "1.37",

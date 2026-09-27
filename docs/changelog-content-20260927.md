@@ -5,7 +5,7 @@
 
 | 版 | 日付 | 日本語 | English |
 |---|---|---|---|
-| 1.38 | 2026-09-27 | 自動休養に入る体調のラインを選べるようにした(50・60・70・80、初期値は60) / タイトル画面に「更新履歴」を追加し、ご意見・バグ報告の入口をヘルプ画面にも用意した / コーチの特性と雇用ボタンの文字が見えにくかったのを直した | You can now choose the condition threshold for automatic rest (50/60/70/80, default 60) / Added "What's New" to the title screen and a feedback link in the help screen / Improved the readability of coach traits and hire buttons |
+| 1.38 | 2026-09-27 | 自動休養に入る体調のラインを選べるようにした(50・60・70・80、初期値は60) / タイトル画面に「更新履歴」を追加し、ご意見・バグ報告の入口をヘルプ画面にも用意した / コーチの特性と雇用ボタンの文字が見えにくかったのと、旗揚げ直後に新人が「古参選手」として話していたのを直した | You can now choose the condition threshold for automatic rest (50/60/70/80, default 60) / Added "What's New" to the title screen and a feedback link in the help screen / Improved the readability of coach traits and hire buttons, and stopped brand-new fighters from speaking as veterans right after founding |
 | 1.37 | 2026-09-17 | 年間MVPレースの配点を見直し、統一王者でなくてもMVPに届きやすくした / 英語モードで日本語のまま出ていた表記を修正 | Rebalanced the annual MVP race so fighters without the unified title can reach MVP / Fixed labels that still showed Japanese in English mode |
 | 1.36 | 2026-09-10 | 英語モードの選手のセリフを仕上げた(日本語表示に変化なし) | Finished the English fighter dialogue (no change in Japanese) |
 | 1.35 | 2026-09-07 | 英語モードを追加(タイトル画面で日本語と切り替え) / 特性「ファンサービス」「ヒール適性」が働いていなかったのを修正 / ニュースティッカーを廃止 | Added English mode (switch on the title screen) / Fixed the traits "Fan Service" and "Heel Aptitude" not taking effect / Removed the news ticker |
