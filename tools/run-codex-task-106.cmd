@@ -1,0 +1,4 @@
+@echo off
+rem task-106: v1.38 を DLsite / BOOTH / itch.io へ差し替える(ブラウザ操作)
+cd /d C:\Users\nkmrk\Downloads\wrestle-manager
+call codex exec --skip-git-repo-check --sandbox danger-full-access -c model="gpt-5.6-sol" -c model_reasoning_effort=medium --cd "C:\Users\nkmrk\Downloads\wrestle-manager" "Read AGENTS.md and docs/codex-tasks/task-106-store-upload-v138-20260927.md, then carry out the store replacement exactly as written, in order: DLsite, BOOTH, itch.io. Paste the wording from the task file and release/dist/*_v1.38*.txt verbatim; never rewrite it. Verify the zip byte counts before uploading. If a login has expired or a page does not look like the described flow, stop and report instead of improvising; never enter passwords. Do not create new store listings, change prices, or touch age ratings. When finished, write docs/codex-tasks/task-106-report.md and commit only that file." > "C:\Users\nkmrk\Downloads\wrestle-manager\docs\codex-tasks\task-106-log.txt" 2>&1
