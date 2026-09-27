@@ -6840,7 +6840,7 @@ function renderCoach() {
           </div>
           <div style="margin-top:5px;font-size:12px;color:#6a6050">${WM_I18N.t('雇用費:')} <b style="color:#4a4035">${fee}${WM_I18N.t('万')}</b> ｜ ${WM_I18N.t('給与:')} <b style="color:#4a4035">${WM_I18N.t('{v}万/週', { v: c.salary })}</b> ｜ ${WM_I18N.t('決裁枠:')} <b style="color:#c00000">⚡${hireDpCost}</b></div>
         </div>
-        <button class="btn btn-sm" style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71"
+        <button class="btn btn-sm" style="background:rgba(46,204,113,0.18);border:1px solid rgba(23,105,58,0.45);color:#17693a;font-weight:700"
           onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${btnLabel}</button>
       </div>`;
     });
