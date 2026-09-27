@@ -23,3 +23,6 @@ src/*.bak
 docs/ui/mockups/newspaper-v3-render-check.html
 test/ui-walkthrough/fixtures/generated/
 test/k1-parity/out/
+
+# Codex実行ログ(生成物)
+docs/codex-tasks/task-105-log.txt
