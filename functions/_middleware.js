@@ -18,15 +18,17 @@ export async function onRequest(context) {
     if (await verifyAuthCookie(request, env)) {
       return context.next();
     }
-    // 管理用バックドア(ADMIN_PASSWORD を設定した場合のみ有効)
+    // 管理用バックドアまたは購入者用パスワード(各環境変数を設定した場合のみ有効)
     const password = url.searchParams.get("password");
-    if (env.ADMIN_PASSWORD && password === env.ADMIN_PASSWORD) {
+    const adminPasswordMatches = env.ADMIN_PASSWORD && password === env.ADMIN_PASSWORD;
+    const buyerPasswordMatches = env.BUYER_PASSWORD && password === env.BUYER_PASSWORD;
+    if (adminPasswordMatches || buyerPasswordMatches) {
       return new Response(null, {
         status: 302,
         headers: { Location: url.origin + "/", "Set-Cookie": await makeAuthCookie(env) },
       });
     }
-    return loginPage(url);
+    return loginPage(url, undefined, !!env.BUYER_PASSWORD);
   }
 
   // ── レガシーモード(未構成時のフォールバック): 従来の共有パスワード ──

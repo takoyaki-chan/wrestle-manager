@@ -6,7 +6,8 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7日。期限切れで再ログイ�
 
 /** 署名用キー(COOKIE_SECRET 優先、なければ client secret を流用) */
 function signingKey(env) {
-  return env.COOKIE_SECRET || env.PATREON_CLIENT_SECRET || "";
+  const baseKey = env.COOKIE_SECRET || env.PATREON_CLIENT_SECRET || "";
+  return env.BUYER_PASSWORD ? `${baseKey}\0${env.BUYER_PASSWORD}` : baseKey;
 }
 
 async function hmacHex(key, message) {
@@ -98,9 +99,22 @@ export async function checkMembership(env, accessToken) {
   return { ok: false, reason: "not_member", userId };
 }
 
-/** ログイン画面(Patreonボタン)を返す */
-export function loginPage(url, message) {
+/** ログイン画面(Patreonボタン、設定時は購入者用パスワード欄)を返す */
+export function loginPage(url, message, buyerPasswordEnabled = false) {
   const note = message ? `<p class="err">${message}</p>` : "";
+  const buyerStyle = buyerPasswordEnabled ? `    .buyer-access{margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid #39425f}
+    .buyer-access input{box-sizing:border-box;width:100%;padding:.6rem .8rem;border:1px solid #555;border-radius:6px;background:#0f3460;color:#fff;font-size:1rem}
+    .buyer-access button{margin-top:.7rem;padding:.6rem 1.5rem;border:none;border-radius:6px;background:#e94560;color:#fff;font-size:1rem;cursor:pointer}
+    .buyer-access button:hover{background:#c73750}
+` : "";
+  const buyerAccess = buyerPasswordEnabled ? `    <div class="buyer-access">
+      <p>ダウンロード版をご購入の方は、商品ページに記載のパスワードを入力してください。<br><span lang="en">If you bought the download edition, enter the password shown on the store page.</span></p>
+      <form method="GET" action="/">
+        <input type="password" name="password" placeholder="Password" autocomplete="current-password">
+        <button type="submit">Enter</button>
+      </form>
+    </div>
+` : "";
   return new Response(`<!DOCTYPE html>
 <html lang="ja"><head>
   <meta charset="utf-8">
@@ -114,13 +128,13 @@ export function loginPage(url, message) {
     .err{color:#ff8b9e}
     a.btn{display:inline-block;margin-top:.6rem;padding:.7rem 1.8rem;border-radius:8px;background:#e94560;color:#fff;font-size:1rem;text-decoration:none;font-weight:700}
     a.btn:hover{background:#c73750}
-  </style>
+${buyerStyle}  </style>
 </head><body>
   <div class="box">
     <h2>Wrestle Manager</h2>
     <p>このページは Patreon 支援者向けの先行プレイ版です。<br>Patreon アカウントでログインしてください。</p>
     ${note}
     <a class="btn" href="/auth/login">Patreon でログイン</a>
-  </div>
+${buyerAccess}  </div>
 </body></html>`, { status: 401, headers: { "Content-Type": "text/html;charset=utf-8" } });
 }

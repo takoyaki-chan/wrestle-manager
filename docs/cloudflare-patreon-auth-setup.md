@@ -42,9 +42,18 @@ Cloudflare ダッシュボード → Pages → wrestle-manager → **Settings �
 | `PATREON_CAMPAIGN_ID` | 手順2のキャンペーンID(数字) | ✅ |
 | `COOKIE_SECRET` | 適当な長いランダム文字列(クッキー署名用。**Encrypt推奨**) | 推奨 |
 | `ADMIN_PASSWORD` | 自分用バックドア(`?password=◯◯`で入れる)。不要なら未設定 | 任意 |
+| `BUYER_PASSWORD` | ダウンロード版購入者用パスワード(**Encrypt推奨**)。実際の値は商品ページだけに記載 | 任意 |
 | `PATREON_MIN_CENTS` | 最低支援額(セント)。未設定=有料メンバーなら誰でも(1)。例: `300`=一定プラン以上 | 任意 |
 
 4. 設定後に **Retry deployment**(環境変数はデプロイ時に反映)
+
+### 4. 購入者用パスワードの設定・変更
+
+1. Cloudflare Pages の **Settings → Environment variables**(Production)に `BUYER_PASSWORD` を追加し、商品ページで購入者だけに案内するパスワードを設定する。値は **Encrypt** にし、コードやこの手順書には書かない
+2. **Retry deployment** で環境変数を反映する
+3. シークレットウィンドウでログイン画面を開き、購入者向け入力欄から入場できることを確認する。`?password=` を使った直接入場にも対応している
+
+パスワードを変更するときは `BUYER_PASSWORD` の値を更新して **Retry deployment** する。署名クッキーもこの環境変数に結び付いているため、変更後は購入者・Patreon支援者・管理者を含む全員が入り直しになる。`BUYER_PASSWORD` を未設定にすれば購入者向け入力欄と入口は無効になり、従来のPatreon認証と管理者用入口だけが動く。
 
 ## 動作確認
 
