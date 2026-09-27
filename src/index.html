@@ -909,6 +909,16 @@ html[lang="en"] .emr-foot-note{font-size:8px}
 .emr-pair .emr-upper{width:108px;height:162px;border:0;border-radius:0;background:transparent}
 .emr-pair .emr-upper img{filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}
 .emr-pair .emr-upper+.emr-upper{margin-left:-18px}
+/* タッグの吹き出しは話している選手の画像の水平中心へ尻尾を向ける(_emrTeamSide の is-speaker-0/1。2026-09-28)。
+   隊列は S 108px×2・18px重ね → 各選手の中心は群の中心から ±45px。箱は ±20px だけ寄せ、残りは尻尾で合わせる
+   (箱ごと45px寄せると最大幅220pxの吹き出しが列からはみ出す)。狭幅は 46px×2・18px重ね → ±14px */
+.emr-team{--emr-mem-dx:45px;--emr-bub-dx:20px}
+.emr-bubble-slot.is-speaker-0 .emr-bubble,.emr-bubble-slot.is-speaker-1 .emr-bubble{min-width:96px}
+.emr-bubble-slot.is-speaker-0 .emr-bubble{transform:translateX(calc(-1 * var(--emr-bub-dx)))}
+.emr-bubble-slot.is-speaker-1 .emr-bubble{transform:translateX(var(--emr-bub-dx))}
+.emr-bubble-slot.is-speaker-0 .emr-bubble::after{left:calc(50% - var(--emr-mem-dx) + var(--emr-bub-dx))}
+.emr-bubble-slot.is-speaker-1 .emr-bubble::after{left:calc(50% + var(--emr-mem-dx) - var(--emr-bub-dx))}
+@media(max-width:700px){.emr-team{--emr-mem-dx:14px;--emr-bub-dx:0px}}
 .emr-team.is-loser .emr-pair{border-bottom-color:#40444c}
 .emr-team.is-loser .emr-pair .emr-upper img{filter:grayscale(.9) brightness(.72) drop-shadow(0 6px 12px rgba(0,0,0,.5))}
 .emr-team-name{font-size:13px;font-weight:900;line-height:1.4;text-align:center;margin-top:8px}
@@ -4246,6 +4256,7 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
 .stl-slot-tab small{margin-top:3px;font-size:9px;color:var(--cream-text-sub)}
 .stl-slot-tab.is-active{border-color:var(--cream-gold);color:var(--cream-gold-dark);background:var(--cream-bg-card)}
 .stl-slot-tab.is-complete small{color:var(--cream-gold-dark)}
+.stl-slot-tab.is-half small{color:var(--cream-red)}
 .stl-modal-section{padding:14px 24px}
 .stl-modal-section-label{font-family:var(--font-label);font-size:10px;letter-spacing:2.5px;color:var(--cream-gold);text-transform:uppercase;margin-bottom:10px}
 .stl-suggest-row{display:flex;gap:10px;flex-wrap:wrap;padding:0 24px 14px}
@@ -4256,11 +4267,22 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
 .stl-suggest-chip .faces img+img{margin-left:-10px}
 .stl-suggest-chip .chem{font-weight:700;color:var(--cream-gold-dark)}
 .stl-pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 24px 14px;max-height:340px;overflow-y:auto}
-.stl-pick-grid .stl-is-locked{opacity:.48;cursor:not-allowed}
+/* 4列に収める: ドラフト候補の XL 172×258 のままだと列が溢れて横スクロールになり、選んだ選手が画面外へ隠れていた。
+   梯子の S 108×162 へ(mockup-baseline §2) */
+@media(min-width:701px){.stl-pick-grid .draft-fc.cand .draft-fc-portrait{width:108px;height:162px}}
+/* 他の枠に入っている選手。押すとこの枠へ移る(App.stlPickFighter) */
+.stl-pick-grid .stl-is-elsewhere{opacity:.62}
 .stl-used-label{display:block;margin-top:4px;font-size:9px;color:var(--cream-text-sub)}
 .stl-summary-bar{display:flex;align-items:center;gap:14px;padding:12px 24px;background:var(--office-panel-cream-card);border-top:1px solid var(--office-border-cream)}
 .stl-summary-label{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--cream-gold);text-transform:uppercase}
-.stl-summary-names{flex:1;font-size:14px;font-weight:700;color:var(--cream-text-main)}
+.stl-summary-names{flex:1;display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:14px;font-weight:700;color:var(--cream-text-main)}
+.stl-summary-amp{font-size:12px;color:var(--cream-text-sub)}
+.stl-summary-member{display:inline-flex;align-items:center;gap:6px;padding:3px 3px 3px 3px;border:1px solid var(--office-border-cream);border-radius:18px;background:var(--cream-bg-card)}
+.stl-summary-member img{width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:center top}
+.stl-summary-member b{font-size:13px}
+.stl-summary-member.is-empty{padding:6px 14px;border-style:dashed;background:transparent;font-size:12px;font-weight:400;color:var(--cream-text-sub)}
+.stl-summary-remove{width:24px;height:24px;border:0;border-radius:50%;background:transparent;color:var(--cream-text-sub);font-size:15px;line-height:1;cursor:pointer}
+.stl-summary-remove:hover{background:var(--office-panel-cream-card);color:var(--cream-red)}
 .stl-summary-chem{font-size:12px;color:var(--cream-gold-dark);font-weight:700}
 /* 不仲タッグの警告(K-12)。通常興行のプレビューの ⚠ 不仲(太字+2行目は小さく)と同じ組み方を Cream の赤で */
 .stl-summary-bar{flex-wrap:wrap}
@@ -4268,6 +4290,9 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
 .stl-discord-warn small{display:block;font-size:10px;font-weight:700;opacity:.85;margin-top:2px}
 .stl-discord-warn.is-compact{font-size:11px;text-align:left;white-space:nowrap}
 .stl-modal-footer{padding:14px 24px 22px;text-align:center}
+.stl-modal-block-reason{margin-bottom:8px;font-size:12px;font-weight:700;color:var(--cream-red)}
+.stl-modal-actions{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.stl-modal-cancel{border:0;background:transparent;color:var(--cream-text-sub);font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 
 /* ---- リーグ興行画面（Stage/P7、showResultOverlayを再利用） ---- */
 .stl-wrap{max-width:900px;margin:0 auto;padding:16px 16px 60px;text-align:center}

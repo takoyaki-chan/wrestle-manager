@@ -13,8 +13,10 @@ const html = read('src/index.html');
 
 assert.match(app, /pairs:\s*myTeams\.map/,
   'entry state must preserve one pair per player slot');
-assert.match(app, /usedElsewhere[\s\S]{0,260}Audio\.play\('error'\)/,
-  'entry UI must reject a fighter already assigned to another slot');
+// 2026-09-28: 他の枠の選手は「弾く」から「この枠へ移す」に変えた(選び直しができない、の報告)。
+// 同じ選手が2枠に入らないことは spring-tag-league-entry-redo-test.js が操作で確かめる
+assert.match(app, /stlPickFighter\(id\) \{[\s\S]{0,900}sel\.pairs\.forEach\(\(row, index\) => \{[\s\S]{0,200}row\.f1Id = null/,
+  'entry UI must move a fighter out of another slot instead of assigning her twice');
 assert.ok(app.includes('Engine.springTagLeague.confirmPlayerTeams ||')
   && app.includes('G = confirmPlayerTeams(G, sel.pairs)'),
   'entry UI must submit all configured player teams together');

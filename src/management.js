@@ -21371,8 +21371,12 @@ const Engine = {
     if (s.week === Engine.springTagLeague.ENTRY_WEEK && !s.offSeason
         && s.springTagLeague && !s.springTagLeague.cancelled
         && !Engine.springTagLeague.isCompletedThisSeason(s)) {
-      s = { ...s, springTagPhase: 'entry' };
-      events.push('🎽 春のタッグリーグ: 出場チームの編成期間が始まった');
+      // 旧形式(v0.1)で告知済みのセーブは、編成期間に入る前に今の枠へ移す(編成画面の枠数=開催の枠数)
+      s = Engine.springTagLeague.migrateLegacyEntry(s);
+      if (!s.springTagLeague.cancelled) {
+        s = { ...s, springTagPhase: 'entry' };
+        events.push('🎽 春のタッグリーグ: 出場チームの編成期間が始まった');
+      }
     }
 
     // 春のタッグリーグ Week12: A/Bブロック総当たり+決勝を実行
@@ -33370,6 +33374,28 @@ Engine.springTagLeague = {
     });
   },
 
+  /** 旧形式(v0.1: 団体ごとに1組・teamId/slot/formatなし)のまま編成中の大会を、今のランキングで
+   *  v0.2の枠(3/2/2/1)へ移す。自団体の確定済みペアは第1代表へ引き継ぐ。
+   *  v0.1時代のセーブ(開発者モードのチェックポイントを含む)を週10〜11で開くとこの形のまま編成画面が開き、
+   *  週12の run() だけが移行していた — 編成画面の枠数と実際の出場枠が食い違う(2026-09-28 Keisuke報告:
+   *  4位なのに「代表タッグ4組」と出て、開催は1組だった)。編成画面・週11の入口・run() の全部でここを通す。
+   *  完了済みの旧記録(表示・Replayが旧shapeを読む)と中止の大会は触らない。純粋関数、乱数不使用 */
+  migrateLegacyEntry(state) {
+    const stl = state && state.springTagLeague;
+    if (!stl || stl.format === 2 || stl.cancelled || !Array.isArray(stl.teams)) return state;
+    if (Engine.springTagLeague.isCompletedThisSeason(state)) return state;
+    const oldPlayer = stl.teams.find(team => team && team.orgId === 'player');
+    const announcement = Engine.springTagLeague.announce(state);
+    let next = {
+      ...state,
+      springTagLeague: { ...announcement, announcedSeason: stl.announcedSeason != null ? stl.announcedSeason : state.season },
+    };
+    if (!announcement.cancelled && oldPlayer && oldPlayer.f1Id != null && oldPlayer.f2Id != null) {
+      next = Engine.springTagLeague.confirmPlayerTeam(next, oldPlayer.f1Id, oldPlayer.f2Id, 0);
+    }
+    return next;
+  },
+
   confirmPlayerTeams(state, pairs) {
     if (!state.springTagLeague || !Array.isArray(state.springTagLeague.teams)) return state;
     const playerTeams = state.springTagLeague.teams.filter(t => t.orgId === 'player')
@@ -33387,8 +33413,10 @@ Engine.springTagLeague = {
       return { ...team, f1Id: f1.id, f2Id: f2.id, confirmed: true };
     });
     if (normalized.some(team => !team)) return state;
-    const byId = new Map(normalized.map(team => [team.teamId, team]));
-    const teams = state.springTagLeague.teams.map(team => byId.get(team.teamId) || team);
+    // 差し替えは teamId ではなく元の要素そのもので引く。旧形式(teamIdなし)だと全チームの teamId が
+    // undefined で一致し、他団体のチームまで自団体の組で上書きされていた(「代表タッグ4組」の原因)
+    const byTeam = new Map(playerTeams.map((team, index) => [team, normalized[index]]));
+    const teams = state.springTagLeague.teams.map(team => byTeam.get(team) || team);
     const allConfirmed = normalized.length > 0 && normalized.every(team => team.confirmed);
     return {
       ...state,
@@ -33417,11 +33445,7 @@ Engine.springTagLeague = {
     // formatなしの進行途中セーブは、現在のランキングでv0.2枠へ安全に移行する。
     // 完了済みの旧記録はrun()へ入らず、表示・Replay側で旧shapeを読む。
     if (stl.format !== 2) {
-      const oldPlayer = stl.teams.find(team => team && team.orgId === 'player');
-      workingState = { ...state, springTagLeague: Engine.springTagLeague.announce(state) };
-      if (oldPlayer && oldPlayer.f1Id != null && oldPlayer.f2Id != null) {
-        workingState = Engine.springTagLeague.confirmPlayerTeam(workingState, oldPlayer.f1Id, oldPlayer.f2Id, 0);
-      }
+      workingState = Engine.springTagLeague.migrateLegacyEntry(state);
       stl = workingState.springTagLeague;
       if (!stl || stl.cancelled) return { cancelled: true, reason: stl?.reason || 'insufficientTeams' };
     }

@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4793件、訳文あり4793件)
+//  生成元: i18n/ui-ledger.json (総キー4807件、訳文あり4807件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -2067,7 +2067,12 @@
     "他団体の指名はこのまま進みます。": "The other promotions' picks go ahead as they are.",
     "他団体の興行": "Another Promotion's Show",
     "他団体相手の星勘定で大きくマイナスを背負っている": "Carrying a deep deficit in the win column against other organizations",
-    "他枠で選出済み": "Already picked for another slot",
+    "あと1名": "1 more needed",
+    "第{n}代表から移す": "Move from Representative {n}",
+    "外す": "Remove",
+    "第{n}代表があと1名です": "Representative {n} needs one more wrestler",
+    "2名そろった枠がまだありません": "No team has both wrestlers yet",
+    "保存せずに閉じる": "Close without saving",
     "代表": "Representative",
     "代表3名・先鋒 / 中堅 / 大将": "Three representatives · Lead-off / Middle / Captain",
     "代表的な選手": "Notable wrestlers",

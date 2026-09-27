@@ -18825,12 +18825,17 @@ function _emrSingleSide(fighter, side, winnerSide, role, statLabel, statValue, b
     </div></div>`;
 }
 
-function _emrTeamSide(team, side, winnerSide, bubbleHtml, crossOrg) {
+function _emrTeamSide(team, side, winnerSide, bubbleHtml, crossOrg, speaker) {
   const members = (team?.members || []).slice(0, 2);
   const isWinner = winnerSide === side;
   const stateClass = winnerSide === 'draw' ? 'is-draw' : isWinner ? 'is-winner' : 'is-loser';
+  // 吹き出しの尻尾は話している選手の画像の水平中心へ向ける。2人組の真ん中から出すと、
+  // どちらがしゃべっているのか一瞬迷う(2026-09-28 Keisuke)。話者が分からないときは従来どおり中央
+  const speakerIndex = bubbleHtml && speaker && members.length === 2
+    ? members.findIndex(f => f && String(f.id) === String(speaker.id)) : -1;
+  const slotClass = speakerIndex >= 0 ? ` is-speaker-${speakerIndex}` : '';
   return `<div class="emr-team ${side === 'right' ? 'is-right ' : ''}${stateClass}">
-    <div class="emr-bubble-slot">${bubbleHtml || ''}</div>
+    <div class="emr-bubble-slot${slotClass}">${bubbleHtml || ''}</div>
     <div class="emr-pair">${members.map(f => { const upper = _emrUpper(f); return `<div class="emr-upper">${upper ? `<img src="${upper}" alt="" onerror="this.style.display='none'">` : ''}</div>`; }).join('')}</div>
     <div><div class="emr-team-name">${members.map(f => escHtml(WM_I18N.pn(f?.name || '?'))).join('<br>&amp; ')}</div><div class="emr-role">${winnerSide === 'draw' ? 'Draw Team' : isWinner ? 'Winner Team' : 'Loser Team'}</div>${crossOrg ? _emrOrgBadgeHtml(team?.orgId, team?.org || '', side) : ''}</div>
   </div>`;
@@ -18979,7 +18984,7 @@ function showEventMatchResultPopup(opts) {
   // 自団体だけの試合(通常興行の通常カード・PPV等)ではバッジそのものを省略する。
   const crossOrg = _emrCrossOrg(opts);
   const sides = isTag
-    ? `${_emrTeamSide(opts.teamLeft, 'left', winnerSide, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'TEAM WIN'))}</div>${_emrTagFinishActors(opts, winnerSide)}<div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">${WM_I18N.t('評価')} <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrTeamSide(opts.teamRight, 'right', winnerSide, bubbleRight, crossOrg)}`
+    ? `${_emrTeamSide(opts.teamLeft, 'left', winnerSide, bubbleLeft, crossOrg, winnerSide === 'left' ? winnerFighter : null)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'TEAM WIN'))}</div>${_emrTagFinishActors(opts, winnerSide)}<div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">${WM_I18N.t('評価')} <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrTeamSide(opts.teamRight, 'right', winnerSide, bubbleRight, crossOrg, winnerSide === 'right' ? winnerFighter : null)}`
     : `${_emrSingleSide(opts.left, 'left', winnerSide, opts.leftRole, opts.leftStatLabel, opts.leftStat, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'WIN'))}</div><div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">${WM_I18N.t('評価')} <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrSingleSide(opts.right, 'right', winnerSide, opts.rightRole, opts.rightStatLabel, opts.rightStat, bubbleRight, crossOrg)}`;
   const chips = (opts.chips || []).filter(Boolean).map(chip => `<span class="emr-chip">${escHtml(chip)}</span>`).join('');
   const layer = document.createElement('div');
@@ -19895,15 +19900,19 @@ function _stlEntryModalHtml() {
   const eligible = allData.eligible || [];
   const season = G.season;
 
+  const slotNo = index => (playerTeams[index] && playerTeams[index].slot) || index + 1;
+  const sameId = (a, b) => a != null && b != null && String(a) === String(b);
+
   let html = _mdlAHeader(`🌸 ${WM_I18N.t('春のタッグリーグ 出場チーム編成')}`, WM_I18N.t('第{n}回大会 ・ 代表タッグ{m}組', { n: season, m: playerTeams.length }));
   html += `<div class="stl-modal-lead">${WM_I18N.t('出場枠ごとに2名を選出してください。同じ選手は複数チームに登録できません。未編成枠は締切時におまかせ編成されます。')}</div>`;
   if (playerTeams.length > 1) {
     html += `<div class="stl-slot-tabs">`;
     playerTeams.forEach((team, index) => {
       const selected = sel.pairs[index] || {};
-      const complete = selected.f1Id != null && selected.f2Id != null;
-      html += `<button type="button" class="stl-slot-tab${index === activeSlot ? ' is-active' : ''}${complete ? ' is-complete' : ''}" onclick="App.stlSelectEntrySlot(${index})">
-        <span>${WM_I18N.t('第{n}代表', { n: team.slot || index + 1 })}</span><small>${complete ? WM_I18N.t('編成済み') : WM_I18N.t('未編成')}</small>
+      const filled = (selected.f1Id != null ? 1 : 0) + (selected.f2Id != null ? 1 : 0);
+      const status = filled === 2 ? WM_I18N.t('編成済み') : filled === 1 ? WM_I18N.t('あと1名') : WM_I18N.t('未編成');
+      html += `<button type="button" class="stl-slot-tab${index === activeSlot ? ' is-active' : ''}${filled === 2 ? ' is-complete' : ''}${filled === 1 ? ' is-half' : ''}" onclick="App.stlSelectEntrySlot(${index})">
+        <span>${WM_I18N.t('第{n}代表', { n: slotNo(index) })}</span><small>${status}</small>
       </button>`;
     });
     html += `</div>`;
@@ -19931,25 +19940,28 @@ function _stlEntryModalHtml() {
   html += `<div class="stl-modal-section-label" style="padding:0 24px">${WM_I18N.t('出場資格のある選手')}</div>`;
   html += `<div class="stl-pick-grid">`;
   eligible.forEach(f => {
-    const picked = pair.f1Id === f.id || pair.f2Id === f.id;
-    const locked = usedElsewhere.some(id => String(id) === String(f.id));
+    const picked = sameId(pair.f1Id, f.id) || sameId(pair.f2Id, f.id);
+    // 他の枠に入っている選手も押せる(押すとこの枠へ移る。App.stlPickFighter)
+    const elsewhereIndex = picked ? -1 : sel.pairs.findIndex((row, index) => index !== activeSlot && row
+      && (sameId(row.f1Id, f.id) || sameId(row.f2Id, f.id)));
+    const elsewhere = elsewhereIndex >= 0;
     const upperUrl = getUpperUrl(f.id);
     const tagCls = _STL_STYLE_CREAM[f.style] || 'tag-cream-neutral';
-    html += `<div class="draft-fc cand${picked ? ' picked' : ''}${locked ? ' stl-is-locked' : ''}"${locked ? '' : ` onclick="App.stlPickFighter(${f.id})"`}>
+    html += `<div class="draft-fc cand${picked ? ' picked' : ''}${elsewhere ? ' stl-is-elsewhere' : ''}" onclick="App.stlPickFighter(${f.id})">
       <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(WM_I18N.pn(f.name))}">` : ''}</div>
       <div class="draft-fc-info">
         <div class="draft-fc-name-row"><span class="draft-fc-name">${escHtml(WM_I18N.pn(f.name))}</span></div>
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
           <span class="draft-fc-ovr-label">OVR</span><span class="draft-fc-ovr">${f.ovr}</span>
         </div>
-        <div class="draft-fc-meta"><span class="draft-fc-tag ${tagCls}">${escHtml(f.style || '')}</span>${locked ? `<span class="stl-used-label">${WM_I18N.t('他枠で選出済み')}</span>` : ''}</div>
+        <div class="draft-fc-meta"><span class="draft-fc-tag ${tagCls}">${escHtml(f.style || '')}</span>${elsewhere ? `<span class="stl-used-label">${WM_I18N.t('第{n}代表から移す', { n: slotNo(elsewhereIndex) })}</span>` : ''}</div>
       </div>
     </div>`;
   });
   html += `</div>`;
 
-  const f1 = pair.f1Id != null ? eligible.find(f => f.id === pair.f1Id) : null;
-  const f2 = pair.f2Id != null ? eligible.find(f => f.id === pair.f2Id) : null;
+  const f1 = pair.f1Id != null ? eligible.find(f => sameId(f.id, pair.f1Id)) : null;
+  const f2 = pair.f2Id != null ? eligible.find(f => sameId(f.id, pair.f2Id)) : null;
   let chemLabel = '';
   if (f1 && f2) {
     const pairData = suggestions.find(s => (s.f1Id === f1.id && s.f2Id === f2.id) || (s.f1Id === f2.id && s.f2Id === f1.id));
@@ -19957,17 +19969,28 @@ function _stlEntryModalHtml() {
   }
   // 選んだ2人が不仲なら、相性の代わりに通常興行のプレビューと同じ警告(能力-3・連携なし・信頼が下がる)
   const discordWarn = (f1 && f2) ? _stlDiscordWarnHtml(f1.id, f2.id, false) : '';
+  // 選んだ2人は × で1人ずつ外せる(一覧で探し直さなくてよい)。空いている側は「未選択」
+  const memberChip = f => f
+    ? `<span class="stl-summary-member">${_stlFaceImg(f)}<b>${escHtml(WM_I18N.pn(f.name))}</b><button type="button" class="stl-summary-remove" aria-label="${escHtml(WM_I18N.t('外す'))}" onclick="App.stlUnpickFighter(${f.id})">×</button></span>`
+    : `<span class="stl-summary-member is-empty">${WM_I18N.t('未選択')}</span>`;
   html += `<div class="stl-summary-bar">
-    <span class="stl-summary-label">${WM_I18N.t('第{n}代表', { n: activeSlot + 1 })}</span>
-    <span class="stl-summary-names">${f1 ? escHtml(WM_I18N.pn(f1.name)) : WM_I18N.t('未選択')} &amp; ${f2 ? escHtml(WM_I18N.pn(f2.name)) : WM_I18N.t('未選択')}</span>
+    <span class="stl-summary-label">${WM_I18N.t('第{n}代表', { n: slotNo(activeSlot) })}</span>
+    <span class="stl-summary-names">${memberChip(f1)}<span class="stl-summary-amp">&amp;</span>${memberChip(f2)}</span>
     ${discordWarn || (chemLabel ? `<span class="stl-summary-chem">${WM_I18N.t('相性')} ${chemLabel}</span>` : '')}
   </div>`;
 
   const hasComplete = sel.pairs.some(row => row && row.f1Id != null && row.f2Id != null);
-  const hasHalfPair = sel.pairs.some(row => row && ((row.f1Id == null) !== (row.f2Id == null)));
-  const canConfirm = hasComplete && !hasHalfPair;
+  const halfIndex = sel.pairs.findIndex(row => row && ((row.f1Id == null) !== (row.f2Id == null)));
+  const canConfirm = hasComplete && halfIndex < 0;
+  // 保存できない理由を1行で(1人だけの枠があると保存できない。空の枠はおまかせ編成になるので保存できる)
+  const blockReason = halfIndex >= 0 ? WM_I18N.t('第{n}代表があと1名です', { n: slotNo(halfIndex) })
+    : !hasComplete ? WM_I18N.t('2名そろった枠がまだありません') : '';
   html += `<div class="stl-modal-footer">
-    <button class="btn btn-gold" ${canConfirm ? '' : 'disabled'} onclick="App.stlConfirmTeam()">${WM_I18N.t('編成内容を保存する')}</button>
+    ${blockReason ? `<div class="stl-modal-block-reason">${blockReason}</div>` : ''}
+    <div class="stl-modal-actions">
+      <button type="button" class="stl-modal-cancel" onclick="App.stlCloseEntryModal()">${WM_I18N.t('保存せずに閉じる')}</button>
+      <button class="btn btn-gold" ${canConfirm ? '' : 'disabled'} onclick="App.stlConfirmTeam()">${WM_I18N.t('編成内容を保存する')}</button>
+    </div>
   </div>`;
 
   return html;

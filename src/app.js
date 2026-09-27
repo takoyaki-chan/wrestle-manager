@@ -4553,6 +4553,15 @@ const App = {
 
   stlOpenEntryModal() {
     if (!G.springTagLeague || G.springTagLeague.cancelled) return;
+    // 旧形式(v0.1)で告知されたセーブは、開く前に今の枠へ移す。移さないと確定時に全チームが
+    // 自団体の組で上書きされ「代表タッグ4組」に化ける(開催時は枠どおり1組に戻る)
+    if (G.springTagLeague.format !== 2) {
+      G = Engine.springTagLeague.migrateLegacyEntry(G);
+      if (!G.springTagLeague || G.springTagLeague.cancelled) {
+        if (typeof renderWeekScreen === 'function') renderWeekScreen();
+        return;
+      }
+    }
     const myTeams = (G.springTagLeague.teams || []).filter(t => t.orgId === 'player')
       .sort((a, b) => (a.slot || 1) - (b.slot || 1));
     App._stlEntrySelection = {
@@ -4574,21 +4583,55 @@ const App = {
     }
   },
 
+  // 編成モーダルの描き直し。選手一覧のスクロール位置を保つ(押すたびに先頭へ戻ると、選び直しのたびに探し直しになる)
+  _stlRerenderEntry() {
+    const card = document.getElementById('mdlACard');
+    if (!card) return;
+    const grid = card.querySelector('.stl-pick-grid');
+    const top = grid ? grid.scrollTop : 0;
+    const left = grid ? grid.scrollLeft : 0;
+    card.innerHTML = _stlEntryModalHtml();
+    const next = card.querySelector('.stl-pick-grid');
+    if (next) { next.scrollTop = top; next.scrollLeft = left; }
+  },
+
+  // 選び直しの規則(2026-09-28 Keisuke報告「選び直しができない」):
+  //  - 選択中の選手をもう一度押す → 外す(下の帯の × でも外せる)
+  //  - 2名そろっているときに別の選手を押す → 2人目と入れ替える(先に外す手間を要らなくする)
+  //  - 他の枠に入っている選手を押す → この枠へ移す(元の枠は「あと1名」になる)。
+  //    同じ選手が2つの枠に入ることはない(確定時は Engine.springTagLeague.confirmPlayerTeams も弾く)
   stlPickFighter(id) {
     const sel = App._stlEntrySelection;
     if (!sel) return;
+    const same = (a, b) => a != null && b != null && String(a) === String(b);
     const pair = sel.pairs[sel.activeSlot] || (sel.pairs[sel.activeSlot] = { f1Id: null, f2Id: null });
-    const usedElsewhere = sel.pairs.some((row, index) => index !== sel.activeSlot
-      && row && (row.f1Id === id || row.f2Id === id));
-    if (usedElsewhere) { Audio.play('error'); return; }
-    if (pair.f1Id === id) { pair.f1Id = null; }
-    else if (pair.f2Id === id) { pair.f2Id = null; }
-    else if (pair.f1Id == null) { pair.f1Id = id; }
-    else if (pair.f2Id == null) { pair.f2Id = id; }
-    else { return; } // 既に2名選択済み — 先に外してから選び直す
+    if (same(pair.f1Id, id)) { pair.f1Id = null; }
+    else if (same(pair.f2Id, id)) { pair.f2Id = null; }
+    else {
+      sel.pairs.forEach((row, index) => {
+        if (index === sel.activeSlot || !row) return;
+        if (same(row.f1Id, id)) row.f1Id = null;
+        if (same(row.f2Id, id)) row.f2Id = null;
+      });
+      if (pair.f1Id == null) pair.f1Id = id;
+      else pair.f2Id = id; // 空きが2人目だけ、または2名そろっている → 2人目に入れる/入れ替える
+    }
     Audio.play('click');
-    const card = document.getElementById('mdlACard');
-    if (card) card.innerHTML = _stlEntryModalHtml();
+    App._stlRerenderEntry();
+  },
+
+  /** 下の帯の × — 今の枠からその選手を外す */
+  stlUnpickFighter(id) {
+    const sel = App._stlEntrySelection;
+    if (!sel) return;
+    const pair = sel.pairs[sel.activeSlot];
+    if (!pair) return;
+    const same = (a, b) => a != null && b != null && String(a) === String(b);
+    if (same(pair.f1Id, id)) pair.f1Id = null;
+    else if (same(pair.f2Id, id)) pair.f2Id = null;
+    else return;
+    Audio.play('click');
+    App._stlRerenderEntry();
   },
 
   stlPickSuggestion(f1Id, f2Id) {
@@ -4596,8 +4639,7 @@ const App = {
     if (!sel) return;
     sel.pairs[sel.activeSlot] = { f1Id, f2Id };
     Audio.play('select');
-    const card = document.getElementById('mdlACard');
-    if (card) card.innerHTML = _stlEntryModalHtml();
+    App._stlRerenderEntry();
   },
 
   stlSelectEntrySlot(slotIndex) {
@@ -4605,8 +4647,7 @@ const App = {
     if (!sel || !Array.isArray(sel.pairs) || !sel.pairs[slotIndex]) return;
     sel.activeSlot = slotIndex;
     Audio.play('click');
-    const card = document.getElementById('mdlACard');
-    if (card) card.innerHTML = _stlEntryModalHtml();
+    App._stlRerenderEntry();
   },
 
   stlConfirmTeam() {

@@ -21757,8 +21757,58 @@
     "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
   },
   {
-    "key": "他枠で選出済み",
-    "en": "Already picked for another slot",
+    "key": "あと1名",
+    "en": "1 more needed",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "第{n}代表から移す",
+    "en": "Move from Representative {n}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "外す",
+    "en": "Remove",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "第{n}代表があと1名です",
+    "en": "Representative {n} needs one more wrestler",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "2名そろった枠がまだありません",
+    "en": "No team has both wrestlers yet",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "保存せずに閉じる",
+    "en": "Close without saving",
     "files": [
       "ui-common.js"
     ],
@@ -50918,5 +50968,113 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "この体調を下回った選手は、育成方針にかかわらず自動で休養します。体調30未満は設定にかかわらず必ず休養します。",
+    "en": "Fighters below this condition rest automatically, regardless of their training policy. Below 30 they always rest.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "2026-09-28: lang-en.js へ手で足されていたが台帳に行が無く、i18n-build-dict.js の再生成で消えるため登録(訳文は当時の lang-en.js のまま)"
+  },
+  {
+    "key": "自動休養ライン",
+    "en": "Auto-rest line",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "2026-09-28: lang-en.js へ手で足されていたが台帳に行が無く、i18n-build-dict.js の再生成で消えるため登録(訳文は当時の lang-en.js のまま)"
+  },
+  {
+    "key": "体調50未満",
+    "en": "Below 50",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "2026-09-28: lang-en.js へ手で足されていたが台帳に行が無く、i18n-build-dict.js の再生成で消えるため登録(訳文は当時の lang-en.js のまま)"
+  },
+  {
+    "key": "体調60未満",
+    "en": "Below 60",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "2026-09-28: lang-en.js へ手で足されていたが台帳に行が無く、i18n-build-dict.js の再生成で消えるため登録(訳文は当時の lang-en.js のまま)"
+  },
+  {
+    "key": "体調70未満",
+    "en": "Below 70",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "2026-09-28: lang-en.js へ手で足されていたが台帳に行が無く、i18n-build-dict.js の再生成で消えるため登録(訳文は当時の lang-en.js のまま)"
+  },
+  {
+    "key": "体調80未満",
+    "en": "Below 80",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "2026-09-28: lang-en.js へ手で足されていたが台帳に行が無く、i18n-build-dict.js の再生成で消えるため登録(訳文は当時の lang-en.js のまま)"
+  },
+  {
+    "key": "📝 ご意見・バグ報告を送る(Googleフォーム)",
+    "en": "📝 Send feedback or a bug report (Google Form)",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "2026-09-28: lang-en.js へ手で足されていたが台帳に行が無く、i18n-build-dict.js の再生成で消えるため登録(訳文は当時の lang-en.js のまま)"
+  },
+  {
+    "key": "不具合の報告には、タイトル画面に出ているバージョン番号と、お使いのブラウザ名を書いてもらえると助かります。",
+    "en": "When reporting a bug, please include the version number shown on the title screen and the name of your browser.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "2026-09-28: lang-en.js へ手で足されていたが台帳に行が無く、i18n-build-dict.js の再生成で消えるため登録(訳文は当時の lang-en.js のまま)"
+  },
+  {
+    "key": "更新履歴",
+    "en": "What's New",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "2026-09-28: lang-en.js へ手で足されていたが台帳に行が無く、i18n-build-dict.js の再生成で消えるため登録(訳文は当時の lang-en.js のまま)"
   }
 ]
