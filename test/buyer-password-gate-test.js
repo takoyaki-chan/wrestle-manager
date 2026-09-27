@@ -43,6 +43,16 @@ function requestContext(url, env) {
   };
 }
 
+// 購入者用の入力欄は POST で送る(URLにパスワードを残さない)
+function postContext(url, env, password) {
+  const body = new URLSearchParams({ password });
+  return {
+    request: new Request(url, { method: 'POST', body, headers: { 'content-type': 'application/x-www-form-urlencoded' } }),
+    env,
+    next: async () => new Response('next'),
+  };
+}
+
 (async () => {
   const syntheticBuyerPassword = ['test', 'buyer', 'credential'].join('-');
   const syntheticAdminPassword = ['test', 'admin', 'credential'].join('-');
@@ -71,6 +81,13 @@ function requestContext(url, env) {
   assert.strictEqual(unsetResponse.status, 401);
   assert.strictEqual(loginCalls.at(-1)[2], false, '未設定時は購入者用UIを有効にしない');
 
+  const postResponse = await onRequest(postContext('https://example.test/', buyerEnv, syntheticBuyerPassword));
+  assert.strictEqual(postResponse.status, 302, 'POST で送った購入者用パスワードでも入れる');
+  assert.match(postResponse.headers.get('set-cookie'), /^wm_auth=signed-test-cookie/);
+
+  const postBadResponse = await onRequest(postContext('https://example.test/', buyerEnv, 'wrong'));
+  assert.strictEqual(postBadResponse.status, 401, 'POST で違うパスワードなら入れない');
+
   const badResponse = await onRequest(requestContext('https://example.test/?password=wrong', buyerEnv));
   assert.strictEqual(badResponse.status, 401);
   assert.strictEqual(loginCalls.at(-1)[2], true, '設定時は購入者用UIを有効にする');
@@ -83,7 +100,7 @@ function requestContext(url, env) {
   const buyerPage = await auth.loginPage(new URL('https://example.test/'), undefined, true).text();
   assert.ok(buyerPage.includes('ダウンロード版をご購入の方は、商品ページに記載のパスワードを入力してください。'));
   assert.ok(buyerPage.includes('If you bought the download edition, enter the password shown on the store page.'));
-  assert.match(buyerPage, /<form method="GET" action="\/">[\s\S]*name="password"/);
+  assert.match(buyerPage, /<form method="POST" action="\/">[\s\S]*name="password"/);   // パスワードをURLに残さないため POST で送る
 
   const baseEnv = { COOKIE_SECRET: ['test', 'cookie', 'key'].join('-') };
   const firstEnv = { ...baseEnv, BUYER_PASSWORD: syntheticBuyerPassword };

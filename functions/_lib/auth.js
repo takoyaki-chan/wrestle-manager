@@ -109,7 +109,7 @@ export function loginPage(url, message, buyerPasswordEnabled = false) {
 ` : "";
   const buyerAccess = buyerPasswordEnabled ? `    <div class="buyer-access">
       <p>ダウンロード版をご購入の方は、商品ページに記載のパスワードを入力してください。<br><span lang="en">If you bought the download edition, enter the password shown on the store page.</span></p>
-      <form method="GET" action="/">
+      <form method="POST" action="/">
         <input type="password" name="password" placeholder="Password" autocomplete="current-password">
         <button type="submit">Enter</button>
       </form>

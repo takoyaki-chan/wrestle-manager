@@ -19,7 +19,16 @@ export async function onRequest(context) {
       return context.next();
     }
     // 管理用バックドアまたは購入者用パスワード(各環境変数を設定した場合のみ有効)
-    const password = url.searchParams.get("password");
+    // 購入者用の入力欄は POST で送る(URL・履歴・アクセスログにパスワードを残さないため)。
+    // ?password= の形は管理用バックドアの従来手順なので残す。
+    let password = url.searchParams.get("password");
+    if (!password && request.method === "POST") {
+      try {
+        const form = await request.formData();
+        const sent = form.get("password");
+        if (typeof sent === "string") password = sent;
+      } catch (_e) { /* フォーム以外のPOSTは無視 */ }
+    }
     const adminPasswordMatches = env.ADMIN_PASSWORD && password === env.ADMIN_PASSWORD;
     const buyerPasswordMatches = env.BUYER_PASSWORD && password === env.BUYER_PASSWORD;
     if (adminPasswordMatches || buyerPasswordMatches) {
