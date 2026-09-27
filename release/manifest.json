@@ -40,6 +40,8 @@
     "src/tag-battle-main.js",
     "src/tag-battle-lines.js"
   ],
+  "assetExcludeGlobs": ["image/moves/*.png"],
+  "assetExcludeGlobsNote": "assetDirectories の中で配布に含めない素材(未接続の候補画像など)。ゲームが参照するファイルを入れないこと。",
   "devOnlyFiles": [
     "src/dev-tools.js",
     "src/dev-event-catalog.js"

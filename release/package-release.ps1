@@ -342,6 +342,18 @@ foreach ($d in $Manifest.assetDirectories) {
     Write-Host "  ✓ $d/ ($Count ファイル)" -ForegroundColor Green
 }
 
+# assetExcludeGlobs: アセットの中で配布に含めない素材(未接続の候補画像など)を staging から取り除く
+if ($Manifest.PSObject.Properties['assetExcludeGlobs']) {
+    foreach ($g in @($Manifest.assetExcludeGlobs)) {
+        $Target  = Join-Path $StagingDir ($g -replace '/', '\')
+        $Removed = @(Get-ChildItem -Path $Target -File -ErrorAction SilentlyContinue)
+        foreach ($f in $Removed) { Remove-Item -Force $f.FullName }
+        if ($Removed.Count -gt 0) {
+            Write-Host ("  ✓ 配布から除外: {0} ({1} ファイル)" -f $g, $Removed.Count) -ForegroundColor Green
+        }
+    }
+}
+
 # ── 生成ファイル ──────────────────────────────────────────────────────────────
 $StartHtml = @'
 <!DOCTYPE html>
