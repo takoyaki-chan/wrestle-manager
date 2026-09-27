@@ -13,7 +13,8 @@ const changelog = context.result;
 
 // 新しい版が先頭。v1.05 まで遡って載せる(文面の正本は docs/changelog-content-20260927.md)
 assert.ok(changelog.length >= 20, '更新履歴は20版以上');
-assert.strictEqual(changelog[0].version, '1.37', '先頭は最新版');
+const manifestVersion = JSON.parse(fs.readFileSync(path.join(root, 'release', 'manifest.json'), 'utf8')).version;
+assert.strictEqual(changelog[0].version, manifestVersion, '先頭は配布中の最新版と同じ');
 assert.strictEqual(changelog[changelog.length - 1].version, '1.05', '末尾は最古の掲載版');
 assert.ok(changelog.every(entry => /^1\.\d+$/.test(entry.version)), 'version の形式');
 assert.ok(changelog.every(entry => /^20\d\d-\d\d-\d\d$/.test(entry.date)), 'date の形式');
