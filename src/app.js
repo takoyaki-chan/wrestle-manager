@@ -16301,6 +16301,22 @@ App.showCredits = function() {
 };
 App.closeCredits = function() { document.getElementById('creditsOverlay').classList.remove('active'); };
 
+App.showChangelog = function() {
+  const content = document.getElementById('changelogContent');
+  const entries = (typeof WM_CHANGELOG !== 'undefined' && Array.isArray(WM_CHANGELOG)) ? WM_CHANGELOG : [];
+  const langKey = WM_I18N.lang === 'en' ? 'en' : 'ja';
+  const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
+  const currentVersion = entries[0]?.version || '';
+  content.innerHTML = `<div class="changelog-current">VERSION ${escapeHtml(currentVersion)}</div>` + entries.map(entry => `
+    <section class="changelog-entry">
+      <div class="changelog-entry-head">VERSION ${escapeHtml(entry.version)} · ${escapeHtml(entry.date)}</div>
+      <ul>${(entry[langKey] || entry.ja || []).map(line => `<li>${escapeHtml(line)}</li>`).join('')}</ul>
+    </section>
+  `).join('');
+  document.getElementById('changelogOverlay').classList.add('active');
+};
+App.closeChangelog = function() { document.getElementById('changelogOverlay').classList.remove('active'); };
+
 App.previewEnding = function() {
   App.closeCredits();
   const data = (typeof G !== 'undefined' && G.season)

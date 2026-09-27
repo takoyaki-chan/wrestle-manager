@@ -4814,7 +4814,8 @@
     "体調70未満": "Below 70",
     "体調80未満": "Below 80",
     "📝 ご意見・バグ報告を送る(Googleフォーム)": "📝 Send feedback or a bug report (Google Form)",
-    "不具合の報告には、タイトル画面に出ているバージョン番号と、お使いのブラウザ名を書いてもらえると助かります。": "When reporting a bug, please include the version number shown on the title screen and the name of your browser."
+    "不具合の報告には、タイトル画面に出ているバージョン番号と、お使いのブラウザ名を書いてもらえると助かります。": "When reporting a bug, please include the version number shown on the title screen and the name of your browser.",
+    "更新履歴": "What's New"
   }
   );
 })();

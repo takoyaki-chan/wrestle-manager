@@ -2685,6 +2685,12 @@ html[lang="en"] .aw-team-name{white-space:normal;word-break:normal;line-height:1
 .credits-music-item{font-size:12px;color:var(--text);line-height:1.8}
 .credits-music-title{font-weight:700;color:var(--gold-light)}
 .credits-music-artist{color:var(--text-sub)}
+.changelog-box{max-width:640px;text-align:left}
+.changelog-current{text-align:center;color:var(--gold-light);font-family:'Oswald',sans-serif;letter-spacing:2px;margin:-10px 0 22px}
+.changelog-entry{margin-bottom:22px}
+.changelog-entry-head{color:var(--gold);font-weight:700;letter-spacing:1px;border-bottom:1px solid rgba(200,190,170,0.12);padding-bottom:6px}
+.changelog-entry ul{margin:10px 0 0;padding-left:20px}
+.changelog-entry li{color:var(--text);font-size:12px;line-height:1.75;margin-bottom:7px}
 .credits-music-link{color:#5b9bd5;text-decoration:none;font-size:11px}
 .credits-music-link:hover{text-decoration:underline}
 .credits-close{display:block;width:100%;padding:10px 0;border-radius:8px;margin-top:18px;
@@ -10498,6 +10504,7 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
     <div class="title-links">
       <div class="title-credits-link" onclick="App.showCredits()">Credits</div>
       <div class="title-credits-link" onclick="App.showFighterFile()">Fighter File</div>
+      <div class="title-credits-link" onclick="App.showChangelog()" data-i18n>更新履歴</div>
     </div>
     <div class="title-sns">
       <a href="https://x.com/tkykchan" target="_blank" rel="noopener">𝕏</a>
@@ -10757,6 +10764,14 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
   </div>
 </div>
 
+<div class="credits-overlay" id="changelogOverlay" role="dialog" aria-modal="true" aria-labelledby="changelogTitle">
+  <div class="credits-box changelog-box">
+    <div class="credits-title" id="changelogTitle" data-i18n>更新履歴</div>
+    <div id="changelogContent"></div>
+    <button class="credits-close" onclick="App.closeChangelog()" data-i18n>閉じる</button>
+  </div>
+</div>
+
 <!-- i18n基盤(Stage A P1)。WM_I18N.t()は他の全スクリプトより先に定義しておく必要がある -->
 <script src="i18n.js"></script>
 <!-- EN辞書(Stage B P3b)。test/i18n-build-dict.jsが生成。ja時はaddDictされても参照されないため無害 -->
@@ -10779,6 +10794,7 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
 <script src="lz-string.min.js"></script>
 <!-- ① データ（依存なし） -->
 <script src="data.js"></script>
+<script src="data-changelog.js"></script>
 <script src="coach-lines.js"></script>
 <script src="data-faction-dialogue.js"></script>
 <script src="tenchosen-final-lines.js"></script>

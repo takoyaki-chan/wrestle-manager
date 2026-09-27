@@ -13,6 +13,7 @@
     "src/victory-lines.js",
     "src/lz-string.min.js",
     "src/data.js",
+    "src/data-changelog.js",
     "src/coach-lines.js",
     "src/data-faction-dialogue.js",
     "src/tenchosen-final-lines.js",
