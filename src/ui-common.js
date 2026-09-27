@@ -537,13 +537,24 @@ function _mdlAHeader(title, meta, opts) {
   </div>`;
 }
 
+/** 取次がいないときの地の文ストリップ(顔・名前・肩書きを出さず、文だけ出す) */
+function _mdlANarrationStrip(line, lineTranslated, extraClass) {
+  const text = (line != null && line !== '')
+    ? escHtml(lineTranslated ? String(line) : WM_I18N.t(String(line)))
+    : '';
+  if (!text) return '';
+  const cls = ['mdl-a-reporter-strip', 'u3b-theme-dark', 'is-narration', extraClass].filter(Boolean).join(' ');
+  return `<div class="${cls}"><div class="u3b-bubble"><div class="u3b-bubble-text">${text}</div></div></div>`;
+}
+
 /** A型 reporter-strip(コーチ or 古参選手の取次) */
 // P6-5配線修正: lineTranslated=trueのとき呼び出し元が既にt()済み(選手名などをテンプレへ
 // 埋め込む都合で翻訳→変数置換の順が必須なケース)として二重t()を避ける。既定false=従来どおり
 function _mdlAReporterStrip(state, line, lineTranslated) {
-  let url = '', name = 'BLACKWELL', role = 'COACH';
+  let url = '', name = '', role = '';
   if (typeof _factionPickReporter === 'function') {
     const pick = _factionPickReporter(state);
+    if (!pick) return (typeof _mdlANarrationStrip === 'function') ? _mdlANarrationStrip(line, lineTranslated) : '';   // 取次がいない旗揚げ直後は地の文
     if (pick && pick.kind === 'coach') {
       url = (typeof getCoachUpperUrl === 'function') ? getCoachUpperUrl(pick.ref.id)
         : ((typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(pick.ref.id) : '');
@@ -10354,11 +10365,20 @@ function _factionPickReporter(state) {
   if (coaches.length) {
     return { kind: 'coach', ref: coaches[(seed >>> 0) % coaches.length] };
   }
-  const roster = (state && state.roster) || [];
+  // 2026-09-27(作者指摘): コーチ不在時の取次は「最年長」だけで選んでいたため、
+  // 旗揚げ直後は入団1ヶ月の新人が「古参選手」として事情を語っていた。
+  // 在籍季数(careerSeasons)が1季以上の選手を古参として優先し、
+  // 誰もいなければ最年長を立てるが、肩書きは「選手」にする(古参と名乗らせない)。
+  const roster = ((state && state.roster) || []).filter(f => f && !f.isRental);
   if (roster.length) {
-    const veteran = [...roster].sort((a, b) => (b.age || 0) - (a.age || 0))[0];
+    const bySeniority = [...roster].sort((a, b) =>
+      ((b.careerSeasons || 0) - (a.careerSeasons || 0)) || ((b.age || 0) - (a.age || 0)) || ((a.id || 0) - (b.id || 0)));
+    const veteran = bySeniority.find(f => (f.careerSeasons || 0) >= 1);
     if (veteran) return { kind: 'veteran', ref: veteran };
   }
+  // 旗揚げ直後はコーチも在籍のある選手もいない。ここで新人を立てると、入団したばかりの
+  // 選手が毎回「古参選手」として事情を語ることになる(2026-09-27 作者指摘)。
+  // 取次を立てず null を返し、表示側は名前も肩書きも出さない地の文にする。
   return null;
 }
 // 呼び名(2026-09-25 / specs/call-name-spec-v1.0.md): 報告の吹き出しの話し手として、セリフの中で呼ぶ
@@ -10377,6 +10397,7 @@ function _factionReporterSpeaker(state) {
 // 既定false=大多数の呼び出し元(生JAの固定文言)はこれまでどおり_u3bSideHtml側で翻訳する
 function _factionReporterStrip(state, line, lineTranslated) {
   const pick = _factionPickReporter(state);
+  if (!pick) return (typeof _mdlANarrationStrip === 'function') ? _mdlANarrationStrip(line, lineTranslated, 'fevt-reporter-strip') : '';   // 取次がいなければ地の文
   let url = '', name = '', role = '';
   if (pick && pick.kind === 'coach') {
     url = (typeof getCoachUpperUrl === 'function') ? getCoachUpperUrl(pick.ref.id)

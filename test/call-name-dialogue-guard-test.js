@@ -244,9 +244,10 @@ I.setLang('ja');
   G.relationships = { '2>1': { bond: 95 }, '1>2': { bond: 95 } };
   const line = X('_choiceEventReporterLine')({ type: 'S3' }, byId(1), false, G);
   assert.ok(line.includes('阿武隈選手') && !line.includes('阿武隈塔子'), `コーチの取次は名字: ${line}`);
-  // コーチ不在 → 最年長の選手が取次。話し手→相手の絆で下の名前
+  // コーチ不在 → 在籍のある選手が取次(2026-09-27: 在籍1季未満しかいなければ取次を立てない)。
+  // 話し手→相手の絆で下の名前
   G = withRoster([2, 1], { coaches: [] });
-  G.roster = G.roster.map(f => ({ ...f, age: f.id === 2 ? 30 : 20 }));
+  G.roster = G.roster.map(f => ({ ...f, age: f.id === 2 ? 30 : 20, careerSeasons: f.id === 2 ? 4 : 1 }));
   G.relationships = { '2>1': { bond: 95 } };
   const vet = X('_choiceEventReporterLine')({ type: 'S3' }, G.roster.find(f => f.id === 1), false, G);
   assert.ok(vet.includes('塔子選手'), `古参選手の取次(絆95)は下の名前: ${vet}`);
